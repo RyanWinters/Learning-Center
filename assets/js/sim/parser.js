@@ -246,6 +246,9 @@
       var p = clone(prog), j = rung + dir; if (j < 0 || j >= p.rungs.length) return p;
       var t = p.rungs[rung]; p.rungs[rung] = p.rungs[j]; p.rungs[j] = t; return p;
     },
+    removeLeg: function (prog, rung, bpath, leg) {
+      var p = clone(prog), s = split(bpath); seqAt(p.rungs[rung], s.cpath)[s.idx].legs.splice(leg, 1); normalizeRung(p.rungs[rung]); return p;
+    },
     addRung: function (prog, at) { var p = clone(prog); p.rungs.splice(at, 0, { nodes: [], comment: "" }); return p; },
     deleteRung: function (prog, rung) { var p = clone(prog); p.rungs.splice(rung, 1); return p; },
     setComment: function (prog, rung, text) { var p = clone(prog); p.rungs[rung].comment = text; return p; },

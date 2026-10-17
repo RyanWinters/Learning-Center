@@ -44,7 +44,7 @@
     }
     paint();
 
-    root.addEventListener('click', e => {
+    root.querySelector('.page').addEventListener('click', e => {
       const b = e.target.closest('[data-set]');
       if (b) {
         if (b.dataset.set === 'theme') { LC.store.setting('theme', b.dataset.val); const t = b.dataset.val; if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }

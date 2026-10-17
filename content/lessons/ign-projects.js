@@ -166,7 +166,7 @@ Vision was Ignition's original client technology, a Java Swing application launc
     "Rewriting a large working Vision app to Perspective only because Perspective is newer."
   ],
 
-  keyTerms: ["ign-project", "project-inheritance", "gateway-scripting-project", "resource-override", "vision-module", "perspective-module"],
+  keyTerms: ["ign-project", "project-inheritance", "gateway-scripting-project", "resource-override", "vision-module", "perspective"],
 
   quiz: [
     {

@@ -26,6 +26,7 @@
     const cards = queue.filter(c => LC.lessons[c.lessonId] && LC.lessons[c.lessonId].quiz[c.q]);
     if (!cards.length) { empty(root); return; }
     let i = 0, right = 0;
+    document.body.classList.add('focus');
 
     function frame(inner, step) {
       root.innerHTML = '<div class="qwrap"><header class="qhead"><a class="icon-btn" href="#/review" data-exit aria-label="Close review">' + icon('x', 22) + '</a>' +
@@ -44,6 +45,7 @@
       next.addEventListener('click', () => { if (i < cards.length - 1) { i++; show(); window.scrollTo(0, 0); } else done(); });
     }
     function done() {
+      document.body.classList.remove('focus');
       root.innerHTML = '<div class="page page-narrow"><div class="empty"><div class="empty-ic">' + icon('check', 36) + '</div><h1>Session done</h1><p class="muted num">' + right + ' of ' + cards.length + ' correct. Correct cards move up a box; misses start over at box 1.</p><div class="empty-actions"><a class="btn btn-primary" href="#/">Home</a><a class="btn" href="#/tracks">Keep learning</a></div></div></div>';
     }
     show();

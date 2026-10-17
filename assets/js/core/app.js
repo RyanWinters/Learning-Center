@@ -86,7 +86,7 @@
 
   function markNav(p) {
     const name = p.name;
-    document.body.className = 'route-' + name;
+    document.body.className = 'route-' + name + (name === 'quiz' ? ' focus' : '');
     document.querySelectorAll('[data-nav]').forEach(a => { const on = a.dataset.nav === (RAIL_FOR[name] || name); a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     const tab = TAB_FOR[name] || 'more';
     document.querySelectorAll('[data-tab]').forEach(a => { const on = a.dataset.tab === tab; a.classList.toggle('on', on); if (a.tagName === 'A') { if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); } });
