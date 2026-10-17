@@ -44,7 +44,7 @@
         '<p class="hero-xp-meta num"><span>Level ' + li.n + '</span><span>' + (li.ceil ? s.xp.toLocaleString() + ' / ' + li.ceil.toLocaleString() + ' XP to ' + esc(li.next) : s.xp.toLocaleString() + ' XP, top level') + '</span></p></div></header>' +
       '<div class="home-grid"><div class="home-main">' + contHtml +
         '<section class="sec"><div class="sec-head"><h2>Up next</h2><a href="#/tracks">All tracks</a></div>' +
-        (next.length ? '<div class="rows">' + next.map(x => U.lessonRow(x.id, { track: true }).replace('<span class="lrow-meta">', '<span class="lrow-meta"><span class="why">' + esc(x.why) + '</span>')).join('') + '</div>' : '<div class="empty empty-sm"><p class="muted">Nothing is open right now. Finish or skip a lesson to unlock more.</p></div>') + '</section></div>' +
+        (next.length ? '<div class="rows">' + next.map(x => U.lessonRow(x.id, { track: true }).replace('<span class="lrow-meta">', '<span class="lrow-meta"><span class="lrow-why">' + esc(x.why) + '</span>')).join('') + '</div>' : '<div class="empty empty-sm"><p class="muted">Nothing is open right now. Finish or skip a lesson to unlock more.</p></div>') + '</section></div>' +
       '<aside class="today" aria-label="Today"><div class="today-top">' +
         U.ring(today.pct, 104, 9, '<span class="ring-num num">' + today.xp + '</span><span class="ring-sub">of ' + today.goal + ' XP</span>') +
         '<div class="today-side"><p class="eyebrow">Today</p><p class="today-state">' + (today.hit ? 'Goal reached' : (today.goal - today.xp) + ' XP to go') + '</p>' +

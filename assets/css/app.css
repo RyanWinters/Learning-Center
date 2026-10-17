@@ -558,3 +558,11 @@ body.focus .toasts { bottom: calc(84px + env(safe-area-inset-bottom)); }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
 }
 .qfoot-r { position: static; background: none; }
+
+/* Home "Up next" reason label */
+.lrow-why { flex-basis: 100%; font-family: var(--font-display, inherit); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.lrow.st-locked .lrow-why { color: var(--muted); }
+/* Touch targets: small inline links/buttons get a 44px hit area on touch devices */
+@media (pointer: coarse) {
+  .sec-head a { display: inline-flex; align-items: center; min-height: 44px; }
+}
