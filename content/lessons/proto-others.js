@@ -18,6 +18,8 @@ LC.lesson({
   body: `
 ## Why these three matter
 
+{{diagram:homes}}
+
 You can spend years in manufacturing and see only {{lesson:proto-enip}}, {{lesson:proto-modbus}} and {{lesson:proto-opc}}. The moment you quote a water utility, a substation or a commercial building, three other names appear on the spec. Each was built for a world with different problems than a factory floor, and each solved them in a way that shows up in how you design the system.
 
 | Protocol | Home turf | Core problem it solved |
@@ -130,6 +132,26 @@ DNP3 was developed in the 1990s for electric utility SCADA, and the DNP Users Gr
       body: `The front end is on 10.1.1.0/24 and the controllers are on 10.1.2.0/24. Who-Is broadcasts from the front end never reach the controllers. The fix is a BBMD on the controller subnet, or registering the front end as a foreign device with it.`
     }
   ],
+
+  diagrams: {
+    homes: `<svg viewBox="0 0 640 170" role="img" aria-label="Three protocols and where they live: DNP3 in utilities and water, IEC 61850 in substations, BACnet in buildings">
+  <rect class="dg-box-accent" x="20" y="20" width="190" height="120" rx="8"/>
+  <text class="dg-title dg-mid" x="115" y="48">DNP3</text>
+  <text class="dg-text-sm dg-mid" x="115" y="76">Utilities, water, pipelines</text>
+  <text class="dg-text-sm dg-mid" x="115" y="98">Event classes</text>
+  <text class="dg-text-sm dg-mid" x="115" y="120">Unsolicited + timestamps</text>
+  <rect class="dg-box" x="225" y="20" width="190" height="120" rx="8"/>
+  <text class="dg-title dg-mid" x="320" y="48">IEC 61850</text>
+  <text class="dg-text-sm dg-mid" x="320" y="76">Substations</text>
+  <text class="dg-text-sm dg-mid" x="320" y="98">Named data model</text>
+  <text class="dg-text-sm dg-mid" x="320" y="120">MMS, GOOSE</text>
+  <rect class="dg-box" x="430" y="20" width="190" height="120" rx="8"/>
+  <text class="dg-title dg-mid" x="525" y="48">BACnet</text>
+  <text class="dg-text-sm dg-mid" x="525" y="76">Commercial buildings</text>
+  <text class="dg-text-sm dg-mid" x="525" y="98">Objects + properties</text>
+  <text class="dg-text-sm dg-mid" x="525" y="120">COV subscriptions</text>
+</svg>`
+  },
 
   pitfalls: [
     "Treating IEC 61850 as just another register map. The names and data model are the point.",
