@@ -1,0 +1,32 @@
+## Persona
+Process control engineer who already builds Perspective screens and wants to become an integrator (Level 1 to 4), studying on a phone at breaks and a PC at night.
+
+## What works (max 6 bullets)
+- **Why and history sections are the real value.** persp-hphmi "Where it came from", ign-alarming "Where integrators argue", mes-oee "Seiichi Nakajima" and int-lifecycle "Failure story" give the depth and motivation this persona asked for.
+- **OEE math is checked and correct.** mes-oee worked example (A 86.7, P 90.0, Q 97.0, OEE 75.7), the TEEP figures, the 108 percent ideal-rate case and the changeover reclassification (78.8) all recompute. The "gaming" list is what a real MES person argues about.
+- **Track page gives the honest prerequisite picture.** d-track "Needs: ..." lines in amber and LOCKED/IN PROGRESS states make the path legible, and "I know this track" exists as a skip.
+- **Phone home has a clear resume action.** m-home "CONTINUE - T3 ... Start quiz" card, the "Up next" list and the review-queue status fit one phone screen.
+- **Lesson structure is consistent.** Body, ELI5 (default off), why, history, pitfalls, quiz and resources appear in every lesson reviewed. Curriculum counts match the desktop track cards (121 total).
+- **Quiz feedback explains the wrong answer.** d-quiz-end shows per-option explanations and "THE ANSWER IS D" with the reason, which is the right pattern for a learner who wants the why.
+
+## Problems (max 10, most important first)
+1. **[severity: high] [area: accuracy]** ign-alarming, diagram `states` — the text and aria-label say four alarm states, but the SVG draws only Normal, Active Unacknowledged, Active Acknowledged and Cleared Unacknowledged. Cleared Acknowledged is missing, and the arrow labels ("clears: done", "ack: done") do not map cleanly to transitions. This is the diagram an alarm-management reader will study. Fix: add the fourth box and label every arrow with its trigger (condition true, condition clear, ack).
+2. **[severity: high] [area: accuracy]** int-lifecycle, worked example ("transfer-pump station") — the 550 h estimate includes 100 h of site work, and the quote is 90,750 fixed. The same paragraph then bills site days separately as T&M capped at 15,000. Site hours are counted twice. Fix: remove site hours from the fixed total or state explicitly that the fixed figure covers design and build only, and recompute.
+3. **[severity: med] [area: accuracy]** persp-hphmi, "Applying it in Perspective" code block — `if({[default]P101/Alarm/HighHigh}, ...)` shows a tag path for alarm state without explaining how a tag exposes alarm state to an expression. A reader will copy a path that may not exist. Fix: show the real mechanism (for example, the alarm state property or a system.alarm query) and say which one the example assumes.
+4. **[severity: med] [area: content]** persp-hphmi, overall depth — for someone who already knows greyscale HP-HMI basics, the lesson is introductory. Perspective implementation is six bullets, with no sample theme variables, no sample style class set, no example of a level-2 unit display built from them, and no color-blind check procedure. Fix: add a worked Perspective example (theme JSON, class names, one level-2 screen) and an ISA-101 style-guide checklist.
+5. **[severity: med] [area: structure]** curriculum.js and track page, persp track — "I know this track" is all or nothing. This persona would skip persp-views and persp-containers but not persp-hphmi, and currently cannot do that per lesson. Fix: per-lesson "test out" using the lesson quiz, with the result recorded as Done and XP awarded.
+6. **[severity: med] [area: gamification]** d-quiz-end and d-profile — a correct quiz earns "+10 XP", while Field Tech is 159 XP away. Most badges (Flawless, Thirty days, Full ladder) are generic and far off; no badge reflects the owner's real progression (for example, "first integrator-level lesson passed" or "Level 3 track complete"). Fix: give XP for level-3 and level-4 lessons more weight, and add integrator milestone badges (CSIA-style lifecycle, capstone).
+7. **[severity: med] [area: ui]** d-track and m-map — the difficulty signal is an unlabeled bar icon (1 to 3 bars). The persona's goal is "Level 1 through Level 4", but the app's own "Level" word is used for XP (Apprentice, Field Tech). The lesson level never appears as "Level 3" anywhere visible. Fix: label lesson levels as "L3" and show per-level completion on Profile.
+8. **[severity: low] [area: accuracy]** ign-tags, history — "Ignition's unlimited-tag licensing, introduced with its first releases in the late 2000s." I believe Ignition's first release was 2010. Verify and correct the date, or drop the claim.
+9. **[severity: low] [area: content]** persp-views — the `persistent` flag is said to affect only Designer preview and not user sessions. I could not confirm this against the manual, and the lesson presents it as fact. Also "system.perspective-friendly list-of-dict forms" is vague wording. Fix: cite the manual page or soften the sentence, and name the actual conversion.
+10. **[severity: low] [area: structure]** curriculum.js, int-career — a level-1 lesson sits at the end of T9 and requires int-lifecycle (level 2). Level order and prereq order disagree. Fix: move it to the end of the path with level 2, or make it a level-1 lesson with no prereqs.
+
+## Missing (max 5)
+- A visible "integrator readiness" view: a map from the four levels to the lessons and the capstone (int-capstone) with a checklist, so the persona can see when Level 4 is reached.
+- A "known-material" test-out at lesson level, so an experienced Perspective builder does not re-read basics.
+- Real artifacts to practice on: an exportable sample Perspective project, a sample FDS, or a sample tag export. The lessons reference them repeatedly and the persona can't open any.
+- A per-lesson "why this matters at my job" link that connects HP HMI, alarm and OEE content to the persona's existing Perspective screens.
+- A plant-hours-friendly mode for PC nights: a longer session that continues the same lesson sequence without the streak pressure of the phone flow.
+
+## One-line verdict
+Strong explanatory depth and motivation for an engineer who wants to understand why, but the persp-hphmi depth, a few numerical and diagram errors, and the all-or-nothing skip mean it does not yet get an experienced Perspective builder to Level 4 efficiently.
