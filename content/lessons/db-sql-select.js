@@ -145,7 +145,7 @@ To get only the top few rows, the engines disagree. This is the most common dial
 | SQL Server | \`SELECT TOP 3 event_id, duration_min FROM downtime_event ORDER BY duration_min DESC;\` |
 | MySQL / MariaDB | \`SELECT event_id, duration_min FROM downtime_event ORDER BY duration_min DESC LIMIT 3;\` |
 | PostgreSQL | same as MySQL: \`... LIMIT 3;\` |
-| Standard SQL (SQL Server 2012+, PostgreSQL 13+) | \`... ORDER BY duration_min DESC FETCH FIRST 3 ROWS ONLY;\` |
+| Standard SQL (PostgreSQL; SQL Server spells it \`OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY\`) | \`... ORDER BY duration_min DESC FETCH FIRST 3 ROWS ONLY;\` |
 
 All return:
 

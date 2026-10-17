@@ -71,7 +71,7 @@ Ignition does not ship with its own plant database. Instead, the Gateway holds *
 So "how do I get this report" nearly always becomes "write a query". Ignition's historian leaves you tables with names starting \`sqlth_\` (metadata such as \`sqlth_te\`, the tag entries) and partitioned data tables named like \`sqlt_data_1_2026_03\`. The {{term:sqlth-tables|sqlth_ tables}} are system tables. Read them freely and never edit them by hand.
 
 > [!note] In 8.1
-> Named Queries, database connections and the Tag Historian work the same way in 8.1 for everything in this track. Menu locations moved slightly in 8.3, so follow the 8.3 manual links in Resources.
+> Named Queries, database connections and the Tag Historian work the same way in 8.1 for everything in this track. Follow the 8.3 manual links in Resources for current menu locations.
 
 ## Client tools
 
@@ -211,7 +211,7 @@ Some filing rooms are built for different jobs. One is made for diary entries wi
 `,
 
   history: `
-The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of IBM research in the 1970s, became an ANSI standard in 1986 and an ISO standard in 1987. Every vendor then added its own extensions, which is why TOP, LIMIT and date functions still differ. The "NoSQL" label became popular around 2009 for non-relational stores built for web-scale workloads. Ignition has used SQL databases for history since its first versions in the mid-2000s.
+The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of IBM research in the 1970s, became an ANSI standard in 1986 and an ISO standard in 1987. Every vendor then added its own extensions, which is why TOP, LIMIT and date functions still differ. The "NoSQL" label became popular around 2009 for non-relational stores built for web-scale workloads.
 `,
 
   examples: [
