@@ -219,7 +219,7 @@ Alarm lists in early control rooms were annunciator panels with a lamp and a hor
     "Never reviewing alarm performance after go-live."
   ],
 
-  keyTerms: ["isa-18-2", "eemua-191", "alarm-rationalization", "alarm-philosophy", "master-alarm-database", "alarm-flood", "chattering-alarm", "stale-alarm", "alarm-shelving", "deadband", "alarm-pipeline"],
+  keyTerms: ["isa-18-2", "alarm-rationalization", "alarm-philosophy", "master-alarm-database", "alarm-flood", "chattering-alarm", "stale-alarm", "alarm-shelving", "deadband", "alarm-pipeline"],
 
   quiz: [
     {
@@ -257,11 +257,11 @@ Alarm lists in early control rooms were annunciator panels with a lamp and a hor
     },
     {
       q: "Which of these is a typical ISA-18.2 style definition of an alarm flood?",
-      options: ["Any alarm that stays active more than a day", "More than 10 alarms in 10 minutes for one operator", "An alarm that repeats three times in a minute", "Any High priority alarm"],
-      answer: 1,
+      options: ["More than 10 alarms in 10 minutes for one operator", "Any alarm that stays active more than a day", "An alarm that repeats three times in a minute", "Any High priority alarm"],
+      answer: 0,
       explain: [
-        "That describes a stale (standing) alarm.",
         "Correct. The commonly quoted definition is more than 10 alarms in a 10-minute window per operator.",
+        "That describes a stale (standing) alarm.",
         "That is the chattering alarm description.",
         "Priority has no bearing on whether a flood occurs."
       ]
@@ -279,13 +279,13 @@ Alarm lists in early control rooms were annunciator panels with a lamp and a hor
     },
     {
       q: "A site's operators shelve the same ten alarms every shift. What does this most likely indicate?",
-      options: ["The shelving feature is working as intended", "Rationalization or tuning was not completed, so nuisance alarms remain", "The alarms are too low in priority", "The journal is misconfigured"],
-      answer: 1,
+      options: ["The shelving feature is working as intended", "The journal is misconfigured", "The alarms are too low in priority", "Rationalization or tuning was not completed, so nuisance alarms remain"],
+      answer: 3,
       explain: [
         "Shelving is for occasional, temporary relief. Routine use is a warning sign.",
-        "Correct. Repeated shelving points to alarms that need fixing, retuning or removal.",
+        "Nothing suggests a journal fault. The journal is just recording the shelving.",
         "Priority is not the driver. The alarms are annoying regardless of priority.",
-        "Nothing suggests a journal fault. The journal is just recording the shelving."
+        "Correct. Repeated shelving points to alarms that need fixing, retuning or removal."
       ]
     }
   ],

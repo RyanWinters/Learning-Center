@@ -225,13 +225,13 @@ Specification documents for control systems grew out of large process and pharma
   quiz: [
     {
       q: "Which sentence is best suited to an FDS?",
-      options: ["The pump will start when the tank is high.", "P-101 shall start when LT-100 is above 70 percent for 5 seconds, if XV-101 is confirmed open.", "The pump should be reliable and respond quickly.", "Use a Compact Logix 5380 with an AOI for the pump."],
-      answer: 1,
+      options: ["The pump will start when the tank is high.", "Use a Compact Logix 5380 with an AOI for the pump.", "The pump should be reliable and respond quickly.", "P-101 shall start when LT-100 is above 70 percent for 5 seconds, if XV-101 is confirmed open."],
+      answer: 3,
       explain: [
         "It has no threshold, tag, delay or permissive, so a tester cannot pass or fail it.",
-        "Correct. It has a tag, a threshold, a delay, a permissive and a verb ('shall') that makes it a binding requirement.",
+        "This is an implementation choice that belongs in detailed design, not the FDS.",
         "'Reliable' and 'quickly' cannot be tested as written.",
-        "This is an implementation choice that belongs in detailed design, not the FDS."
+        "Correct. It has a tag, a threshold, a delay, a permissive and a verb ('shall') that makes it a binding requirement."
       ]
     },
     {
@@ -247,11 +247,11 @@ Specification documents for control systems grew out of large process and pharma
     },
     {
       q: "Why should the FDS reference the I/O list instead of copying it into an appendix?",
-      options: ["The I/O list is confidential", "Two copies drift apart, and the controlled document should be the single source", "Customers do not read appendices", "The FDS must stay under 50 pages"],
-      answer: 1,
+      options: ["Two copies drift apart, and the controlled document should be the single source", "The I/O list is confidential", "Customers do not read appendices", "The FDS must stay under 50 pages"],
+      answer: 0,
       explain: [
-        "Confidentiality is not the reason. The reason is document control.",
         "Correct. Reference by number and revision so there is one controlled copy.",
+        "Confidentiality is not the reason. The reason is document control.",
         "Readers might skip it, but that is not why you avoid copies.",
         "There is no such page limit."
       ]
@@ -269,12 +269,12 @@ Specification documents for control systems grew out of large process and pharma
     },
     {
       q: "What is the purpose of a requirement-to-test traceability matrix?",
-      options: ["To make the FDS longer", "To show that each requirement is tested and each test comes from a requirement", "To list the project team", "To replace the P&IDs"],
-      answer: 1,
+      options: ["To make the FDS longer", "To list the project team", "To show that each requirement is tested and each test comes from a requirement", "To replace the P&IDs"],
+      answer: 2,
       explain: [
         "Length is not a goal. Traceability adds a compact table.",
-        "Correct. It exposes untested requirements and tests with no basis.",
         "That is a different document.",
+        "Correct. It exposes untested requirements and tests with no basis.",
         "P&IDs describe process equipment. The matrix describes requirements and tests."
       ]
     }

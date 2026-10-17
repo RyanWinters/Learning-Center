@@ -241,24 +241,24 @@ Downtime logging began as paper forms and clipboard tallies on the line, and TPM
   quiz: [
     {
       q: "Operators on a busy line stop filling in reasons after a month. Which design change best addresses this?",
-      options: ["Make the reason mandatory before the line can restart", "Have the PLC create the event with a first-out fault pre-filled and prompt only for longer stops", "Add more detailed codes so the reason is easier to find", "Move reason entry to the end of shift"],
-      answer: 1,
+      options: ["Add more detailed codes so the reason is easier to find","Move reason entry to the end of shift","Make the reason mandatory before the line can restart","Have the PLC create the event with a first-out fault pre-filled and prompt only for longer stops"],
+      answer: 3,
       explain: [
-        "Forced entry tends to produce junk codes chosen to clear the prompt.",
-        "Correct. Reduce the operator's work by letting the machine supply what it knows.",
         "More codes make selection slower and worsen guessing.",
-        "End-of-shift entry relies on memory and produces vague reasons."
+        "End-of-shift entry relies on memory and produces vague reasons.",
+        "Forced entry tends to produce junk codes chosen to clear the prompt.",
+        "Correct. Reduce the operator's work by letting the machine supply what it knows."
       ]
     },
     {
       q: "A packaging line has 40 stops a shift of about 25 seconds each, and none are logged as events. Where does the lost time most likely show up?",
-      options: ["Availability", "Performance", "Quality", "Nowhere"],
-      answer: 1,
+      options: ["Performance","Quality","Nowhere","Availability"],
+      answer: 0,
       explain: [
-        "They fall below the stop threshold, so Availability does not capture them.",
         "Correct. Short stops reduce output during running time, which is a speed loss.",
         "Quality is about defects, not time.",
-        "The output is still lower, so Performance reflects it."
+        "The output is still lower, so Performance reflects it.",
+        "They fall below the stop threshold, so Availability does not capture them."
       ]
     },
     {
@@ -285,13 +285,13 @@ Downtime logging began as paper forms and clipboard tallies on the line, and TPM
     },
     {
       q: "The weekly Pareto shows 'Jam - labeler' as 27 percent of minutes and 'Changeover' as 34 percent. What else should you check before deciding what to fix?",
-      options: ["Nothing, fix the biggest bar", "The event counts and the size of the 'Other' and unassigned buckets", "The OEE target", "The PLC scan time"],
-      answer: 1,
+      options: ["The event counts and the size of the 'Other' and unassigned buckets","The OEE target","The PLC scan time","Nothing, fix the biggest bar"],
+      answer: 0,
       explain: [
-        "Minutes alone hide whether the loss is many short events or a few long ones, which need different fixes.",
         "Correct. Frequency and data quality both change the priority.",
         "The target does not affect which loss is largest.",
-        "Scan time is unrelated."
+        "Scan time is unrelated.",
+        "Minutes alone hide whether the loss is many short events or a few long ones, which need different fixes."
       ]
     }
   ],

@@ -262,35 +262,35 @@ Lot traceability began with paper batch records and lot codes stamped on contain
     },
     {
       q: "Operators scan material lots when pallets are received, and MES assumes any resin on a line that week came from that receipt. What is the main consequence for a recall?",
-      options: ["Nothing changes", "The recall covers far more product than needed, because consumption was not recorded when material entered the process", "The recall is more accurate", "Serial numbers become required"],
-      answer: 1,
+      options: ["The recall is more accurate","Serial numbers become required","Nothing changes","The recall covers far more product than needed, because consumption was not recorded when material entered the process"],
+      answer: 3,
       explain: [
-        "Granularity directly sets recall size.",
-        "Correct. Coarse records make every recall large. Record consumption at the point of use.",
         "Assumed links are less accurate, not more.",
-        "Serialization is a separate decision."
+        "Serialization is a separate decision.",
+        "Granularity directly sets recall size.",
+        "Correct. Coarse records make every recall large. Record consumption at the point of use."
       ]
     },
     {
       q: "A hopper is topped up with lot R-5530 while still holding R-5521. What should the system do?",
-      options: ["Ignore it, since the hopper is one container", "Record a new consumption event with a timestamp, and treat output as linked to both lots until the hopper is empty", "Delete R-5521 from the record", "Stop the line permanently"],
-      answer: 1,
+      options: ["Record a new consumption event with a timestamp, and treat output as linked to both lots until the hopper is empty","Delete R-5521 from the record","Stop the line permanently","Ignore it, since the hopper is one container"],
+      answer: 0,
       explain: [
-        "Ignoring it loses the link to R-5530 and understates recall scope.",
         "Correct. Mixed hoppers produce outputs with more than one parent. Record it and apply the blending rule.",
         "Deleting history is the opposite of traceability.",
-        "A top-up is normal, it only needs to be recorded."
+        "A top-up is normal, it only needs to be recorded.",
+        "Ignoring it loses the link to R-5530 and understates recall scope."
       ]
     },
     {
       q: "A scan is entered against the wrong lot. How should the record be fixed?",
-      options: ["Overwrite the original row", "Add a correction record that references the original with a reason, keeping both", "Delete the row and re-enter it silently", "Leave it, since fixing is not allowed"],
-      answer: 1,
+      options: ["Leave it, since fixing is not allowed","Overwrite the original row","Add a correction record that references the original with a reason, keeping both","Delete the row and re-enter it silently"],
+      answer: 2,
       explain: [
+        "Errors can be corrected, only through traceable records.",
         "Overwriting hides what the system believed and fails audit expectations.",
         "Correct. Append-only records preserve the history, and the correction is auditable.",
-        "Silent deletes break the audit trail.",
-        "Errors can be corrected, only through traceable records."
+        "Silent deletes break the audit trail."
       ]
     },
     {
@@ -306,13 +306,13 @@ Lot traceability began with paper batch records and lot codes stamped on contain
     },
     {
       q: "What does a GS1 application identifier such as (10) tell a scanner or MES?",
-      options: ["The barcode type", "Which field follows, here a batch or lot number", "The label printer model", "The checksum"],
-      answer: 1,
+      options: ["The label printer model","The checksum","The barcode type","Which field follows, here a batch or lot number"],
+      answer: 3,
       explain: [
-        "The AI tells you about the data field, not the symbology.",
-        "Correct. AIs label each field, for example (01) GTIN, (10) lot, (17) expiry and (21) serial.",
         "AIs say nothing about hardware.",
-        "Check digits are separate from AIs."
+        "Check digits are separate from AIs.",
+        "The AI tells you about the data field, not the symbology.",
+        "Correct. AIs label each field, for example (01) GTIN, (10) lot, (17) expiry and (21) serial."
       ]
     }
   ],

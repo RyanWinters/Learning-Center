@@ -216,13 +216,13 @@ MESA International published its list of eleven MES functions in the 1990s, and 
     },
     {
       q: "A customer wants MES to open a valve when a tank reaches 80 percent so the process stays safe. What is the best response?",
-      options: ["Build it in MES, since MES has the data", "Keep that logic in the PLC and have MES supply recipe and targets only", "Put it in ERP", "Put it in the historian"],
-      answer: 1,
+      options: ["Put it in ERP","Put it in the historian","Build it in MES, since MES has the data","Keep that logic in the PLC and have MES supply recipe and targets only"],
+      answer: 3,
       explain: [
-        "MES works in shift and order time and is not a deterministic controller. Safety and process logic do not belong there.",
-        "Correct. The PLC owns control and interlocks. MES passes intent and receives status.",
         "ERP is the planning layer and is even further from real time.",
-        "A historian stores data. It does not run logic."
+        "A historian stores data. It does not run logic.",
+        "MES works in shift and order time and is not a deterministic controller. Safety and process logic do not belong there.",
+        "Correct. The PLC owns control and interlocks. MES passes intent and receives status."
       ]
     },
     {
@@ -238,35 +238,35 @@ MESA International published its list of eleven MES functions in the 1990s, and 
     },
     {
       q: "Why do integrators use MESA-11 during scoping even though ISA-95 Part 3 is more formal?",
-      options: ["It is newer than ISA-95", "It reads like a checklist customers recognize, so it is good for deciding which functions are wanted", "It defines the database schema", "It is required for compliance"],
-      answer: 1,
+      options: ["It reads like a checklist customers recognize, so it is good for deciding which functions are wanted","It defines the database schema","It is required for compliance","It is newer than ISA-95"],
+      answer: 0,
       explain: [
-        "MESA-11 is the older view.",
         "Correct. It is easy to discuss in a meeting. Part 3 is better for deciding which system owns each activity.",
         "Neither MESA-11 nor Part 3 defines a database schema.",
-        "It is a scoping aid, not a compliance requirement."
+        "It is a scoping aid, not a compliance requirement.",
+        "MESA-11 is the older view."
       ]
     },
     {
       q: "A plant wants quick wins on a first MES project with little master data prepared. Where is the most sensible place to start?",
-      options: ["Detailed finite scheduling across all lines", "Data collection and performance analysis (OEE and downtime) on one line", "Full genealogy for every product", "Replacing ERP planning"],
-      answer: 1,
+      options: ["Replacing ERP planning","Detailed finite scheduling across all lines","Data collection and performance analysis (OEE and downtime) on one line","Full genealogy for every product"],
+      answer: 2,
       explain: [
+        "MES supplements ERP and does not replace it.",
         "Scheduling needs clean routings, capacities and master data that are not ready yet.",
         "Correct. OEE and downtime need the least master data and show value quickly.",
-        "Genealogy needs reliable lot identification and scanning, which takes more setup.",
-        "MES supplements ERP and does not replace it."
+        "Genealogy needs reliable lot identification and scanning, which takes more setup."
       ]
     },
     {
       q: "What is the most common reason MES projects fail, according to the scoping advice in this lesson?",
-      options: ["The software is too slow", "Nobody agreed on exactly what was in scope or who owns master data", "PLCs cannot send data", "Ignition cannot store the records"],
-      answer: 1,
+      options: ["Nobody agreed on exactly what was in scope or who owns master data","PLCs cannot send data","Ignition cannot store the records","The software is too slow"],
+      answer: 0,
       explain: [
-        "Performance rarely drives failure at this scale.",
         "Correct. Unclear scope and unowned master data cause most of the pain.",
         "PLC data quality can be a problem, but it is a symptom of design choices, not a hard limit.",
-        "Ignition with a SQL database stores this kind of data routinely."
+        "Ignition with a SQL database stores this kind of data routinely.",
+        "Performance rarely drives failure at this scale."
       ]
     }
   ],

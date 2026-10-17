@@ -204,13 +204,13 @@ OEE is attributed to Seiichi Nakajima, who developed it as part of Total Product
   quiz: [
     {
       q: "A line has planned production time of 400 min, run time of 320 min, total count 9,600 at an ideal rate of 35/min, and 96 rejects. What is Performance?",
-      options: ["80.0 percent", "85.7 percent", "99.0 percent", "92.0 percent"],
-      answer: 1,
+      options: ["92.0 percent","80.0 percent","85.7 percent","99.0 percent"],
+      answer: 2,
       explain: [
+        "This does not come from the given numbers.",
         "80 percent is Availability (320/400), not Performance.",
         "Correct. Ideal count = 320 x 35 = 11,200. Performance = 9,600 / 11,200 = 85.7 percent.",
-        "99 percent is Quality (9,504 / 9,600).",
-        "This does not come from the given numbers."
+        "99 percent is Quality (9,504 / 9,600)."
       ]
     },
     {
@@ -237,35 +237,35 @@ OEE is attributed to Seiichi Nakajima, who developed it as part of Total Product
     },
     {
       q: "A product's Performance reads 112 percent every shift. What is the best fix?",
-      options: ["Cap Performance at 100 percent in the report", "Correct the product's ideal rate in master data", "Increase planned production time", "Ignore the product"],
-      answer: 1,
+      options: ["Increase planned production time","Ignore the product","Cap Performance at 100 percent in the report","Correct the product's ideal rate in master data"],
+      answer: 3,
       explain: [
-        "Capping hides the data problem, and the other factors stay misleading.",
-        "Correct. Performance above 100 percent means the ideal rate is too slow. Fix it at the source and recompute.",
         "Changing planned time does not fix the speed reference.",
-        "Ignoring it leaves bad data in the system."
+        "Ignoring it leaves bad data in the system.",
+        "Capping hides the data problem, and the other factors stay misleading.",
+        "Correct. Performance above 100 percent means the ideal rate is too slow. Fix it at the source and recompute."
       ]
     },
     {
       q: "A plant runs one 8-hour shift and has an OEE of 80 percent. What does TEEP show that OEE does not?",
-      options: ["How well the machine runs when scheduled", "How much of the calendar time the asset is used at all", "The scrap rate", "The mean time between failures"],
-      answer: 1,
+      options: ["How much of the calendar time the asset is used at all","The scrap rate","The mean time between failures","How well the machine runs when scheduled"],
+      answer: 0,
       explain: [
-        "That is what OEE already shows.",
         "Correct. TEEP multiplies OEE by loading (planned time over calendar time), exposing unused capacity.",
         "Scrap is in the Quality factor of both.",
-        "MTBF is a separate reliability metric."
+        "MTBF is a separate reliability metric.",
+        "That is what OEE already shows."
       ]
     },
     {
       q: "Why is it better to store state intervals and counts than only the OEE percentage?",
-      options: ["Percentages take more storage", "You can recompute any window or corrected definition later, and sum correctly across lines", "Operators prefer raw data", "ERP requires it"],
-      answer: 1,
+      options: ["You can recompute any window or corrected definition later, and sum correctly across lines","Operators prefer raw data","ERP requires it","Percentages take more storage"],
+      answer: 0,
       explain: [
-        "Storage is not the issue.",
         "Correct. Percentages cannot be re-aggregated or recalculated after a definition changes.",
         "Operator preference is not the reason.",
-        "ERP does not require it."
+        "ERP does not require it.",
+        "Storage is not the issue."
       ]
     }
   ],

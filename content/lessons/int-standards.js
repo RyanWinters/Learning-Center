@@ -175,12 +175,12 @@ Industrial standards do the same thing for factories. One agreement says how to 
   quiz: [
     {
       q: "A customer wants phases, units and recipes so one reactor can make five products. Which standard supplies that vocabulary?",
-      options: ["ISA-95", "ISA-88", "ISA-101", "NFPA 79"],
-      answer: 1,
+      options: ["ISA-95", "ISA-101", "ISA-88", "NFPA 79"],
+      answer: 2,
       explain: [
         "ISA-95 covers enterprise to control integration and MES objects, not recipe and phase models.",
-        "Correct. ISA-88 defines the physical and procedural models, with phases and recipes separate from equipment.",
         "ISA-101 covers HMI design.",
+        "Correct. ISA-88 defines the physical and procedural models, with phases and recipes separate from equipment.",
         "NFPA 79 is an electrical standard for machinery."
       ]
     },
@@ -208,22 +208,22 @@ Industrial standards do the same thing for factories. One agreement says how to 
     },
     {
       q: "You are asked to design a high-pressure trip that must reach SIL 2. What is the right approach?",
-      options: ["Write it as an interlock in the standard PLC and label it SIL 2", "Treat it as a safety instrumented function under IEC 61511 with certified components and a verification calculation, with a functional safety specialist involved", "Use OPC UA to make it secure", "Follow NFPA 79 only"],
-      answer: 1,
+      options: ["Write it as an interlock in the standard PLC and label it SIL 2", "Follow NFPA 79 only", "Use OPC UA to make it secure", "Treat it as a safety instrumented function under IEC 61511 with certified components and a verification calculation, with a functional safety specialist involved"],
+      answer: 3,
       explain: [
         "A label does not give you a SIL. Standard PLC logic is not evidence of the required integrity.",
-        "Correct. SIL is an outcome of design, verification and proof-testing, not a tag.",
+        "NFPA 79 covers electrical safety of machinery, not process SIL.",
         "OPC UA is a data protocol and does not provide functional safety.",
-        "NFPA 79 covers electrical safety of machinery, not process SIL."
+        "Correct. SIL is an outcome of design, verification and proof-testing, not a tag."
       ]
     },
     {
       q: "Why does a UL 508A panel's SCCR matter on the RFQ?",
-      options: ["It controls how fast the PLC scans", "The panel must be rated for at least the available fault current where it is installed", "It sets the Ethernet speed", "It applies only to HMI screens"],
-      answer: 1,
+      options: ["The panel must be rated for at least the available fault current where it is installed", "It controls how fast the PLC scans", "It sets the Ethernet speed", "It applies only to HMI screens"],
+      answer: 0,
       explain: [
-        "SCCR is an electrical rating, unrelated to scan time.",
         "Correct. Too low an SCCR means a fault could damage the panel, so inspectors can reject it.",
+        "SCCR is an electrical rating, unrelated to scan time.",
         "Ethernet speed has nothing to do with SCCR.",
         "SCCR applies to the electrical assembly."
       ]
