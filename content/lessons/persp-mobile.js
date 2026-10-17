@@ -24,7 +24,7 @@ A Perspective project is a set of views that live on the Gateway. A **session** 
 |---|---|---|---|
 | Browser | Any modern browser | Zero install, easy to share a URL | Camera scan, NFC, accelerometer, kiosk lock |
 | {{term:perspective-mobile-app|Perspective app}} | iOS and Android | Barcode, NFC, accelerometer, location, push-style workflows | Anything offline |
-| {{term:perspective-workstation|Perspective Workstation}} | Windows, macOS, Linux PCs | {{term:kiosk-mode|Kiosk mode}}, one window per monitor, no browser chrome | Device sensors |
+| {{term:ign-launcher|Perspective Workstation}} | Windows, macOS, Linux PCs | {{term:kiosk-mode|Kiosk mode}}, one window per monitor, no browser chrome | Device sensors |
 
 > [!note] One project, three clients
 > You do not build a separate mobile project. You build views that adapt (see {{lesson:persp-containers}}) and add device-aware behavior in event scripts. Check the client first, then branch.
@@ -172,7 +172,7 @@ Perspective arrived with Ignition 8.0 as the web-native successor to the Java-ba
     "Expecting the phone to queue work while offline. It cannot."
   ],
 
-  keyTerms: ["perspective-mobile-app", "perspective-workstation", "kiosk-mode", "nfc-ndef", "mesh-vpn", "isa-101", "perspective-session"],
+  keyTerms: ["perspective-mobile-app", "ign-launcher", "kiosk-mode", "nfc-ndef", "mesh-vpn", "isa-101", "perspective-session"],
 
   quiz: [
     {
@@ -245,11 +245,11 @@ Perspective arrived with Ignition 8.0 as the web-native successor to the Java-ba
 
   resources: [
     { title: "Ignition Perspective Mobile App (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/perspective/perspective-sessions/ignition-perspective-app", type: "docs", source: "Inductive Automation" },
-    { title: "Perspective Workstation (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/launchers-and-workstation/perspective-workstation", type: "docs", source: "Inductive Automation" },
+    { title: "Perspective Workstation (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/launchers-and-workstation/ign-launcher", type: "docs", source: "Inductive Automation" },
     { title: "Component Events and Actions (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/perspective/working-with-perspective-components/component-events-and-actions", type: "docs", source: "Inductive Automation" },
     { title: "Perspective Event Scripts (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/perspective/scripting-in-perspective/perspective-session-events-scripts", type: "docs", source: "Inductive Automation" },
     { title: "The Ignition Perspective App", url: "https://inductiveuniversity.com/videos/the-ignition-perspective-app/8.3", type: "video", source: "Inductive University" },
-    { title: "Perspective Workstation", url: "https://inductiveuniversity.com/videos/perspective-workstation/8.3", type: "video", source: "Inductive University" },
+    { title: "Perspective Workstation", url: "https://inductiveuniversity.com/videos/ign-launcher/8.3", type: "video", source: "Inductive University" },
     { title: "Barcode Scanned", url: "https://inductiveuniversity.com/videos/barcode-scanned/8.3", type: "video", source: "Inductive University" },
     { title: "Accelerometer Data Received", url: "https://inductiveuniversity.com/videos/accelerometer-data-received/8.3", type: "video", source: "Inductive University" }
   ]

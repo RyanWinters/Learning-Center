@@ -19,7 +19,7 @@ LC.lesson({
   body: `
 ## Why a library, and what goes in it
 
-Your tenth site should cost a fraction of your first. That only happens when the screens, styles and faceplates are written once and inherited. In Ignition this is a **library project**: a normal project that holds views, style classes, scripts and themes, and is named as the **parent** of other projects. A {{term:inherited-project|child project}} sees everything in its parent, can use it directly and can override pieces locally.
+Your tenth site should cost a fraction of your first. That only happens when the screens, styles and faceplates are written once and inherited. In Ignition this is a **library project**: a normal project that holds views, style classes, scripts and themes, and is named as the **parent** of other projects. A {{term:project-inheritance|child project}} sees everything in its parent, can use it directly and can override pieces locally.
 
 A good library holds four things:
 
@@ -95,7 +95,7 @@ Operators expect a faceplate to appear over the current screen and to be ignored
 
 ## Consistent look: style classes
 
-All appearance flows from named {{term:perspective-style-class|style classes}}, never from per-component colors. A faceplate component says \`classes: "fp/value"\`, and the library defines what that means.
+All appearance flows from named {{term:style-class|style classes}}, never from per-component colors. A faceplate component says \`classes: "fp/value"\`, and the library defines what that means.
 
 | Style class | Meaning | Notes |
 |---|---|---|
@@ -239,7 +239,7 @@ Reusable symbol libraries predate HMI software: P&ID standards define symbols so
     "Embedding every faceplate on the page instead of opening them as popups."
   ],
 
-  keyTerms: ["faceplate", "inherited-project", "udt", "perspective-style-class", "view-parameter", "semantic-versioning", "ignition-exchange", "indirect-binding"],
+  keyTerms: ["faceplate", "project-inheritance", "udt", "style-class", "view-params", "semantic-versioning", "ignition-exchange", "indirect-tag-binding"],
 
   quiz: [
     {

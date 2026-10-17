@@ -128,13 +128,13 @@ A **transaction group** is a standing order: "Every time the delivery truck arri
 `,
 
   history: `
-SQL Bridge (originally called "SQL Bridge" in the first Ignition releases) was one of the earliest Ignition modules, built so plant data could move to a database without a developer. Named queries arrived in Ignition 7.9 to give a safer, central alternative to SQL strings in client scripts. Store and forward grew out of the same need: tag history and transaction data must survive a database restart.
+SQL Bridge (transaction groups) is one of Ignition's earliest modules, built so plant data could move to a database without a developer. Named queries arrived in Ignition 7.9 to give a safer, central alternative to SQL strings in client scripts. Store and forward grew out of the same need: tag history and transaction data must survive a database restart.
 `,
 
   examples: [
     {
       title: "A production counter handshake",
-      body: `PLC bit \`Line1.Done\` goes true with \`Line1.GoodCount = 412\`. A standard transaction group triggers on \`Line1.Done\`, inserts a row into \`production_log\` (line, good_count, ts) and writes 1 to the handshake item \`Line1.Stored\`. The PLC sees \`Stored\`, clears \`Done\` and resets the count. If the database is down, S&F holds the insert, the handshake still fires on a successful hand-off to the engine, and the PLC carries on. If the insert is quarantined, the PLC already moved on, so the quarantine alarm is how you find out.`
+      body: `PLC bit \`Line1.Done\` goes true with \`Line1.GoodCount = 412\`. A standard transaction group triggers on \`Line1.Done\`, inserts a row into \`production_log\` (line, good_count, ts) and writes 1 to the handshake item \`Line1.Stored\`. The PLC sees \`Stored\`, clears \`Done\` and resets the count. If the insert fails, the handshake is not written and the PLC keeps its data until the database recovers (unless the group uses store and forward, in which case confirm how your design treats the handshake). Test this outage case before go-live.`
     },
     {
       title: "Sizing a four-hour outage",
@@ -164,13 +164,13 @@ SQL Bridge (originally called "SQL Bridge" in the first Ignition releases) was o
     sf: `<svg viewBox="0 0 640 160" role="img" aria-label="Data flows from the Gateway into a memory buffer, then the database sink; failures go to the disk cache and repeated failures to quarantine">
   <defs><marker id="ign-databases-sf" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="dg-fill-line" d="M0,0 L8,4 L0,8 z"/></marker></defs>
   <rect class="dg-box" x="20" y="40" width="110" height="50" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="75" y="70">Historian, groups</text>
+  <text class="dg-text-sm dg-mid" x="75" y="70">Data writers</text>
   <line class="dg-line" x1="130" y1="65" x2="165" y2="65" marker-end="url(#ign-databases-sf)"/>
   <rect class="dg-box-accent" x="170" y="40" width="130" height="50" rx="6"/>
   <text class="dg-text-sm dg-mid" x="235" y="70">Memory buffer</text>
   <line class="dg-line" x1="300" y1="65" x2="335" y2="65" marker-end="url(#ign-databases-sf)"/>
   <rect class="dg-box-accent" x="340" y="40" width="120" height="50" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="400" y="70">Database</text>
+  <text class="dg-text-sm dg-mid" x="400" y="70">DB sink</text>
   <line class="dg-line" x1="460" y1="65" x2="495" y2="65" marker-end="url(#ign-databases-sf)"/>
   <rect class="dg-box" x="500" y="40" width="120" height="50" rx="6"/>
   <text class="dg-text-sm dg-mid" x="560" y="70">SQL server</text>

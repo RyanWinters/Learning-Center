@@ -188,7 +188,7 @@ Vision scaled by pushing work to client PCs, which limited how many Gateway reso
     "Tuning from intuition instead of a thread dump."
   ],
 
-  keyTerms: ["perspective-session", "persp-tag-binding", "named-query-cache", "run-script-expression", "thread-dump", "load-testing", "polling", "historian"],
+  keyTerms: ["perspective-session", "persp-tag-binding", "named-query-cache", "ign-runscript", "thread-dump", "load-testing", "polling", "historian"],
 
   quiz: [
     {

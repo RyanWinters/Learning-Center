@@ -69,14 +69,14 @@ switch({[.]State}, 0, "Idle", 1, "Starting", 2, "Running", 3, "Stopping", "Unkno
 
 **tag(path, [property])** reads a tag whose path is built at runtime. Plain \`{[default]...}\` references are fixed when you write them. \`tag("[default]" + {view.params.line} + "/Speed")\` is not. It is the expression-language route to indirect tags.
 
-Others worth knowing: \`isNull\`, \`coalesce\`, \`round\`, \`abs\`, \`min\`/\`max\`, \`concat\`, \`toInt\`, \`toFloat\`, \`toStr\`, \`numberFormat\`, \`getQuality\`/\`qualityOf\`, and the dataset helpers.
+Others worth knowing: \`isNull\`, \`coalesce\`, \`round\`, \`abs\`, \`min\`/\`max\`, \`concat\`, \`toInt\`, \`toFloat\`, \`toStr\`, \`numberFormat\`, \`isGood\`, \`isBad\`, \`qualityOf\`, and the dataset helpers.
 
 > [!example] Combined status text with a bad-quality guard
 > \`\`\`text
-> if(qualityOf({[.]Sts_Running}) != 192, "NO COMM",
+> if(!isGood({[.]Sts_Running}), "NO COMM",
 >    if({[.]Sts_Fault}, "FAULT", if({[.]Sts_Running}, "RUNNING", "STOPPED")))
 > \`\`\`
-> Quality code 192 is Good. Checking it first stops the screen from claiming a motor is "STOPPED" when the PLC link is down. Confirm the exact quality function name in your version's expression reference.
+> \`isGood()\` checks the tag's quality, not its value. Checking it first stops the screen from claiming a motor is "STOPPED" when the PLC link is down. Avoid comparing raw quality numbers: Ignition 7.x used 192 for Good, but 8.x uses a different set of quality codes, so old forum snippets that test for 192 no longer work.
 
 ## When does an expression re-run?
 
