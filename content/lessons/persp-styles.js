@@ -82,7 +82,7 @@ and styles reference \`var(--hmi-bg)\`. Swap the file for a night theme and ever
 
 For things the class editor cannot do, a project can include a stylesheet resource where you write raw CSS. The {{term:advanced-stylesheet|advanced stylesheet}} is the place for variables, complex selectors and rules for built-in component internals. Two details trip people up:
 
-- Perspective adds a \`psc-\` prefix to project style classes in the page. When you target a class in raw CSS, write \`.psc-hmi\\\\/pump\` style names with the prefix. When you assign a class in the Designer, type the name without it.
+- Perspective adds a \`psc-\` prefix to project style classes in the page. When you target a class in raw CSS, include the prefix (a class named \`value\` is \`.psc-value\`). When you assign a class in the Designer, type the name without it.
 - Classes you define only in the stylesheet do not appear in the Designer's dropdowns. You have to type their names in.
 
 ## Worked example: a three-class alarm palette

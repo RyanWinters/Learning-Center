@@ -42,9 +42,8 @@ Before writing a script, check the action list:
 - **Popup**: open, close or toggle a popup by id, with params.
 - **Dock**: open, close or toggle a dock.
 - **Set Tag Value / write**: write a tag.
-- **Logout** and **Login**: for security flows.
+- **Logout**: end the session or return to the login flow.
 - **Script**: run Jython with \`self\`, \`event\` and \`session\` in scope.
-- **Send message / Run Named Query** style actions where available.
 
 Built-in actions are checked by the Designer, show up in search, and are readable at a glance by the next person. A button whose whole job is "go to the pump page" should not contain a script.
 

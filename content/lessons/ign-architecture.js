@@ -40,7 +40,7 @@ The Designer is the development environment. You do not install it per project. 
 
 Ignition has two client technologies, and they behave very differently.
 
-| | {{term:ign-vision|Vision}} | {{term:ign-perspective|Perspective}} |
+| | {{term:vision-module|Vision}} | {{term:perspective|Perspective}} |
 |---|---|---|
 | Runtime | Java client launched from a Vision Client Launcher | Web page in any modern browser, Perspective Workstation, or the mobile app |
 | Where logic runs | Mostly on the client machine | Mostly on the Gateway; the browser renders |
@@ -172,7 +172,7 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
     "Installing third-party modules on a production Gateway without testing them on a copy."
   ],
 
-  keyTerms: ["ign-gateway", "ign-designer", "ign-launcher", "ign-vision", "ign-perspective", "ign-module", "ign-scope", "ign-sql-bridge"],
+  keyTerms: ["ign-gateway", "ign-designer", "ign-launcher", "vision-module", "perspective", "ign-module", "ign-scope", "ign-sql-bridge"],
 
   quiz: [
     {

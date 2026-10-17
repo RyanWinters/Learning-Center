@@ -131,7 +131,7 @@ The pins are the coordinate container. The magnetic shelf is the flex container.
 `,
 
   history: `
-Perspective began with coordinate and flex containers in 8.0, reflecting a split between engineers used to Vision's pixel-placed windows and web developers used to CSS. The column, breakpoint, tab and split containers came as projects demanded better grid and device support. The Flex container's design follows the CSS Flexible Box Layout model standardized by the W3C, which is why web flexbox references describe its behavior accurately.
+Perspective launched with Ignition 8.0 as a browser-native alternative to Vision, whose windows were placed in pixels. Its flex container follows the CSS Flexible Box Layout model from the W3C, which is why general web flexbox references describe its behavior accurately. The column, breakpoint and split containers give integrators grid, device-switching and resizable-pane patterns on top of that base.
 `,
 
   examples: [

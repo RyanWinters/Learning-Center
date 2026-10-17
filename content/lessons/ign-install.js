@@ -202,7 +202,7 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
     "Giving an API key full access when read access was all that was needed."
   ],
 
-  keyTerms: ["commissioning", "ign-config-files", "ign-deployment-mode", "ign-rest-api", "ign-api-key", "ign-docker", "ign-gateway-backup", "firewall", "port-number"],
+  keyTerms: ["commissioning", "ign-config-files", "deployment-mode", "rest-api", "ign-api-key", "ign-docker", "gwbk", "firewall", "port-number"],
 
   quiz: [
     {

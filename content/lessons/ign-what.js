@@ -144,7 +144,7 @@ Inductive Automation was founded in 2003 by Steve Hechtman. Its early products w
     "Assuming Edge has the same module list and database connectivity as Standard."
   ],
 
-  keyTerms: ["ignition", "ign-gateway", "ign-unlimited-licensing", "ign-edge-edition", "ign-maker-edition", "ign-trial-timer", "scada", "isa-95"],
+  keyTerms: ["ignition", "ign-gateway", "ign-unlimited-licensing", "ignition-edge", "ign-maker-edition", "ign-trial-timer", "scada", "isa-95"],
 
   quiz: [
     {
