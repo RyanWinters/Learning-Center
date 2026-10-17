@@ -505,7 +505,11 @@
         for (var i = 0; i < t.steps.length && r.passed; i++) {
           var s = t.steps[i];
           if (s.set) { Object.keys(s.set).forEach(function (k) { eng.setInput(k, s.set[k]); }); last = "setting " + Object.keys(s.set).map(function (k) { return k + " = " + s.set[k]; }).join(", "); }
-          if (s.press) { eng.setInput(s.press.tag, true); eng.advanceTime(s.press.ms); eng.setInput(s.press.tag, false); last = "pressing " + s.press.tag + " for " + s.press.ms + " ms"; }
+          if (s.press) {
+            var pw = (sim.io || []).filter(function (x) { return x.tag === s.press.tag; })[0], nc = !!(pw && pw.nc);
+            eng.setInput(s.press.tag, !nc); eng.advanceTime(s.press.ms); eng.setInput(s.press.tag, nc);
+            last = "pressing " + s.press.tag + " for " + s.press.ms + " ms";
+          }
           if (s.scan) { for (var k = 0; k < s.scan; k++) eng.scan(); last = s.scan + " scan" + (s.scan === 1 ? "" : "s"); }
           if (s.wait) { eng.advanceTime(s.wait); last = "waiting " + s.wait + " ms"; }
           if (s.expect) {

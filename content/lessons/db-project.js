@@ -256,7 +256,7 @@ The stop opens with the "Unassigned" reason immediately, so no time is lost if t
 
 ### Counts: a transaction group
 
-A {{term:transaction-group|transaction group}} (SQL Bridge module) moves PLC tag values into table columns on a trigger. A Standard group inserts a row into \`production_count\` when the PLC raises a "interval complete" bit, and the group writes back a handshake to tell the PLC it can clear the interval counters. Items map to columns: \`run_id\` from an expression or a tag set when the run starts, \`good_count\` and \`reject_count\` from the PLC's interval registers, \`count_time\` from the current time. If the database connection is down, the connection's store-and-forward feature caches the writes and replays them, which is why the PLC-side handshake matters: no interval is lost or doubled.
+A {{term:ign-sql-bridge|transaction group}} (SQL Bridge module) moves PLC tag values into table columns on a trigger. A Standard group inserts a row into \`production_count\` when the PLC raises a "interval complete" bit, and the group writes back a handshake to tell the PLC it can clear the interval counters. Items map to columns: \`run_id\` from an expression or a tag set when the run starts, \`good_count\` and \`reject_count\` from the PLC's interval registers, \`count_time\` from the current time. If the database connection is down, the connection's store-and-forward feature caches the writes and replays them, which is why the PLC-side handshake matters: no interval is lost or doubled.
 
 > [!tip] Named query or transaction group?
 > Use a transaction group for repeating, trigger-based logging of a known set of tags. Use named queries for event-driven or user-driven writes from scripts and screens, where you need to choose the SQL and parameters yourself.
@@ -346,7 +346,7 @@ OEE (Overall Equipment Effectiveness) came out of Seiichi Nakajima's Total Produ
     "Building SQL strings in scripts with string concatenation instead of named query parameters."
   ],
 
-  keyTerms: ["named-query", "transaction-group", "surrogate-key", "lookup-table", "oee", "composite-index", "execution-plan", "foreign-key"],
+  keyTerms: ["named-query", "ign-sql-bridge", "surrogate-key", "lookup-table", "oee", "composite-index", "execution-plan", "foreign-key"],
 
   quiz: [
     {

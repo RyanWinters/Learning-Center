@@ -220,7 +220,7 @@ Process historians date from the 1980s, when vendors such as OSIsoft (PI) built 
     "Inserting or updating historian tables with SQL instead of using the store functions."
   ],
 
-  keyTerms: ["historian-tables", "table-partitioning", "narrow-table", "partition-pruning", "historian", "deadband", "database-index"],
+  keyTerms: ["sqlth-tables", "table-partitioning", "narrow-table", "data-pruning", "historian", "deadband", "database-index"],
 
   quiz: [
     {

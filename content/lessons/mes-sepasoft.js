@@ -16,7 +16,6 @@ LC.lesson({
     "Outline the phases of a typical Sepasoft implementation"
   ],
 
-  // VERIFY: confirm whether Sepasoft ships a separate Interlocking module and its exact scope (callout in body)
   body: `
 ## What Sepasoft is
 
@@ -42,8 +41,8 @@ Sepasoft is a separate company from Inductive Automation, with its own releases,
 
 Sepasoft's catalog also includes an Instrument Interface, a Production Simulator and an interface for SAP ERP. Settings & Changeover was previously named Recipe & Changeover, so older documents and forum posts use the old name.
 
-> [!note] Interlocking
-> This curriculum lists an Interlocking item for the suite, but I could not confirm a module of that name in Sepasoft's published module list. In MES work, interlocking normally means preventing a step or material use unless conditions are met (for example blocking a lot that fails inspection). Check Sepasoft's current module list before quoting it to a customer.
+> [!note] Interlocking is a feature, not a module
+> You will hear "MES interlocking" in sales conversations, but Sepasoft does not sell a separate Interlocking module. Interlocks show up inside other modules. For example, Batch Procedure's Permissive Start waits for the PLC to clear its permissives before a phase runs. In MES terms, interlocking means refusing a step or a material use unless conditions are met, such as blocking a lot that failed inspection. It never replaces safety-rated interlocks in the PLC or SIS.
 
 ### What the key modules actually do
 
