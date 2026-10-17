@@ -5,7 +5,7 @@ LC.lesson({
   minutes: 20,
   level: 1,
   prereqs: ["found-devices"],
-  tags: ["signals", "4-20ma", "hart", "scaling", "analog", "discrete", "namur"],
+  tags: ["signals", "4-20-ma", "hart", "scaling", "analog", "discrete", "namur"],
   summary: "How a physical quantity becomes a number in a PLC: on/off signals, the 4-20 mA loop, the scaling math, and what the odd values mean when something breaks.",
   objectives: [
     "Distinguish discrete and analog signals and name common voltage levels",
@@ -219,7 +219,7 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
     "Not knowing which direction a transmitter burns out in a failure."
   ],
 
-  keyTerms: ["discrete-signal", "analog-signal", "sinking-sourcing", "4-20ma", "live-zero", "hart", "namur-ne43", "signal-scaling"],
+  keyTerms: ["discrete-signal", "analog-signal", "sinking-sourcing", "4-20-ma", "live-zero", "hart", "namur-ne43", "scaling"],
 
   quiz: [
     {
