@@ -50,7 +50,7 @@
     }
     var b = boxRows(n), opW = 0, hasLive = false;
     b.rows.forEach(function (r) { if (r.t !== undefined) opW = Math.max(opW, tw(clip(r.t, 22))); if (r.live || r.v) hasLive = true; });
-    var W = Math.max(156, 10 + 56 + opW + (hasLive ? 70 : 8));
+    var W = Math.max(156, 10 + 68 + opW + (hasLive ? 70 : 8));
     if (b.flags) W = Math.max(W, 156);
     var H = TITLE_H + b.rows.length * ROW_H + (b.flags ? FLAG_H : 0) + 6;
     return { w: Math.ceil(W), up: TITLE_H / 2 + 2, down: H - TITLE_H / 2, box: b, H: H };
@@ -140,7 +140,7 @@
           out.add('<text class="lad-val lv" x="' + (bx + bw2 - 8) + '" y="' + ry + '" text-anchor="end" data-v="' + esc(r.v) + '">' + esc(r.st) + "</text>");
         } else {
           var lit = isNum(r.t);
-          out.add('<text class="lad-rt' + (lit ? " lit" : "") + '" x="' + (bx + 64) + '" y="' + ry + '">' + esc(clip(r.t, 22)) + (r.t.length > 22 ? "<title>" + esc(r.t) + "</title>" : "") + "</text>");
+          out.add('<text class="lad-rt' + (lit ? " lit" : "") + '" x="' + (bx + 74) + '" y="' + ry + '">' + esc(clip(r.t, 22)) + (r.t.length > 22 ? "<title>" + esc(r.t) + "</title>" : "") + "</text>");
           if (r.live && !lit && !/[\[\]]/.test(r.live)) out.add('<text class="lad-val lv" x="' + (bx + bw2 - 8) + '" y="' + ry + '" text-anchor="end" data-v="' + esc(r.live) + '"></text>');
         }
       });

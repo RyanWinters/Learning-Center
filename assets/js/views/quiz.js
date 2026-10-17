@@ -3,8 +3,22 @@
   const LC = window.LC = window.LC || {};
   const U = LC.ui, esc = U.esc, icon = U.icon, KEYS = 'ABCDE';
 
-  /* Shared question UI. onAnswer(chosenIndex, isCorrect) fires once. */
-  function question(el, q, onAnswer) {
+  /* Options are shown in a fresh random order each time so position can't be memorized.
+     "None of…" / "All of…" options stay last. Returns a copy of q in display order plus the
+     map from display index back to the original index. */
+  function shuffled(q) {
+    const pinned = o => /^(none|all|both) of /i.test(o);
+    const order = q.options.map((_, i) => i).filter(i => !pinned(q.options[i]));
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    q.options.forEach((o, i) => { if (pinned(o)) order.push(i); });
+    const ex = q.explain || [];
+    return { order: order, q: Object.assign({}, q, { options: order.map(i => q.options[i]), explain: order.map(i => ex[i]), answer: order.indexOf(q.answer) }) };
+  }
+
+  /* Shared question UI. onAnswer(chosenIndex, isCorrect) fires once; chosenIndex is in the
+     lesson's original option order. */
+  function question(el, q0, onAnswer) {
+    const sh = shuffled(q0), q = sh.q;
     let answered = false;
     el.innerHTML = '<div class="qcard"><p class="q-text">' + LC.md.inline(q.q) + '</p><div class="opts" role="radiogroup" aria-label="Answer choices">' +
       q.options.map((o, i) => '<button type="button" class="opt" role="radio" aria-checked="false" data-i="' + i + '"><span class="opt-key">' + KEYS[i] + '</span><span class="opt-text">' + LC.md.inline(o) + '</span><span class="opt-mark"></span></button>').join('') +
@@ -28,7 +42,7 @@
         (ok ? '' : '<p class="explain-h explain-h2">' + icon('check', 16) + 'The answer is ' + KEYS[q.answer] + '</p><p>' + LC.md.inline(ex[q.answer] || q.options[q.answer]) + '</p>');
       ox.hidden = false;
       LC.glossaryLink(ox);
-      onAnswer(i, ok);
+      onAnswer(sh.order[i], ok);
     }
     el.addEventListener('click', e => { const b = e.target.closest('.opt'); if (b) choose(+b.dataset.i); });
     function key(e) {
