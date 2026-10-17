@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## What commissioning is
 
-{{term:commissioning|Commissioning}} is the structured proof that what was built matches what was specified, signal by signal and function by function, before the plant relies on it. It is where hidden mistakes are cheapest to find: a swapped pair of wires costs ten minutes in checkout and a ruined batch in production. As the integrator, you are rarely the only party. Electricians, instrument techs, the vendor, operations and a project manager all touch it, so the discipline is mostly about records and sequence.
+{{term:commissioning|Commissioning}} is the structured proof that what was built matches what was specified, signal by signal, before the plant relies on it. A swapped pair of wires costs ten minutes in checkout and a ruined batch in production. Electricians, instrument techs, the vendor and operations all touch it, so the discipline is mostly records and sequence.
 
 The usual phases run in this order:
 
@@ -37,13 +37,13 @@ A {{term:fat|factory acceptance test}} happens at your shop before shipment. A {
 
 ## Pre-commissioning
 
-Do not start I/O checkout until the construction check is signed off. You will hit time pressure to start early. Resist it for these items:
+Do not start I/O checkout until the construction check is signed off, whatever the schedule pressure:
 
 - **Power and grounding verified.** Panel voltage, 24 VDC supply output, and shield terminations are measured and recorded.
 - **Network verified.** Switches are configured, IP addresses match the plan, and you can ping every device. See {{lesson:net-troubleshoot}}.
 - **PLC program downloaded and backed up.** The version loaded is the version you tested at FAT. Record the controller's project name, revision and checksum or date.
 - **Documents in hand.** Current {{term:io-list|I/O list}}, P&IDs, wiring diagrams and loop sheets. If the field has been redlined, you want the redlines.
-- **Safety first.** Lock-out/tag-out and permits are in place. Outputs that move equipment are disabled or the equipment is mechanically isolated until it is your turn to test them.
+- **Safety first.** Lock-out/tag-out and permits are in place, and moving equipment is isolated until you test it.
 
 ## The I/O list drives everything
 
@@ -80,7 +80,7 @@ Test at least **three points**: 0 %, 50 % and 100 % of range. A 4-20 mA loop cal
 
 ### Analog outputs
 
-Command 0, 50 and 100 % from the controller and measure the current at the field device with a meter. Then verify the device does what it should: a control valve at 12 mA should be at mid-stroke. Direction matters. Check whether the valve is air-to-open or air-to-close, because a reversed assumption inverts the process.
+Command 0, 50 and 100 % and measure the current at the field device. A control valve at 12 mA should be at mid-stroke. Check whether it is air-to-open or air-to-close, because a reversed assumption inverts the process.
 
 ## Loop checks and the loop sheet
 
@@ -109,10 +109,9 @@ Simulated testing uses forced values, a test routine, an emulator or a PLC simul
 | What it misses | Wiring errors, dead sensors, valve speed, process lag | Corner cases you cannot safely create (overpressure, E-stop during a transfer) |
 | Best for | FAT, alarm tests, rare failure paths | Final loop checks, startup |
 
-Rules for forces and simulation on a live controller:
+Rules for forces on a live controller:
 
-- Keep a **force log**. Every force gets an entry with who, when and why. At the end of the day, the log and the controller's force list must match.
-- Never leave a force in place overnight without a handover note.
+- Keep a **force log** with who, when and why. At the end of the day, the log and the controller's force list must match.
 - A bypass that defeats an interlock needs a named authorizer.
 
 > [!warning] Forces survive downloads
@@ -126,7 +125,7 @@ The {{term:punch-list|punch list}} is the running list of defects and incomplete
 - **B**: must be fixed before handover, but the plant can start.
 - **C**: cosmetic or nice-to-have. Can be deferred with written agreement.
 
-Close items with evidence: a re-test initial, a photo, a revision number. The most common source of arguments at handover is a punch item that was verbally "fixed". Keep the list in one shared place, not in four inboxes.
+Close items with evidence: a re-test initial, a photo, a revision number. Keep the list in one shared place, not in four inboxes.
 
 ## Commissioning the Ignition layer
 
@@ -166,7 +165,7 @@ In Ignition 8.3 the tag diagnostics view shows each alarm's last state and a cou
 
 ### Everything else
 
-Open every Perspective view as each role (operator, supervisor, maintenance). Click each navigation target and command. Confirm security zones, and that a button which writes a setpoint audits the user. Test on the real screens and devices: a tablet at the packaging line is not the same as a monitor in the office.
+Open every Perspective view as each role. Click each navigation target and command, and confirm that a setpoint write is audited. Test on the real screens and devices.
 
 ## Cutover planning for brownfield sites
 
@@ -180,7 +179,7 @@ In a {{term:brownfield|brownfield}} project the old system is running production
 6. **Data.** What history, recipes and set points must migrate, and how will you validate them?
 
 > [!tip] Cutover rehearsal
-> Rehearse the cutover in an offline copy where you can. Write the steps as numbered tasks with owners and expected durations. If the plan says 4 hours and the rehearsal takes 9, you learned that on a Tuesday instead of at 2 a.m.
+> Rehearse in an offline copy where you can, with numbered tasks, owners and durations. If the plan says 4 hours and the rehearsal takes 9, you learned it on a Tuesday instead of at 2 a.m.
 
 ## Worked example: one pump, start to sign-off
 
