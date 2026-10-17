@@ -39,7 +39,8 @@
     if (typeof v === "boolean") return v ? "1" : "0";
     if (typeof v !== "number") return "-";
     if (Number.isInteger(v) && dec == null) return String(v);
-    return v.toFixed(dec == null ? 1 : dec).replace(/\.0+$/, dec == null ? "" : "$0");
+    // With an explicit decimal count, keep the fixed format; otherwise drop a trailing ".0".
+    return dec == null ? v.toFixed(1).replace(/\.0$/, "") : v.toFixed(dec);
   }
 
   function create(host, opts) {
