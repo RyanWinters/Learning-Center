@@ -73,7 +73,7 @@ Per tag you choose a **sample mode**:
 |---|---|---|
 | **On Change** | Each time the value changes beyond the deadband | Most analog and discrete signals; the efficient default |
 | **Periodic** | Every N seconds regardless | When you need regular samples, like a fixed trend grid |
-| **Tag Group** | On the execution of a {{term:tag-group|tag group}} | Align many tags to the same clock |
+| **Tag Group** | On the execution of a {{term:ign-tag-group|tag group}} | Align many tags to the same clock |
 
 Around those modes sit guard rails. **Minimum time between records** drops rapid-fire changes. **Maximum time between records** forces a "heartbeat" row even when nothing changes, so you can tell a flat line from a dead system.
 
@@ -198,7 +198,7 @@ Ignition's Tag Historian has stored data in SQL tables since the early 7.x relea
     "Renaming tags and expecting history to follow automatically."
   ],
 
-  keyTerms: ["tag-historian", "history-partition", "data-pruning", "historian-deadband-style", "tag-group", "store-and-forward", "questdb", "historian", "deadband"],
+  keyTerms: ["tag-historian", "history-partition", "data-pruning", "historian-deadband-style", "ign-tag-group", "store-and-forward", "questdb", "historian", "deadband"],
 
   quiz: [
     {

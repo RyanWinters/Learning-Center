@@ -70,7 +70,7 @@ In Perspective, you can bind a table straight to the named query with parameters
 
 ## Transaction groups (SQL Bridge)
 
-The **SQL Bridge (Transaction Groups)** module moves data between tags and database rows without scripting. A {{term:transaction-group|transaction group}} has a name, an execution schedule, a target table and a list of items (tags or expressions mapped to columns). Four types exist in 8.3:
+The **SQL Bridge (Transaction Groups)** module moves data between tags and database rows without scripting. A {{term:ign-sql-bridge|transaction group}} has a name, an execution schedule, a target table and a list of items (tags or expressions mapped to columns). Four types exist in 8.3:
 
 | Type | Direction | Typical use |
 |---|---|---|
@@ -190,7 +190,7 @@ SQL Bridge (transaction groups) is one of Ignition's earliest modules, built so 
     "Pointing Ignition at the database with an admin account."
   ],
 
-  keyTerms: ["jdbc", "connection-pool", "named-query", "sql-injection", "transaction-group", "trigger-handshake", "store-and-forward", "quarantine"],
+  keyTerms: ["jdbc", "connection-pool", "named-query", "sql-injection", "ign-sql-bridge", "trigger-handshake", "store-and-forward", "quarantine"],
 
   quiz: [
     {
