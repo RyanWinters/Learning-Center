@@ -1,0 +1,28 @@
+/* Simulator challenge index, in curriculum order.  Level 1 Foundations, 2 Core instructions, 3 Applied logic, 4 Whole machines. */
+window.LC_SIM_INDEX = [
+  { id: "sim-tour", title: "Tour of the simulator", level: 1, lesson: "plc-studio", summary: "Press a button, watch a scan, add a rung. Learn every control before you need it." },
+  { id: "sim-xic-ote", title: "First rung: button to lamp", level: 1, lesson: "plc-ladder-basics", summary: "One contact, one coil. Make a pushbutton light a lamp." },
+  { id: "sim-and-or", title: "Series (AND) and parallel (OR)", level: 1, lesson: "plc-ladder-basics", summary: "Two-hand control with AND, and an either-button horn with OR." },
+  { id: "sim-xio", title: "Normally-closed logic and XIO", level: 1, lesson: "plc-ladder-basics", summary: "Wire a stop button the way the field does, then pick XIC or XIO to match." },
+  { id: "sim-sealin", title: "Three-wire start/stop", level: 1, lesson: "plc-sealin", summary: "The seal-in rung: a momentary Start that keeps a motor running until Stop." },
+  { id: "sim-latch", title: "OTL/OTU latch with reset", level: 1, lesson: "plc-sealin", summary: "Latch a fault with OTL and clear it deliberately with OTU." },
+  { id: "sim-ons", title: "One-shot push-on/push-off", level: 2, lesson: "plc-oneshots", summary: "One button that toggles a pump, using ONS to act once per press." },
+  { id: "sim-ton", title: "On-delay timer", level: 2, lesson: "plc-timers", summary: "Delay a horn warning before the conveyor starts, with a TON." },
+  { id: "sim-tof", title: "Off-delay fan run-on", level: 2, lesson: "plc-timers", summary: "Keep a cooling fan running after the heater stops, with a TOF." },
+  { id: "sim-rto", title: "Retentive runtime hours", level: 2, lesson: "plc-timers", summary: "Accumulate pump run time across stops with an RTO and RES." },
+  { id: "sim-flasher", title: "Two-timer flasher", level: 2, lesson: "plc-timers", summary: "Build a beacon that blinks using two timers that reset each other." },
+  { id: "sim-ctu", title: "Part counter with reset", level: 2, lesson: "plc-counters", summary: "Count parts from a photo-eye, stop the line at a batch, and reset." },
+  { id: "sim-ctd", title: "Up/down car-park counter", level: 2, lesson: "plc-counters", summary: "Track cars in and out with CTU and CTD on one counter." },
+  { id: "sim-compare", title: "Tank high/low with compares", level: 3, lesson: "plc-compare-math", summary: "Switch a pump with GRT and LES on a tank level." },
+  { id: "sim-lim", title: "Limit window check", level: 3, lesson: "plc-compare-math", summary: "Report when a temperature is inside its acceptable window with LIM." },
+  { id: "sim-math", title: "Totalizer math", level: 3, lesson: "plc-compare-math", summary: "Add flow into a running total with ADD and clear it on demand." },
+  { id: "sim-mov", title: "Recipe select with MOV", level: 3, lesson: "plc-compare-math", summary: "Load setpoints for the chosen recipe using MOV." },
+  { id: "sim-scp", title: "Scaling a 4-20 mA input", level: 3, lesson: "plc-analog", summary: "Turn raw counts from an analog card into engineering units with SCP." },
+  { id: "sim-alarm-deadband", title: "High alarm with delay and deadband", level: 3, lesson: "plc-analog", summary: "A high-level alarm that does not chatter: on-delay plus a deadband to clear." },
+  { id: "sim-udt-motor", title: "Motor UDT with fault", level: 3, lesson: "plc-udt", summary: "Use a Motor user-defined type with run, fault and a timer inside." },
+  { id: "sim-conveyor", title: "Conveyor jam detection", level: 4, lesson: "plc-faults", summary: "Detect a jam with a timer on a photo-eye and stop the drive." },
+  { id: "sim-traffic", title: "Traffic light state machine", level: 4, lesson: "plc-state-machines", summary: "Cycle red, green and amber with a step number and timers." },
+  { id: "sim-tank-fill", title: "Fill/drain sequence", level: 4, lesson: "plc-state-machines", summary: "Run a tank through fill, hold and drain against a live process model." },
+  { id: "sim-pump-alternation", title: "Lead/lag pump alternation", level: 4, lesson: "plc-state-machines", summary: "Alternate the lead pump each call so wear is shared." },
+  { id: "sim-mixer-batch", title: "Mixer batch sequence", level: 4, lesson: "plc-isa88-packml", summary: "Charge, mix and discharge a batch in order with interlocks." }
+];
