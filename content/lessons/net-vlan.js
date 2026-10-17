@@ -98,7 +98,7 @@ Cisco's Rockwell-oriented designs ship with snooping and a querier enabled on th
 
 ## QoS and DSCP for CIP
 
-When a link is congested, the switch must pick what to drop. {{term:qos|Quality of Service}} lets you tell it. Packets carry a priority marking, and the switch maps that marking to a queue. At layer 3 the marking is the 6-bit {{term:dscp|DSCP}} field in the IP header.
+When a link is congested, the switch must pick what to drop. {{term:network-qos|Quality of Service}} lets you tell it. Packets carry a priority marking, and the switch maps that marking to a queue. At layer 3 the marking is the 6-bit {{term:dscp|DSCP}} field in the IP header.
 
 CIP defines default DSCP values per traffic class: urgent 55, scheduled 47, high 43, low 31 and explicit messaging 27. Devices mark their own packets, and the network must be told to **trust** the markings on ports facing industrial devices. On ports facing the office, reset (re-mark) them so no one can claim top priority.
 
@@ -214,7 +214,7 @@ IEEE 802.1Q, published in 1998, standardized VLAN tagging and replaced vendor-sp
     "Using an unmanaged switch in a cell that carries multicast I/O."
   ],
 
-  keyTerms: ["vlan", "dot1q", "access-port", "trunk-port", "inter-vlan-routing", "multicast", "igmp-snooping", "igmp-querier", "qos", "dscp"],
+  keyTerms: ["vlan", "dot1q", "access-port", "trunk-port", "inter-vlan-routing", "multicast", "igmp-snooping", "igmp-querier", "network-qos", "dscp"],
 
   quiz: [
     {

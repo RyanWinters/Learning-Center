@@ -121,12 +121,14 @@ You will not do this by hand every day. Use a subnet calculator, \`ipconfig\` or
 
 ## Quick practice
 
-Try these before checking the answers in the quiz below.
+Work these on paper, then compare with the answers after the list.
 
 1. How many usable hosts are in 10.20.10.0/25?
 2. What is the broadcast address of 192.168.4.37/28?
 3. What mask is /22?
 4. Do 10.20.10.200 and 10.20.11.5 share a subnet with mask /23? With /24?
+
+Answers: (1) 126. (2) block size 16, so 192.168.4.32/28 with broadcast 192.168.4.47. (3) 255.255.252.0. (4) Yes with /23, because the third byte uses blocks of 2 (10 and 11 are one block). No with /24.
 `,
 
   eli5: `

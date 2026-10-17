@@ -142,7 +142,7 @@ An operator reports that the HMI on the packaging line shows comm-fail on every 
 
 So the HMI reaches the PLC, yet tags show comm-fail. The network is fine and the problem is above it. Check the application layer:
 
-6. **Driver diagnostics.** The HMI's driver is configured for 10.10.10.11 (a typo from last week's edit). The connection is to an address nobody owns, but it still showed good last week because the old config pointed to the right address.
+6. **Driver diagnostics.** The HMI's driver is configured for 10.10.10.11 (a typo from last week's edit). The driver is trying to reach an address nobody owns.
 7. **Wireshark** on the HMI, filter \`ip.addr == 10.10.10.11\`: you see only ARP requests with no reply, which is what a nonexistent host looks like on the wire.
 
 The fix is a one-character address change in the driver, confirmed by a filter of \`enip\` showing the session register request and reply. The lesson: ping success only excludes layers 1 to 3. Each test removed a whole category of causes, and the capture proved the cause without guessing.

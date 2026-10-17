@@ -138,8 +138,6 @@ for (const f of files) {
     if (!Number.isInteger(x.answer) || x.answer < 0 || x.answer >= (x.options || []).length) err(id, `${n} answer index out of range`);
     if (!Array.isArray(x.explain) || x.explain.length !== (x.options || []).length) err(id, `${n} needs one explain per option`);
   });
-  const answers = q.map((x) => x.answer);
-  if (q.length >= 4 && new Set(answers).size === 1) warn(id, "every quiz answer is the same index");
 
   // Resources
   const r = l.resources || [];
