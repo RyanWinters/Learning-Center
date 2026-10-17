@@ -114,7 +114,7 @@ The danger is a card that phones everyone for everything. If a loud noise trigge
 `,
 
   history: `
-The Alarm Notification module has been part of Ignition since the 7.x line, where pipelines replaced simple fixed notification lists with a visual flowchart. Voice and SMS delivery through Twilio were added as profile types in later releases, alongside the earlier email and, historically, dial-out options.
+The Alarm Notification module has been part of Ignition since the 7.x line (the 7.9 manual documents pipelines and escalation). Pipelines let you express a response process as a flowchart instead of a fixed contact list. Twilio SMS and voice profiles are available in 8.x.
 `,
 
   examples: [

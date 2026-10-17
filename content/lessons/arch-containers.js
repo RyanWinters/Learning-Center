@@ -216,7 +216,7 @@ Docker appeared in 2013 and made Linux container packaging mainstream. Inductive
     "Adopting Kubernetes for a single gateway with nobody on site who can operate a cluster."
   ],
 
-  keyTerms: ["docker", "docker-image", "docker-compose", "docker-volume", "kubernetes", "helm", "cloud-edition", "ignition"],
+  keyTerms: ["ign-docker", "docker-compose", "docker-volume", "kubernetes", "helm", "cloud-edition", "ignition"],
 
   quiz: [
     {

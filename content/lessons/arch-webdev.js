@@ -213,7 +213,7 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
     "Changing a JSON field name without versioning the URL, which breaks every consumer silently."
   ],
 
-  keyTerms: ["rest-api", "json", "http-methods", "webdev", "api-token", "polling", "firewall"],
+  keyTerms: ["rest-api", "json", "http-methods", "webdev", "ign-api-key", "polling", "firewall"],
 
   quiz: [
     {

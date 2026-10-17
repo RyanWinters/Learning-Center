@@ -20,6 +20,8 @@ LC.lesson({
 
 Ignition's open module architecture is the reason one gateway can be an HMI, a historian, an MES and an MQTT hub. Inductive Automation builds the core modules. Because the module API and SDK are public, other companies build modules too, and the community shares projects, scripts and components. As an integrator you will use this ecosystem on almost every job. You will also be the one blamed when a module you chose is abandoned, so learn to evaluate it.
 
+{{diagram:layers}}
+
 ## Three different things people call "the marketplace"
 
 | Name | What it is | Cost | Who vets it |
