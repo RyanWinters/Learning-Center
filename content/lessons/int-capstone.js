@@ -58,7 +58,7 @@ Start from the network, not from software. Apply the Purdue model ({{lesson:foun
 **Decision D1: zone per line cell, one site operations zone, a DMZ per site.**
 - *Context:* Lines are independent. A fault on one line should not flood another's network.
 - *Decision:* Each line gets its own VLAN and cell firewall zone at Levels 0-2. Site gateways, historian DB and MES server sit in a Level 3 zone. A DMZ (Level 3.5) holds the MQTT broker, remote-access jump host and patch relay. Nothing from corporate IT reaches Level 2 directly.
-- *Alternatives:* One flat plant VLAN (cheap, but a broadcast storm or malware affects all lines); one VLAN per device type (confusing and hard to firewall by function).
+- *Alternatives:* One flat plant VLAN (a broadcast storm or malware affects all lines).
 - *Consequences:* More firewall rules to document. Every conduit is listed with port, protocol and direction in the network design.
 
 ## Step 3: PLC standards
@@ -113,8 +113,8 @@ See {{lesson:arch-redundancy}}.
 
 **Decision D7: Ignition redundant pair at Chicago; virtualization high availability elsewhere.**
 - *Context:* R4 requires 99.9 percent at Chicago, where an hour costs 18,000 USD. 99.9 percent allows about 8.8 hours per year. A redundant pair plus a failover test pays back inside one avoided outage.
-- *Decision:* Chicago runs a master and backup gateway on separate hosts and switches. Dallas and Phoenix run a single gateway on a virtualization cluster with restart-on-failure, plus tested backups. The central gateway is a single VM with a documented recovery procedure.
-- *Alternatives:* Redundancy everywhere (more cost, more to maintain, little value at Phoenix); none (fails R4).
+- *Decision:* Chicago runs a master and backup gateway on separate hosts and switches. Dallas and Phoenix run a single gateway on a virtualization cluster with restart-on-failure, plus tested backups.
+- *Alternatives:* Redundancy everywhere (cost and upkeep, little value at Phoenix); none (fails R4).
 - *Consequences:* The PLC layer is not made redundant by this decision. If the customer wants controller redundancy, that is a separate, costed item.
 
 ## Step 9: MES scope and build versus buy
@@ -124,7 +124,7 @@ See {{lesson:mes-what}}, {{lesson:mes-oee}}, {{lesson:mes-track-trace}}, {{lesso
 **Decision D8: Sepasoft MES modules for OEE, downtime and track and trace; custom code for the ERP bridge and the scheduling rules.**
 - *Context:* R2 and R3 are standard MES functions, and a team of three cannot support a homegrown genealogy engine.
 - *Decision:* Sepasoft OEE and downtime at Chicago and Dallas first. Track and trace for lot genealogy on all filling lines. Phoenix starts with OEE-lite using the same equipment model, then adds modules on request. Scheduling stays in the ERP for now.
-- *Alternatives:* A full custom MES in Ignition and SQL (control of every detail, high long-term cost); a big monolithic MES vendor (strong features, long implementation, harder to match the Ignition screens).
+- *Alternatives:* A full custom MES (high long-term cost); a monolithic MES vendor (long implementation, mismatched screens).
 - *Consequences:* Equipment model names must match the standard ({{lesson:int-naming}}) because the same names appear in MES, history and the UNS.
 
 ## Step 10: ERP integration
@@ -169,7 +169,7 @@ Track the decisions in one table that leads the design document:
 | D10 | Central identity, brokered access | Local accounts | Offboarding, risk |
 
 > [!tip] Review it adversarially
-> Before you present, ask "what breaks if this link dies?" for every line on the diagrams: WAN, broker, central DB, ERP, identity provider, one site switch. If the answer is not in the log, the design is not finished.
+> For every line on the diagrams ask what breaks if it dies. If the answer is not in the log, the design is not finished.
 `,
 
   eli5: `

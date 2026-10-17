@@ -48,7 +48,7 @@ Finish the last step to pass. There are no tests to fail here.`,
     "If a step seems stuck, look for the highlighted outline. That is the control it wants.",
     "You can use Skip step on any step. Finish the last step to pass."
   ],
-  solution: "XIC(Start)OTE(Lamp);",
+  solution: "XIC(Start)OTE(Lamp); // Lamp is on while Start is held",
   explain: `You have now used every part of the lab.
 
 - **Rungs** read left to right. Contacts ask questions, coils and other outputs act.
