@@ -45,6 +45,12 @@
       out[k] = m;
     });
     out.updatedAt = Math.max(server.updatedAt || 0, client.updatedAt || 0);
+    // XP only goes up between resets, so a stale device can't lower it. A document last
+    // written before the newest reset doesn't count.
+    const R = Math.max(server.resetAt || 0, client.resetAt || 0);
+    const live = [server, client].filter(d => (d.updatedAt || 0) >= R);
+    out.resetAt = R;
+    out.xp = Math.max.apply(null, live.map(d => d.xp || 0).concat(0));
     return out;
   }
 
@@ -119,7 +125,7 @@
           if (JSON.stringify(doc[k][id]) !== snap[k][id]) doc[k][id].updatedAt = now;
         });
       });
-      doc.updatedAt = now;
+      doc.updatedAt = now; doc.resetAt = now;
       takeSnap(); writeCache();
       emit('change', {});
       schedule();
@@ -166,7 +172,7 @@
       const old = doc, now = Math.max(Date.now(), old.updatedAt || 0) + 1;
       doc = normalize({ settings: old.settings });
       MAPS.forEach(k => Object.keys(old[k]).forEach(id => { doc[k][id] = { reset: true, updatedAt: now }; }));
-      doc.updatedAt = now;
+      doc.updatedAt = now; doc.resetAt = now;
       takeSnap(); writeCache();
       emit('change', {});
       return push();

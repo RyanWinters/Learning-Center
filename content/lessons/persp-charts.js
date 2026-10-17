@@ -89,19 +89,18 @@ end = system.date.now()
 start = system.date.addHours(end, -8)
 paths = ["[default]Plant1/Boiler1/DrumLevel", "[default]Plant1/Boiler1/DrumPressure"]
 
-ds = system.tag.queryTagHistory(
+ds = system.historian.queryAggregatedPoints(
     paths=paths,
     startDate=start,
     endDate=end,
     returnSize=480,
-    aggregationMode="Average",
-    returnFormat="Wide")
+    aggregates=["Average"])
 \`\`\`
 
 The result has a \`t_stamp\` column and one column per path. If you bind this to a chart, you rarely need the script at all: the tag history binding does the same query with no code and lets the chart refresh as the window moves. Reach for a script when you must merge in another source, rename columns for display, or downsample in a custom way.
 
 > [!note] In 8.1
-> \`system.tag.queryTagHistory\` is the main call in 8.1. The \`system.historian\` namespace is the 8.3 family. Check the manual's note on which parameters moved before porting scripts.
+> The same query in 8.1 uses \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=480, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Check the 8.3 manual for the full parameters before porting scripts.
 
 ## Refresh and many users
 

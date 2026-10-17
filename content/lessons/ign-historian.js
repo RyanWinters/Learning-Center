@@ -108,11 +108,14 @@ Query modes decide the shape of the answer. You request a time range, a **return
 \`\`\`python
 end = system.date.now()
 start = system.date.addHours(end, -24)
-ds = system.tag.queryTagHistory(
+ds = system.historian.queryAggregatedPoints(
     paths=["[default]Line1/Tank/Temp"],
     startDate=start, endDate=end,
-    returnSize=24, aggregationMode="Average", returnFormat="Wide")
+    returnSize=24, aggregates=["Average"])
 \`\`\`
+
+> [!note] In 8.1
+> The same query was \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=24, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Parameter names differ in the new functions, so check the 8.3 manual before porting. For raw, uncompressed values use \`system.historian.queryRawPoints\`.
 
 Twenty-four hourly averages come back, no matter how many raw rows are underneath. Remember that an average hides spikes. Use MinMax or a max aggregate when the extremes matter, such as an over-temperature alarm review.
 

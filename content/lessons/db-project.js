@@ -245,12 +245,15 @@ def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, misse
         return
     machineId = 1  # in practice, derive from the tag path or a parameter
     if currentValue.value == 0 and previousValue.value == 1:
-        system.db.runNamedQuery("Downtime/OpenEvent",
+        system.db.execUpdate("Downtime/OpenEvent",
             {"machine_id": machineId, "reason_id": 4, "start_time": system.date.now()})  # 4 = Unassigned
     elif currentValue.value == 1 and previousValue.value == 0:
-        system.db.runNamedQuery("Downtime/CloseEvent",
+        system.db.execUpdate("Downtime/CloseEvent",
             {"machine_id": machineId, "end_time": system.date.now()})
 \`\`\`
+
+> [!note] In 8.1
+> Use \`system.db.runNamedQuery\` for both calls. It is deprecated in 8.3 but still works.
 
 The stop opens with the "Unassigned" reason immediately, so no time is lost if the operator is busy. The Perspective screen then runs an \`UPDATE\` named query to set the real \`reason_id\`. Filtering on the Unassigned reason also gives supervisors a report of stops nobody explained.
 

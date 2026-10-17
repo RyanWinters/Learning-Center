@@ -48,7 +48,7 @@ The data tables are named \`sqlt_data_<driverId>_<year>_<month>\` for the defaul
 Two details trip people up:
 
 - \`t_stamp\` is **milliseconds since 1970-01-01 UTC** in a BIGINT, not a SQL timestamp. 1792195200000 is 2026-10-17 00:00 UTC.
-- The value goes in one of four typed columns, chosen by the tag's \`datatype\` in \`sqlth_te\`. The others are NULL. \`dataintegrity\` is the quality code, where 192 means good.
+- The value goes in one of four typed columns, chosen by the tag's \`datatype\` in \`sqlth_te\`. The others are NULL. \`dataintegrity\` is the quality code, where 192 means good in the stored table. In scripts and expressions never compare to 192. Use \`isGood()\` or \`.quality.isGood()\`.
 
 ### Tag versions
 

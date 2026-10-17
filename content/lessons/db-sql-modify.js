@@ -191,6 +191,9 @@ rows = system.db.runPrepQuery(
 )
 \`\`\`
 
+> [!note] In 8.3
+> \`runPrepQuery\` is still available, but the \`system.db.runQuery\` family is on the deprecated list. In 8.3, prefer a named query with \`system.db.execQuery\`, or see the 8.3 manual for the current prepared-statement calls.
+
 The \`?\` is the placeholder. \`x' OR '1'='1\` now means "a machine literally named x' OR '1'='1", which matches nothing.
 
 Placeholders hold **values**. They cannot stand in for table or column names. If a name must vary, choose it from a fixed allow-list in code rather than from user text.

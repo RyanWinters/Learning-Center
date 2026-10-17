@@ -50,9 +50,12 @@ ORDER BY ts
 \`\`\`
 
 \`\`\`python
-rows = system.db.runNamedQuery("Production/getLineLog",
+rows = system.db.execQuery("Production/getLineLog",
     {"line": "Line1", "start": start, "end": end})
 \`\`\`
+
+> [!note] In 8.1
+> The call is \`system.db.runNamedQuery(path, params)\`. In 8.3 it is deprecated but still runs. \`system.db.execQuery\` is for SELECT-type queries, \`execUpdate\` for INSERT/UPDATE/DELETE, and \`execScalar\` for a single value. Pass \`{}\`, not \`None\`, when a query has no parameters. See the 8.3 manual for full parameters.
 
 In Perspective, you can bind a table straight to the named query with parameters from the page. The key properties:
 

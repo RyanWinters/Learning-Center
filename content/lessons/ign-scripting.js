@@ -77,7 +77,7 @@ for r in rows:
     print r["name"]
 \`\`\`
 
-Always use the prepared forms (\`runPrepQuery\`, \`runPrepUpdate\`) with \`?\` placeholders. String-building SQL invites injection and quoting bugs. For anything reused, call a **named query** with \`system.db.runNamedQuery\`. See {{lesson:ign-databases}}.
+Always use the prepared forms (\`runPrepQuery\`, \`runPrepUpdate\`) with \`?\` placeholders. String-building SQL invites injection and quoting bugs. For anything reused, call a **named query** with \`system.db.execQuery\` (SELECT) or \`system.db.execUpdate\` (INSERT/UPDATE/DELETE). In 8.1 the single call was \`system.db.runNamedQuery\`, deprecated in 8.3 but still working. See {{lesson:ign-databases}}.
 
 ### system.util
 

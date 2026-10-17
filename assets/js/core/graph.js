@@ -57,6 +57,32 @@
     });
     return c.slice(0, n);
   }
+  /* Home recommendations with a reason label: next lessons in started tracks, then an entry point per other track
+     (available, or soft-locked only by Foundations lessons so experienced users can jump in). */
+  function upNextWhy(n, exclude) {
+    exclude = exclude || [];
+    const out = [], seen = new Set(exclude);
+    const trackOrder = (LC.tracks || []).map(t => t.id);
+    const firstOpen = t => lessonsIn(t).find(id => status(id) === 'available' && !LC.missing[id] && !seen.has(id));
+    trackOrder.filter(trackStarted).forEach(t => {
+      const id = firstOpen(t);
+      if (id) { seen.add(id); out.push({ id: id, why: 'Next in ' + LC.trackById[t].code }); }
+    });
+    trackOrder.filter(t => !trackStarted(t)).forEach(t => {
+      const ids = lessonsIn(t);
+      const id = ids.find(i => {
+        if (seen.has(i) || LC.missing[i]) return false;
+        const st = status(i);
+        if (st === 'available') return true;
+        return st === 'locked' && unmet(i).every(u => LC.index[u].track === 'found');
+      });
+      if (!id) return;
+      seen.add(id);
+      const um = unmet(id).length;
+      out.push({ id: id, why: t === 'found' ? 'Start of ' + LC.trackById[t].code : (um ? 'Jump in at ' + LC.trackById[t].code + ' (skips ' + um + ' intro ' + (um === 1 ? 'lesson' : 'lessons') + ')' : 'Start of ' + LC.trackById[t].code) });
+    });
+    return out.slice(0, n);
+  }
   function continueLesson() {
     let best = null, at = -1;
     const L = LC.store.get().lessons;
@@ -86,5 +112,5 @@
     LC.store.update(d => { const r = d.lessons[id]; if (r && r.status === 'skipped') r.status = 'available'; });
   }
 
-  LC.graph = { status: status, stored: stored, isSatisfied: isSatisfied, unmet: unmet, lessonsIn: lessonsIn, progress: progress, trackComplete: trackComplete, dependents: dependents, depth: depth, upNext: upNext, continueLesson: continueLesson, markStarted: markStarted, skip: skip, unskip: unskip, readAnyway: readAnyway };
+  LC.graph = { status: status, stored: stored, isSatisfied: isSatisfied, unmet: unmet, lessonsIn: lessonsIn, progress: progress, trackComplete: trackComplete, dependents: dependents, depth: depth, upNext: upNext, upNextWhy: upNextWhy, continueLesson: continueLesson, markStarted: markStarted, skip: skip, unskip: unskip, readAnyway: readAnyway };
 })();

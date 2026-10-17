@@ -57,8 +57,9 @@ def merge(server, client):
     """Merge two progress documents.
 
     Maps of per-item records (lessons, sims, cards, badges) merge item by item so
-    two devices working on different lessons never overwrite each other. Scalar
-    totals (xp, streak) and settings come from whichever document is newer.
+    two devices working on different lessons never overwrite each other. XP takes
+    the higher value since the last reset; other scalars and settings come from
+    whichever document is newer.
     """
     if not server:
         return client
@@ -67,6 +68,12 @@ def merge(server, client):
         s, c = server.get(key) or {}, client.get(key) or {}
         out[key] = {k: newer(s.get(k), c.get(k)) for k in set(s) | set(c)}
     out["updatedAt"] = max(server.get("updatedAt", 0), client.get("updatedAt", 0))
+    # XP only goes up between resets, so a stale device can't lower it. A document last
+    # written before the newest reset doesn't count.
+    reset_at = max(server.get("resetAt", 0), client.get("resetAt", 0))
+    live = [d for d in (server, client) if d.get("updatedAt", 0) >= reset_at]
+    out["resetAt"] = reset_at
+    out["xp"] = max([d.get("xp", 0) for d in live] + [0])
     return out
 
 

@@ -17,10 +17,9 @@
     const s = LC.store.get(), li = LC.gamify.levelInfo(s.xp), today = LC.gamify.today(), streak = LC.gamify.streak();
     const due = LC.quiz.due().length;
     const cont = LC.graph.continueLesson();
-    let next = LC.graph.upNext(cont ? 4 : 6).filter(id => id !== cont);
-    const first = cont ? null : (next[0] || 'found-history');
-    if (first) next = next.filter(id => id !== first);
-    next = next.slice(0, 4);
+    const pool = LC.graph.upNextWhy(6, cont ? [cont] : []);
+    const first = cont ? null : (pool[0] ? pool[0].id : 'found-history');
+    const next = pool.filter(x => x.id !== first).slice(0, 5);
     const fresh = Object.keys(s.lessons).filter(k => s.lessons[k].status).length === 0;
 
     let contHtml;
@@ -45,7 +44,7 @@
         '<p class="hero-xp-meta num"><span>Level ' + li.n + '</span><span>' + (li.ceil ? s.xp.toLocaleString() + ' / ' + li.ceil.toLocaleString() + ' XP to ' + esc(li.next) : s.xp.toLocaleString() + ' XP, top level') + '</span></p></div></header>' +
       '<div class="home-grid"><div class="home-main">' + contHtml +
         '<section class="sec"><div class="sec-head"><h2>Up next</h2><a href="#/tracks">All tracks</a></div>' +
-        (next.length ? '<div class="rows">' + next.map(id => U.lessonRow(id, { track: true })).join('') + '</div>' : '<div class="empty empty-sm"><p class="muted">Nothing is open right now. Finish or skip a lesson to unlock more.</p></div>') + '</section></div>' +
+        (next.length ? '<div class="rows">' + next.map(x => U.lessonRow(x.id, { track: true }).replace('<span class="lrow-meta">', '<span class="lrow-meta"><span class="why">' + esc(x.why) + '</span>')).join('') + '</div>' : '<div class="empty empty-sm"><p class="muted">Nothing is open right now. Finish or skip a lesson to unlock more.</p></div>') + '</section></div>' +
       '<aside class="today" aria-label="Today"><div class="today-top">' +
         U.ring(today.pct, 104, 9, '<span class="ring-num num">' + today.xp + '</span><span class="ring-sub">of ' + today.goal + ' XP</span>') +
         '<div class="today-side"><p class="eyebrow">Today</p><p class="today-state">' + (today.hit ? 'Goal reached' : (today.goal - today.xp) + ' XP to go') + '</p>' +
