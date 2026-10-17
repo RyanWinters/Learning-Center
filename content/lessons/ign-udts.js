@@ -187,7 +187,7 @@ The idea came from the PLC world, where user-defined structures became the norma
     "Hand-editing one instance's alarms, so the next motor silently lacks them."
   ],
 
-  keyTerms: ["udt", "ign-udt-definition", "ign-udt-instance", "ign-udt-parameter", "ign-indirect-path", "ign-udt-override", "nested-udt", "udt-member"],
+  keyTerms: ["udt", "ign-udt-definition", "ign-udt-instance", "ign-udt-parameter", "ign-indirect-path", "resource-override", "nested-udt", "udt-member"],
 
   quiz: [
     {

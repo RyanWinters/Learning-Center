@@ -182,7 +182,7 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
   examples: [
     {
       title: "Reading a motor's status in one call",
-      body: `A gateway timer script needs the state of 40 motors. Build the 40 paths with a list comprehension, call \`system.tag.readBlocking(paths)\` once, and zip the paths with the results. Check \`quality.isGood()\` on each, and log, with the path, any that are not. This took under a second in the field where the loop version took over 10 seconds from a Vision client.`
+      body: `A gateway timer script needs the state of 40 motors. Build the 40 paths with a list comprehension, call \`system.tag.readBlocking(paths)\` once, and zip the paths with the results. Check \`quality.isGood()\` on each, and log, with the path, any that are not. The loop version pays the per-call overhead 40 times, and from a Vision client each call is also a network round trip.`
     },
     {
       title: "A tag change script that hangs the Gateway",
@@ -226,7 +226,7 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
     "Calling system.perspective functions from scopes that have no session."
   ],
 
-  keyTerms: ["ign-jython", "ign-scripting-scope", "ign-readblocking", "ign-project-library", "ign-script-logger", "ign-qualified-value", "ign-gateway-script-project"],
+  keyTerms: ["ign-jython", "ign-scripting-scope", "ign-readblocking", "ign-project-library", "ign-script-logger", "ign-qualified-value", "gateway-scripting-project"],
 
   quiz: [
     {

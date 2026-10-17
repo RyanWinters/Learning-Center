@@ -36,6 +36,8 @@ A {{term:persp-binding|binding}} keeps one property equal to some source. When t
 
 Every binding has a **type** (where the value comes from), optional **transforms** (what happens to it on the way) and a **target** property. The binding runs on the Gateway, and the browser receives only the resulting property value. That has consequences for security and for load, both covered below.
 
+{{diagram:pipeline}}
+
 ## The binding types
 
 | Type | Source | Updates when | Use for |
@@ -188,7 +190,7 @@ Two-way bindings are when you can also write on the board and the kitchen change
 `,
 
   history: `
-Perspective bindings were designed to follow Vision's concept (a property fed by a tag or expression) while moving evaluation to the Gateway to suit browser clients. Transforms replaced much of Vision's reliance on per-component scripting: map, format and expression transforms cover cases that Vision handled with scripted property change events. Script transforms came to Perspective to cover the remainder, and later releases added quality and timestamp arguments so transforms could react to bad tag quality.
+Perspective bindings follow the idea Vision made familiar, a property fed by a tag or expression, but evaluate on the Gateway to suit browser clients. Transforms cover many cases that Vision handled with scripted property-change events, and the script transform handles the remainder. In 8.3 the script transform receives the value, quality and timestamp.
 `,
 
   examples: [
