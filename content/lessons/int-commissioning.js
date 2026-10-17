@@ -310,7 +310,7 @@ Loop checks and instrument loop folders come from process-plant construction pra
     "Cutting over a brownfield area with no rollback trigger and no rehearsal."
   ],
 
-  keyTerms: ["commissioning", "loop-check", "loop-sheet", "io-list", "punch-list", "fat", "sat", "brownfield", "point-to-point", "pre-commissioning", "io-force", "tag-quality", "cutover"],
+  keyTerms: ["commissioning", "loop-check", "loop-sheet", "io-list", "punch-list", "fat", "sat", "brownfield", "point-to-point", "pre-commissioning", "io-force", "ign-quality-code", "cutover"],
 
   quiz: [
     {

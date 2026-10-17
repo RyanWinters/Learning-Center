@@ -46,7 +46,7 @@ Stop is placed in series **after** the branch, so it breaks the rung whatever el
 
 In Studio 5000 the same rung is drawn with the Motor contact in a branch under Start, exactly as here.`,
   tips: [
-    "A seal-in is **not retentive**. If power is lost the motor bit is cleared (or, on ControlLogix, restored from memory and then immediately re-evaluated), and the motor needs a new Start press. That is usually what safety wants. OTL latches, in contrast, can restart equipment on power-up.",
+    "A seal-in built on OTE is **not retentive**. The controller clears OTE bits during prescan when it goes to Run, so after a power loss the motor needs a fresh Start press. That is usually what safety wants. An OTL latch, in contrast, keeps its value and can restart equipment.",
     "Add every permissive and trip in series with Stop: overload OK, guard closed, E-stop healthy. Each is its own XIC, and any one dropping out stops the motor.",
     "Use the **output** tag as the seal contact only when the output is a plain internal bit. If the motor is a physical output, many integrators seal on a separate internal \`Motor_Run_Cmd\` bit and drive the output from it, so forcing the output for testing does not corrupt the seal."
   ]

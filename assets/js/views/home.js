@@ -17,7 +17,10 @@
     const s = LC.store.get(), li = LC.gamify.levelInfo(s.xp), today = LC.gamify.today(), streak = LC.gamify.streak();
     const due = LC.quiz.due().length;
     const cont = LC.graph.continueLesson();
-    const next = LC.graph.upNext(cont ? 4 : 5).filter(id => id !== cont);
+    let next = LC.graph.upNext(cont ? 4 : 6).filter(id => id !== cont);
+    const first = cont ? null : (next[0] || 'found-history');
+    if (first) next = next.filter(id => id !== first);
+    next = next.slice(0, 4);
     const fresh = Object.keys(s.lessons).filter(k => s.lessons[k].status).length === 0;
 
     let contHtml;
@@ -27,7 +30,7 @@
       contHtml = '<a class="continue" href="#/lesson/' + cont + (r.readAt ? '/quiz' : '') + '"><span class="eyebrow">Continue · ' + esc(tr.code) + ' ' + esc(tr.title) + '</span>' +
         '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + step + ' · ' + m.minutes + ' min</span><span class="continue-go">' + (r.readAt ? 'Start quiz' : 'Resume') + icon('right', 18) + '</span></a>';
     } else {
-      const first = next[0] || 'found-history', m = LC.index[first];
+      const m = LC.index[first];
       contHtml = '<a class="continue continue-new" href="#/lesson/' + first + '"><span class="eyebrow">' + (fresh ? 'Start here' : 'Next lesson') + '</span>' +
         '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + (fresh ? 'The ten tracks run from signals and networks to MES architecture. Begin with the story so far.' : 'Nothing in progress. This is the next open lesson.') + '</span><span class="continue-go">Begin' + icon('right', 18) + '</span></a>';
     }

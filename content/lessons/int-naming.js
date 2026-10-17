@@ -78,9 +78,9 @@ Units go in the name only when they are not obvious from context (\`_psi\`, \`_g
 
 ### The Ignition layer
 
-Ignition has three kinds of names to plan: the {{term:tag-provider|tag provider}}, the folder tree and the UDT definitions. The 8.3 manual notes that tag names are free-form, must start with a letter or underscore and stay under 256 characters, and that a tag provider's name should not match a database connection name. Beyond that the structure is yours.
+Ignition has three kinds of names to plan: the {{term:ign-tag-provider|tag provider}}, the folder tree and the UDT definitions. The 8.3 manual notes that tag names are free-form, must start with a letter or underscore and stay under 256 characters, and that a tag provider's name should not match a database connection name. Beyond that the structure is yours.
 
-A {{term:tag-path|tag path}} looks like \`[Plant]Chicago/Mixing/Line1/P101_Pump/Sts/Running\`. The part in square brackets is the provider. Everything after is folders, the UDT instance and its members.
+A {{term:ign-tag-path|tag path}} looks like \`[Plant]Chicago/Mixing/Line1/P101_Pump/Sts/Running\`. The part in square brackets is the provider. Everything after is folders, the UDT instance and its members.
 
 Put the **ISA-95 hierarchy** in the folders: enterprise (usually the provider), site, area, line, cell/unit, then equipment. Use the levels you have and no more.
 
@@ -279,7 +279,7 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
     "Writing the standard once and never checking it with a script or a review."
   ],
 
-  keyTerms: ["naming-convention", "tag-number", "isa-5-1", "isa-95", "tag-provider", "tag-path", "udt", "uns", "data-dictionary", "mqtt-topic"],
+  keyTerms: ["naming-convention", "tag-number", "isa-5-1", "isa-95", "ign-tag-provider", "ign-tag-path", "udt", "uns", "data-dictionary", "mqtt-topic"],
 
   quiz: [
     {
