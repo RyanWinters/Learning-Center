@@ -1,0 +1,90 @@
+/* Prerequisite graph: statuses, soft locks, recommendations. */
+(function () {
+  const LC = window.LC = window.LC || {};
+  const DONE = { complete: 1, skipped: 1, 'tested-out': 1 };
+  const STORED = { complete: 1, skipped: 1, 'tested-out': 1, 'in-progress': 1 };
+  const readAnyway = new Set();
+
+  function stored(id) { return (LC.store.get().lessons[id] || {}).status; }
+  function isSatisfied(id) { return !!DONE[stored(id)]; }
+  function unmet(id) {
+    const m = LC.index[id]; if (!m) return [];
+    return m.prereqs.filter(p => LC.index[p] && !isSatisfied(p));
+  }
+  function status(id) {
+    const s = stored(id);
+    if (STORED[s]) return s;
+    return unmet(id).length ? 'locked' : 'available';
+  }
+  function lessonsIn(trackId) { return LC.trackLessons[trackId] || []; }
+  function progress(trackId) {
+    const ids = lessonsIn(trackId);
+    let done = 0, skipped = 0, started = 0;
+    ids.forEach(id => {
+      const s = status(id);
+      if (s === 'complete' || s === 'tested-out') done++;
+      else if (s === 'skipped') skipped++;
+      else if (s === 'in-progress') started++;
+    });
+    return { total: ids.length, done: done, skipped: skipped, started: started, pct: ids.length ? Math.round(100 * (done + skipped) / ids.length) : 0, learnedPct: ids.length ? Math.round(100 * done / ids.length) : 0 };
+  }
+  function trackComplete(trackId) {
+    const ids = lessonsIn(trackId);
+    return ids.length > 0 && ids.every(id => { const s = stored(id); return s === 'complete' || s === 'tested-out'; });
+  }
+  function dependents(id) { return Object.keys(LC.index).filter(k => LC.index[k].prereqs.indexOf(id) >= 0); }
+
+  /* Column for the skill map: longest in-track prerequisite chain. */
+  const depthMemo = {};
+  function depth(id) {
+    if (depthMemo[id] != null) return depthMemo[id];
+    depthMemo[id] = 0;
+    const m = LC.index[id];
+    let d = 0;
+    m.prereqs.forEach(p => { if (LC.index[p] && LC.index[p].track === m.track) d = Math.max(d, depth(p) + 1); });
+    return (depthMemo[id] = d);
+  }
+
+  function trackStarted(t) {
+    return lessonsIn(t).some(id => { const s = stored(id); return s && s !== 'available'; });
+  }
+  function upNext(n) {
+    const c = Object.keys(LC.index).filter(id => status(id) === 'available' && !LC.missing[id]);
+    c.sort((a, b) => {
+      const A = LC.index[a], B = LC.index[b];
+      const sa = trackStarted(A.track) ? 0 : 1, sb = trackStarted(B.track) ? 0 : 1;
+      return (sa - sb) || (A.level - B.level) || (A.order - B.order);
+    });
+    return c.slice(0, n);
+  }
+  function continueLesson() {
+    let best = null, at = -1;
+    const L = LC.store.get().lessons;
+    Object.keys(L).forEach(id => {
+      if (L[id].status === 'in-progress' && LC.index[id] && (L[id].updatedAt || 0) > at) { best = id; at = L[id].updatedAt || 0; }
+    });
+    return best;
+  }
+  function markStarted(id) {
+    const s = stored(id);
+    if (s && s !== 'available') return;
+    LC.store.update(d => {
+      const r = d.lessons[id] = d.lessons[id] || { attempts: 0 };
+      r.status = 'in-progress'; r.startedAt = r.startedAt || Date.now();
+    });
+  }
+  function skip(ids) {
+    LC.store.update(d => {
+      ids.forEach(id => {
+        const r = d.lessons[id] = d.lessons[id] || { attempts: 0, startedAt: Date.now() };
+        if (!DONE[r.status]) r.status = 'skipped';
+      });
+    });
+    LC.gamify.checkBadges();
+  }
+  function unskip(id) {
+    LC.store.update(d => { const r = d.lessons[id]; if (r && r.status === 'skipped') r.status = 'available'; });
+  }
+
+  LC.graph = { status: status, stored: stored, isSatisfied: isSatisfied, unmet: unmet, lessonsIn: lessonsIn, progress: progress, trackComplete: trackComplete, dependents: dependents, depth: depth, upNext: upNext, continueLesson: continueLesson, markStarted: markStarted, skip: skip, unskip: unskip, readAnyway: readAnyway };
+})();
