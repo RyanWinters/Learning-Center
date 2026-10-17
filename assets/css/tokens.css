@@ -1,0 +1,122 @@
+/* Design tokens.
+   Direction: borrow the discipline of a High-Performance HMI (ISA-101). The ground is a calm
+   greenish grey; color is reserved for meaning (interaction, progress, warnings, alarms), exactly
+   like a good operator screen. Condensed display type recalls panel nameplates and tag labels;
+   body text is set for long reading; mono is for tags, addresses and code.
+   Layout: a left rail of tracks on desktop collapsing to a bottom tab bar on phones; a single
+   ~68ch reading column for lessons. */
+
+:root {
+  /* Neutrals (hue-biased toward the accent family, never pure grey) */
+  --bg: #ecede9;
+  --surface: #f8f8f5;
+  --surface-2: #e2e4df;
+  --surface-3: #d6d9d3;
+  --fg: #1d2220;
+  --muted: #59625d;
+  --line: #c8ccc5;
+  --line-strong: #a9afa7;
+
+  /* Meaning colors */
+  --accent: #1f5f8b;        /* interaction: links, buttons, selection */
+  --accent-soft: #d5e3ee;
+  --accent-fg: #ffffff;
+  --ok: #2e7548;            /* complete / passed */
+  --ok-soft: #d7eadc;
+  --warn: #9a6512;          /* in progress / attention */
+  --warn-soft: #f3e4c6;
+  --alarm: #b42318;         /* wrong answer / failed check */
+  --alarm-soft: #f6d9d5;
+  --xp: #6b4fa0;            /* gamification only */
+  --xp-soft: #e5ddf2;
+
+  /* Diagram palette: lesson SVGs must only use these (or currentColor) */
+  --d-bg: var(--surface);
+  --d-fg: var(--fg);
+  --d-muted: var(--muted);
+  --d-line: var(--line-strong);
+  --d-fill: var(--surface-2);
+  --d-fill-2: var(--surface-3);
+  --d-accent: var(--accent);
+  --d-accent-soft: var(--accent-soft);
+  --d-ok: var(--ok);
+  --d-warn: var(--warn);
+  --d-alarm: var(--alarm);
+
+  /* Type */
+  --font-display: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-md: 1.0625rem;     /* reading size */
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+  --leading: 1.6;
+  --measure: 68ch;
+
+  /* Space, radius, elevation */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow-pop: 0 6px 24px rgb(20 30 25 / 0.18);
+  --focus: 0 0 0 3px var(--accent-soft), 0 0 0 4px var(--accent);
+
+  --rail-w: 264px;
+  --tabbar-h: 60px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141816;
+    --surface: #1c211f;
+    --surface-2: #252b28;
+    --surface-3: #2f3632;
+    --fg: #e3e7e2;
+    --muted: #9ba49f;
+    --line: #333a36;
+    --line-strong: #4a524d;
+    --accent: #72aad6;
+    --accent-soft: #1f3445;
+    --accent-fg: #0d1a24;
+    --ok: #63bf84;
+    --ok-soft: #1d3326;
+    --warn: #e0a64a;
+    --warn-soft: #3a2e19;
+    --alarm: #f06b5e;
+    --alarm-soft: #3e201d;
+    --xp: #b59ae6;
+    --xp-soft: #2e2540;
+    --shadow-pop: 0 6px 24px rgb(0 0 0 / 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141816;
+  --surface: #1c211f;
+  --surface-2: #252b28;
+  --surface-3: #2f3632;
+  --fg: #e3e7e2;
+  --muted: #9ba49f;
+  --line: #333a36;
+  --line-strong: #4a524d;
+  --accent: #72aad6;
+  --accent-soft: #1f3445;
+  --accent-fg: #0d1a24;
+  --ok: #63bf84;
+  --ok-soft: #1d3326;
+  --warn: #e0a64a;
+  --warn-soft: #3a2e19;
+  --alarm: #f06b5e;
+  --alarm-soft: #3e201d;
+  --xp: #b59ae6;
+  --xp-soft: #2e2540;
+  --shadow-pop: 0 6px 24px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}

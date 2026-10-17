@@ -19,17 +19,23 @@ behind why things are done the way they are.
 | Tested | 2–10 multiple-choice questions per lesson, with an explanation for every answer option |
 | Hands-on PLC practice | A browser ladder-logic simulator with its own guided lessons, challenges with automatic grading, hints, and tips |
 | Structured | Prerequisite graph; locked lessons show what's missing; "I already know this" skip and "test out" quiz |
+| Jargon everywhere | Every industry term anywhere in the app (lessons, quizzes, simulator, glossary itself) is tappable and opens a definition + ELI5 + "learn it in" lesson link |
 | Sticky | XP, levels, streaks, badges, a skill-tree map, and a spaced-repetition review queue of missed questions |
-| Runs anywhere | Double-click `index.html` on a PC (no install, no server, no build step); responsive for phones |
-| Progress saved | `localStorage` with export/import of a progress JSON file (so PC ↔ phone can be synced by hand) |
+| Runs anywhere | Served from your PC by a tiny dependency-free server (`python server.py`), reached from any device over Tailscale; no build step; responsive for phones |
+| Progress saved | Stored server-side in `data/progress.json`, so PC and phone share one progress record automatically; `localStorage` is only an offline cache |
 
 ---
 
 ## 2. Technical architecture
 
-**Static site, zero dependencies, zero build.** Works from `file://` (so no ES modules, no `fetch()` of local JSON).
+**Static site + tiny Python stdlib server, zero dependencies, zero build.** `server.py` serves the folder and a
+single-user progress API (`GET/PUT /api/progress`, atomic write to `data/progress.json`, timestamp-based merge so
+a stale tab can't clobber newer progress). Run it on the PC, then `tailscale serve` (HTTPS on the tailnet) or
+browse `http://<pc-tailscale-name>:8080` from the phone. Lessons load on demand so phones stay fast.
 
 ```
+server.py                  stdlib HTTP server + /api/progress (Python 3.8+)
+data/progress.json         your progress (gitignored)
 index.html                 app shell; loads scripts in order
 assets/css/tokens.css      design tokens (light/dark), type scale, spacing
 assets/css/app.css         components
@@ -71,12 +77,12 @@ LC.lesson({
 });
 ```
 
-**Progress model** (`localStorage["lc.v1"]`): per-lesson status (`locked|available|in-progress|complete|skipped|tested-out`),
+**Progress model** (server `data/progress.json`, cached in `localStorage["lc.v1"]`): per-lesson status (`locked|available|in-progress|complete|skipped|tested-out`),
 best quiz score, attempts, timestamps; XP; streak; badges; SRS cards (missed questions, Leitner boxes);
 sim challenge results; settings (theme, ELI5 default). Versioned with a migration hook.
 
-**Phone access:** the same folder works on a phone two ways — (a) GitHub Pages from this repo, or
-(b) publish the built folder as a private claude.ai Artifact (multi-file). Progress is per-device; export/import syncs.
+**Phone access:** over Tailscale. Same URL, same progress on every device. If the server is unreachable the app
+keeps working from the local cache and syncs when it reconnects.
 
 ---
 
@@ -266,6 +272,11 @@ Designed with the `artifact-design` guidance and reviewed with the `design:desig
 
 ## 6. Content-accuracy policy
 
+> Environment note: this build container's network blocks direct page fetches to the IA/Rockwell/Sepasoft sites, so
+> writers research through web search (server-side) and cite only URLs that search returned. Adding those domains to the
+> environment's allowed list would let agents read full pages.
+
+
 - Writers research primarily from: docs.inductiveautomation.com (8.3 + 8.1), inductiveuniversity.com,
   forum.inductiveautomation.com, inductiveautomation.com/resources (articles, webinars, ICC talks),
   literature.rockwellautomation.com, docs.sepasoft.com, docs.chariot.io / cirrus-link.com, modbus.org,
@@ -287,6 +298,8 @@ Designed with the `artifact-design` guidance and reviewed with the `design:desig
 | Lesson writers (×N, parallel) | Sonnet | Research + write 4–6 lessons each to schema, run validator on own files |
 | Validators / link checkers | Haiku | Run `validate.js` / `check-links.js`, fix mechanical issues (quiz shape, broken URL swaps) |
 | Reviewer | Sonnet | Spot-check accuracy & consistency per track, resolve `VERIFY` flags |
+
+Detailed contracts: `docs/CONTENT_GUIDE.md` (writers), `docs/APP_SPEC.md` (app), `docs/SIM_SPEC.md` (simulator).
 
 **Efficiency rules (from Anthropic's guidance on agents/subagents)**
 1. **Contract first:** schema, file layout, and one exemplar lesson exist *before* any writer starts —
@@ -315,7 +328,7 @@ Designed with the `artifact-design` guidance and reviewed with the `design:desig
 | P4 | Content wave B: T4, T5, T6 | Sonnet ×~8 |
 | P5 | Content wave C: T7, T8, T9 + glossary + remaining sim challenges | Sonnet ×~7 |
 | P6 | QA: validate, link-check, accuracy review, design critique + a11y review, phone layout test (Playwright screenshots) | Haiku + Sonnet |
-| P7 | Polish, README (how to run on PC/phone), PR | Orchestrator |
+| P7 | Polish, README (run the server, Tailscale setup, start on boot), PR | Orchestrator |
 
 ---
 
@@ -324,5 +337,5 @@ Designed with the `artifact-design` guidance and reviewed with the `design:desig
 - **Accuracy drift** (esp. 8.3 vs 8.1 differences) → source-first writing, link checks, `VERIFY` flags, reviewer pass.
 - **Volume** (~95 lessons) → strict schema + validator keep quality uniform; waves can be cut at track boundaries.
 - **Simulator complexity** → v1 scope fixed above; advanced instructions are stretch goals.
-- **file:// limitations** → no modules/fetch by design; everything registers onto a global `LC`.
+- **Two devices editing at once** → per-lesson `updatedAt` merge on the server; last real change wins per item, not per file.
 - **Copyright** → original explanations only; we link to IA/Rockwell material, never copy it.

@@ -1,0 +1,37 @@
+/* Diagram kit. Lesson SVGs use ONLY these classes (plus currentColor), so every diagram
+   follows the theme. Wrap is provided by the app: <figure class="dg">svg + figcaption</figure>. */
+.dg { margin: var(--s-5) 0; overflow-x: auto; }
+.dg svg { display: block; width: 100%; max-width: 720px; height: auto; margin: 0 auto; font-family: var(--font-body); }
+.dg figcaption { color: var(--muted); font-size: var(--text-xs); text-align: center; margin-top: var(--s-2); }
+
+.dg-bg        { fill: var(--d-bg); }
+.dg-box       { fill: var(--d-fill); stroke: var(--d-line); stroke-width: 1.5; }
+.dg-box-2     { fill: var(--d-fill-2); stroke: var(--d-line); stroke-width: 1.5; }
+.dg-box-accent{ fill: var(--d-accent-soft); stroke: var(--d-accent); stroke-width: 1.5; }
+.dg-box-ok    { fill: var(--ok-soft); stroke: var(--d-ok); stroke-width: 1.5; }
+.dg-box-warn  { fill: var(--warn-soft); stroke: var(--d-warn); stroke-width: 1.5; }
+.dg-box-alarm { fill: var(--alarm-soft); stroke: var(--d-alarm); stroke-width: 1.5; }
+.dg-zone      { fill: none; stroke: var(--d-line); stroke-width: 1.5; stroke-dasharray: 6 4; }
+
+.dg-line        { fill: none; stroke: var(--d-line); stroke-width: 2; }
+.dg-line-thin   { fill: none; stroke: var(--d-line); stroke-width: 1; }
+.dg-line-accent { fill: none; stroke: var(--d-accent); stroke-width: 2.5; }
+.dg-line-ok     { fill: none; stroke: var(--d-ok); stroke-width: 2.5; }
+.dg-line-alarm  { fill: none; stroke: var(--d-alarm); stroke-width: 2.5; }
+.dg-dash        { stroke-dasharray: 5 4; }
+
+.dg-fill-line   { fill: var(--d-line); }
+.dg-fill-accent { fill: var(--d-accent); }
+.dg-fill-ok     { fill: var(--d-ok); }
+.dg-fill-warn   { fill: var(--d-warn); }
+.dg-fill-alarm  { fill: var(--d-alarm); }
+.dg-fill-fg     { fill: var(--d-fg); }
+
+.dg-text        { fill: var(--d-fg); font-size: 14px; }
+.dg-text-sm     { fill: var(--d-fg); font-size: 12px; }
+.dg-text-muted  { fill: var(--d-muted); font-size: 12px; }
+.dg-text-mono   { fill: var(--d-fg); font-family: var(--font-mono); font-size: 12px; }
+.dg-title       { fill: var(--d-fg); font-family: var(--font-display); font-weight: 600; font-size: 16px; letter-spacing: 0.02em; }
+.dg-label-accent{ fill: var(--d-accent); font-size: 12px; font-weight: 700; }
+.dg-mid         { text-anchor: middle; }
+.dg-end         { text-anchor: end; }
