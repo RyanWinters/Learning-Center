@@ -37,7 +37,7 @@ DC input and output cards are described as **sinking** or **sourcing**, and the 
 - A **{{term:sinking-sourcing|sourcing}}** device pushes current out toward the load. A sourcing output puts +24 V on its terminal.
 - A **sinking** device pulls current in to a common. A sinking input provides a path to 0 V when the field device sends it +24 V.
 
-Rule of thumb: a sourcing device must be paired with a sinking device. Sensors are another case. **PNP** sensors source (switch +24 V to the signal wire) and work with sinking input cards. **NPN** sensors sink (switch the signal wire to 0 V) and work with sourcing input cards. Many North American PLC DC input cards are sinking-compatible with PNP sensors, and most modern installations use PNP, but you must check the card documentation, because both exist.
+Current always needs a source on one side and a sink on the other, so a sourcing field device pairs with a sinking card and the reverse. For sensors this shows up as the wiring type. **PNP** sensors source: they switch +24 V onto the signal wire, and need a sinking input card. **NPN** sensors sink: they switch the signal wire to 0 V, and need a sourcing input card. PNP is the common choice in North America and Europe's modern installs, but both exist, and some cards accept either, so check the card's wiring diagram.
 
 > [!warning] Check before you buy
 > Mixing an NPN sensor with a sinking input card gives you a sensor that appears dead. It is a common commissioning mistake that no software setting will fix. Check the sensor datasheet and the card's wiring diagram first.
@@ -87,7 +87,7 @@ A **0-10 V** signal is common on drives, HVAC actuators and cheap sensors. It is
 
 ### Scaling: raw counts to engineering units
 
-An analog input card converts current to an integer. A common ControlLogix 1756-IF8 reports a raw value of 0 to 32,767 over 0 to 20 mA in some configurations, or the card may scale directly to engineering units, depending on setup. For the math, assume a card where 4 mA reads as 6,242 counts and 20 mA as 31,208 counts. The scaling is a straight line:
+An analog input card converts current to an integer. Depending on its configuration, a Logix analog card reports raw counts or scales to engineering units itself. For the math, assume a 16-bit card where 0 to 20 mA spans 0 to 32,767 counts, so 4 mA reads about 6,242 counts and 20 mA about 31,208 counts. The scaling is a straight line:
 
 \`EU = EUmin + (raw - rawMin) * (EUmax - EUmin) / (rawMax - rawMin)\`
 
@@ -139,7 +139,7 @@ What you get from HART on the same two wires:
 - Secondary measured variables (a flow transmitter's temperature, for example)
 - Calibration records
 
-A technician with a HART communicator can read all of this from anywhere on the loop. In larger systems an asset-management tool does it centrally, through HART-capable I/O cards, or through multiplexers. In a typical PLC project the PLC reads only the analog 4-20 mA value and HART is used by maintenance. A HART loop also needs a minimum loop resistance (usually about 230 to 600 ohms) so the digital signal has voltage to ride on.
+A technician with a HART communicator can read all of this from anywhere on the loop. In larger systems an asset-management tool does it centrally, through HART-capable I/O cards, or through multiplexers. In a typical PLC project the PLC reads only the analog 4-20 mA value and HART is used by maintenance. A HART loop also needs a minimum loop resistance (commonly 230 ohms or more) so the digital signal has voltage to ride on.
 `,
 
   eli5: `
@@ -175,7 +175,7 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
     },
     {
       title: "Loop budget check",
-      body: `Supply 24 V. Transmitter minimum 10.5 V. Input resistor 250 ohms drops 5 V at 20 mA. Wire for 400 m of 18 AWG runs about 21 ohms per 1000 ft round trip, so roughly 56 ohms, which drops about 1.1 V. Total used: 10.5 + 5 + 1.1 = 16.6 V of 24. The loop works with 7 V of margin.`
+      body: `Supply 24 V. Transmitter minimum 10.5 V. Input resistor 250 ohms drops 5 V at 20 mA. The round trip over 400 m of 18 AWG is about 2,600 ft of copper at roughly 6.4 ohms per 1000 ft, so about 17 ohms, which drops 0.34 V. Total used: 10.5 + 5 + 0.34 = about 15.9 V of 24. The loop works with about 8 V of margin.`
     }
   ],
 
@@ -224,12 +224,12 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
   quiz: [
     {
       q: "Why does 4-20 mA use 4 mA for zero percent instead of 0 mA?",
-      options: ["To save power", "So a dead loop (0 mA) can be told apart from a true zero reading", "Because 0 mA is not possible to generate", "To make scaling math simpler"],
-      answer: 1,
+      options: ["To save power", "Because 0 mA is not possible to generate", "So a dead loop (0 mA) can be told apart from a true zero reading", "To make scaling math simpler"],
+      answer: 2,
       explain: [
         "The offset costs range, not power; it actually powers 2-wire electronics.",
-        "Correct. A live zero turns a broken wire into a detectable fault.",
         "A source can easily produce 0 mA.",
+        "Correct. A live zero turns a broken wire into a detectable fault.",
         "The offset complicates the scaling math slightly."
       ]
     },
@@ -246,22 +246,22 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
     },
     {
       q: "A previously healthy analog tag now reads 0.0 mA. What is the best interpretation?",
-      options: ["The process is at zero percent", "An open loop or dead transmitter, so the value should be flagged bad", "The sensor is perfect", "HART communication is active"],
-      answer: 1,
+      options: ["The process is at zero percent", "The sensor is perfect", "HART communication is active", "An open loop or dead transmitter, so the value should be flagged bad"],
+      answer: 3,
       explain: [
         "A valid zero percent would read 4 mA.",
-        "Correct. Anything below the valid window indicates a fault, not a process value.",
         "That does not describe a fault.",
-        "HART modulation is tiny and does not drop the current to zero."
+        "HART modulation is tiny and does not drop the current to zero.",
+        "Correct. Anything below the valid window indicates a fault, not a process value."
       ]
     },
     {
       q: "What does the HART digital signal do to the 4-20 mA analog reading?",
-      options: ["It raises it by 1 mA", "It has no effect because its tones average to zero", "It replaces it", "It makes it noisy by design"],
-      answer: 1,
+      options: ["It has no effect because its tones average to zero", "It raises it by 1 mA", "It replaces it", "It makes it noisy by design"],
+      answer: 0,
       explain: [
-        "HART's tones are symmetrical; they do not add a DC offset.",
         "Correct. The FSK tones average out, so the PLC's analog reading is unchanged.",
+        "HART's tones are symmetrical; they do not add a DC offset.",
         "The analog signal remains the primary measurement.",
         "It is designed not to disturb the analog signal."
       ]
@@ -279,12 +279,12 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
     },
     {
       q: "A transmitter is configured to burn out high at 22 mA on internal failure. Your PLC clamps inputs to 0-100 percent. What happens on a failure?",
-      options: ["Nothing, the PLC clamps to 100 percent", "The tag shows 100 percent with no sign of a fault, and could trigger wrong control action", "The PLC faults", "It reads 0 percent"],
-      answer: 1,
+      options: ["Nothing, the PLC clamps to 100 percent", "The PLC faults", "The tag shows 100 percent with no sign of a fault, and could trigger wrong control action", "It reads 0 percent"],
+      answer: 2,
       explain: [
         "Clamping hides the fault, which is the problem, not a solution.",
-        "Correct. Without an out-of-range check the fault looks like a real, extremely high reading. NE43 ranges should map to bad quality.",
         "A PLC does not fault on an analog value outside range unless you program it to.",
+        "Correct. Without an out-of-range check the fault looks like a real, extremely high reading. NE43 ranges should map to bad quality.",
         "A high burnout reads high, not low."
       ]
     }

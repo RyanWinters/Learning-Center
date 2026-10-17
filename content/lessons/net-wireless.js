@@ -27,6 +27,8 @@ A plant uses several wireless technologies at once, because no single one fits e
 | Mobile equipment, AGVs, large sites | Private LTE / 5G | 10 to several 100 Mbps | 10 to 50 ms | Licensed or shared spectrum |
 | Remote sites | Public LTE / 5G cellular | 5 to 100 Mbps | 30 to 100 ms | Carrier network in the path |
 
+{{diagram:reach}}
+
 ## Wi-Fi for tablets running Perspective
 
 Ignition Perspective runs in a browser, so a tablet or phone with Wi-Fi is a complete operator screen with nothing to install. That is the appeal. The pain is almost always the radio network, not Ignition.
@@ -84,7 +86,7 @@ Things to know:
 - **Dual SIM and signal.** Choose a router with two SIMs for carrier failover, and an external antenna on a mast if the site is in a metal building.
 
 > [!example] Pump station numbers
-> A lift station sends 40 tags every 10 seconds by Sparkplug B report by exception, around 200 bytes when anything changes and a small heartbeat otherwise. That is on the order of a few hundred megabytes per month in the worst case, versus several gigabytes if the same 40 tags were polled over Modbus TCP each second.
+> Polling 40 tags once a second over Modbus TCP, at roughly 100 bytes per request and reply pair per group of registers, adds up to many gigabytes a month. The same 40 tags sent by report by exception with a 60 second heartbeat move only when values change, often a hundredth of that traffic. Measure your own site, but expect the gap to be that large.
 `,
 
   eli5: `
