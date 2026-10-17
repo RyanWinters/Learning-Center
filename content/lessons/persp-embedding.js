@@ -135,18 +135,13 @@ Assume a \`Motor\` UDT with members \`Run\` (bool), \`Speed\` (float, Hz), \`Fau
 }
 \`\`\`
 
-For the status badge, bind the \`run\` and \`fault\` states into one expression structure on a view custom prop, then bind the badge's style class off a Map transform:
+For the status badge, bind two view custom props straight to the tags, each with an indirect tag binding (\`custom.run\` to \`{1}/Run\`, \`custom.fault\` to \`{1}/Fault\`, with \`{1}\` = \`{view.params.motorPath}\`). Then add a third custom prop, \`custom.stateCode\`, with an expression binding:
 
-\`\`\`json
-"custom.state": {
-  "binding": { "type": "expr-struct", "config": { "struct": {
-    "run":   { "binding": { "type": "tag", "config": { "mode": "indirect", "tagPath": "{1}/Run",   "references": { "1": "{view.params.motorPath}" } } } },
-    "fault": { "binding": { "type": "tag", "config": { "mode": "indirect", "tagPath": "{1}/Fault", "references": { "1": "{view.params.motorPath}" } } } }
-  } } }
-}
+\`\`\`text
+if({view.custom.fault}, 2, if({view.custom.run}, 1, 0))
 \`\`\`
 
-Then derive one number, \`fault*2 + run\`, with an expression binding, and map 0, 1, 2 to style classes (stopped, running, fault). Two tags feed one visible state with no script.
+Then map 0, 1, 2 on the badge's style binding to the style classes stopped, running and fault. Two tags feed one visible state with no script.
 
 **3. Add an output param**, \`selected\`, bound inside the tile to a custom prop that a click handler sets. The parent grid reads it and can open a detail popup (see {{lesson:persp-events}}).
 
@@ -188,7 +183,7 @@ The trick that makes it work is handing the card only one clue, the machine's ad
 `,
 
   history: `
-Embedded views have been part of Perspective since its 8.0 beginning as the answer to Vision's templates. The flex repeater followed as the template-plus-list component, and later 8.1 releases added Designer help such as a parameter dropdown for repeater instances and the Sync Params button on embedded views. The view canvas covers dynamic multi-view surfaces.
+Embedded views are Perspective's answer to Vision's templates: one definition, many instances, each configured by parameters. The flex repeater adds the template-plus-list pattern, and the view canvas handles dynamic multi-view surfaces. Designer helpers such as Sync Params and a parameter dropdown for repeater instances reduce the typing needed to wire them up.
 `,
 
   examples: [

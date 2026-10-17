@@ -72,7 +72,7 @@ TYPE_TO_VIEW = {
 }
 
 def openFaceplate(tagPath):
-    typeId = system.tag.readBlocking([tagPath + '.typeId'])[0].value  # UDT type of the instance
+    typeId = system.tag.getConfiguration(tagPath, False)[0]['typeId']  # UDT type of the instance
     view = TYPE_TO_VIEW.get(str(typeId).split('/')[-1], 'Library/Faceplates/Generic')
     system.perspective.openPopup(
         'fp-' + tagPath, view,
@@ -192,7 +192,7 @@ A factory screen library works the same way. One template per kind of machine, o
 `,
 
   history: `
-Reusable symbol libraries predate HMI software: P&ID standards define symbols so any engineer can read any drawing. Vision offered templates and the Perspective equivalent is the embedded view with parameters, combined with project inheritance introduced for Perspective-era Ignition. Community sharing grew through the Ignition Exchange, a place where users publish projects, views and tools.
+Reusable symbol libraries predate HMI software: P&ID standards define symbols so any engineer can read any drawing. Vision offered templates and the Perspective equivalent is the embedded view with parameters, combined with project inheritance, which lets one project build on another. Community sharing grew through the Ignition Exchange, a place where users publish projects, views and tools.
 `,
 
   examples: [

@@ -63,12 +63,6 @@ Part 4 of the standard goes deeper into operations management models for schedul
 
 A deliberately small production schedule fragment:
 
-\`\`\`json
-{
-  "note": "Shown as JSON for readability. Real B2MML is XML, see the next block."
-}
-\`\`\`
-
 \`\`\`text
 <ProductionSchedule>
   <ID>SCHED-2026-10-17</ID>
@@ -227,52 +221,47 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
         "These are real models but they change slowly and are not the daily flow.",
         "Correct. Orders go down as a production schedule and results come back as production performance.",
         "These describe reusable steps and what the plant could do, not what is happening today.",
-        "Classes describe definitions and change rarely."
-      ]
+        "Classes describe definitions and change rarely."]
     },
     {
       q: "What is B2MML?",
-      options: ["A network protocol like MQTT", "An XML implementation of the ISA-95 object models", "A Sepasoft database", "A SAP message format"],
-      answer: 1,
+      options: ["A network protocol like MQTT", "A Sepasoft database", "A SAP message format", "An XML implementation of the ISA-95 object models"],
+      answer: 3,
       explain: [
         "B2MML is a message format, not a transport protocol.",
-        "Correct. It defines the XML shapes for ISA-95 data, and you choose how to transport it.",
         "It's a standard schema, not a product-specific database.",
-        "It's maintained by MESA and isn't specific to SAP, though SAP integrations may use or map to it."
-      ]
+        "It's maintained by MESA and isn't specific to SAP, though SAP integrations may use or map to it.",
+        "Correct. It defines the XML shapes for ISA-95 data, and you choose how to transport it."]
     },
     {
       q: "The MES sends a production confirmation, the network drops the reply, and the MES retries. How do you avoid double inventory?",
-      options: ["Never retry", "Include a unique confirmation ID that the receiver uses to ignore repeats", "Send it twice every time", "Make the operator re-enter it"],
-      answer: 1,
+      options: ["Include a unique confirmation ID that the receiver uses to ignore repeats", "Never retry", "Send it twice every time", "Make the operator re-enter it"],
+      answer: 0,
       explain: [
-        "Not retrying means lost confirmations, which is just as bad.",
         "Correct. An idempotent receiver keyed on a unique ID makes retries safe.",
+        "Not retrying means lost confirmations, which is just as bad.",
         "That would guarantee duplicates unless the ID check exists.",
-        "Manual re-entry is slow and error-prone."
-      ]
+        "Manual re-entry is slow and error-prone."]
     },
     {
       q: "A plant wants to keep running during ERP maintenance windows. Which design fits best?",
-      options: ["Each start button waits for a live ERP response", "Buffer released orders locally and queue confirmations until ERP is reachable", "Disable order tracking during the window", "Run ERP on the plant network"],
-      answer: 1,
+      options: ["Each start button waits for a live ERP response", "Disable order tracking during the window", "Buffer released orders locally and queue confirmations until ERP is reachable", "Run ERP on the plant network"],
+      answer: 2,
       explain: [
         "That makes an ERP outage a production outage.",
-        "Correct. Local buffering decouples the line from the back office.",
         "Losing tracking leaves gaps in the records.",
-        "ERP location doesn't remove the dependency, and it is not usually possible."
-      ]
+        "Correct. Local buffering decouples the line from the back office.",
+        "ERP location doesn't remove the dependency, and it is not usually possible."]
     },
     {
       q: "A customer says, 'Just connect us to SAP.' What should you do first?",
-      options: ["Quote a fixed price", "Find out the SAP product and version, which objects are needed, and who owns the SAP configuration", "Install the Business Connector and test", "Write the B2MML schema from scratch"],
-      answer: 1,
+      options: ["Quote a fixed price", "Install the Business Connector and test", "Write the B2MML schema from scratch", "Find out the SAP product and version, which objects are needed, and who owns the SAP configuration"],
+      answer: 3,
       explain: [
         "Pricing before scoping is how integrations go over budget.",
-        "Correct. SAP ERP, S/4HANA and other products expose different interfaces, and SAP-side work needs SAP staff.",
         "Tools come after you know the interface and the objects.",
-        "B2MML is published. You don't write the schema, you agree on a profile."
-      ]
+        "B2MML is published. You don't write the schema, you agree on a profile.",
+        "Correct. SAP ERP, S/4HANA and other products expose different interfaces, and SAP-side work needs SAP staff."]
     },
     {
       q: "Which integration pattern most easily produces half-read data if you are careless?",
@@ -282,8 +271,7 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
         "A REST call delivers a complete request or fails.",
         "Correct. A poller can pick up a file the writer hasn't finished. Write to a temporary name and rename when complete.",
         "Queues deliver whole messages.",
-        "Middleware normally deals in whole messages."
-      ]
+        "Middleware normally deals in whole messages."]
     }
   ],
 
