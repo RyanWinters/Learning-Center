@@ -6,6 +6,11 @@ but new to PLC programming, networking depth, databases and MES. Write for them.
 
 **The exemplar is `content/lessons/proto-modbus.js`. Read it first and match its shape, depth and tone.**
 
+**Every example follows `docs/HOUSE_STANDARD.md`** (reference plant, UDT naming, IP plan, DMZ pattern, 4–20 mA scale, motor safety)
+and `docs/FACTS.md`. Lessons must not contradict each other.
+
+**Build labs** (`build-*`) add a `checklist: ["step the app tracks", …]` field: 6–15 concrete, checkable steps done in Ignition Maker Edition.
+
 ## Files you own
 
 - `content/lessons/<id>.js`: one per assigned lesson. The id and title come from `content/curriculum.js`. Don't edit curriculum.js.
