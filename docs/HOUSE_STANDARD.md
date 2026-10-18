@@ -10,8 +10,12 @@ ISA-95 hierarchy used in names and paths: `Enterprise → Site (Plant1) → Area
 
 ## 2. Equipment and UDTs
 
-Equipment tags follow ISA-5.1-style numbers, uppercase with no separator: `M101` (motor), `P101` (pump), `FV101` (valve),
-`LT101` (level transmitter). Number ranges are per area: Area10 uses 100s, Area20 uses 200s.
+Equipment tags follow ISA-5.1-style numbers. **On P&IDs, loop sheets, I/O lists and alarm worksheets they are written with a
+hyphen** (`LT-101`, `FV-101`, `LAHH-101`), as drawings do. **In PLC, Ignition, database and MQTT names the hyphen is dropped**
+(`LT101`, `FV101`), because hyphens aren't valid in Logix tag names. A lesson that crosses from drawing to code shows the mapping once.
+Examples: `M101` (motor), `P101` (pump), `FV101` (valve), `LT101` (level transmitter). Loop numbers match the equipment
+(LT-101's alarms are LAH-101 / LAHH-101). Number ranges are per area: Area10 uses 100s, Area20 uses 200s.
+Units go in descriptions and engineering-unit properties, not in member names (`Cfg.StartDelay`, not `Cfg.StartDelay_ms`).
 
 **Logix UDT** `UDT_Motor` with nested member structures:
 

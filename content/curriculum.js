@@ -208,5 +208,16 @@ window.LC_GLOSSARY_FILES = [
   "content/glossary/c8.js",
   "content/glossary/d1.js",
   "content/glossary/d2.js",
-  "content/glossary/d3.js"
+  "content/glossary/d3.js",
+  "content/glossary/e1.js",
+  "content/glossary/e2.js",
+  "content/glossary/e3.js",
+  "content/glossary/e4.js",
+  "content/glossary/e5.js",
+  "content/glossary/e6.js",
+  "content/glossary/e7.js",
+  "content/glossary/e8.js",
+  "content/glossary/e9.js",
+  "content/glossary/e10.js",
+  "content/glossary/e11.js"
 ];
