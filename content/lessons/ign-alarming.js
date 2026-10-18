@@ -63,7 +63,7 @@ These three settings fix different problems.
 - **Clear delay** fixes *flicker on the way out*. The condition must stay false for that many seconds before the alarm clears.
 
 > [!example] High tank level: working numbers
-> Level transmitter, 0 to 100 percent, normal range 40 to 70. High alarm: Above Setpoint 85, priority High, deadband 3, active delay 10 s, ack Manual. Behavior: crosses 85 and stays above for 10 s, so the alarm goes active and unacknowledged. Falls to 84, nothing happens (still inside the deadband). Falls below 82 and the condition clears, becoming cleared and (if not yet acknowledged) cleared-unacknowledged.
+> Level transmitter LT-101 on the P&ID (tag `LT101` in Ignition), ranged 0 to 5.0 m, normal range 2.0 to 3.5 m. The alarm LAH-101 is Above Setpoint 4.25 m, priority High, deadband 0.15 m, active delay 10 s, ack Manual. Behavior: the level crosses 4.25 and stays above for 10 s, so the alarm goes active and unacknowledged. It falls to 4.20, and nothing happens (still inside the deadband). It falls below 4.10 and the condition clears, becoming clear and (if not yet acknowledged) clear-unacknowledged. The high-high alarm LAHH-101 and any overflow protection belong in the PLC or a hardwired circuit, not only in Ignition.
 
 ## Alarm states and acknowledgement
 
@@ -98,7 +98,7 @@ A **pipeline**, from the Alarm Notification module, is a flow chart that runs fo
 
 ## Associated data
 
-Associated data captures extra context at the instant an alarm goes active or clears. Typical examples are the tag value at that moment, a batch id or a motor's load. It appears in the event details, the journal and pipelines, so a notification can say "High Level on Tank 3, 91%, Batch 4471" instead of just "High Level." Use it generously and keep the values simple.
+Associated data captures extra context at the instant an alarm goes active or clears. Typical examples are the tag value at that moment, a batch id or a motor's load. It appears in the event details, the journal and pipelines, so a notification can say "High Level on LT101, 4.4 m, Batch 4471" instead of just "High Level." Use it generously and keep the values simple.
 
 ## Designing for operators: ISA-18.2
 
@@ -136,8 +136,8 @@ Alarm annunciator panels, rows of lighted windows with horns, came first. Contro
 
   examples: [
     {
-      title: "Alarm on a UDT so all pumps inherit it",
-      body: `Add to the \`Pump\` UDT definition a Bad Quality alarm on \`Pressure\`, a Below Setpoint alarm on \`Pressure\` bound to a \`LowPressureSP\` parameter, and an On Condition alarm \`{[.]Run} && !{[.]Feedback}\` with a 5 s active delay. Every pump gets the same alarms and each can set its own setpoint on its parameter.`
+      title: "Alarm on a UDT so all motors inherit it",
+      body: `Add to the \`Motor\` UDT definition a Bad Quality alarm on \`Sts/Speed\`, an Above Setpoint alarm on \`Sts/Speed\` bound to the member \`Cfg/SpeedHigh\`, and an On Condition alarm \`{[.]Cmd/Start} && !{[.]Sts/Running}\` with a 5 s active delay. Every motor (\`M101\` to \`M140\`) gets the same alarms and each reads its own limit from its \`Cfg\` folder. Overload protection stays hardwired in the starter, and the PLC's \`Alm/Overload\` bit only informs the operator.`
     },
     {
       title: "Reading the journal for bad actors",
@@ -152,29 +152,35 @@ The ten most frequent alarms in a week are your rationalization list. Column and
   ],
 
   diagrams: {
-    states: `<svg viewBox="0 0 640 220" role="img" aria-label="Four alarm states: active unacknowledged, active acknowledged, cleared unacknowledged and cleared acknowledged, with transitions for condition true, acknowledge and condition clear">
+    states: `<svg viewBox="0 0 640 300" role="img" aria-label="Alarm life cycle with four states: Active Unacknowledged, Active Acknowledged, Clear Unacknowledged and Clear Acknowledged. Condition true moves Normal to Active Unacknowledged, an operator ack moves unacknowledged to acknowledged, and the condition clearing moves active to clear. A cleared and acknowledged alarm leaves the active list.">
   <defs><marker id="ign-alarming-ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="dg-fill-line" d="M0,0 L8,4 L0,8 z"/></marker></defs>
-  <rect class="dg-box" x="20" y="90" width="110" height="44" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="75" y="117">Normal</text>
-  <rect class="dg-box-accent" x="200" y="30" width="170" height="50" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="285" y="52">Active</text>
-  <text class="dg-text-sm dg-mid" x="285" y="70">Unacknowledged</text>
-  <rect class="dg-box-accent" x="440" y="30" width="180" height="50" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="530" y="52">Active</text>
-  <text class="dg-text-sm dg-mid" x="530" y="70">Acknowledged</text>
-  <rect class="dg-box-accent" x="200" y="150" width="170" height="50" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="285" y="172">Cleared</text>
-  <text class="dg-text-sm dg-mid" x="285" y="190">Unacknowledged</text>
-  <line class="dg-line" x1="130" y1="100" x2="198" y2="65" marker-end="url(#ign-alarming-ah)"/>
-  <line class="dg-line" x1="370" y1="55" x2="438" y2="55" marker-end="url(#ign-alarming-ah)"/>
-  <text class="dg-text-muted" x="372" y="46">ack</text>
-  <line class="dg-line" x1="285" y1="80" x2="285" y2="148" marker-end="url(#ign-alarming-ah)"/>
-  <text class="dg-text-muted" x="293" y="120">clears</text>
-  <line class="dg-line" x1="440" y1="75" x2="372" y2="160" marker-end="url(#ign-alarming-ah)"/>
-  <text class="dg-text-muted" x="415" y="128">clears: done</text>
-  <line class="dg-line" x1="200" y1="175" x2="100" y2="136" marker-end="url(#ign-alarming-ah)"/>
-  <text class="dg-text-muted" x="100" y="170">ack: done</text>
-  <text class="dg-text-muted" x="22" y="212">Active delay applies before the first arrow; clear delay before the clear arrows.</text>
+  <rect class="dg-box" x="10" y="120" width="100" height="44" rx="6"/>
+  <text class="dg-text-sm dg-mid" x="60" y="147">Normal</text>
+  <rect class="dg-box-alarm" x="170" y="30" width="170" height="50" rx="6"/>
+  <text class="dg-text-sm dg-mid" x="255" y="52">Active</text>
+  <text class="dg-text-sm dg-mid" x="255" y="70">Unacknowledged</text>
+  <rect class="dg-box-accent" x="450" y="30" width="170" height="50" rx="6"/>
+  <text class="dg-text-sm dg-mid" x="535" y="52">Active</text>
+  <text class="dg-text-sm dg-mid" x="535" y="70">Acknowledged</text>
+  <rect class="dg-box-warn" x="170" y="190" width="170" height="50" rx="6"/>
+  <text class="dg-text-sm dg-mid" x="255" y="212">Clear</text>
+  <text class="dg-text-sm dg-mid" x="255" y="230">Unacknowledged</text>
+  <rect class="dg-box" x="450" y="190" width="170" height="50" rx="6"/>
+  <text class="dg-text-sm dg-mid" x="535" y="212">Clear</text>
+  <text class="dg-text-sm dg-mid" x="535" y="230">Acknowledged</text>
+  <line class="dg-line" x1="60" y1="120" x2="168" y2="62" marker-end="url(#ign-alarming-ah)"/>
+  <text class="dg-text-muted" x="10" y="84">condition true</text>
+  <line class="dg-line" x1="340" y1="55" x2="448" y2="55" marker-end="url(#ign-alarming-ah)"/>
+  <text class="dg-text-muted" x="352" y="46">operator acks</text>
+  <line class="dg-line" x1="255" y1="80" x2="255" y2="188" marker-end="url(#ign-alarming-ah)"/>
+  <text class="dg-text-muted" x="263" y="138">condition clears</text>
+  <line class="dg-line" x1="535" y1="80" x2="535" y2="188" marker-end="url(#ign-alarming-ah)"/>
+  <text class="dg-text-muted dg-end" x="527" y="138">condition clears</text>
+  <line class="dg-line" x1="340" y1="215" x2="448" y2="215" marker-end="url(#ign-alarming-ah)"/>
+  <text class="dg-text-muted" x="352" y="206">operator acks</text>
+  <path class="dg-line" fill="none" d="M535 240 L535 268 L60 268 L60 166" marker-end="url(#ign-alarming-ah)"/>
+  <text class="dg-text-muted" x="150" y="260">cleared and acknowledged: leaves the active list</text>
+  <text class="dg-text-muted" x="10" y="292">Active delay applies before the first arrow; clear delay before the clear arrows.</text>
 </svg>`
   },
 
@@ -236,7 +242,7 @@ The ten most frequent alarms in a week are your rationalization list. Column and
     },
     {
       q: "Which alarm best matches an ISA-18.2 'good alarm'?",
-      options: ["Pump running", "Tank level high, requiring the operator to divert flow within 5 minutes to avoid overflow", "Any change on a setpoint tag", "Communications OK"],
+      options: ["Pump running", "LT101 level high, requiring the operator to divert flow within 5 minutes to avoid overflow", "Any change on a setpoint tag", "Communications OK"],
       answer: 1,
       explain: [
         "Status information belongs on a screen.",

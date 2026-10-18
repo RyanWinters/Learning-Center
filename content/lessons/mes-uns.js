@@ -50,30 +50,30 @@ Other technologies can play the broker role. Kafka, a message bus or a data plat
 A topic is a path. A readable UNS topic might look like:
 
 \`\`\`text
-acme/dallas/packaging/line2/filler/temperature
-acme/dallas/packaging/line2/filler/state
-acme/dallas/packaging/line2/oee
-acme/dallas/packaging/line2/workorder/current
-acme/houston/blending/tank4/level
+meridian/plant1/area10/line1/m101/sts/running
+meridian/plant1/area10/line1/m101/sts/speed
+meridian/plant1/area20/line1/oee
+meridian/plant1/area20/line1/workorder/current
+meridian/plant2/area20/line1/oee
 \`\`\`
 
-Levels: enterprise (\`acme\`), site (\`dallas\`), area (\`packaging\`), line (\`line2\`), cell or asset (\`filler\`), then a measurement or object name.
+Levels: enterprise (\`meridian\`), site (\`plant1\`), area (\`area10\`), line (\`line1\`), equipment (\`m101\`), then the member path (\`sts/speed\`). This is the house plain-MQTT form: ISA-95 levels, all lowercase, and the equipment members mirror the UDT folders (\`Cmd\`, \`Sts\`, \`Cfg\`, \`Alm\`).
 
 Some practical rules:
 
-- **Keep the hierarchy stable.** Names are keys that many consumers depend on. Renaming \`line2\` is a breaking change.
+- **Keep the hierarchy stable.** Names are keys that many consumers depend on. Renaming \`line1\` is a breaking change.
 - **Use consistent case and characters.** No spaces. Pick lowercase or camelCase and enforce it.
-- **Don't put values in topics.** \`filler/temp/72.4\` is wrong. The value belongs in the payload.
+- **Don't put values in topics.** \`m101/sts/speed/1450\` is wrong. The value belongs in the payload.
 - **Decide how deep to go.** One topic per tag gives fine-grained subscriptions. One topic per asset with a JSON payload of many fields gives fewer, richer messages.
 - **Separate raw from contextualized data.** Many designs keep a raw layer near the edge and a cleaned, modeled layer in the UNS.
 
-A payload for the filler might be:
+A payload for \`meridian/plant1/area10/line1/m101/sts/speed\` might be:
 
 \`\`\`json
 {
   "timestamp": "2026-10-17T14:03:22.418Z",
-  "value": 72.4,
-  "unit": "degC",
+  "value": 1450.0,
+  "unit": "rpm",
   "quality": "good"
 }
 \`\`\`
@@ -94,24 +94,37 @@ This is the live argument in the community.
 | Interoperability | Tools that speak Sparkplug work together | Only as good as your documentation |
 | Hierarchy fit | Group / edge node / device is shallow and not ISA-95 shaped | Any depth you want |
 
-The case for Sparkplug is plug-and-play discovery and a well-defined state model, with products like Cirrus Link's MQTT modules for Ignition built around it. The case against, argued for example by HiveMQ, is that its rigid topic structure limits semantic design for an enterprise-wide namespace, and that a more flexible approach scales better. Cirrus Link has offered options to present Sparkplug data in a UNS-style hierarchy in MQTT Engine.
+The case for Sparkplug is plug-and-play discovery and a well-defined state model, with products like the MQTT modules for Ignition from Cirrus Link (the vendor of MQTT Transmission, MQTT Engine and the Chariot broker) built around it. The case against, argued for example by HiveMQ, is that its rigid topic structure limits semantic design for an enterprise-wide namespace, and that a more flexible approach scales better. Check Cirrus Link's documentation for the release you run to see whether and how MQTT Engine can present Sparkplug data in a hierarchy of your choosing.
 
 A common compromise: Sparkplug between edge and a site-level broker, then a modeled, hierarchical (often JSON) UNS above it. Neither camp is obviously wrong. Choose based on your edge devices, your tools and who will consume the data.
 
+### One tag, two namespaces: never mix them
+
+Take the motor run status from the house UDT. The two styles name the same fact differently, and each keeps its own rules:
+
+| | Plain MQTT UNS | Sparkplug B |
+|---|---|---|
+| Topic | \`meridian/plant1/area10/line1/m101/sts/running\` | \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\` |
+| Where the path lives | In the topic, your ISA-95 hierarchy, lowercase | Fixed by the spec: \`spBv1.0/<group_id>/<msg_type>/<edge_node_id>/<device_id>\` |
+| Mapping | enterprise, site, area, line, equipment, member | group_id = \`Plant1\`, edge_node_id = \`Area10_Line1\`, device_id = \`M101\` |
+| Tag name | last topic levels (\`sts/running\`) | Metric name \`Sts/Running\` inside the payload |
+
+Never put an ISA-95 path into a Sparkplug topic, and never invent \`spBv1.0\` look-alike prefixes for plain topics. If you want both, run a bridge that subscribes to the Sparkplug side and republishes modeled messages to the plain UNS tier, so each broker namespace stays clean.
+
 ## Where Ignition fits
 
-Ignition is usually a **node** in the UNS, not the UNS itself. In an Inductive Automation webinar the point was made that the namespace is the sum of the contributors and the MQTT server, so the broker holds it.
+Ignition is usually a **node** in the UNS, not the UNS itself. The namespace is the combined output of everything that publishes into it, and the broker is where it lives.
 
 A typical Ignition-based arrangement:
 
-- **Edge gateways** (or {{term:ignition-edge|Ignition Edge}}) connect to PLCs over OPC UA or native drivers and publish with {{term:mqtt-transmission|MQTT Transmission}}.
-- **A broker** such as {{term:chariot-broker|Chariot}}, or a third-party broker, receives and distributes.
-- **A central gateway** runs {{term:mqtt-engine|MQTT Engine}} to subscribe and create tags, then provides {{term:historian|historian}}, Perspective and alarming.
+- **Edge gateways** (or {{term:ignition-edge|Ignition Edge}}) connect to PLCs over OPC UA or native drivers and publish with {{term:mqtt-transmission|MQTT Transmission}} (a Cirrus Link module, which speaks Sparkplug B).
+- **A broker** such as {{term:chariot-broker|Chariot}} (Cirrus Link's broker), or a third-party broker, receives and distributes.
+- **A central gateway** runs {{term:mqtt-engine|MQTT Engine}} (also Cirrus Link) to subscribe and create tags, then provides {{term:historian|historian}}, Perspective and alarming.
 - **UDTs** model assets, and the same structure can be reflected in topics.
 - **Sepasoft MES, ERP interfaces and cloud analytics** publish to or consume from the same namespace.
 
 > [!example] A line OEE value in the UNS
-> The packaging line's MES computes OEE every minute. It publishes \`acme/dallas/packaging/line2/oee\` as a retained message with value 0.742 and a timestamp. A maintenance dashboard, an executive screen and a cloud analytics service all subscribe to that topic. None of them query the MES database, and the MES doesn't know how many consume.
+> The packaging line's MES computes OEE every minute. It publishes \`meridian/plant1/area20/line1/oee\` as a retained message with value 0.742 and a timestamp. A maintenance dashboard, an executive screen and a cloud analytics service all subscribe to that topic. None of them query the MES database, and the MES doesn't know how many consume.
 
 ## Criticisms worth knowing
 
@@ -140,7 +153,7 @@ But a bulletin board isn't a filing cabinet. It shows what's true now, not every
   why: `
 **Why event-driven rather than polling?** Polling asks "anything new?" thousands of times for nothing. Publishing on change means the cost scales with how often things actually happen. It also means a new consumer can join without the producer doing any work.
 
-**Why a hierarchy that matches the business?** People navigate by place. A maintenance planner thinks "Dallas, packaging, line 2." If topics follow that shape, subscriptions like \`acme/dallas/packaging/#\` make natural sense. The hierarchy also gives a place to hang models of assets, which is the semantic work you'd need anyway.
+**Why a hierarchy that matches the business?** People navigate by place. A maintenance planner thinks "Plant1, packaging, Line1." If topics follow that shape, subscriptions like \`meridian/plant1/area20/#\` make natural sense. The hierarchy also gives a place to hang models of assets, which is the semantic work you'd need anyway.
 
 **Why do skeptics push back?** They have seen "single source of truth" projects before, such as data warehouses and master data programs, and most struggled with ownership and data quality, not transport. A broker doesn't fix either. The critics are right that a UNS without governance is just a faster way to spread bad data.
 
@@ -156,11 +169,11 @@ MQTT was created in 1999 for monitoring oil pipelines over expensive satellite l
   examples: [
     {
       title: "Designing the first six topics",
-      body: `A single plant starts small. Enterprise \`acme\`, site \`dallas\`. Publish per line: \`.../line2/state\`, \`.../line2/oee\`, \`.../line2/workorder/current\`, plus \`.../line2/filler/speed\`, \`.../line2/filler/temperature\`, \`.../line2/filler/alarm/active\`. Document each topic's payload fields and units in one page everyone can read. Add lines one at a time using the same pattern.`
+      body: `A single plant starts small. Enterprise \`meridian\`, site \`plant1\`. Publish per line under \`area20/line1\`: \`.../state\`, \`.../oee\`, \`.../workorder/current\`, plus \`.../m201/sts/speed\`, \`.../m201/sts/running\`, \`.../m201/alm/overload\`. Document each topic's payload fields and units in one page everyone can read. Add lines one at a time using the same pattern.`
     },
     {
       title: "Using a wildcard subscription",
-      body: `A site dashboard subscribes to \`acme/dallas/+/+/oee\`. The \`+\` wildcard matches one level, so it receives the OEE topic of every line in every area at the Dallas site. Adding a new line needs no dashboard change, provided the new line follows the naming pattern. A typo like \`Line3\` instead of \`line3\` would be missed by anyone filtering on lowercase names.`
+      body: `A site dashboard subscribes to \`meridian/plant1/+/+/oee\`. The \`+\` wildcard matches one level, so it receives the OEE topic of every line in every area at Plant1. Adding a new line needs no dashboard change, provided the new line follows the naming pattern. A typo like \`Line1\` instead of \`line1\` would be missed by anyone filtering on lowercase names.`
     }
   ],
 
@@ -179,11 +192,11 @@ MQTT was created in 1999 for monitoring oil pipelines over expensive satellite l
   <text class="dg-text-sm dg-mid" x="95" y="245">Quality / LIMS</text>
   <rect class="dg-box-accent" x="225" y="60" width="190" height="180" rx="8"/>
   <text class="dg-title dg-mid" x="320" y="90">MQTT broker</text>
-  <text class="dg-text-sm dg-mid" x="320" y="115">acme/</text>
-  <text class="dg-text-sm dg-mid" x="320" y="135">dallas/</text>
-  <text class="dg-text-sm dg-mid" x="320" y="155">packaging/</text>
-  <text class="dg-text-sm dg-mid" x="320" y="175">line2/</text>
-  <text class="dg-text-mono dg-mid" x="320" y="195">filler/temperature</text>
+  <text class="dg-text-sm dg-mid" x="320" y="115">meridian/</text>
+  <text class="dg-text-sm dg-mid" x="320" y="135">plant1/</text>
+  <text class="dg-text-sm dg-mid" x="320" y="155">area10/</text>
+  <text class="dg-text-sm dg-mid" x="320" y="175">line1/</text>
+  <text class="dg-text-mono dg-mid" x="320" y="195">m101/sts/running</text>
   <text class="dg-text-muted dg-mid" x="320" y="222">latest value, not history</text>
   <rect class="dg-box" x="470" y="40" width="150" height="40" rx="6"/>
   <text class="dg-text-sm dg-mid" x="545" y="65">Perspective screens</text>
@@ -238,12 +251,12 @@ MQTT was created in 1999 for monitoring oil pipelines over expensive satellite l
         "It doesn't affect write access."]
     },
     {
-      q: "A teammate proposes the topic acme/dallas/line2/filler/temperature/72.4. What's wrong with it?",
+      q: "A teammate proposes the topic meridian/plant1/area10/line1/m101/sts/speed/1450. What's wrong with it?",
       options: ["Nothing", "It has too many levels", "Topics cannot contain numbers", "The value belongs in the payload, and a topic should identify a thing"],
       answer: 3,
       explain: [
         "Putting the value in the topic creates a new topic for every reading.",
-        "Six levels are not a problem. Inconsistent structure is.",
+        "A deep hierarchy is not the problem. Inconsistent structure is.",
         "Topics can contain digits. The problem is putting changing data in them.",
         "Correct. The topic names the thing. The payload carries the value, timestamp and quality."]
     },

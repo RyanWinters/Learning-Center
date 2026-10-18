@@ -57,9 +57,6 @@ OSF is the mirror image. Its output is 1 for one scan when the rung condition-in
 | OSR | End of rung | rung-in rises | storage bit, output bit | like a coil |
 | OSF | End of rung | rung-in falls | storage bit, output bit | like a coil |
 
-> [!note] Names vary by view
-> Some Rockwell safety documentation swaps the words "rising" and "falling" for OSR and OSF. In the general-purpose Logix instruction set, OSR is the rising edge and OSF is the falling edge. Check the instruction help for your version if a task depends on it.
-
 ## Storage bit rules
 
 The storage bit is the instruction's memory. It is a plain BOOL that holds last scan's rung state. Treat it as owned by that one instruction.
@@ -100,7 +97,7 @@ Without the one-shot, this rung would flip Run_Cmd on every scan while the butto
 - **Lost pulse.** ONS placed before a condition that is false on the edge scan. The event is swallowed.
 - **Power-up edge.** After a download or first run, the storage bit may be 0 while the input is already 1. The one-shot then fires once on the first scan, and a counter or sequence takes a phantom step. If that matters, qualify with \`XIO(S:FS)\`.
 - **Output used before the OSR in the scan.** The pulse bit is true for one scan, but a rung *above* the OSR reads it in the following scan if it has already been scanned, or it may never see it if the pulse sits in a different task. Keep consumers in the same routine, below the OSR.
-- **Too-short inputs.** A one-shot sees an input only when the PLC scans it. A pulse shorter than a scan, or an input filtered slower than your pulse, is missed. Use an input with a fast filter or an interrupt task for high-speed signals.
+- **Too-short inputs.** A one-shot sees an input only when the PLC scans it. A pulse shorter than a scan, or an input filtered slower than your pulse, is missed. Use an input with a fast filter, a faster periodic task (or an event task for a defined trigger), or a high-speed counter input for fast signals.
 - **Missing edge in HMI writes.** An Ignition button that writes 1 then 0 quickly might change faster than the scan can see. Have the PLC clear the command bit, or hold the write for a fixed time.
 
 ## Worked example: counting parts once
@@ -131,10 +128,10 @@ The "note to self" is the storage bit. Two doorbells cannot share one note, or e
 
 **Why does power-up matter?** Edge memory starts at whatever the storage bit holds. A fresh download makes an already-true input look like a brand-new event, so anything that mustn't happen on startup needs a first-scan guard.`,
 
-  history: `Relay panels had no concept of an edge, so one-shot circuits used a time-delay relay to make a brief pulse. PLCs brought one-shot instructions to give the same effect in software. The ONS, OSR and OSF family carried through from the PLC-5 and SLC 500 platforms into Logix, where the storage bit became an ordinary tag.`,
+  history: `Relay panels had no concept of an edge, so one-shot circuits used a time-delay relay to make a brief pulse. PLCs brought one-shot instructions to give the same effect in software. One-shot instructions are an old part of the Allen-Bradley instruction set. In Logix the storage bit is an ordinary tag you can see and monitor.`,
 
   examples: [
-    { title: "Release detection for a jog", body: `A jog button should log how long it was held. \`XIC(Jog_PB) OSR(Jog_OS,Jog_Start)\` stores the start time on the pulse, and \`XIC(Jog_PB) OSF(Jog_OS2,Jog_End)\` runs the subtraction on release. Each uses its own storage bit.` },
+    { title: "Release detection for a jog", body: `A jog button should log how long it was held. \`XIC(Jog_PB) OSR(Jog_OS,Jog_Start)\` only makes a one-scan pulse, so a second rung on that pulse does the work: \`XIC(Jog_Start) GSV(WallClockTime,,LocalDateTime,Jog_T0)\` copies the controller clock into a tag (see {{lesson:plc-faults}} for GSV). \`XIC(Jog_PB) OSF(Jog_OS2,Jog_End)\` gives a pulse on release, and a rung on that pulse reads the clock again and subtracts. Each one-shot uses its own storage bit.` },
     { title: "Why the toggle fails without OSR", body: `With the toggle rung driven directly by the button, holding it for 50 ms (five scans) flips Run_Cmd five times. The final value depends on whether you held it an odd or even number of scans. Adding the one-shot makes it one flip per press.` }
   ],
 
