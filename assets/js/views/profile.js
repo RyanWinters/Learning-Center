@@ -4,14 +4,17 @@
   const U = LC.ui, esc = U.esc, icon = U.icon;
 
   function chart(days) {
-    const max = Math.max(50, Math.max.apply(null, days.map(d => d.xp))), W = 560, H = 140, bw = W / days.length;
-    return '<svg class="xpchart" viewBox="0 0 ' + W + ' ' + (H + 22) + '" role="img" aria-label="XP earned per day over the last 14 days">' +
+    // The viewBox matches the drawn width so labels stay at their real 11-12px size.
+    const max = Math.max(50, Math.max.apply(null, days.map(d => d.xp))), W = window.innerWidth < 640 ? 320 : 420, H = 140, bw = W / days.length;
+    const none = !days.some(d => d.xp);
+    return '<svg class="xpchart" viewBox="0 0 ' + W + ' ' + (H + 24) + '" role="img" aria-label="XP earned per day over the last 14 days">' +
+      (none ? '<text x="' + W / 2 + '" y="' + (H / 2) + '" text-anchor="middle" class="xc-empty">Your first XP shows up here</text>' : '') +
       '<line x1="0" x2="' + W + '" y1="' + H + '" y2="' + H + '" class="xc-axis"/>' +
       days.map((d, i) => {
         const h = Math.round((d.xp / max) * (H - 18)), x = i * bw + 6;
         return '<g><rect x="' + x + '" y="' + (H - h) + '" width="' + (bw - 12) + '" height="' + Math.max(h, d.xp ? 2 : 0) + '" rx="2" class="xc-bar' + (d.today ? ' is-today' : '') + '"/>' +
           (d.xp ? '<text x="' + (x + (bw - 12) / 2) + '" y="' + (H - h - 5) + '" text-anchor="middle" class="xc-v">' + d.xp + '</text>' : '') +
-          '<text x="' + (x + (bw - 12) / 2) + '" y="' + (H + 16) + '" text-anchor="middle" class="xc-l' + (d.today ? ' is-today' : '') + '">' + esc(d.label) + '</text><title>' + esc(d.day) + ': ' + d.xp + ' XP</title></g>';
+          '<text x="' + (x + (bw - 12) / 2) + '" y="' + (H + 18) + '" text-anchor="middle" class="xc-l' + (d.today ? ' is-today' : '') + '">' + esc(d.label) + '</text><title>' + esc(d.day) + ': ' + d.xp + ' XP</title></g>';
       }).join('') + '</svg>';
   }
 
@@ -31,6 +34,9 @@
         '<p class="hero-xp-meta num"><span>' + s.xp.toLocaleString() + ' XP</span><span>' + (li.ceil ? li.toNext.toLocaleString() + ' to ' + esc(li.next) : 'Top level') + '</span></p></div></div>' +
         '<ul class="stats num"><li><b>' + done + '</b><span>lessons done</span></li><li><b>' + LC.gamify.streak() + '</b><span>day streak</span></li><li><b>' + sims + '</b><span>sims passed</span></li><li><b>' + earned + '/' + LC.gamify.BADGES.length + '</b><span>badges</span></li></ul></section>' +
         '<section class="prof-chart"><div class="sec-head"><h2>Last 14 days</h2><span class="muted small">XP per day</span></div>' + chart(days) + '</section></div>' +
+        '<section class="sec"><div class="sec-head"><h2>Lesson difficulty</h2><a href="#/readiness">Integrator readiness</a></div><p class="muted small lv-note">Difficulty is shown as L1 to L4 on every lesson. It is separate from your XP level.</p><div class="lv-rows">' + LC.readiness.levels().map(v =>
+          '<div class="lv-row">' + U.pips(v.l) + '<span class="lv-n">' + esc(v.name) + '</span><div class="rbar" role="img" aria-label="' + v.done + ' of ' + v.total + ' done"><i class="rb-done" style="width:' + (v.total ? 100 * v.done / v.total : 0).toFixed(1) + '%"></i><i class="rb-skip" style="width:' + (v.total ? 100 * v.skipped / v.total : 0).toFixed(1) + '%"></i></div><span class="num lv-c">' + v.done + '/' + v.total + '</span></div>').join('') + '</div></section>' +
+        '<a class="ready-link ready-link-wide" href="#/readiness"><span class="ready-top">' + icon('gauge', 18) + '<b>Integrator readiness</b>' + icon('chev', 16) + '</span><span class="muted small">See your progress against Purdue levels 0 to 4, the capstone and the build labs.</span></a>' +
         '<section class="sec"><div class="sec-head"><h2>Badges</h2></div><div class="badges">' + LC.gamify.BADGES.map(b => {
           const on = LC.gamify.hasBadge(b.id);
           return '<div class="badge ' + (on ? 'is-on' : '') + '">' + LC.gamify.badgeIcon(b, on) + '<span class="badge-t">' + esc(b.title) + '</span><span class="badge-d">' + esc(b.desc) + '</span><span class="sr-only">' + (on ? 'Earned' : 'Locked') + '</span></div>';

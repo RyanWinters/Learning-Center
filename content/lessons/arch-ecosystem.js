@@ -41,8 +41,8 @@ Names change, so treat this as orientation, not an endorsement list.
 | Vendor | What they provide | Notes |
 |---|---|---|
 | **Cirrus Link** | MQTT Engine, MQTT Transmission, and MQTT Distributor (a broker), which implement Sparkplug in Ignition | Recognized by Inductive Automation as a Strategic Partner (check IA's partner pages). Cirrus Link builds and supports its modules, and the module documentation is theirs. IA's price list lists them too, but that does not move support to IA (see {{lesson:arch-mqtt}}). Their modules also supply the MQTT event stream sources and handlers ({{lesson:arch-event-streams}}) |
-| **Sepasoft** | MES modules for OEE, SPC, track and trace, recipes and batch | A Premier Technology Provider. See {{lesson:mes-sepasoft}} |
-| **Embr** (from Musson Industrial) | Utility modules such as SNMP device support, server-sent events and charting | Community listings also show its Charts module succeeding an earlier charting module from a different developer |
+| **Sepasoft** | MES modules for OEE, SPC, track and trace, recipes and batch | Listed by Inductive Automation as a Premier Technology Provider (verify on IA's partner pages). See {{lesson:mes-sepasoft}} |
+| **Embr** (from Musson Industrial) | Utility modules such as SNMP device support, server-sent events and charting | Community listings suggest its Charts module succeeds an earlier charting module from a different developer (verify before relying on the lineage) |
 | **Others** | Drivers for specific PLC families, extra charting, document and PDF tools, mapping, OEE widgets | Browse the Showcase for the current set |
 
 Strategic Partners and Premier Technology Providers are recognized by Inductive Automation. The documentation points out that their products are still built by separate groups and may need their own vetting. Being known to IA reduces risk. It does not transfer support responsibility.
@@ -53,7 +53,7 @@ A module is a file with the extension \`.modl\`. On the gateway you install it f
 
 Things to check before you install:
 
-1. **Version fit.** A module is built against a specific Ignition SDK version. An 8.1 module will not load on 8.3. Java also moved from 11 to 17 along the way, which broke some third-party modules until they were rebuilt. See {{lesson:ign-versioning}}.
+1. **Version fit.** A module is built against a specific Ignition SDK version. An 8.1 module will not load on 8.3. The Java version the platform requires has also changed between major releases (check the upgrade guide for yours), which broke some third-party modules until they were rebuilt. See {{lesson:ign-versioning}}.
 2. **Trial mode.** Many commercial modules run in a time-limited demo so you can test before buying. Do that on a dev gateway, not production.
 3. **Licensing.** Some modules attach to the gateway's license, some use their own key. A gateway rebuild or a new container can invalidate a key, so record how to reactivate it.
 4. **Redundancy and upgrade behavior.** Find out whether it works on a redundant pair and what happens on an Ignition upgrade.

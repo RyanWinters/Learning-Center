@@ -62,7 +62,7 @@ These three settings fix different problems.
 - **Active delay** fixes *momentary spikes and transitions*. A motor current alarm with a 5 s active delay ignores the inrush at start-up.
 - **Clear delay** fixes *flicker on the way out*. The condition must stay false for that many seconds before the alarm clears.
 
-> [!example] High tank level: working numbers
+> [!example] High tank level: working numbers (LT101)
 > Level transmitter LT-101 on the P&ID (tag `LT101` in Ignition), ranged 0 to 5.0 m, normal range 2.0 to 3.5 m. The alarm LAH-101 is Above Setpoint 4.25 m, priority High, deadband 0.15 m, active delay 10 s, ack Manual. Behavior: the level crosses 4.25 and stays above for 10 s, so the alarm goes active and unacknowledged. It falls to 4.20, and nothing happens (still inside the deadband). It falls below 4.10 and the condition clears, becoming clear and (if not yet acknowledged) clear-unacknowledged. The high-high alarm LAHH-101 and any overflow protection belong in the PLC or a hardwired circuit, not only in Ignition.
 
 ## Alarm states and acknowledgement
@@ -242,7 +242,7 @@ The ten most frequent alarms in a week are your rationalization list. Column and
     },
     {
       q: "Which alarm best matches an ISA-18.2 'good alarm'?",
-      options: ["Pump running", "LT101 level high, requiring the operator to divert flow within 5 minutes to avoid overflow", "Any change on a setpoint tag", "Communications OK"],
+      options: ["Motor M101 running", "LT101 level high, requiring the operator to divert flow within 5 minutes to avoid overflow", "Any change on a setpoint tag", "Communications OK"],
       answer: 1,
       explain: [
         "Status information belongs on a screen.",

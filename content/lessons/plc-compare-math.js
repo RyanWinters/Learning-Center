@@ -32,7 +32,7 @@ A compare instruction is an input instruction. It sits in the rung like an XIC a
 | \`LIM(Low,Test,High)\` | Test is inside the window | Limit test |
 | \`CMP(expression)\` | The expression is true | Compare expression |
 
-Sources can be tags or constants, and they can be different numeric types. Studio 5000 converts them for the test. In newer versions the editor may show shorter names such as EQ, GT or LE for some of these, and MOVE for MOV. The behavior is the same, so look at the help for your version if a name differs from what you see here.
+Sources can be tags or constants, and they can be different numeric types. Studio 5000 converts them for the test.
 
 \`\`\`ladder
 GRT(Tank.Level,80.0) OTE(Tank_High)
@@ -87,7 +87,7 @@ CPT(Gal_Per_Sec,"Flow_GPM / 60.0")
 
 The first rung depends on \`Box_Arrived\` being a one-scan pulse, otherwise Boxes_Today climbs by 1 every 10 ms. This is the usual reason ADD is paired with a one-shot (see {{lesson:plc-oneshots}}). The second rung is meant to run every scan, so it needs no pulse.
 
-CPT takes the whole formula as text: \`CPT(Scaled,"(Raw - 4000) * 100.0 / 12000.0")\`. It follows normal operator precedence, supports parentheses and functions like \`ABS\`, \`SQR\` and \`MOD\`, and is easier to read than a chain of ADD, SUB and MUL when you have four or more steps. It is a little slower, which only matters on very large loops.
+CPT takes the whole formula as text: \`CPT(LT101_Level,"(LT101_Raw - 6242.0) * 5.0 / 24966.0")\`. It follows normal operator precedence, supports parentheses and functions like \`ABS\`, \`SQR\` and \`MOD\`, and is easier to read than a chain of ADD, SUB and MUL when you have four or more steps. It is a little slower, which only matters on very large loops.
 
 {{sim:sim-math}}
 
@@ -107,7 +107,7 @@ EQU(Recipe_Sel,2) COP(Recipes[2],Active_Recipe,1)
 XIC(Shift_Change) CLR(Shift_Total)
 \`\`\`
 
-A recipe array is better written as a single indexed COP, with the index checked first, because an index outside the array is a **major fault** that stops the controller:
+A recipe array is better written as a single indexed COP, with the index checked first, because an index outside the array is a **major fault** that stops the controller. Arrays are zero-based (see {{lesson:plc-tags}}), so recipes numbered 1 to 10 need an array of **11** elements with element 0 unused. Declare \`Recipes\` as 11 long (or index with \`Recipe_Sel - 1\` on a 10-element array):
 
 \`\`\`ladder
 LIM(1,Recipe_Sel,10) COP(Recipes[Recipe_Sel],Active_Recipe,1)
@@ -143,7 +143,7 @@ Avoid EQU and NEQ on REALs. Use one of these:
 
 ## Overflow and minor faults
 
-A DINT holds up to 2,147,483,647. Add 1 to that and the result wraps around to −2,147,483,648, the overflow status flag \`S:V\` is set, and the controller may log a **minor fault**. A minor fault does not stop the program, but it shows up in the controller's fault display and in the fault log, and it is a signal that a calculation did something unintended. Dividing by zero is another source: for integers it is a fault condition, and for REALs it produces infinity or not-a-number, which then poisons every calculation that uses it.
+A DINT holds up to 2,147,483,647. Add 1 to that and the result wraps around to the negative end of the range, the overflow status flag \`S:V\` is set, and the controller may log a **minor fault** (check the behavior for your version). A minor fault does not stop the program, but it shows up in the controller's fault display and in the fault log, and it is a signal that a calculation did something unintended. Dividing by zero is another source. What the controller does (status flags, a fault, or a non-numeric REAL result that poisons every calculation downstream) depends on the instruction and the data types, so check the instruction reference for your version and always guard the divisor.
 
 Defend against both in the rung:
 
@@ -189,8 +189,8 @@ Finally, a ruler only goes so high. Keep adding to a counter that tops out and i
   history: `Early PLCs were relay replacers and had no arithmetic. Compare and math blocks arrived in the 1970s as controllers took on process work like batching and temperature control, and they were kept simple on purpose: one operation per block, with the result written to a named location. Floating point became common as processors improved, which is how REAL arrived next to integer types.`,
 
   examples: [
-    { title: "Scaling a 4-20 mA input", body: `A transmitter gives raw counts 4000 to 20000 for 0 to 100 percent. \`CPT(Level_Pct,"(Raw - 4000.0) * 100.0 / 16000.0")\` gives 0.0 to 100.0. Raw 12000 gives exactly 50.0, and raw 12001 gives 50.00625. Storing the result in a DINT would round it to 50 and lose that resolution, so keep it REAL. (Logix also has SCP for scaling, covered in the analog lesson.)` },
-    { title: "Safe average of 10 readings", body: `Add 10 REAL readings into a sum with CPT, divide by 10.0 in the last step and store the result in a REAL. Dividing a DINT sum by 10 into a DINT would round the average to a whole number. If the sample count were a variable, wrap the divide in \`NEQ(Sample_Count,0)\` first.` }
+    { title: "Scaling a 4-20 mA input", body: `Level transmitter LT101 measures 0 to 5.0 m. On the house teaching card its 4 to 20 mA signal arrives as raw counts 6,242 to 31,208 (counts are module-specific, see the analog lesson). \`CPT(LT101_Level,"(LT101_Raw - 6242.0) * 5.0 / 24966.0")\` gives 0.0 to 5.0 m. Raw 18725 gives exactly 2.5, and raw 18726 gives about 2.5002. Storing the result in a DINT would round it to 3 and lose that resolution, so keep it REAL. (Logix also has SCP for scaling, covered in the analog lesson.)` },
+    { title: "Safe average of 10 readings", body: `Add 10 REAL readings into a sum with CPT, divide by 10.0 in the last step and store the result in a REAL. Dividing a DINT sum by 10 into a DINT leaves only a whole number, so the fraction is gone whichever way your version rounds the integer divide. If the sample count were a variable, wrap the divide in \`NEQ(Sample_Count,0)\` first.` }
   ],
 
   diagrams: {

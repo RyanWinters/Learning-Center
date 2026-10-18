@@ -22,7 +22,7 @@ LC.lesson({
 
 **{{term:industry-4-0|Industry 4.0}}** is a label that came out of a German government-backed initiative around 2011. It describes factories where machines, data and enterprise systems are connected well enough to be more flexible. The name suggests a revolution. In practice it is a long list of incremental projects: collect data reliably, put it in context, share it, and then use it for decisions. It has no standard, product or finish line.
 
-The ISA's own writing on the subject frames IT/OT convergence as a layered architecture, with analytics at the top supporting decisions such as maintenance and safety. That framing is useful: the analytics are the last layer, not the first.
+A useful way to think about it is as layers: connectivity and clean data at the bottom, context and history above that, and analytics at the top supporting decisions such as maintenance. The analytics are the last layer, not the first.
 
 ## The data ladder
 
@@ -92,7 +92,7 @@ IT and OT optimize for different outcomes, and both are right in their own world
 |---|---|---|
 | Top priority | Confidentiality and integrity of data | Safety and availability of the process |
 | Change | Frequent, patched, rebooted | Rare, tested, scheduled around production |
-| System lifespan | 3 to 5 years | 15 to 30 years |
+| System lifespan | Short refresh cycles | Often decades |
 | Downtime | A maintenance window | Lost product, possibly a safety event |
 | Typical expert | Network, cloud, security, database | Controls, instrumentation, process |
 | Vocabulary | Servers, tickets, SLAs | Loops, interlocks, shifts |
@@ -175,7 +175,8 @@ The term "Industrie 4.0" was introduced in Germany around 2011 as part of a high
   ],
 
   diagrams: {
-    ladder: `<svg viewBox="0 0 640 260" role="img" aria-label="A six-step data ladder from connected to analyzed, with most effort in the middle steps">
+    ladder: `<svg viewBox="0 0 640 272" role="img" aria-label="A six-step data ladder from connected to analyzed, with most effort in the middle steps">
+  <g transform="translate(0,12)">
   <rect class="dg-box" x="40" y="200" width="560" height="36" rx="4"/>
   <text class="dg-text-sm" x="56" y="223">1. Connected: devices reachable</text>
   <rect class="dg-box-accent" x="80" y="160" width="520" height="36" rx="4"/>
@@ -188,7 +189,8 @@ The term "Industrie 4.0" was introduced in Germany around 2011 as part of a high
   <text class="dg-text-sm" x="216" y="63">5. Shared: other systems reach it safely</text>
   <rect class="dg-box" x="240" y="4" width="360" height="32" rx="4"/>
   <text class="dg-text-sm" x="256" y="25">6. Analyzed: models and optimization</text>
-  <text class="dg-text-muted" x="40" y="254">Highlighted steps are where most of the real effort goes</text>
+  </g>
+  <text class="dg-text-muted" x="40" y="266">Highlighted steps are where most of the real effort goes</text>
 </svg>`
   },
 
