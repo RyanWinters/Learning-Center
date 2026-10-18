@@ -3,8 +3,15 @@
   const LC = window.LC = window.LC || {};
   const U = LC.ui, esc = U.esc, icon = U.icon;
 
+  /* Shared header for the Tracks list and the skill map: a List | Map toggle. */
+  LC.tracksHead = function (active) {
+    const tab = (v, href, label, ic) => '<a class="seg-btn" href="' + href + '"' + (active === v ? ' aria-current="page"' : '') + '>' + icon(ic, 16) + label + '</a>';
+    return '<header class="page-head"><p class="eyebrow">Curriculum</p><h1>Tracks</h1><p class="lede">Ten tracks and a set of build labs, from what a transmitter does to architecting a multi-site system. Work in order, or jump to what you need. Locks are only suggestions.</p>' +
+      '<div class="seg view-toggle" role="group" aria-label="Tracks view">' + tab('list', '#/tracks', 'List', 'list') + tab('map', '#/map', 'Map', 'map') + '</div></header>';
+  };
+
   LC.views.tracks = function (root) {
-    root.innerHTML = '<div class="page"><header class="page-head"><p class="eyebrow">Curriculum</p><h1>Tracks</h1><p class="lede">Ten tracks, from what a transmitter does to architecting a multi-site system. Work in order, or jump to what you need. Locks are only suggestions.</p></header>' +
+    root.innerHTML = '<div class="page">' + LC.tracksHead('list') +
       '<div class="track-list">' + LC.tracks.map(t => {
         const p = LC.graph.progress(t.id);
         const min = LC.graph.lessonsIn(t.id).reduce((a, id) => a + LC.index[id].minutes, 0);

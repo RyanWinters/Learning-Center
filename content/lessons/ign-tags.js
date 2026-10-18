@@ -30,14 +30,14 @@ Tags live in a **tag provider**, a container with a name. A fresh Gateway has on
 A **tag path** names a tag completely:
 
 \`\`\`text
-[default]Plant1/Line2/Pump3/Speed
- ^provider  ^folders         ^tag
+[default]Plant1/Area10/Line1/M101/Sts/Speed
+ ^provider  ^folders                ^tag
 \`\`\`
 
 - The part in brackets is the provider. Leaving it off means "whatever provider the caller assumes", which breaks when code moves between scopes. Always write it in scripts.
-- Slashes separate folders. A UDT instance behaves like a folder, so \`Pump3/Speed\` can be a member.
+- Slashes separate folders. A UDT instance behaves like a folder, so \`M101/Sts/Speed\` can be a member.
 - A **relative path** such as \`[.]Speed\` means "the sibling called Speed", resolved against the tag that contains the reference. \`[~]\` means "relative to the current provider". Relative paths are what make a UDT work when it is copied 200 times.
-- An **indirect path** substitutes parameters, for example \`[default]Line{Line}/Pump3/Speed\`. Bindings and UDTs both use this idea.
+- An **indirect path** substitutes parameters, for example \`[default]Plant1/Area10/Line{Line}/M101/Sts/Speed\`. Bindings and UDTs both use this idea.
 
 ## The six tag types
 
@@ -114,7 +114,7 @@ The Designer's Tag Browser is where you build the tree. For bulk work, right-cli
   "dataType": "Float4",
   "tagGroup": "Default",
   "opcServer": "Ignition OPC UA Server",
-  "opcItemPath": "ns=1;s=[PLC1]Pump3_Speed",
+  "opcItemPath": "ns=1;s=[PLC1]M101.Sts.Speed",
   "engUnit": "rpm"
 }
 \`\`\`
@@ -139,7 +139,7 @@ The "reliable or old" note is the quality. If the walkway to the machine is bloc
   why: `
 **Why not just point screens at the PLC?** Because every screen would then own a connection, an address and a polling rate. A tag layer lets one subscription feed twenty screens, an alarm, a history record and a script. It also gives you one place to rename, scale or relocate a value.
 
-**Why tag groups instead of one global rate?** Rates are the main knob on load. Fast everywhere overloads PLC communication and the Gateway. Slow everywhere makes operators wait for feedback. Experienced integrators argue about the exact numbers, but most agree on a small set of groups named for purpose, never one per tag. The anti-pattern is a tag group named "Pump3_Special".
+**Why tag groups instead of one global rate?** Rates are the main knob on load. Fast everywhere overloads PLC communication and the Gateway. Slow everywhere makes operators wait for feedback. Experienced integrators argue about the exact numbers, but most agree on a small set of groups named for purpose, never one per tag. The anti-pattern is a tag group named "M101_Special".
 
 **Why check quality?** A bad-quality tag keeps its last value. Anything that reads it without looking at quality will happily compute with old data. This is the same hazard as {{term:stale-data|stale data}} on any polled link. Silent staleness is worse than a visible error.
 
@@ -149,17 +149,17 @@ The "reliable or old" note is the quality. If the walkway to the machine is bloc
 `,
 
   history: `
-Early SCADA systems tied every tag to a licensed point count, so tags were scarce and expensive. Ignition's unlimited-tag licensing, introduced with its first releases in the late 2000s, flipped the design habit: model everything. Scan classes (versions up to 7.9) were renamed tag groups in Ignition 8.0, which also added the direct, driven and leased modes in their current form.
+Early SCADA systems tied every tag to a licensed point count, so tags were scarce and expensive. Ignition's licensing, which does not count tags, has been part of the platform since its first release in 2010, and it flipped the design habit: model everything. Scan classes (versions up to 7.9) were renamed tag groups in Ignition 8.0.
 `,
 
   examples: [
     {
       title: "Driven group for a batch reactor",
-      body: `Temperatures in the reactor area normally run at 5000 ms. A boolean tag \`[default]Reactor1/BatchActive\` drives the group: when it equals 1, the group switches to a 500 ms driven rate. The operator sees smooth trends during the batch, and the PLC is not polled fast for the other 20 hours of the day.`
+      body: `Temperatures in the Area10 mixer normally run at 5000 ms. A boolean tag \`[default]Plant1/Area10/Line1/Mixer1/BatchActive\` drives the group: when it equals 1, the group switches to a 500 ms driven rate. The operator sees smooth trends during the batch, and the PLC is not polled fast for the other 20 hours of the day.`
     },
     {
       title: "Reading a Bad_NotFound tag",
-      body: `After a PLC program change, a pump status tag shows Bad_NotFound while its neighbours are good. The OPC item path is \`ns=1;s=[PLC1]Pump_3.Sts_Run\`. Someone renamed the controller tag to \`Pump3\`. Fix the path in the tag (or, in a UDT, fix the parameter). No network work is needed.`
+      body: `After a PLC program change, a motor status tag shows Bad_NotFound while its neighbours are good. The OPC item path is \`ns=1;s=[PLC1]Motor101.Sts.Running\`. Someone renamed the controller tag to \`M101\`. Fix the path in the tag (or, in a UDT, fix the parameter). No network work is needed.`
     }
   ],
 
@@ -168,7 +168,7 @@ Early SCADA systems tied every tag to a licensed point count, so tags were scarc
   <defs><marker id="ign-tags-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker></defs>
   <rect class="dg-box" x="16" y="80" width="96" height="60" rx="6"/>
   <text class="dg-text-sm dg-mid" x="64" y="106">PLC</text>
-  <text class="dg-text-muted dg-mid" x="64" y="124">Pump3.Speed</text>
+  <text class="dg-text-muted dg-mid" x="64" y="124">M101.Sts</text>
   <rect class="dg-box" x="150" y="80" width="110" height="60" rx="6"/>
   <text class="dg-text-sm dg-mid" x="205" y="106">OPC UA</text>
   <text class="dg-text-muted dg-mid" x="205" y="124">subscription</text>
@@ -206,7 +206,7 @@ Early SCADA systems tied every tag to a licensed point count, so tags were scarc
 
   quiz: [
     {
-      q: "A screen shows a pump speed of 1480 rpm and has not moved for ten minutes, but the PLC power is off. The tag quality is Bad_NotConnected. What does the 1480 represent?",
+      q: "A screen shows M101 at a speed of 1480 rpm and it has not moved for ten minutes, but the PLC power is off. The tag quality is Bad_NotConnected. What does the 1480 represent?",
       options: ["The current speed read a moment ago", "The last value the Gateway received before the connection dropped", "A default initial value", "The scaled engineering high limit"],
       answer: 1,
       explain: [
@@ -251,7 +251,7 @@ Early SCADA systems tied every tag to a licensed point count, so tags were scarc
     },
     {
       q: "Which tag path is the most robust to put in a gateway script?",
-      options: ["Pump3/Speed", "[.]Speed", "[default]Plant1/Pump3/Speed", "Plant1.Pump3.Speed"],
+      options: ["M101/Sts/Speed", "[.]Speed", "[default]Plant1/Area10/Line1/M101/Sts/Speed", "Plant1.Area10.Line1.M101.Sts.Speed"],
       answer: 2,
       explain: [
         "Without the provider, the target depends on what the caller assumes.",
@@ -261,7 +261,7 @@ Early SCADA systems tied every tag to a licensed point count, so tags were scarc
       ]
     },
     {
-      q: "You need to create the same 40 pump structures with six members each. What is the best approach?",
+      q: "You need to create the same 40 motor structures with six members each. What is the best approach?",
       options: ["Create 240 tags by hand", "Export, replicate in a spreadsheet, import", "Define a UDT once and create 40 instances", "Create one expression tag per pump"],
       answer: 2,
       explain: [

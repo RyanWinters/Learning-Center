@@ -248,7 +248,7 @@ If you only stored start and end times, compute the duration. This is a major di
 | MySQL / MariaDB | \`TIMESTAMPDIFF(MINUTE, e.start_time, e.end_time)\` |
 | PostgreSQL | \`EXTRACT(EPOCH FROM (e.end_time - e.start_time)) / 60\` |
 
-SQL Server's \`DATEDIFF\` counts boundary crossings, not elapsed time, so 10:59:59 to 11:00:01 is 1 hour apart. For downtime, compute in seconds and divide if precision matters.
+SQL Server's \`DATEDIFF\` counts boundaries crossed, not elapsed time. \`DATEDIFF(MINUTE, '10:59:59', '11:00:01')\` returns 1 even though 2 seconds passed, and \`DATEDIFF(HOUR, ...)\` on the same pair also returns 1. For downtime, compute in seconds and divide if precision matters.
 
 ## Common duplicate-row mistakes
 

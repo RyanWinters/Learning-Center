@@ -18,7 +18,9 @@ LC.lesson({
   body: `
 ## What an IP address is
 
-An {{term:ip-address|IP address}} identifies a device at layer 3. An IPv4 address is 32 bits, written as four decimal bytes: \`10.20.10.15\`. Where a MAC address (see {{lesson:net-ethernet}}) is a permanent hardware ID that only matters on the local network, an IP address is a logical address you assign, and it is what lets traffic find a device across many networks. In a plant, nearly every PLC, HMI, drive, camera and gateway has one, and a wrong one is the most common reason "it was working yesterday."
+Take the address \`10.20.10.15\` with the mask \`/24\`. The \`/24\` means the first 24 bits (the first three numbers, \`10.20.10\`) name the network, like a street, and the last number (\`15\`) names the device on it, like a house number. Every device on \`10.20.10.x\` can talk to its neighbors directly. Anything outside that street needs a router. That one idea is the whole lesson.
+
+An {{term:ip-address|IP address}} identifies a device at layer 3. An IPv4 address is 32 bits, written as four decimal bytes. Where a MAC address (see {{lesson:net-ethernet}}) is a permanent hardware ID that only matters on the local network, an IP address is a logical address you assign, and it is what lets traffic find a device across many networks. In a plant, nearly every PLC, HMI, drive, camera and gateway has one, and a wrong one is the most common reason "it was working yesterday."
 
 An address has two parts: a **network** part (which network am I on) and a **host** part (which device on that network). The {{term:subnet-mask|subnet mask}} says where the line falls.
 
@@ -47,7 +49,7 @@ A device combines its own address and mask with a bitwise AND to find its networ
 | /22 | 255.255.252.0 | 10 | 1024 | 1022 |
 | /16 | 255.255.0.0 | 16 | 65,536 | 65,534 |
 
-Two addresses in every subnet are reserved. The first (all host bits zero) is the **network address**, and the last (all host bits one) is the {{term:broadcast-address|broadcast address}}. Usable hosts = 2^(host bits) - 2.
+Two addresses in every subnet are reserved. The first (all host bits zero) is the **network address**, and the last (all host bits one) is the {{term:broadcast-address|broadcast address}}. In 10.20.10.0/24 that is \`10.20.10.0\` and \`10.20.10.255\`, which leaves \`.1\` to \`.254\` for devices. Usable hosts = 2^(host bits) - 2.
 
 ## Subnetting by hand
 
@@ -92,18 +94,19 @@ A frame needs a MAC address, but applications use IP addresses. {{term:arp|ARP}}
 
 ## A plant IP plan
 
-A good plan encodes meaning in the address, so anyone can tell what a device is from its IP. This is one common pattern for a single site using 10.20.0.0/16 ("site 20"):
+A good plan encodes meaning in the address, so anyone can tell what a device is from its IP. This course uses one plan everywhere: the Meridian Foods Plant 1 plan. Plant 1 owns the supernet \`10.20.0.0/16\` (Plant 2 is \`10.21.0.0/16\`, Plant 3 is \`10.22.0.0/16\`, Corporate IT is \`10.100.0.0/16\`). Each VLAN gets one /24, and the gateway is \`.1\` on every subnet.
 
-| Subnet | Purpose | Notes |
-|---|---|---|
-| 10.20.1.0/24 | Network management | Switch and firewall management addresses |
-| 10.20.10.0/24 | Line 1 controls | PLCs, drives, I/O, HMIs |
-| 10.20.11.0/24 | Line 2 controls | Same layout as Line 1 |
-| 10.20.50.0/24 | Machine-builder uplinks | Where NAT'd machine addresses land |
-| 10.20.100.0/24 | Servers | Ignition gateways, historian, databases |
-| 10.20.200.0/24 | Wireless and handhelds | Isolated from controls |
+| VLAN | Purpose | Subnet | Notable hosts |
+|---|---|---|---|
+| 10 | Control: PLCs, I/O adapters, drives | 10.20.10.0/24 | PLC1 \`10.20.10.10\`, PLC2 \`.11\` |
+| 20 | HMI clients and panels | 10.20.20.0/24 | |
+| 30 | Level 3 servers | 10.20.30.0/24 | Ignition master \`10.20.30.10\`, backup \`.11\`, SQL \`.20\` |
+| 40 | OEM skid uplinks (1:1 NAT) | 10.20.40.0/24 | Where NAT'd machine addresses land |
+| 50 | Engineering workstations | 10.20.50.0/24 | |
+| 99 | Network management | 10.20.99.0/24 | Switch and firewall management |
+| 250 | DMZ (Level 3.5) | 10.20.250.0/24 | Reverse proxy \`10.20.250.10\`, historian replica \`.20\`, jump host \`.30\` |
 
-Inside each controls subnet, reserve a pattern, for example: .1 gateway, .2-.9 switches, .10-.49 PLCs, .50-.99 HMIs and panels, .100-.199 drives and I/O, .200-.249 instruments, DHCP pool for laptops only. Write it down, put it in the panel drawings and keep a spreadsheet or IPAM tool. The plan outlives the people who made it.
+Notice that the VLAN number, the third byte for VLANs 10 to 50 and the zone all line up, so a technician can read the role from the address. Inside a controls subnet, reserve a pattern, for example: .1 gateway, .2-.9 switches, .10-.49 PLCs, .100-.199 drives and I/O, .200-.249 instruments. HMIs live on VLAN 20, not on the control subnet. Write the pattern down, put it in the panel drawings and keep a spreadsheet or IPAM tool. The plan outlives the people who made it.
 
 > [!tip] Size subnets for growth, and for the broadcast domain
 > A /24 (254 hosts) is plenty for one line. A flat /16 with 65,000 addresses is not a goal, it is a broadcast domain of unknown size. Smaller subnets, joined by a router or L3 switch, contain faults and make firewall rules possible. See {{lesson:net-routing}} and {{lesson:net-vlan}}.
@@ -126,7 +129,7 @@ Work these on paper, then compare with the answers after the list.
 1. How many usable hosts are in 10.20.10.0/25?
 2. What is the broadcast address of 192.168.4.37/28?
 3. What mask is /22?
-4. Do 10.20.10.200 and 10.20.11.5 share a subnet with mask /23? With /24?
+4. Do 10.20.10.200 and 10.20.11.5 (made-up addresses, for the math only) share a subnet with mask /23? With /24?
 
 Answers: (1) 126. (2) block size 16, so 192.168.4.32/28 with broadcast 192.168.4.47. (3) 255.255.252.0. (4) Yes with /23, because the third byte uses blocks of 2 (10 and 11 are one block). No with /24.
 `,
@@ -134,11 +137,11 @@ Answers: (1) 126. (2) block size 16, so 192.168.4.32/28 with broadcast 192.168.4
   eli5: `
 Think of a street of houses. A full address has two parts, the street name and the house number. The street name tells you which street, and the house number finds the house on that street.
 
-An IP address is both parts written together, like "10.20.10.15". But the number alone does not say where the street name ends and the house number begins. The subnet mask is a little ruler laid over the address that says "these first digits are the street, the rest is the house."
+An IP address is both parts written together, like "10.20.10.15". But the number alone does not say where the street name ends and the house number begins. The subnet mask is a little ruler laid over the address that says "these first digits are the street, the rest is the house." With a /24 ruler on 10.20.10.15, the street is "10.20.10" and the house is number 15.
 
 If you want to send something to a house on your own street, you walk it over yourself. If it is on another street, you hand it to the post office, which is the router. The ruler is how you decide between walking and handing it to the post office.
 
-A bigger ruler (a shorter mask) means a longer street with more houses. A smaller ruler means a short street with only a few. And one house number on every street is always held back for "everyone on the street," so you cannot give that one to a person.
+A longer ruler (a bigger number after the slash, like /26) covers more of the address with the street name, so the street is short and has few houses. A shorter ruler (like /16) leaves more digits for the house number, so the street is long with many houses. And two house numbers on every street are always held back: the very first one names the street itself, and the very last one means "everyone on the street." On 10.20.10.x those are 10.20.10.0 and 10.20.10.255, so you cannot give them to a device, and a /24 street holds 254 houses, not 256.
 `,
 
   why: `
@@ -164,7 +167,7 @@ IPv4 was specified in 1981 (RFC 791) with 32-bit addresses and fixed "classes" (
     },
     {
       title: "Carving a line subnet",
-      body: `A small packaging line has 40 devices today and could double. Plan: 10.20.12.0/25 gives 126 usable hosts, a good fit. Gateway 10.20.12.1, PLC 10.20.12.10, HMI 10.20.12.50, drives 10.20.12.100-119. The upper half, 10.20.12.128/25, stays free as a second zone if you ever split the line.`
+      body: `A small packaging line has 40 devices today and could double. This example is a hypothetical subnet in Plant 2 (\`10.21.0.0/16\`), not part of the Plant 1 plan. Plan: 10.21.12.0/25 gives 126 usable hosts, a good fit. Gateway 10.21.12.1, PLC 10.21.12.10, drives 10.21.12.100-119. The upper half, 10.21.12.128/25, stays free as a second zone if you ever split the line.`
     }
   ],
 

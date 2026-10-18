@@ -39,7 +39,7 @@ The native app exposes hardware as **component actions** and **session events**.
 - **Location.** The app can report where the device is. Use it to prove that a technician is standing at the asset, or to filter a work list to the nearest equipment. Check the current manual for the exact session property names before you build on them.
 
 > [!example] Scan a motor tag, open its faceplate
-> A maintenance tech scans a QR code on a motor nameplate. The code contains the string \`[default]Plant1/Area2/M101\`. The barcode event script does this:
+> A maintenance tech scans a QR code on a motor nameplate. The code contains the string \`[default]Plant1/Area10/Line1/M101\`. The barcode event script does this:
 >
 > \`\`\`python
 > def onBarcodeScanned(self, session, event):

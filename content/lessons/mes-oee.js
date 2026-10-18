@@ -77,7 +77,7 @@ There is a shortcut that makes a good sanity check. OEE is the **fully productiv
 
 {{diagram:waterfall}}
 
-The waterfall shows where the 450 planned minutes went: 60 min lost to availability, about 39 min of equivalent time to speed, and about 10 min to defects. The biggest single bucket is the stops. The changeover alone, 18 min, is a third of that. That is a better conversation than "OEE is 75.7."
+The waterfall shows where the 450 planned minutes went: 60 min lost to availability, about 39 min of equivalent time to speed, and about 10 min to defects. The biggest single bucket is the stops. The changeover alone, 18 min, is 30 percent of that. That is a better conversation than "OEE is 75.7."
 
 > [!tip] Build it in SQL
 > Store state intervals and counts, never the percentages. A query can then compute any ratio for any time window, and you can re-run history when someone corrects the ideal rate. Averaging each hour's OEE gives the wrong answer for the shift. Always sum the numerators and denominators first.
@@ -122,7 +122,7 @@ Almost every OEE dispute is about inputs, not arithmetic.
 
 ## The 85 percent "world-class" figure
 
-You will hear that world-class OEE is 85 percent. It is commonly built from Availability 90 percent, Performance 95 percent and Quality 99 percent: 0.90 x 0.95 x 0.99 = 84.6 percent. Treat it as a rule of thumb from discrete manufacturing, not a target. A batch process with long cleaning cycles may never reach it. A high-volume bottling line may exceed it easily. Comparing your 68 percent filler to another plant's 85 percent packaging line is meaningless, because the two plants define planned time and ideal rate differently. Compare a line to its own history, use the loss breakdown to pick targets, and do not publish a plant-wide number without writing down the definitions.
+You will hear that world-class OEE is 85 percent, a figure OEE.com's [Practical OEE](https://www.oee.com/practical-oee/) guidance and many other sources repeat. It is commonly built from Availability 90 percent, Performance 95 percent and Quality 99 percent: 0.90 x 0.95 x 0.99 = 84.6 percent. Treat it as a rule of thumb from discrete manufacturing, not a target. A batch process with long cleaning cycles may never reach it. A high-volume bottling line may exceed it easily. Comparing your 68 percent filler to another plant's 85 percent packaging line is meaningless, because the two plants define planned time and ideal rate differently. Compare a line to its own history, use the loss breakdown to pick targets, and do not publish a plant-wide number without writing down the definitions.
 
 > [!note] In Ignition and Sepasoft
 > Sepasoft's OEE modules compute these factors from equipment states, counts and a standard rate. Their docs describe grouping states so several (such as loading, heating and molding) all count as Running, planned breaks that do not count against availability, and tag collectors that can take mode, state, counts and standard rate from Ignition tags. The details are in {{lesson:mes-sepasoft}}. The same inputs apply if you build the calculation yourself.

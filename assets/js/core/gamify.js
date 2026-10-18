@@ -4,9 +4,12 @@
   const esc = s => LC.ui.esc(s);
 
   const TITLES = ['Apprentice', 'Field Tech', 'Panel Builder', 'Controls Technician', 'Controls Engineer', 'Senior Controls Engineer', 'Systems Integrator', 'Lead Integrator', 'Solutions Architect', 'Systems Architect'];
-  // Cumulative thresholds: first at 150 XP, each step about 1.5x the last. Level 10 at 11,230 XP.
-  const AT = [0];
-  (function () { let step = 150, sum = 0; for (let i = 1; i < 10; i++) { sum += Math.round(step); AT.push(sum); step *= 1.5; } })();
+  // Cumulative thresholds, each step about 1.6x the last. Finishing the whole curriculum (lessons scaled
+  // by difficulty, quizzes, sims, labs and some review) comes to roughly 20,000 XP, so level 10 sits at 17,000.
+  const AT = [0, 150, 400, 800, 1400, 2400, 4000, 6500, 10500, 17000];
+  // Lesson-completion XP by difficulty level L1-L4.
+  const LESSON_XP = { 1: 40, 2: 60, 3: 90, 4: 130 };
+  const lessonXp = lvl => LESSON_XP[lvl] || 40;
 
   function levelInfo(xp) {
     let n = 1;
@@ -92,6 +95,20 @@
   const trackBadges = LC.tracks.map(t => ({ id: 'track-' + t.id, title: t.title.split(' & ')[0].replace(/^PLCs: /, '') + ' complete', desc: 'Finish every lesson in ' + t.code + ' ' + t.title + '.', glyph: 'code', code: t.code, test: () => LC.graph.trackComplete(t.id) }));
   const nLessons = () => Object.values(LC.store.get().lessons).filter(r => r.status === 'complete' || r.status === 'tested-out').length;
   const simsPassed = () => Object.values(LC.store.get().sims).filter(r => r.status === 'passed').length;
+  const LAB_IDS = () => (LC.lessonIndex || []).map(r => r[0]).filter(id => /^build-/.test(id));
+  const doneId = id => { const r = LC.store.get().lessons[id]; return !!r && (r.status === 'complete' || r.status === 'tested-out'); };
+  const levelOf = id => (LC.index[id] || {}).level || 0;
+  const doneAtLevel = lvl => (LC.lessonIndex || []).some(r => r[4] === lvl && doneId(r[0]));
+  /* Lessons that count toward "Integrator ready": every L3+ lesson in T4-T9. */
+  const ADV_TRACKS = ['ign', 'persp', 'arch', 'db', 'mes', 'int'];
+  const advancedIds = () => (LC.lessonIndex || []).filter(r => ADV_TRACKS.indexOf(r[0].split('-')[0]) >= 0 && r[4] >= 3).map(r => r[0]);
+  const labBadges = () => LAB_IDS().map((id, i) => ({ id: 'lab-' + id, title: 'Lab ' + i + ' built', desc: 'Finish every step and pass the quiz in "' + ((LC.index[id] || {}).title || id).replace(/^Lab \d+: /, '') + '".', art: 'lab', num: String(i), tier: true, test: () => doneId(id) }));
+  const milestoneBadges = [
+    { id: 'first-l3', title: 'Advanced reader', desc: 'Complete your first L3 (Advanced) lesson.', art: 'l3', test: () => doneAtLevel(3) },
+    { id: 'first-l4', title: 'Expert reader', desc: 'Complete your first L4 (Expert) lesson.', art: 'l4', tier: true, test: () => doneAtLevel(4) },
+    { id: 'capstone', title: 'Capstone architect', desc: 'Complete the multi-site capstone.', art: 'capstone', tier: true, test: () => doneId('int-capstone') }
+  ];
+  const readyBadge = { id: 'integrator-ready', title: 'Integrator ready', desc: 'Finish every L3 and L4 lesson in tracks T4 to T9.', art: 'ready', tier: true, test: () => { const a = advancedIds(); return a.length > 0 && a.every(doneId); } };
   const BADGES = [
     { id: 'first-lesson', title: 'First lesson', desc: 'Complete or test out of your first lesson.', glyph: 'book', test: () => nLessons() >= 1 },
     { id: 'first-perfect', title: 'Flawless', desc: 'Score 100% on any quiz.', glyph: 'target', test: () => Object.values(LC.store.get().lessons).some(r => r.bestScore === 100) },
@@ -104,24 +121,38 @@
     { id: 'sims-10', title: 'Ten rungs', desc: 'Pass 10 simulator challenges.', glyph: 'stack', test: () => simsPassed() >= 10 },
     { id: 'sims-all', title: 'Full ladder', desc: 'Pass every simulator challenge.', glyph: 'grid', test: () => { const n = (window.LC_SIM_INDEX || []).length; return n > 0 && simsPassed() >= n; } },
     { id: 'cards-25', title: 'Memory banks', desc: 'Answer 25 review cards correctly.', glyph: 'cards', test: () => (LC.store.get().stats.reviewCorrect || 0) >= 25 }
-  ]);
+  ], milestoneBadges, labBadges(), [readyBadge]);
 
+  const FLASK = 'M21 13h6M22 13v8l-6 11a1.5 1.5 0 0 0 1.4 2h13.2a1.5 1.5 0 0 0 1.4-2L26 21v-8';
+  const ART = {
+    l3: () => '<path d="M17 20l7-6 7 6" class="bd-g"/><text x="24" y="35" text-anchor="middle" class="bd-code">L3</text>',
+    l4: () => '<path d="M24 11.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z" class="bd-g"/><text x="24" y="37" text-anchor="middle" class="bd-code">L4</text>',
+    capstone: () => '<path d="M12.5 36l8.5-14 5 7 3-4.5 6.5 11.5z" class="bd-g"/><path d="M21 22V12.5l7.5 3L21 18.5" class="bd-g"/>',
+    lab: b => '<path d="' + FLASK + '" class="bd-g"/><text x="24" y="32.5" text-anchor="middle" class="bd-num">' + esc(b.num) + '</text>',
+    ready: () => '<path d="M24 11.5l10.5 4v8.5c0 6-4.2 10.2-10.5 13-6.3-2.8-10.5-7-10.5-13v-8.5z" class="bd-g"/><path d="M19 24l3.8 3.8 6.4-7.6" class="bd-g"/>'
+  };
   function badgeIcon(b, earned) {
-    const hex = '<path d="M24 3l19 11v22L24 47 5 36V14L24 3z" class="bd-hex"/>';
+    const hex = '<path d="M24 3l19 11v22L24 47 5 36V14L24 3z" class="bd-hex"/>' + (b.tier ? '<path d="M24 7l15.5 9v17.5L24 43 8.5 33.5V16z" class="bd-hex2"/>' : '');
     let inner;
-    if (b.glyph === 'code') inner = '<text x="24" y="30" text-anchor="middle" class="bd-code">' + esc(b.code) + '</text>';
+    if (b.art) inner = ART[b.art](b);
+    else if (b.glyph === 'code') inner = '<text x="24" y="30" text-anchor="middle" class="bd-code">' + esc(b.code) + '</text>';
     else if (b.num) inner = '<g transform="translate(14 13) scale(.8)"><path d="' + GLYPH.flame + '" class="bd-g"/></g><text x="24" y="38" text-anchor="middle" class="bd-num">' + b.num + '</text>';
     else inner = '<g transform="translate(12 12) scale(1)"><path d="' + GLYPH[b.glyph] + '" class="bd-g"/></g>';
     return '<svg class="bd ' + (earned ? 'bd-on' : 'bd-off') + '" viewBox="0 0 48 50" width="56" height="58" aria-hidden="true">' + hex + inner + '</svg>';
   }
+  /* Badges earned since the last drain, so the results screen can show them. */
+  let recent = [];
+  function drainBadges() { const r = recent; recent = []; return r; }
   function checkBadges() {
     const earned = LC.store.get().badges;
     const fresh = BADGES.filter(b => !(earned[b.id] && !earned[b.id].reset) && b.test());
-    if (!fresh.length) return;
+    if (!fresh.length) return [];
+    recent = recent.concat(fresh);
     LC.store.update(d => { fresh.forEach(b => { d.badges[b.id] = { earnedAt: Date.now() }; }); });
     fresh.forEach((b, i) => setTimeout(() => LC.ui.toast('<span class="toast-badge">' + badgeIcon(b, true) + '</span><span><span class="toast-xp">Badge earned</span><span class="toast-sub">' + esc(b.title) + '</span></span>', 'badge', 3600), 500 + i * 600));
+    return fresh;
   }
   function hasBadge(id) { const b = LC.store.get().badges[id]; return !!b && !b.reset; }
 
-  LC.gamify = { levelInfo: levelInfo, TITLES: TITLES, AT: AT, dayKey: dayKey, streak: streak, today: today, last14: last14, addXp: addXp, BADGES: BADGES, badgeIcon: badgeIcon, checkBadges: checkBadges, hasBadge: hasBadge };
+  LC.gamify = { levelInfo: levelInfo, TITLES: TITLES, AT: AT, dayKey: dayKey, streak: streak, today: today, last14: last14, addXp: addXp, BADGES: BADGES, badgeIcon: badgeIcon, checkBadges: checkBadges, hasBadge: hasBadge, drainBadges: drainBadges, lessonXp: lessonXp, LESSON_XP: LESSON_XP, advancedIds: advancedIds, doneId: doneId };
 })();

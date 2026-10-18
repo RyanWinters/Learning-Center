@@ -18,11 +18,11 @@ LC.lesson({
   body: `
 ## The three modules
 
-Ignition speaks {{term:sparkplug|Sparkplug B}} over {{term:mqtt|MQTT}} through three modules from Cirrus Link. Each does one job, and you pick the ones the site needs. Ignition itself sells and supports them, but the module documentation lives with Cirrus Link at docs.chariot.io.
+Ignition speaks {{term:sparkplug|Sparkplug B}} over {{term:mqtt|MQTT}} through three modules from Cirrus Link. Each does one job, and you pick the ones the site needs. Cirrus Link builds these modules and supports them as the module vendor, and the module documentation lives with Cirrus Link at docs.chariot.io. Inductive Automation lists them on its price list, so you can buy them there, but that does not move support for the module itself to Inductive Automation. Confirm the support route in your purchase terms. The same arrangement is described in {{lesson:arch-ecosystem}}.
 
 | Module | Role | Runs where |
 |---|---|---|
-| {{term:mqtt-transmission|MQTT Transmission}} | Publisher. Reads Ignition tags, turns them into Sparkplug messages, publishes to one or more brokers | Edge or site gateway |
+| {{term:mqtt-transmission|MQTT Transmission}} | Publisher. Reads Ignition tags, turns them into Sparkplug messages, publishes to one or more brokers | Edge IIoT or a site gateway (check which MQTT capability your Edge edition includes, see {{lesson:arch-edge}}) |
 | {{term:mqtt-distributor|MQTT Distributor}} | Broker. Makes an Ignition gateway an MQTT 3.1.1 server | A gateway that should host the broker |
 | {{term:mqtt-engine|MQTT Engine}} | Subscriber. Receives Sparkplug messages and creates and updates tags | Central or hub gateway |
 
@@ -53,20 +53,22 @@ Transmission can publish to several brokers at once, for example a plant broker 
 Engine connects to the broker, subscribes to the Sparkplug namespace (topics beginning \`spBv1.0/\`), and builds tags from the birth messages. The result is a tag provider organized like the topics:
 
 \`\`\`text
-[MQTT Engine]Edge Nodes/PlantA/Line1_Gateway/Filler/Speed
-              ^group      ^edge node          ^device ^metric
-\`\`\`
+[MQTT Engine]Edge Nodes/Plant1/Area10_Line1/M101/Sts/Running
+                        ^group ^edge node    ^device ^metric
+```
+
+This follows the house mapping: Sparkplug group ID \`Plant1\`, edge node ID \`Area10_Line1\`, device ID \`M101\`, and a metric named \`Sts/Running\` that mirrors the Motor UDT member. On the wire the same data travels on topics such as \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\`. The ISA-95 path stays in plain MQTT/UNS topics, never in a Sparkplug topic.
 
 Tags appear when an edge node comes online, and they go stale or bad quality when its death certificate arrives. Because they are ordinary tags, you can use them in Perspective, alarming and history like any other. See {{lesson:ign-historian}} for storing them.
 
 ## Primary host and store-and-forward
 
-Engine can act as the Sparkplug {{term:primary-host|primary host}}. It publishes a retained **STATE** message saying "online" (and a last will saying "offline") on a topic that edge nodes can watch. Edge nodes that know about the primary host do two things:
+Engine can act as the Sparkplug {{term:primary-host|primary host}}. It publishes a retained **STATE** message saying "online" (and a last will saying "offline") on a topic that edge nodes can watch. In Sparkplug 3.0 that topic is \`spBv1.0/STATE/<host_id>\`, for example \`spBv1.0/STATE/CorpScada\`. Earlier Sparkplug versions used a different STATE topic layout, so check the version your modules implement. Edge nodes that know about the primary host do two things:
 
 - When the STATE says offline, they hold their data instead of publishing into the void.
 - When it returns, they publish new births and send what they stored.
 
-That is {{term:mqtt-store-forward|MQTT store and forward}}. Transmission can buffer time-stamped tag changes when the connection or the primary host is down, then backfill history and resume live data. Cirrus Link documents that this is best effort. Edge cases around MQTT keep-alive timeouts can lose messages, so do not call it a guarantee in a compliance design. If you need the data in a historian for certain, test your outage scenarios and consider a second path.
+That is {{term:mqtt-store-forward|MQTT store and forward}}. Transmission can buffer time-stamped tag changes when the connection or the primary host is down, then backfill history and resume live data. Cirrus Link's documentation describes this as best effort (see the store-and-forward video and pages in the resources, and check the current docs for your module version). Edge cases around MQTT keep-alive timeouts can lose messages, so do not call it a guarantee in a compliance design. If you need the data in a historian for certain, test your outage scenarios and consider a second path.
 
 > [!warning] Two historians, one set of data
 > If Transmission backfills history, the receiving gateway must be set to accept and store the historical data. Check how Engine tags handle history so you do not store the same values twice, or lose them.
@@ -116,7 +118,7 @@ MQTT was created by Andy Stanford-Clark and Arlen Nipper in 1999 for monitoring 
   examples: [
     {
       title: "Reading the tag path Engine creates",
-      body: `Transmission on a gateway with group ID \`Bottling\`, edge node ID \`Site2\`, publishes a device named \`Filler\` with a metric \`Pressure\`. At the hub, Engine creates a tag at \`Edge Nodes/Bottling/Site2/Filler/Pressure\` in its provider. If the edge node dies, its tags go bad quality when the NDEATH arrives, so alarms and screens can show "stale" rather than a frozen number.`
+      body: `Transmission on the Plant 1 gateway with group ID \`Plant1\` and edge node ID \`Area10_Line1\` publishes a device named \`M101\` with a metric \`Sts/Running\`. At the hub, Engine creates a tag at \`Edge Nodes/Plant1/Area10_Line1/M101/Sts/Running\` in its provider. If the edge node dies, its tags go bad quality when the NDEATH arrives, so alarms and screens can show "stale" rather than a frozen number.`
     },
     {
       title: "Testing store and forward",

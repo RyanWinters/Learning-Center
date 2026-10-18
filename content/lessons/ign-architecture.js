@@ -34,7 +34,7 @@ The Gateway web UI is where you set up database connections, device connections,
 
 ## The Designer
 
-The Designer is the development environment. You do not install it per project. You install the **Designer Launcher**, a small application that lists Gateways, downloads the Designer version matching the Gateway, and opens it. The Designer talks to the Gateway over HTTP(S) and saves changes into the project on the Gateway. Several people can have Designers open on the same Gateway, with project-level locking and merge handling, though you should not make that your collaboration strategy (see {{lesson:ign-versioning}}).
+The Designer is the development environment. You do not install it per project. You install the **Designer Launcher**, a small application that lists Gateways, downloads the Designer version matching the Gateway, and opens it. The Designer talks to the Gateway over HTTP(S) and saves changes into the project on the Gateway. Several people can have Designers open on the same Gateway, but concurrent edits to the same resource can overwrite each other, so check how your version handles collisions and do not make that your collaboration strategy (see {{lesson:ign-versioning}}).
 
 ## Clients: Vision and Perspective
 
@@ -51,7 +51,7 @@ Ignition has two client technologies, and they behave very differently.
 
 A Perspective **session** is created when someone opens a project URL. The session lives on the Gateway: its state, bindings and session scripts run there, and the browser draws the result. This is why a Perspective deployment is limited by Gateway memory and CPU, and why thousands of bindings across many sessions matter to server sizing.
 
-**Perspective Workstation** wraps a Perspective session in a kiosk-style desktop application, useful on plant-floor panel PCs where you want fullscreen, no address bar, and multiple monitor control. Launchers and Workstation are available for Windows, Linux and macOS in 8.3.
+**Perspective Workstation** wraps a Perspective session in a kiosk-style desktop application, useful on plant-floor panel PCs where you want fullscreen, no address bar, and multiple monitor control. Check the downloads page for the operating systems each launcher and Workstation build supports in your version.
 
 ## Modules
 
@@ -62,7 +62,7 @@ A module is a signed package that adds capability to the Gateway. You install mo
 | OPC UA | Ignition's built-in OPC UA server and the device drivers (Logix, Modbus, Siemens and more), plus an OPC UA client |
 | Perspective | The web/mobile visualization system |
 | Vision | The Java desktop visualization system |
-| Tag Historian (SQL Historian in 8.3 also) | Stores tag history in SQL |
+| Historian (Core Historian and SQL Historian providers in 8.3; Tag Historian in 8.1) | Stores and queries tag history |
 | SQL Bridge | Transaction groups: data logging between tags and SQL tables |
 | Alarm Notification | Email, voice and SMS paging, call rosters |
 | Reporting | Designing and scheduling PDF reports |
@@ -73,7 +73,7 @@ A module is a signed package that adds capability to the Gateway. You install mo
 Third-party modules (Sepasoft MES, Cirrus Link MQTT, many others) install the same way. A module runs inside the Gateway's JVM, which is its power and its risk: a poorly written module can destabilize the whole server.
 
 > [!note] In 8.1
-> 8.3 lists a SQL Historian module as new. In 8.1 you had Tag Historian only. Confirm which historian module a Gateway runs before copying instructions between versions, and see {{lesson:ign-historian}}.
+> In 8.1 the history module is Tag Historian, which stores to SQL. In 8.3 the Historian module offers SQL Historian and Core Historian providers. Confirm which one a Gateway runs before copying instructions between versions, and see {{lesson:ign-historian}}.
 
 ## Gateway resources versus project resources
 
@@ -98,16 +98,16 @@ Ignition scripts always run in a scope, and the scope tells you which machine's 
 - **Designer scope**: scripts run in the Designer while you edit, including the script console and preview mode.
 - **Client scope**: Vision client scripts run in the client JVM on the operator PC.
 
-Perspective is the surprise. Although it feels like a web client, its scripts (component events, bindings with scripts, session events) execute in the Gateway scope, not in the browser. The browser only receives rendered updates. That makes \`system.util.getLogger\` output appear in the Gateway logs, and it means \`system.file.*\` functions touch the server's disk, not the operator's.
+Perspective is the surprise. Although it feels like a web client, the scripts you write for it (component events, script transforms, session events) execute in the Gateway scope, not in the browser. The browser only receives rendered updates. Confirm the details in the Perspective scripting pages of the manual for your version. That makes \`system.util.getLogger\` output appear in the Gateway logs, and it means \`system.file.*\` functions touch the server's disk, not the operator's.
 
 > [!example] Where did that file save?
 > A Perspective button runs \`system.file.writeFile("C:/export.csv", data)\`. You test it in a browser on your laptop and find no file. The script ran in the Gateway scope, so the file is on the server's C: drive. Use \`session.props\` or a download-style component to hand the file to the user instead.
 
 ## Worked trace: one tag value to one screen
 
-1. A Logix PLC holds \`Tank1_Level\` = 72.4.
+1. A Logix PLC holds \`LT101\` (the Area10 tank level transmitter) with a scaled value of 3.62 m.
 2. A device connection in the OPC UA module reads it every scan class period.
-3. The tag \`[default]Tanks/Tank1/Level\` is bound to that OPC item, and the tag provider updates its value.
+3. The tag \`[default]Plant1/Area10/Line1/LT101\` is bound to that OPC item, and the tag provider updates its value.
 4. A Perspective session for a user at a browser has a binding to that tag. The Gateway pushes the new value over the session's websocket.
 5. The browser redraws the gauge. Meanwhile the historian logs the change and the alarm engine compares it with its setpoints.
 

@@ -1,0 +1,7 @@
+Tag,Description,Type,Module,Channel,Range,Units,Alarm,P&ID
+M101.Cmd.Start,Motor M101 start command,BOOL,Software,,0-1,,,P&ID-A10-001
+M101.Sts.Running,Motor M101 run feedback (aux contact),DI,1769-IQ16 slot 2,0,0-1,,,P&ID-A10-001
+M101.Sts.Fault,Motor M101 overload tripped,DI,1769-IQ16 slot 2,1,0-1,,High,P&ID-A10-001
+M101.Sts.Speed,Motor M101 speed feedback from VFD,AI 4-20 mA,1769-IF4 slot 3,0,0-60,Hz,High-High 58 Hz,P&ID-A10-001
+LT101,Mixer tank level,AI 4-20 mA,1769-IF4 slot 3,1,0-5.0,m,High 4.5 / Low 0.5,P&ID-A10-002
+FV101,Inlet valve open command,DO,1769-OB16 slot 4,0,0-1,,,P&ID-A10-002

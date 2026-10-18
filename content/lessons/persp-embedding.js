@@ -33,7 +33,7 @@ An embedded view (\`ia.display.view\`) has two properties that matter:
   "position": { "basis": "300px", "grow": 1 },
   "props": {
     "path": "Tiles/MotorTile",
-    "params": { "motorPath": "[default]Plant1/Area2/Pump1" }
+    "params": { "tagPath": "[default]Plant1/Area10/Line1/M101" }
   }
 }
 \`\`\`
@@ -41,7 +41,7 @@ An embedded view (\`ia.display.view\`) has two properties that matter:
 - **path**: the view to render, relative to the project's views root. This is itself bindable, which is how you swap views at runtime.
 - **params**: an object whose keys match the target view's param names. A Sync Params helper in the Designer fills in all the target's params and removes stale ones.
 
-Param values are bindable like any property. Bind \`props.params.motorPath\` to an expression, a custom prop or a list item, and the embedded view receives the new value whenever it changes. The embedded view is a separate unit: a property binding in the parent cannot reach into a label inside it, and the child cannot reach out. The only data path in is \`params\`, and the only path out is an output or in/out param. Use direction deliberately.
+Param values are bindable like any property. Bind \`props.params.tagPath\` to an expression, a custom prop or a list item, and the embedded view receives the new value whenever it changes. The embedded view is a separate unit: a property binding in the parent cannot reach into a label inside it, and the child cannot reach out. The only data path in is \`params\`, and the only path out is an output or in/out param. Use direction deliberately.
 
 > [!warning] Embedded views are real views
 > Each embedded instance is a full view instance with its own bindings and subscriptions. Twenty tiles with twelve bindings each is 240 live bindings. That is fine, and 500 tiles is not. See {{lesson:persp-performance}} for the budget.
@@ -60,9 +60,9 @@ A {{term:flex-repeater|flex repeater}} makes N embedded views from a list. Its c
     "wrap": "wrap",
     "elementPosition": { "basis": "300px", "grow": 1, "shrink": 0 },
     "instances": [
-      { "motorPath": "[default]Plant1/Area2/Pump1" },
-      { "motorPath": "[default]Plant1/Area2/Pump2" },
-      { "motorPath": "[default]Plant1/Area2/Fan1" }
+      { "tagPath": "[default]Plant1/Area10/Line1/M101" },
+      { "tagPath": "[default]Plant1/Area2/Pump2" },
+      { "tagPath": "[default]Plant1/Area2/Fan1" }
     ]
   }
 }
@@ -74,8 +74,8 @@ One \`path\`, many \`instances\`; each instance is an object of param values for
 
 You rarely type instances by hand. Bind \`props.instances\` to something that produces a list of objects whose keys equal the param names:
 
-1. **A query binding** returning rows with a column named \`motorPath\`. Make the column names match the view's params exactly, or add a transform to rename them.
-2. **A tag browse** done in a script transform or message handler with \`system.tag.browse\`, mapped to \`[{"motorPath": path}, ...]\`.
+1. **A query binding** returning rows with a column named \`tagPath\`. Make the column names match the view's params exactly, or add a transform to rename them.
+2. **A tag browse** done in a script transform or message handler with \`system.tag.browse\`, mapped to \`[{"tagPath": path}, ...]\`.
 3. **A view custom prop** holding a list that you edit.
 
 A script transform that turns a browse result into instances:
@@ -83,7 +83,7 @@ A script transform that turns a browse result into instances:
 \`\`\`python
 def transform(self, value, quality, timestamp):
     # value is a list of tag path strings from a prior step or custom prop
-    return [{"motorPath": p} for p in value]
+    return [{"tagPath": p} for p in value]
 \`\`\`
 
 When the list changes, the repeater adds or removes instances. Keep the instance objects stable (same keys, same order) so Perspective can reuse instances instead of rebuilding all of them.
@@ -97,8 +97,8 @@ A {{term:view-canvas|view canvas}} shows several views on a coordinate surface, 
 Here is the move that makes templates scale. Do not pass a tile ten params (\`running\`, \`speed\`, \`fault\`...). Pass **one**: the folder path of the UDT instance, as a {{term:tag-path-param|tag path param}}. The view builds all of its bindings from it.
 
 \`\`\`text
-Param:   motorPath = [default]Plant1/Area2/Pump1
-Bindings (indirect, {1} = {view.params.motorPath}):
+Param:   tagPath = [default]Plant1/Area10/Line1/M101
+Bindings (indirect, {1} = {view.params.tagPath}):
    {1}/Run        -> run state
    {1}/Speed      -> speed
    {1}/Fault      -> fault
@@ -114,8 +114,8 @@ Assume a \`Motor\` UDT with members \`Run\` (bool), \`Speed\` (float, Hz), \`Fau
 **1. Create the tile view** \`Tiles/MotorTile\`, flex column root. Declare one input param:
 
 \`\`\`json
-"params": { "motorPath": "" },
-"propConfig": { "params.motorPath": { "paramDirection": "input", "persistent": true } }
+"params": { "tagPath": "" },
+"propConfig": { "params.tagPath": { "paramDirection": "input", "persistent": true } }
 \`\`\`
 
 **2. Add children** with indirect tag bindings. For the name label:
@@ -128,14 +128,14 @@ Assume a \`Motor\` UDT with members \`Run\` (bool), \`Speed\` (float, Hz), \`Fau
       "config": {
         "mode": "indirect",
         "tagPath": "{1}/Config/Name",
-        "references": { "1": "{view.params.motorPath}" }
+        "references": { "1": "{view.params.tagPath}" }
       }
     }
   }
 }
 \`\`\`
 
-For the status badge, bind two view custom props straight to the tags, each with an indirect tag binding (\`custom.run\` to \`{1}/Run\`, \`custom.fault\` to \`{1}/Fault\`, with \`{1}\` = \`{view.params.motorPath}\`). Then add a third custom prop, \`custom.stateCode\`, with an expression binding:
+For the status badge, bind two view custom props straight to the tags, each with an indirect tag binding (\`custom.run\` to \`{1}/Run\`, \`custom.fault\` to \`{1}/Fault\`, with \`{1}\` = \`{view.params.tagPath}\`). Then add a third custom prop, \`custom.stateCode\`, with an expression binding:
 
 \`\`\`text
 if({view.custom.fault}, 2, if({view.custom.run}, 1, 0))
@@ -148,7 +148,7 @@ Then map 0, 1, 2 on the badge's style binding to the style classes stopped, runn
 **4. Use it in a repeater** on a plant overview. Bind \`instances\` to a query:
 
 \`\`\`sql
-SELECT '[default]Plant1/Area2/' + name AS motorPath
+SELECT '[default]Plant1/Area2/' + name AS tagPath
 FROM equipment WHERE area = :area AND type = 'Motor' ORDER BY name
 \`\`\`
 
@@ -193,7 +193,7 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
     },
     {
       title: "Renaming a param safely",
-      body: `The tile's \`motorPath\` is renamed \`assetPath\`. Every embedding and every repeater instance still passes \`motorPath\`, so every tile goes blank at once. Fix by using Sync Params on each embedder, or update the query's column alias. Treat param names as a published API and change them in one planned pass.`
+      body: `The tile's \`tagPath\` is renamed \`assetPath\`. Every embedding and every repeater instance still passes \`tagPath\`, so every tile goes blank at once. Fix by using Sync Params on each embedder, or update the query's column alias. Treat param names as a published API and change them in one planned pass.`
     }
   ],
 
@@ -204,19 +204,19 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
   </defs>
   <rect class="dg-box" x="16" y="30" width="120" height="56" rx="6"/>
   <text class="dg-text dg-mid" x="76" y="54">Query / list</text>
-  <text class="dg-text-sm dg-mid" x="76" y="74">motorPath rows</text>
+  <text class="dg-text-sm dg-mid" x="76" y="74">tagPath rows</text>
   <rect class="dg-box-accent" x="190" y="30" width="150" height="56" rx="6"/>
   <text class="dg-text dg-mid" x="265" y="54">Flex repeater</text>
   <text class="dg-text-sm dg-mid" x="265" y="74">props.instances</text>
   <line class="dg-line" x1="136" y1="58" x2="188" y2="58" marker-end="url(#persp-embedding-ah)"/>
   <rect class="dg-box" x="400" y="14" width="224" height="52" rx="6"/>
-  <text class="dg-text-sm" x="412" y="36">Tile 1: motorPath = .../Pump1</text>
+  <text class="dg-text-sm" x="412" y="36">Tile 1: tagPath = .../Pump1</text>
   <text class="dg-text-mono" x="412" y="56">{1}/Speed {1}/Run</text>
   <rect class="dg-box" x="400" y="76" width="224" height="52" rx="6"/>
-  <text class="dg-text-sm" x="412" y="98">Tile 2: motorPath = .../Pump2</text>
+  <text class="dg-text-sm" x="412" y="98">Tile 2: tagPath = .../Pump2</text>
   <text class="dg-text-mono" x="412" y="118">{1}/Speed {1}/Run</text>
   <rect class="dg-box" x="400" y="138" width="224" height="52" rx="6"/>
-  <text class="dg-text-sm" x="412" y="160">Tile N: motorPath = .../Fan1</text>
+  <text class="dg-text-sm" x="412" y="160">Tile N: tagPath = .../Fan1</text>
   <text class="dg-text-mono" x="412" y="180">{1}/Speed {1}/Run</text>
   <line class="dg-line" x1="340" y1="50" x2="398" y2="40" marker-end="url(#persp-embedding-ah)"/>
   <line class="dg-line" x1="340" y1="60" x2="398" y2="102" marker-end="url(#persp-embedding-ah)"/>
@@ -254,7 +254,7 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
       ]
     },
     {
-      q: "A flex repeater shows 12 tiles, all blank. The query returns columns named 'path' but the tile's param is 'motorPath'. What is the fix?",
+      q: "A flex repeater shows 12 tiles, all blank. The query returns columns named 'path' but the tile's param is 'tagPath'. What is the fix?",
       options: [
         "Increase the repeater's basis",
         "Rename the query column (or transform the rows) so the keys match the param name",

@@ -22,24 +22,24 @@ A device only talks directly to addresses on its own subnet (see {{lesson:net-ip
 
 ### A packet across a router
 
-An HMI at 10.20.10.50 wants to read a PLC at 10.20.11.10. Mask /24 on both.
+An HMI at 10.20.20.50 (VLAN 20) wants to read PLC1 at 10.20.10.10 (VLAN 10). Mask /24 on both.
 
-1. The HMI checks: 10.20.11.10 is not in 10.20.10.0/24, so it is remote.
-2. It ARPs for its default gateway (10.20.10.1) and sends the frame to the **router's MAC**, with the PLC's IP inside.
-3. The router looks up 10.20.11.0/24 in its routing table. It is directly connected on another interface.
+1. The HMI checks: 10.20.10.10 is not in 10.20.20.0/24, so it is remote.
+2. It ARPs for its default gateway (10.20.20.1) and sends the frame to the **router's MAC**, with the PLC's IP inside.
+3. The router looks up 10.20.10.0/24 in its routing table. It is directly connected on another interface.
 4. The router ARPs for the PLC on that subnet and sends a new frame, with the router's MAC as source and the PLC's MAC as destination.
 5. The IP addresses stay the same end to end. The MAC addresses change at every hop.
 
 {{diagram:route}}
 
-A routing table is a list of "to reach network X, send to next hop Y." Directly connected networks are added automatically. Others are added by hand (**static routes**) or learned from other routers by a routing protocol (OSPF is common in larger plants). A static route that sends 10.30.0.0/16 to the router at 10.20.1.254 is a typical one-line fix when a second site is added.
+A routing table is a list of "to reach network X, send to next hop Y." Directly connected networks are added automatically. Others are added by hand (**static routes**) or learned from other routers by a routing protocol (OSPF is common in larger plants). A static route that sends Plant 2's 10.21.0.0/16 to the plant's WAN router is a typical one-line fix when a second site is added.
 
 > [!note] The return path
-> Routing is one-way thinking. The PLC must also know how to reach the HMI. If the PLC has no gateway, requests arrive, replies never leave and the connection fails. When ping works in one direction only, check the return route.
+> Routing is two-way thinking. The PLC must also know how to reach the HMI. If the PLC has no gateway, requests from another subnet arrive, replies never leave and the connection fails. Ping is a round trip too, so it cannot "work one way". The real symptom is a TCP connection that gets requests in and no reply out. Check the return route.
 
 ### Layer 3 switches
 
-A layer 3 switch is a switch that can also route between VLANs and subnets in hardware. In practice, you create a VLAN interface (an SVI) on the switch for each subnet, give each one an IP address (that is the gateway address for the devices on it) and the switch routes between them at wire speed. Plants use layer 3 switches (a Stratix 5400/5700 or a Cisco distribution switch) instead of a separate router box for the cell-to-plant traffic. This keeps the VLAN design in {{lesson:net-vlan}} and the IP design in one device. A layer 2 switch can only forward within one broadcast domain.
+A layer 3 switch is a switch that can also route between VLANs and subnets in hardware. In practice, you create a VLAN interface (an SVI) on the switch for each subnet, give each one an IP address (that is the gateway address for the devices on it) and the switch routes between them at wire speed. Plants use layer 3 switches (an industrial layer 3 switch or a Cisco distribution switch; check the datasheet for your model's routing support) instead of a separate router box for the cell-to-plant traffic. This keeps the VLAN design in {{lesson:net-vlan}} and the IP design in one device. A layer 2 switch can only forward within one broadcast domain.
 
 ## NAT
 
@@ -56,16 +56,16 @@ You cannot readdress them, because it means editing and re-validating a program 
 
 | Inside the machine | Plant side, machine 3 |
 |---|---|
-| 192.168.1.10 (PLC) | 10.20.50.31 |
-| 192.168.1.20 (HMI) | 10.20.50.32 |
-| 192.168.1.30 (drive) | 10.20.50.33 |
+| 192.168.1.10 (PLC) | 10.20.40.31 |
+| 192.168.1.20 (HMI) | 10.20.40.32 |
+| 192.168.1.30 (drive) | 10.20.40.33 |
 
-Ignition at 10.20.100.10 now reads the PLC of machine 3 at 10.20.50.31. The switch translates it into 192.168.1.10 on the way in and back on the way out. Machine 4 gets 10.20.50.41-.43 with the same internal addresses.
+Ignition at 10.20.30.10 now reads the PLC of machine 3 at 10.20.40.31. The switch translates it into 192.168.1.10 on the way in and back on the way out. Machine 4 gets 10.20.40.41-.43 with the same internal addresses.
 
 {{diagram:nat}}
 
 > [!note] Stratix NAT
-> Rockwell's Stratix managed switches (documentation names the 5700, 5400 and 5200 families) include a NAT feature built for exactly this. Its documentation describes a one-to-one mapping implemented in the switch, with a limited number of translations per switch. Check the current hardware and firmware documentation for the translation limit, supported ports and licensing before you design around it. Other industrial switch and router vendors offer equivalent features, and dedicated NAT appliances exist too.
+> Some Rockwell Stratix managed switches include a NAT feature built for exactly this. Which models support it varies, so check Rockwell's current documentation. It describes a one-to-one mapping implemented in the switch, with a limited number of translations per switch. Check the current hardware and firmware documentation for the translation limit, supported ports and licensing before you design around it. Other industrial switch and router vendors offer equivalent features, and dedicated NAT appliances exist too.
 
 NAT is not free. Things to watch:
 
@@ -85,7 +85,7 @@ DHCP uses UDP ports 67 (server) and 68 (client). Because the first message is a 
 For control devices, plain DHCP is risky, because the address a device gets can change. Two ways to make it stable:
 
 - A **reservation** binds an address to a device's MAC. The server always gives that MAC the same IP. Replace a drive and the MAC changes, so you must update the reservation.
-- **Port-based addressing with {{term:dhcp-option-82|DHCP option 82}}**. The switch (acting as a relay agent) adds the switch and port number to each DHCP request, as the "circuit ID." The server hands out an address by *port*, so whatever device is plugged into Gi1/0/12 gets 10.20.10.112. A technician can swap a failed drive and the new unit comes up with the old one's address, with no MAC editing and no software tool. Rockwell Stratix switches offer a feature for this called DHCP persistence in their documentation, and other vendors have equivalents. This is popular for drives and I/O blocks, where a replacement should "just work."
+- **Port-based addressing with {{term:dhcp-option-82|DHCP option 82}}**. The switch (acting as a relay agent) adds the switch and port number to each DHCP request, as the "circuit ID." The server hands out an address by *port*, so whatever device is plugged into Gi1/0/12 gets 10.20.10.112. A technician can swap a failed drive and the new unit comes up with the old one's address, with no MAC editing and no software tool. Rockwell documents a related DHCP feature on some Stratix switches (check the current manual for its name and which models support it), and other vendors have equivalents. This is popular for drives and I/O blocks, where a replacement should "just work."
 
 > [!tip] Static or DHCP? A working rule
 > Servers, switches, firewalls and gateways: static. PLCs: static (the project holds the address). Replaceable field devices such as drives and remote I/O: static, or port-based DHCP with option 82 if your team swaps parts often. Laptops, phones and visitors: normal DHCP.
@@ -103,7 +103,7 @@ Ignition is a server system, and a lot of its connections depend on the name a c
 - **Clients and Designer** use a URL like \`https://ignition-prod.plant.local:8043\`. A name survives a server being replaced or moved, an IP address does not.
 - **Gateway Network** connections between gateways use a host name or address (default port 8060). Using names keeps working after a server move.
 - **TLS certificates** are issued for a name. A browser connecting to an IP address, or to a name the certificate does not list, shows a certificate warning. OPC UA also checks certificates, and many OPC UA clients connect by hostname. A server that moves or is renamed can fail with security errors, even though the IP is the same.
-- **Perspective** sessions and the gateway's public address setting should use the name users actually type. Ignition has an option to resolve client hostnames by reverse DNS. The documentation warns that an unreachable or slow DNS server can block requests until a timeout, so only enable it if reverse DNS works.
+- **Perspective** sessions and the gateway's public address setting should use the name users actually type. Ignition can resolve client hostnames by reverse DNS (check the gateway settings in the manual for your version). The documentation warns that an unreachable or slow DNS server can block requests until a timeout, so only enable it if reverse DNS works.
 - **Databases and historians** are referenced by hostname in JDBC connection strings.
 
 > [!note] In 8.1
@@ -146,12 +146,12 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
 
   examples: [
     {
-      title: "The 'ping works one way' fault",
-      body: `Ignition (10.20.100.10) can ping a new PLC (10.20.10.40), but a read never completes, and a capture on the PLC's switch port shows requests arriving with no replies leaving. The PLC was configured with a mask but no gateway, so it cannot answer a different subnet. Adding gateway 10.20.10.1 in the PLC's network settings fixed it.`
+      title: "The 'ping works from here, reads hang from there' fault",
+      body: `An engineering laptop at 10.20.10.60 pings a new PLC (10.20.10.40) and browses it fine, but Ignition (10.20.30.10) can never complete a read, and a capture on the PLC's switch port shows requests (SYNs) arriving with no replies leaving. Ping from Ignition would fail too. The PLC was configured with a mask but no gateway, so it answers its own subnet and nothing else. Adding gateway 10.20.10.1 in the PLC's network settings fixed it.`
     },
     {
       title: "Twenty identical machines",
-      body: `Each machine's panel contains a Stratix switch with 1:1 NAT mapping 192.168.1.10 to 10.20.50.(machine number * 10 + 1), 192.168.1.20 to ...+2 and 192.168.1.30 to ...+3. Ignition's device list uses the translated addresses. A spreadsheet lists the mapping and the machine serial number. When a machine is moved to another plant, only the NAT mapping changes.`
+      body: `Each machine's panel contains a Stratix switch with 1:1 NAT mapping 192.168.1.10 to 10.20.40.(machine number * 10 + 1), 192.168.1.20 to ...+2 and 192.168.1.30 to ...+3. Ignition's device list uses the translated addresses. A spreadsheet lists the mapping and the machine serial number. When a machine is moved to another plant, only the NAT mapping changes.`
     },
     {
       title: "Certificate warning after a server rebuild",
@@ -160,23 +160,23 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
   ],
 
   diagrams: {
-    route: `<svg viewBox="0 0 640 230" role="img" aria-label="An HMI on subnet 10.20.10.0/24 reaches a PLC on 10.20.11.0/24 through a router, with the MAC address changing at each hop but the IPs staying the same">
+    route: `<svg viewBox="0 0 640 230" role="img" aria-label="An HMI on subnet 10.20.20.0/24 reaches a PLC on 10.20.10.0/24 through a router, with the MAC address changing at each hop but the IPs staying the same">
   <defs>
     <marker id="net-routing-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker>
   </defs>
   <rect class="dg-zone" x="10" y="40" width="190" height="120" rx="6"/>
-  <text class="dg-title" x="20" y="60">10.20.10.0/24</text>
+  <text class="dg-title" x="20" y="60">10.20.20.0/24</text>
   <rect class="dg-box-accent" x="24" y="76" width="160" height="50" rx="4"/>
   <text class="dg-text-sm dg-mid" x="104" y="97">HMI</text>
-  <text class="dg-text-mono dg-mid" x="104" y="116">10.20.10.50</text>
+  <text class="dg-text-mono dg-mid" x="104" y="116">10.20.20.50</text>
   <rect class="dg-box" x="240" y="76" width="160" height="50" rx="4"/>
   <text class="dg-text-sm dg-mid" x="320" y="97">Router / L3 switch</text>
   <text class="dg-text-mono dg-mid" x="320" y="116">.1 and .1</text>
   <rect class="dg-zone" x="440" y="40" width="190" height="120" rx="6"/>
-  <text class="dg-title" x="450" y="60">10.20.11.0/24</text>
+  <text class="dg-title" x="450" y="60">10.20.10.0/24</text>
   <rect class="dg-box-accent" x="456" y="76" width="160" height="50" rx="4"/>
   <text class="dg-text-sm dg-mid" x="536" y="97">PLC</text>
-  <text class="dg-text-mono dg-mid" x="536" y="116">10.20.11.10</text>
+  <text class="dg-text-mono dg-mid" x="536" y="116">10.20.10.10</text>
   <line class="dg-line" x1="184" y1="101" x2="240" y2="101" marker-end="url(#net-routing-ah)"/>
   <line class="dg-line" x1="400" y1="101" x2="456" y2="101" marker-end="url(#net-routing-ah)"/>
   <text class="dg-text-muted" x="20" y="186">Hop 1: dest MAC = router, dest IP = PLC</text>
@@ -184,13 +184,13 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
   <text class="dg-text-muted" x="380" y="186">IPs stay end to end.</text>
   <text class="dg-text-muted" x="380" y="206">MACs change at every hop.</text>
 </svg>`,
-    nat: `<svg viewBox="0 0 640 200" role="img" aria-label="1:1 NAT: Ignition reads 10.20.50.31, the Stratix translates to the machine's internal 192.168.1.10">
+    nat: `<svg viewBox="0 0 640 200" role="img" aria-label="1:1 NAT: Ignition reads 10.20.40.31, the Stratix translates to the machine's internal 192.168.1.10">
   <defs>
     <marker id="net-routing-nat" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker>
   </defs>
   <rect class="dg-box" x="20" y="60" width="150" height="60" rx="4"/>
   <text class="dg-text-sm dg-mid" x="95" y="84">Ignition</text>
-  <text class="dg-text-mono dg-mid" x="95" y="104">10.20.100.10</text>
+  <text class="dg-text-mono dg-mid" x="95" y="104">10.20.30.10</text>
   <rect class="dg-box-accent" x="245" y="50" width="150" height="80" rx="4"/>
   <text class="dg-text-sm dg-mid" x="320" y="76">Switch with NAT</text>
   <text class="dg-text-mono dg-mid" x="320" y="98">.31 &lt;-&gt; .10</text>
@@ -200,14 +200,14 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
   <text class="dg-text-mono dg-mid" x="545" y="104">192.168.1.10</text>
   <line class="dg-line" x1="170" y1="90" x2="245" y2="90" marker-end="url(#net-routing-nat)"/>
   <line class="dg-line" x1="395" y1="90" x2="470" y2="90" marker-end="url(#net-routing-nat)"/>
-  <text class="dg-text-mono" x="40" y="160">sees 10.20.50.31</text>
+  <text class="dg-text-mono" x="40" y="160">sees 10.20.40.31</text>
   <text class="dg-text-mono" x="420" y="160">sees its own 192.168.1.10</text>
 </svg>`
   },
 
   pitfalls: [
     "Setting an IP and mask on a device but no gateway, so it only answers its own subnet.",
-    "Forgetting the return route. Requests arrive, replies go nowhere, and ping works in one direction.",
+    "Forgetting the return route. Requests arrive from another subnet, replies go nowhere, and the PLC works only for same-subnet clients.",
     "Using the PLC's internal address in Ignition when it sits behind NAT. Outside the machine you must use the translated address.",
     "Assuming NAT is a firewall. It hides addresses but does not restrict traffic.",
     "Leaving DHCP on a control device or pointing every client at a server IP instead of a DNS name.",
@@ -283,7 +283,7 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
       ]
     },
     {
-      q: "Ping works from Ignition to a PLC, but Ignition's reads never complete. A capture at the PLC shows requests in and no replies out. What do you check?",
+      q: "A laptop on the PLC's own subnet can ping and browse the PLC, but Ignition on another subnet cannot complete a read. A capture at the PLC shows requests in and no replies out. What do you check?",
       options: [
         "Is the PLC missing a gateway for the return path to Ignition's subnet?",
         "Is Ignition's DNS record correct?",

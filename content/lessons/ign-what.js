@@ -6,9 +6,9 @@ LC.lesson({
   level: 1,
   prereqs: ["found-purdue"],
   tags: ["ignition", "scada", "licensing", "editions", "purdue"],
-  summary: "A web-deployed, SQL-centric, modular platform sold by the server instead of by the tag. That pricing and architecture combination is why it spread.",
+  summary: "A web-deployed, SQL-centric, modular platform licensed per Gateway and per module instead of by the tag. That pricing and architecture combination is why it spread.",
   objectives: [
-    "Explain how Ignition's per-server unlimited licensing differs from per-tag and per-client SCADA pricing",
+    "Explain how Ignition's per-Gateway licensing (unlimited tags and devices, licensed modules) differs from per-tag SCADA pricing",
     "Describe the four properties that define the platform: Java gateway, web deployment, modularity, SQL at the center",
     "Place Ignition at the right Purdue levels for a given job",
     "Choose between Standard, Edge, Cloud Edition and Maker Edition for a scenario",
@@ -28,17 +28,17 @@ Inductive Automation was founded in 2003 by Steve Hechtman, who came from the sy
 
 Most SCADA vendors of that era priced by the number of tags (I/O points) and by the number of client seats. A 5,000-tag license with 5 clients was a different product, at a different price, from a 50,000-tag license with 20 clients. Every plant expansion was a quote.
 
-Ignition licenses **per server**. A Standard Gateway license covers unlimited tags, unlimited clients (within what the hardware can serve), unlimited screens and unlimited device connections. You buy modules, and each module is also licensed per Gateway.
+Ignition licenses **per Gateway plus modules**. A Gateway license does not count tags, screens or device connections, so those are unlimited in the license (within what the hardware can serve). You buy the modules you need, and each module is licensed per Gateway. Client access is licensed through the module that provides it: Perspective sessions and Vision clients are counted by that module's license, so check the current terms when you size a visualization purchase. {{lesson:ign-licensing}} covers the details. This lesson quotes no prices.
 
 | | Per-tag / per-client model | Ignition model |
 |---|---|---|
-| What you count | Tags, client seats, sometimes drivers | Gateways and modules |
+| What you count | Tags, client seats, sometimes drivers | Gateways and modules (plus sessions or clients inside a visualization module) |
 | Adding 2,000 tags | New license tier | Nothing to buy |
-| Adding 10 operator stations | Ten more seats | Nothing to buy |
+| Adding 10 operator stations | Ten more seats | Check the session or client allowance of the visualization module |
 | Cost of a prototype | Full price or crippled demo | Free trial with all modules |
 | Risk for the buyer | Sizing the license before you know the scope | Sizing the server hardware |
 
-The consequence is behavioral. An integrator can say yes to "can we also show the packaging line?" without a purchase order. The cost of being wrong about scope moves from licensing to server sizing, which is a much cheaper mistake.
+The consequence is behavioral. An integrator can say yes to "can we also show the packaging line?" without re-quoting tags. The cost of being wrong about scope moves mostly from tag licensing to server sizing and module session counts, which is a much cheaper mistake.
 
 ## What defines the platform
 
@@ -46,7 +46,7 @@ The consequence is behavioral. An integrator can say yes to "can we also show th
 
 **Web-deployed clients.** Operators do not install a project. They open a URL or launch a client from the Gateway, which sends the current version of the project at launch. Update the project and the next launch gets the update. With Perspective, the client is just a browser session.
 
-**Modular.** The base Gateway is small. Capabilities arrive as signed modules you install and license separately: OPC UA, Perspective, Vision, Tag Historian, SQL Bridge, Reporting, Alarm Notification and many more, plus third-party modules. You run what you need. {{lesson:ign-architecture}} covers the list.
+**Modular.** The base Gateway is small. Capabilities arrive as signed modules you install and license separately: OPC UA, Perspective, Vision, Historian, SQL Bridge, Reporting, Alarm Notification and many more, plus third-party modules. You run what you need. {{lesson:ign-architecture}} covers the list.
 
 **SQL-centric.** The platform assumes a relational database exists. Historian data, alarm journals, audit logs, transaction groups and your own application tables all live in SQL, and scripts and bindings can query it directly. This is why Ignition is such a common bridge between the plant floor and MES or ERP systems, which already speak SQL.
 
@@ -73,8 +73,8 @@ Beginners often put one big Gateway everywhere. Experienced architects use sever
 
 | Edition | What it is | Typical use |
 |---|---|---|
-| Standard | The full platform, unlimited tags and clients, all modules available | Plant SCADA, HMI, historian, MES |
-| Edge | A trimmed edition for small devices and machines with a limited module set and no database connectivity | Machine-level HMI, data forwarding over MQTT |
+| Standard | The full platform, unlimited tags and device connections, all modules available (licensed per module) | Plant SCADA, HMI, historian, MES |
+| Edge | A trimmed edition for small devices and machines with a limited module set (check the edition page for what is excluded) | Machine-level HMI, data forwarding over MQTT |
 | Cloud Edition | Ignition hosted by Inductive, with a bundle of modules preinstalled, usage-based pricing | Enterprise or cloud dashboards without managing servers |
 | Maker Edition | Free, for personal non-commercial use and learning, with capped usage | Home labs, education |
 
@@ -85,29 +85,29 @@ Check the current edition pages for exact limits, since they change between rele
 You can download Ignition and run every module without paying. The trial is limited by a two-hour timer: after two hours the modules stop and projects stop working, and you reset the timer from the Gateway with a click. You can reset it as often as you like. There is no tag limit and no feature lock, so a full prototype is possible. The catch for a prototype that someone leaves running over a weekend is that it will quietly stop. Put a licensed Gateway in front of anything you promise to leave running.
 
 > [!example] Sizing a first project
-> A packaging plant has 4 lines, 6,000 tags, 12 operator stations and a plan to add a historian next year. A per-tag vendor quotes three licenses. With Ignition you buy one Gateway license plus the modules you need now (OPC UA, Perspective, Tag Historian) and add modules when you need them. The hardware question is how many concurrent sessions and tag changes per second one server must handle, and you answer that with a trial, not a quote.
+> A packaging plant has 4 lines, 6,000 tags, 12 operator stations and a plan to add a historian next year. A per-tag vendor quotes three licenses. With Ignition you buy one Gateway license plus the modules you need now (OPC UA, Perspective, Historian) and add modules when you need them. Two questions remain: how many concurrent Perspective sessions the module license must cover, and how many sessions and tag changes per second one server can handle. Answer the second with a trial, and the first with the licensing terms (see {{lesson:ign-licensing}}).
 `,
 
   eli5: `
 Imagine you want a toolbox for your workshop. Most toolbox companies charge by the number of tools you put in it and the number of friends allowed to borrow it. Every time you add a screwdriver or invite a friend, you pay more.
 
-Ignition is a toolbox company that sells you the box itself, one price, and lets you put in as many tools and invite as many friends as the box can physically hold. You only pay extra when you want a special drawer, like a drawer for recording measurements or one that rings a bell when something goes wrong.
+Ignition is a toolbox company that sells you the box itself and lets you put in as many tools as the box can physically hold. You pay extra for the special drawers you choose, like a drawer for recording measurements or one that rings a bell when something goes wrong, and the drawer that lets friends borrow the box has its own limit on how many can use it at once.
 
 The box also works over the internet, so your friends do not need to carry their own copy. They open a link and see the same tools you see. And everything you write down is kept in a standard notebook (a database) that other people's programs already know how to read.
 `,
 
   why: `
-**Why per-server licensing mattered.** In per-tag pricing the vendor's incentive is to make you count tags. The customer's incentive is to avoid adding data, so trends, diagnostics and context get left out because each one costs money. Per-server pricing removed that tension. Plants collect more data because adding it is free, and integrators prototype in front of the customer rather than quoting from a spec.
+**Why per-Gateway licensing mattered.** In per-tag pricing the vendor's incentive is to make you count tags. The customer's incentive is to avoid adding data, so trends, diagnostics and context get left out because each one costs money. Per-Gateway pricing removed that tension. Plants collect more data because adding it is free, and integrators prototype in front of the customer rather than quoting from a spec.
 
 **Why SQL in the middle.** Proprietary historian files are fast, but nobody else can read them. A SQL database is boring and universal. Every MES, ERP, BI tool and reporting engine can query it. Ignition accepted a performance cost in exchange for making plant data a first-class citizen of the rest of the company's software.
 
 **Why web deployment.** Installing software on 60 operator PCs means 60 patch cycles and 60 chances for a version mismatch. A launched client always matches the Gateway. The tradeoff is that the Gateway becomes a single point of failure, which is why redundancy (a backup Gateway) is a standard feature and not a luxury.
 
-**What integrators argue about.** One big Gateway is simple but a blast radius. Many small Gateways limit failures but multiply patching and configuration. The version control and deployment features in 8.3 shift that argument by making many Gateways easier to manage. Another argument is whether the unlimited licensing hides a cost: every tag and every session consumes CPU, memory and database throughput, so "unlimited" really means "limited by your hardware and design."
+**What integrators argue about.** One big Gateway is simple but a blast radius. Many small Gateways limit failures but multiply patching and configuration. The version control and deployment features in 8.3 shift that argument by making many Gateways easier to manage. Another argument is whether the unlimited tag licensing hides a cost: every tag and every session consumes CPU, memory and database throughput, so "unlimited" really means "limited by your hardware and design."
 `,
 
   history: `
-Inductive Automation was founded in 2003 by Steve Hechtman. Its early products were FactoryPMI (web-launched visualization) and FactorySQL (PLC-to-SQL data logging), which were merged into Ignition in 2010 under the per-server model. The platform has been updated through the 7, 8.0 and 8.1 lines, and 8.3 arrived in 2025 with file-based configuration and a REST API.
+Inductive Automation was founded in 2003 by Steve Hechtman. Its early products were FactoryPMI (web-launched visualization) and FactorySQL (PLC-to-SQL data logging), which were merged into Ignition in 2010 under the per-Gateway model. The platform has been updated through the 7, 8.0 and 8.1 lines, and 8.3 arrived in 2025 with file-based configuration and a REST API.
 `,
 
   examples: [
@@ -141,20 +141,20 @@ Inductive Automation was founded in 2003 by Steve Hechtman. Its early products w
     "Running a customer demo on the trial and letting the two-hour timer expire.",
     "Putting safety or sequence logic in Ignition scripts instead of the PLC.",
     "Using one Gateway for every level of the plant without thinking about network zones.",
-    "Assuming Edge has the same module list and database connectivity as Standard."
+    "Assuming Edge has the same module list as Standard, or that unlimited tags means unlimited Perspective sessions."
   ],
 
   keyTerms: ["ignition", "ign-gateway", "ign-unlimited-licensing", "ignition-edge", "ign-maker-edition", "ign-trial-timer", "scada", "isa-95"],
 
   quiz: [
     {
-      q: "A competitor prices by tags and clients. Your customer adds 3,000 tags and 8 operator stations to an existing Ignition Standard system. What do they buy?",
-      options: ["Nothing for the tags or clients, though they may need bigger hardware", "A larger tag license tier", "Eight client seat licenses", "An upgrade to Cloud Edition"],
+      q: "A competitor prices by tags and clients. Your customer adds 3,000 tags to an existing Ignition Standard system, and 8 more operators will use Perspective. What is the licensing consequence?",
+      options: ["No tag purchase is needed, but confirm the Perspective module's session allowance covers the extra operators and size the hardware", "A larger tag license tier", "One new Gateway license per operator station", "An upgrade to Cloud Edition"],
       answer: 0,
       explain: [
-        "Correct. Licensing is per Gateway and per module. The real constraint becomes server capacity.",
+        "Correct. Tags are not counted. Sessions and clients are licensed per module, so check that allowance, and the other constraint is server capacity.",
         "Ignition does not sell tag tiers.",
-        "Ignition does not license client seats.",
+        "Operators do not need their own Gateway license. Their sessions fall under the visualization module's licensing.",
         "Cloud Edition is a hosting model, not an upgrade path for tag counts."
       ]
     },

@@ -25,9 +25,9 @@ Here is a trimmed view with one label inside a flex container:
 \`\`\`json
 {
   "custom": { "alarmCount": 0 },
-  "params": { "motorPath": "" },
+  "params": { "tagPath": "" },
   "propConfig": {
-    "params.motorPath": { "paramDirection": "input", "persistent": true },
+    "params.tagPath": { "paramDirection": "input", "persistent": true },
     "custom.alarmCount": {
       "binding": { "type": "expr", "config": { "expression": "len({this.custom.alarms})" } }
     }
@@ -42,7 +42,7 @@ Here is a trimmed view with one label inside a flex container:
         "type": "ia.display.label",
         "meta": { "name": "Title" },
         "position": { "basis": "32px" },
-        "props": { "text": "Pump 1" }
+        "props": { "text": "M101" }
       }
     ]
   }
@@ -85,11 +85,11 @@ Property values are JSON-shaped: string, number, boolean, null, object and array
 
 \`\`\`python
 rows = list(self.custom.rows)          # copy out
-rows.append({"name": "P-101", "run": True})
+rows.append({"name": "M101", "run": True})
 self.custom.rows = rows                # assign the whole value
 \`\`\`
 
-Datasets are a separate type, produced by queries and the Table component. Convert them with \`system.dataset.toPyDataSet\` or \`system.perspective\`-friendly list-of-dict forms before heavy processing.
+Datasets are a separate type, produced by queries and the Table component. Convert them with \`system.dataset.toPyDataSet\`, or build a list of dicts from the dataset\'s column names and rows, before heavy processing. Assign the finished list back to the property.
 
 ## View parameters: the interface of a view
 
@@ -97,13 +97,13 @@ A view is reusable only if it has a clear boundary. {{term:view-params|View para
 
 | Direction | Who sets it | Can the view bind it internally? | Typical use |
 |---|---|---|---|
-| input | The parent (embedder, page URL, popup opener) | No. It is read-only inside | \`motorPath\`, \`title\` |
+| input | The parent (embedder, page URL, popup opener) | No. It is read-only inside | \`tagPath\`, \`title\` |
 | output | The view itself | Yes. The parent can read it | \`selectedRow\`, \`isValid\` |
 | in/out | Both sides | Yes, from both | A shared setpoint or filter |
 
 Two behaviors cause real trouble. First, the **default direction is input**, so a param you meant to write to will silently refuse bindings until you change it. Second, input params are assigned when the view is created. Treat them as the view's constructor arguments, and design for the parent changing them by supplying a bound value rather than by mutating an old one. Popups and docked views are not children of a view in the tree, so the opener cannot read their output params. Use a message handler or a session prop to send data back (see {{lesson:persp-events}}).
 
-The \`persistent\` flag in the JSON above makes a param's value survive view reloads in the Designer preview. It does not make a value persistent across user sessions.
+The \`persistent\` flag in the JSON above controls whether a property's value is saved with the view resource, not whether it survives a user session. Check the manual for your version for the exact semantics. Either way, a param value is not a store that outlives the session.
 
 ## Where should this state live?
 
@@ -119,28 +119,66 @@ State in Perspective has four common homes. Pick by who needs to see it and how 
 Gateway tags are the fifth home, for state that must be shared between sessions or survive a restart. If two operators must see the same value, a session prop is wrong.
 
 > [!example] Choosing a home
-> A plant overview has an "Area" dropdown. The selected area must filter the alarm table on this page, the trend on the next page and the header. That is session state, so it belongs in \`session.custom.area\`. The dropdown's open/closed animation flag is component custom. The alarm list pulled from a query is view custom, bound once and referenced by three children. And a link emailed to a supervisor, \`/asset?path=Plant1/Pump1\`, carries the pump in a page URL param, which Perspective passes to the primary view as an input param of the same name.
+> A plant overview has an "Area" dropdown. The selected area must filter the alarm table on this page, the trend on the next page and the header. That is session state, so it belongs in \`session.custom.area\`. The dropdown's open/closed animation flag is component custom. The alarm list pulled from a query is view custom, bound once and referenced by three children. And a link emailed to a supervisor, \`/asset?path=Plant1/Area10/Line1/M101\`, carries the motor in a page URL param, which Perspective passes to the primary view as an input param of the same name.
 
 When a value is derived (a sum, a color decision, a formatted label), do not store it in a script-written custom prop. Make it a binding and let the platform keep it current. Stored derived state goes stale; bound derived state cannot.
 
 ## Putting it together: a minimal motor tile
 
-A reusable tile takes one input param, \`motorPath\`, and builds everything else from it:
+A reusable tile takes one input param, \`tagPath\`, and builds everything else from it:
 
 \`\`\`json
-"params": { "motorPath": "[default]Plant1/Pump1" },
+"params": { "tagPath": "[default]Plant1/Area10/Line1/M101" },
 "propConfig": {
-  "params.motorPath": { "paramDirection": "input", "persistent": true }
+  "params.tagPath": { "paramDirection": "input", "persistent": true }
 }
 \`\`\`
 
-Child bindings then reference \`{view.params.motorPath}\` to build indirect tag paths, which is the subject of {{lesson:persp-bindings}} and {{lesson:persp-embedding}}.
+Child bindings then reference \`{view.params.tagPath}\` to build indirect tag paths, which is the subject of {{lesson:persp-bindings}} and {{lesson:persp-embedding}}.
+## If you already build Perspective
+
+You can place components and bind them. These are the decisions that keep a 300-view project maintainable.
+
+### Param design for a view you will reuse
+
+Treat a view's params as a public API, because every embedder, popup opener and URL depends on them.
+
+- **Pass identity, derive the rest.** One \`tagPath\` input (\`[default]Plant1/Area10/Line1/M101\`) beats five params for run, speed, fault and name. The child builds \`{view.params.tagPath}/Sts/Running\` itself. This is the house rule from {{lesson:persp-library}}.
+- **Defaults must be safe.** A param with an empty default makes every indirect binding resolve to a bad path while the view loads. Give a harmless default, or guard the first binding with a check for an empty path, so a half-built embedder shows "---" and not a screen of Bad_NotFound quality.
+- **Output params are a read contract.** Name them for what they mean (\`isValid\`, \`selectedTagPath\`), and never make the parent depend on timing. The parent sees the value after the child has bound it, which is after load, not at creation.
+- **Avoid in/out unless two writers are intended.** It hides coupling. If you use one, document which side wins when both change.
+
+### Session custom props as a state store
+
+Session props are the right home for facts that belong to the operator's session: selected area, shift, theme, last acknowledged alarm. Used well, they replace URL gymnastics and cross-view messages. Used badly they are global variables. Rules that work:
+
+1. Declare every session prop once, in session properties, with a default. Do not create them on the fly from a script.
+2. Group them under a namespace (\`session.custom.ui.theme\`, \`session.custom.filter.area\`) so a search finds all uses.
+3. Write each from exactly one place (a dropdown, a startup script). Everything else reads through bindings.
+4. Keep large datasets out. A session prop holds data per session, in Gateway memory, for the life of the session.
+
+### Property tree typing
+
+The wrapped collections you get in scripts are not plain Python types. Two habits help: copy out with \`list()\` or \`dict()\` (or \`system.util.jsonDecode(system.util.jsonEncode(x))\` for a deep copy), edit, then assign the whole value back; and convert only at the boundary where you need plain data, since each conversion costs a copy.
+
+### Where state belongs when you scale to many areas
+
+| Question | Answer | Home |
+|---|---|---|
+| Is it the same for every viewer? | Yes | A tag (or UDT expression tag) |
+| Is it per operator, across pages? | Yes | Session custom |
+| Is it per screen, shared by its children? | Yes | View custom |
+| Should a link carry it? | Yes | Page URL param |
+| Does only one component need it? | Yes | Component custom |
+
+A review test: for each custom prop, name its single writer. If you cannot, it is a bug waiting to happen.
+
 `,
 
   eli5: `
 Think of a view as a recipe card for one screen. The card says "put a title at the top, a big number in the middle, and a button at the bottom," and it says it in a tidy list, not as a drawing. The computer reads the list and paints the screen from it.
 
-Each item on the list can have a few kinds of notes. Some notes are the real instructions ("the title says Pump 1"). Some are your own reminders you write in the margin ("I've been clicked twice"). Some say what to call the item, and some say where it goes.
+Each item on the list can have a few kinds of notes. Some notes are the real instructions ("the title says M101"). Some are your own reminders you write in the margin ("I've been clicked twice"). Some say what to call the item, and some say where it goes.
 
 Now say you want to reuse the card for ten pumps. You leave a blank at the top: "Which pump?" Whoever uses the card fills in the blank. That blank is a parameter. Some blanks are for the person using the card to fill in, and some are places the card writes an answer back.
 
@@ -164,7 +202,7 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
   examples: [
     {
       title: "Reading and writing from a button script",
-      body: `On a button's \`onActionPerformed\` event: \`self.getSibling("Title").props.text = "Pump " + str(self.view.params.pumpNumber)\`. Reading a view param (\`self.view.params\`), writing a sibling's \`props\`, and addressing the sibling by \`meta.name\` all work as described above. If you rename the sibling in the Designer, the script breaks, which is why stable names matter.`
+      body: `On a button's \`onActionPerformed\` event: \`self.getSibling("Title").props.text = "Motor " + str(self.view.params.number)\`. Reading a view param (\`self.view.params\`), writing a sibling's \`props\`, and addressing the sibling by \`meta.name\` all work as described above. If you rename the sibling in the Designer, the script breaks, which is why stable names matter.`
     },
     {
       title: "Output param for a validated form",
@@ -178,7 +216,7 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
   <text class="dg-title" x="36" y="44">view.json</text>
   <rect class="dg-box" x="36" y="58" width="170" height="82" rx="6"/>
   <text class="dg-text" x="48" y="80">params</text>
-  <text class="dg-text-mono" x="48" y="100">motorPath (input)</text>
+  <text class="dg-text-mono" x="48" y="100">tagPath (input)</text>
   <text class="dg-text-mono" x="48" y="120">isValid (output)</text>
   <rect class="dg-box" x="36" y="152" width="170" height="82" rx="6"/>
   <text class="dg-text" x="48" y="174">custom</text>
@@ -274,7 +312,7 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
         "Mobile behavior is layout, not param direction.",
         "Direction affects who may write, not evaluation order.",
         "Correct. Input is parent-written, output is view-written and parent-readable, in/out is both.",
-        "The separate persistent flag affects preview behavior, not user sessions."
+        "The separate persistent flag concerns what is saved with the view, not user sessions."
       ]
     },
     {

@@ -19,7 +19,7 @@ LC.lesson({
   body: `
 ## Why control theory shows up in an integration job
 
-A {{term:plc|PLC}} program that starts motors is sequence logic. A loop that holds a tank at 60% level, a heater at 80 C or a header at 4.5 bar is something else: it has to keep deciding how hard to push. Most plants have both, and the operators' complaints about the second kind ("the level keeps swinging") land on whoever built the screen. You do not need to derive transfer functions to be useful. You need to know what the controller is doing, which numbers matter, and where to look when a loop misbehaves.
+A {{term:plc|PLC}} (programmable logic controller) program that starts motors is sequence logic. A loop that holds a tank at 60% level, a heater at 80 C or a header at 4.5 bar is something else: it has to keep deciding how hard to push. Most plants have both, and the operators' complaints about the second kind ("the level keeps swinging") land on whoever built the screen (the HMI, or human-machine interface, in SCADA, supervisory control and data acquisition, terms). You do not need to derive transfer functions to be useful. You need to know what the controller is doing, which numbers matter, and where to look when a loop misbehaves.
 
 ## Open loop and closed loop
 
@@ -53,7 +53,7 @@ On/off is right when the process is slow, the actuator is on/off anyway (a heate
 
 ## PID in plain terms
 
-When the actuator is modulating (a valve, a drive speed, an SCR heater) you can do much better than slamming it between two states. **{{term:pid|PID}}** computes the output from three views of the error:
+When the actuator is modulating (a valve, a drive speed, an SCR heater, where an SCR is a silicon controlled rectifier power controller) you can do much better than slamming it between two states. **{{term:pid|PID}}** computes the output from three views of the error:
 
 \`\`\`text
 OUT = Kp * e  +  Ki * (sum of e over time)  +  Kd * (how fast e is changing)
@@ -66,11 +66,20 @@ OUT = Kp * e  +  Ki * (sum of e over time)  +  Kd * (how fast e is changing)
 | **D**erivative | how fast the error is changing | Brakes the output when PV approaches SP quickly | Noise amplification, twitchy valves |
 
 > [!example] Level loop with real numbers
-> A tank is at 52% with a 60% setpoint, so e = 8%. With Kp = 2.0 (output % per error %) the P term alone asks for 16% valve opening. As the level rises, e shrinks, and the P output shrinks with it. Eventually the output that exactly balances the outflow is, say, 45%, and a pure P controller can only produce 45% if the error is 22.5%. It settles below setpoint. That steady gap is **offset**. The integral term fixes it: as long as any error remains, I keeps adding output until the level reaches 60% and the error is zero.
+> A tank is at 52% with a 60% setpoint, so e = 8%. With Kp = 2.0 (output % per error %) the P term alone asks for 16% valve opening. As the level rises, e shrinks, and the P output shrinks with it. Suppose the valve opening that exactly balances the outflow is 14%. A pure P controller can only hold 14% output if Kp * e = 14, so e = 14 / 2.0 = 7%. The level therefore settles at 60 - 7 = **53%**, below setpoint, and stays there. That steady gap is **offset**. The integral term fixes it: as long as any error remains, I keeps adding output until the level reaches 60% and the error is zero.
 
 Most real loops are **PI**. Flow and pressure loops often use PI with a very fast integral time. Level loops are often P-heavy by design because you want the tank to absorb flow swings, not pass them downstream. Derivative is for slow, lag-heavy loops such as temperature, and is the term most often left at zero.
 
 Integral is usually expressed as **reset**: *Ti* in minutes per repeat or repeats per minute. Controllers differ (gain vs proportional band, minutes vs seconds, series vs parallel form), so when you copy numbers from one system to another, check the units first.
+
+### Controller action and valve fail position
+
+Two settings decide whether a new loop drives the right way at all, and both are the usual cause of a loop that runs away on first commissioning.
+
+- **Controller action.** *Reverse acting* means the output goes up when PV falls below SP (in effect, the sign of the gain). A level loop that fills a tank through an inlet valve is reverse acting: low level, open the valve. *Direct acting* means the output goes up when PV rises. A level loop that drains the tank through an outlet valve is direct acting: high level, open the valve. A cooling loop is usually direct acting and a heating loop reverse acting. Vendors name and sign this differently, so check the block's documentation.
+- **Valve fail position.** An air-to-open valve fails closed on loss of air. An air-to-close valve fails open. This is a safety choice made on the datasheet (see {{lesson:found-devices}}), and it also decides how the 4-20 mA output maps to flow: 4 mA is closed on an air-to-open valve and fully open on an air-to-close one. If the action or the mapping is wrong, the valve opens when it should close and the error grows instead of shrinking.
+
+Before you tune, stroke the valve from the HMI and watch the PV move the right way. The same check appears in {{lesson:int-commissioning}}.
 
 ### Integral windup
 
@@ -78,7 +87,7 @@ Suppose the valve is fully open (100%) and the level is still below setpoint, be
 
 Defenses, in order of how often you will see them:
 
-1. **Output clamping with anti-windup**: stop integrating when the output is at its limit. Built into the Logix PID instructions and DCS blocks, but make sure limits are set.
+1. **Output clamping with anti-windup**: stop integrating when the output is at its limit. Built into PIDE and DCS blocks (check the manual for the basic PID instruction in your version), but make sure limits are set.
 2. **Tracking / tieback**: feed the real valve position back so the block knows what the output actually did.
 3. **Initialize on mode change**: when the loop goes from manual to auto, the block must start from the current output, not from zero. This is called bumpless transfer.
 
@@ -106,7 +115,7 @@ Tuning means choosing Kp, Ti and Td so the loop responds quickly without ringing
 
 **Ziegler-Nichols (1942).** Either (a) raise gain with I and D off until the loop sustains an oscillation, note that **ultimate gain Ku** and period **Pu**, then set Kp = 0.6 Ku, Ti = Pu / 2, Td = Pu / 8; or (b) make a step change in manual, read the dead time L and time constant T off the response, and apply tabulated formulas. It is fast to apply, aggressive (a quarter-decay response with sizable overshoot) and not something to do to a live pressure loop.
 
-**Lambda tuning.** You pick the closed-loop speed you want, called lambda, usually 1 to 3 times the process time constant. Set Ti equal to the process time constant and choose gain so that the loop settles in about that lambda time. A large lambda gives a slow, gentle response with no overshoot, which is perfect for a level loop that should not upset downstream units. Lambda is popular in process plants because the engineer picks the behavior instead of getting whatever the process gives.
+**Lambda tuning.** You pick the closed-loop speed you want, called lambda, as a multiple of the process time constant (check your tuning reference for sensible multiples). Set Ti equal to the process time constant and choose gain so that the loop settles in about that lambda time. A large lambda gives a slow, gentle response with no overshoot, which is perfect for a level loop that should not upset downstream units. Lambda is popular in process plants because the engineer picks the behavior instead of getting whatever the process gives.
 
 In practice, many loops are tuned by a patient technician making small changes and watching a trend, or by auto-tune tools in the PLC or DCS. A common sequence: step the output in manual, record the PV trend, estimate dead time and time constant, then compute starting values and refine. Trend PV, SP and OUT together at a one-second sample rate. That chart is the loop's medical record.
 
@@ -141,7 +150,7 @@ Pneumatic controllers with proportional, reset and rate action were common in pr
   examples: [
     {
       title: "Wastewater wet well with lead pump on a VFD",
-      body: `Level transmitter LT-201 reads 0-5 m as 4-20 mA. Setpoint is 2.5 m. A PIDE block in the PLC drives pump speed 30-100% (a minimum speed keeps flow above scour velocity). The level loop is deliberately gentle, with a lambda of about three times the well's fill time, so inflow surges are absorbed instead of passed to the treatment plant. Ignition shows PV, SP, OUT and mode, lets the operator change SP from 2.0 to 3.0 m, and alarms on high level at 4.2 m. The PLC also has an independent float switch as a hard high-level trip.`
+      body: `Level transmitter LT-201 (written LT201 in the PLC) reads 0-5 m as 4-20 mA. Setpoint is 2.5 m. A PIDE block in the PLC drives pump speed 30-100% (a minimum speed keeps flow above scour velocity). The level loop is deliberately gentle, with a large lambda (a slow closed-loop response compared with the well's fill time), so inflow surges are absorbed instead of passed to the treatment plant. Ignition (the SCADA platform) shows PV, SP, OUT and mode, lets the operator change SP from 2.0 to 3.0 m, and alarms on high level at 4.2 m. The PLC also has an independent float switch as a hard high-level trip.`
     },
     {
       title: "Spotting windup on a trend",

@@ -12,7 +12,7 @@
 :is(.lab, .sed, .sim-sheet) .btn.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--accent); }
 :is(.lab, .sed, .sim-sheet) .btn.danger { color: var(--alarm); border-color: var(--alarm); }
 :is(.lab, .sed, .sim-sheet) .btn.ghost { background: transparent; border-color: var(--line); color: var(--muted); }
-:is(.lab, .sed, .sim-sheet) .btn.small { min-height: 40px; padding: 0 12px; font-size: var(--text-xs); }
+:is(.lab, .sed, .sim-sheet) .btn.small { min-height: 44px; padding: 0 12px; font-size: var(--text-xs); }
 :is(.lab, .sed, .sim-sheet) .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 :is(.lab, .sed, .sim-sheet) :is(button, input, select, textarea, summary, a):focus-visible { outline: none; box-shadow: var(--focus); }
 :is(.lab, .sed, .sim-sheet) .ico { flex: none; }
@@ -23,7 +23,7 @@
 :is(.lab, .sed, .sim-sheet) .chip.ok { color: var(--ok); background: var(--ok-soft); border-color: transparent; }
 :is(.lab, .sed, .sim-sheet) .chip.warn { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
 :is(.lab, .sed, .sim-sheet) .chip.danger { color: var(--alarm); }
-.sed button.chip, .sim-sheet button.chip { cursor: pointer; min-height: 40px; }
+.sed button.chip, .sim-sheet button.chip { cursor: pointer; min-height: 44px; }
 .sed button.chip:hover, .sim-sheet button.chip:hover { background: var(--accent-soft); color: var(--accent); }
 :is(.lab, .sed, .sim-sheet) .fld {
   width: 100%; min-height: 44px; padding: 8px 12px; font: var(--text-sm)/1.4 var(--font-body); color: var(--fg); background: var(--surface);
@@ -43,7 +43,7 @@
 html.sim-lock { overflow: hidden; }
 
 /* ---------- ladder SVG ---------- */
-.lad-svg { display: block; max-width: none; font-family: var(--font-mono); }
+.lad-svg { display: block; font-family: var(--font-mono); }
 .lad-w { fill: none; stroke: var(--line-strong); stroke-width: 2; }
 .lad-w.on { stroke: var(--ok); stroke-width: 3.5; }
 .lad-rail { fill: none; stroke: var(--muted); stroke-width: 3; }
@@ -89,6 +89,15 @@ html.sim-lock { overflow: hidden; }
 .lad-brh:hover .lad-brh-d { fill: var(--accent-soft); }
 .lad-static { margin: var(--s-4) 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
 .lad-scroll { overflow-x: auto; padding: 6px 0; -webkit-overflow-scrolling: touch; }
+/* edge shadows appear only on the side that has more to scroll to (pure CSS: "local" covers hide them at the ends) */
+.lad-scroll, .sed-scroll {
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left center / 28px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 30%, transparent) right center / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, color-mix(in srgb, var(--fg) 28%, transparent), transparent) left center / 12px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, color-mix(in srgb, var(--fg) 28%, transparent), transparent) right center / 12px 100% no-repeat scroll,
+    var(--surface);
+}
 .lad-rung { min-width: min-content; }
 .lad-rung + .lad-rung { border-top: 1px solid var(--line); }
 
@@ -96,15 +105,15 @@ html.sim-lock { overflow: hidden; }
 .sed { display: flex; flex-direction: column; gap: var(--s-2); }
 .sed-bar { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
 .sed-bar .sp { flex: 1; }
-.sed-scroll { overflow: auto; max-height: 70vh; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.sed-scroll { overflow: auto; max-height: min(70vh, 560px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
 .sed-scroll[hidden], .sed-text[hidden] { display: none; }
 .sed-rungs { display: block; padding: 0; }
 .sed-rung { border-bottom: 1px solid var(--line); border-left: 3px solid transparent; position: relative; }
 .sed-rung:last-child { border-bottom: 0; }
-.sed-rung.sel { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 4%, var(--surface)); }
-.sed-rbar { display: flex; gap: var(--s-2); padding: 6px 10px 10px; overflow-x: auto; position: sticky; left: 0; width: max-content; max-width: 100%; }
-.sed-rbar .chip { white-space: nowrap; flex: none; }
-.sed-err { display: flex; gap: 8px; align-items: flex-start; margin: 0 12px 8px; padding: 8px 10px; font-size: var(--text-xs); color: var(--alarm); background: var(--alarm-soft); border-radius: var(--radius-sm); position: sticky; left: 12px; width: calc(100vw - 80px); max-width: 560px; box-sizing: border-box; }
+.sed-rung.sel { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.sed-rbar { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: 6px 10px 10px; position: sticky; left: 0; width: var(--sedw, 100%); max-width: var(--sedw, 100%); box-sizing: border-box; }
+.sed-rbar .chip { white-space: nowrap; flex: 0 1 auto; }
+.sed-err { display: flex; gap: 8px; align-items: flex-start; margin: 0 12px 8px; padding: 8px 10px; font-size: var(--text-xs); color: var(--alarm); background: var(--alarm-soft); border-radius: var(--radius-sm); position: sticky; left: 12px; width: calc(var(--sedw, 100vw) - 24px); max-width: 560px; box-sizing: border-box; }
 .sed-empty { padding: var(--s-5) var(--s-4); text-align: center; color: var(--muted); }
 .sed-text { display: flex; flex-direction: column; gap: var(--s-2); }
 .sed-ta { width: 100%; box-sizing: border-box; min-height: 160px; padding: 12px; line-height: 1.7; color: var(--fg); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); resize: vertical; tab-size: 2; white-space: pre; overflow: auto; }
@@ -337,3 +346,31 @@ html.sim-lock { overflow: hidden; }
 .lab-rt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .lab-rt b { font-weight: 700; } .lab-rt small { color: var(--muted); font-size: var(--text-xs); line-height: 1.35; }
 .lab-rs { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; } .lab-hu { font-size: 11px; color: var(--muted); }
 @media (max-width: 420px) { .lab-rs .chip { font-size: 11px; padding: 2px 8px; } }
+
+/* ---------- single-column lab: editor and scan controls first, I/O and tags after ---------- */
+.lab-ed { order: 1; } .lab-created, .lab-fault, .lab-edfoot { order: 2; } .lab-ctrl { order: 3; } .lab-io { order: 4; }
+.lab-brief > summary .bx, .lab-brief > summary .bm { display: none; }
+@media (max-width: 1099px) {
+  .lab-work { display: contents; }
+  .lab-brief-wrap { order: 1; } .lab-ed { order: 2; } .lab-created, .lab-fault, .lab-edfoot { order: 3; } .lab-ctrl { order: 4; }
+  .lab-io { order: 5; } .lab-check { order: 6; } .lab-tagwrap { order: 7; }
+  .lab-edfoot:empty { display: none; }
+}
+@media (max-width: 640px) {
+  .lab { padding-top: var(--s-2); }
+  .lab-head { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 var(--s-3); margin-bottom: var(--s-2); }
+  .lab-head h1 { grid-column: 1 / -1; grid-row: 2; font-size: var(--text-xl); flex: none; }
+  .lab-meta { justify-content: flex-end; flex-wrap: nowrap; } .lab-meta .lvl { display: none; }
+  .lab-grid { gap: var(--s-3); }
+  .lab-brief > summary { min-height: 48px; gap: 10px; text-transform: none; letter-spacing: 0; font: 500 var(--text-sm)/1.2 var(--font-body); }
+  .lab-brief > summary .bl { display: none; }
+  .lab-brief > summary .bx { display: block; flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); }
+  .lab-brief > summary .bm { display: inline; flex: none; color: var(--accent); font-weight: 700; }
+  .lab-brief > summary .bm-o, .lab-brief[open] > summary .bm-c { display: none; } .lab-brief[open] > summary .bm-o { display: inline; }
+  .lab-brief[open] > summary .bx { display: none; }
+  .lab-brief > summary::after { margin-left: 0; flex: none; }
+  .lab-ctrl { padding: var(--s-3); }
+  .lab-stages li span:not(.n) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-stages li { min-width: 0; padding: 6px; }
+  .sed-bar .seg button { min-height: 44px; }
+}

@@ -78,7 +78,7 @@ Logix integers are **signed** by default (SINT, INT, DINT). Many other systems, 
 - \`0x8000\` is -32,768, the most negative
 - \`0xFFFF\` is -1
 
-The same bits have two meanings. \`0xFFFE\` is 65,534 unsigned and -2 signed. If a temperature that should be -2 degrees shows up as 65534, the driver is treating it as unsigned. In Ignition's Modbus driver this is the data type suffix on the address (a signed 16-bit versus an unsigned one). If a counter runs past 32,767 and suddenly goes negative, a signed 16-bit register is rolling over.
+The same bits have two meanings. \`0xFFFE\` is 65,534 unsigned and -2 signed. If a temperature that should be -2 degrees shows up as 65534, the driver is treating it as unsigned. In Ignition's Modbus driver the data type (signed versus unsigned, 16-bit versus 32-bit) is chosen on the address or tag; check the Modbus driver page in the manual for your version. If a counter runs past 32,767 and suddenly goes negative, a signed 16-bit register is rolling over.
 
 ## Floating point (REAL)
 
@@ -109,7 +109,7 @@ You usually never see byte order because drivers handle it. You see it when you 
 > - High word first (big-endian word order): 1 x 65,536 + 34,464 = **100,000**. Correct.
 > - Low word first: the driver builds \`0x86A00001\`, which as a signed DINT is about **-2.04 billion**.
 >
-> When a count looks astronomically wrong but still counts upward in odd jumps, flip the word-order setting on the Ignition device or tag. Test with a value you know, such as a firmware revision or a number you typed into the PLC.
+> When a count looks astronomically wrong but still counts upward in odd jumps, flip the word-order setting. In Ignition it is a Modbus device setting (check the driver page in the manual for your version), and you should change it in one place only. Test with a value you know, such as a firmware revision or a number you typed into the PLC.
 
 A {{term:dint|DINT}} written to a Modbus device from Ignition has the same problem in reverse. If writes land scrambled, the word order setting is wrong for writes too.
 
@@ -125,7 +125,7 @@ Over Modbus there is no string type. Text is packed two characters per register.
 
 ## Where this shows up in Ignition
 
-- **OPC tags** on a Modbus device need a matching data type: Int2 (16-bit), Int4 (32-bit), Float4, and so on, signed or unsigned, with word order as a device setting.
+- **OPC tags** on a Modbus device need a matching data type: Int2 (16-bit), Int4 (32-bit), Float4, and so on, signed or unsigned, with word order set once on the device (see above).
 - **Bit access:** to use one bit of a status word, create a boolean expression tag that shifts and masks the word, so alarms and screens bind to a named flag instead of a raw number.
 - **Logix tags** carry their own types, so a DINT arrives as a proper 32-bit integer and none of this matters until you cross to a Modbus or serial device.
 `,
@@ -141,7 +141,7 @@ Negative numbers use a trick: the first switch means "this is negative." So the 
 `,
 
   why: `
-**Why do devices use fixed-size integers at all?** Hardware that adds 16 or 32 bits at a time is fast and cheap, and a PLC has to finish its scan in milliseconds. The cost is that you must pick a type that fits the range of the data. An INT temperature in tenths of a degree tops out at 3,276.7, which is fine. An INT energy counter in watt-hours rolls over in under two days at a busy plant. Experienced integrators pick DINT for anything that accumulates.
+**Why do devices use fixed-size integers at all?** Hardware that adds 16 or 32 bits at a time is fast and cheap, and a PLC has to finish its scan in milliseconds. The cost is that you must pick a type that fits the range of the data. An INT temperature in tenths of a degree tops out at 3,276.7, which is fine. An INT energy counter in watt-hours rolls over at 32,767 Wh (about 33 kWh), which a 20 kW load reaches in under two hours. Experienced integrators pick DINT for anything that accumulates.
 
 **Why integers scaled by 10 or 100 instead of floats?** Many field devices send a temperature of 23.4 as the integer 234 with a documented scale of 0.1. Integers are exact, take one register, and avoid word-order problems. The price is a scale you must apply in the tag. Forgetting the scale is the most common "values are ten times too high" ticket.
 
@@ -157,7 +157,7 @@ Binary arithmetic in machines goes back to the early digital computers. Hex beca
   examples: [
     {
       title: "Reading a status word",
-      body: `A VFD returns holding register value \`0x0A21\` as its status word. In binary that is \`0000 1010 0010 0001\`. The manual says bit 0 = Ready, bit 5 = At Speed, bit 9 = Fault. Bits 0, 5 and 9 are set, so the drive is ready, at speed and faulted. Ready and Fault together is suspicious, so confirm in the manual whether bits are numbered from 0 or 1. In Ignition, map each bit to a separate boolean expression tag (shift and mask) so alarms and screens use named flags instead of raw numbers.`
+      body: `A VFD returns holding register value \`0x0A21\` as its status word. In binary that is \`0000 1010 0010 0001\`. The manual says bit 0 = Ready, bit 5 = At Speed, bit 9 = Fault. Bits 0, 5, 9 and 11 are set (the upper byte \`0x0A\` is \`1010\`, which is bits 11 and 9). So the drive reports ready, at speed and faulted, plus whatever bit 11 means, so check the manual for bit 11. Ready and Fault together is suspicious, so confirm in the manual whether bits are numbered from 0 or 1. In Ignition, map each bit to a separate boolean expression tag (shift and mask) so alarms and screens use named flags instead of raw numbers.`
     },
     {
       title: "Signed temperature from a Modbus sensor",

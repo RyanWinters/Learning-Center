@@ -91,6 +91,19 @@
       document.head.appendChild(s);
     });
   }
+  function isPhone() { try { return !!(root.matchMedia && root.matchMedia("(max-width: 640px)").matches); } catch (e) { return false; } }
+  // One plain line for the collapsed phone brief: first prose paragraph with the markup stripped.
+  function briefLine(src) {
+    var lines = String(src || "").replace(/\r/g, "").split("\n"), keep = [], fence = false;
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i];
+      if (/^```/.test(l)) { fence = !fence; continue; }
+      if (fence || /^\s*(#|>|\||[-*]\s|\d+\.\s)/.test(l)) { if (keep.length) break; continue; }
+      if (/^\s*$/.test(l)) { if (keep.length) break; continue; }
+      keep.push(l.trim());
+    }
+    return keep.join(" ").replace(/\{\{term:[\w-]+\|([^}]*)\}\}/g, "$1").replace(/\{\{[^}]*\}\}/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/[`*]/g, "").replace(/\s+/g, " ").trim();
+  }
   function backLink() { return el("a", { class: "lab-back", href: "#/lab", html: ico("left", 16) + "<span>Lab</span>" }); }
 
   // ---------- index ----------
@@ -206,15 +219,18 @@
     container.innerHTML = "";
     var page = el("div", { class: "lab lab-ch" + (isBox ? " is-sandbox" : "") });
     var head = el("header", { class: "lab-head" }, [backLink(), el("h1", { text: sim.title }),
-      el("div", { class: "lab-meta" }, isBox ? [] : [el("span", { class: "chip", text: "Level " + sim.level + " · " + LEVELS[sim.level] }),
+      el("div", { class: "lab-meta" }, isBox ? [] : [el("span", { class: "chip lvl", text: "Level " + sim.level + " · " + LEVELS[sim.level] }),
         el("span", { class: "chip st", "data-st": "" })])]);
     page.appendChild(head);
     var grid = el("div", { class: "lab-grid" });
     page.appendChild(grid);
 
     // brief
-    var briefD = el("details", { class: "lab-brief", open: true }, [el("summary", { html: ico("book", 16) + "<span>" + (isBox ? "About the sandbox" : "Brief") + "</span>" })]);
-    briefD.appendChild(mdEl(isBox ? "A free workbench. Add rungs, use any instruction, and invent your own tags. New tags are created for you as you type them, and you can change their type in the **Tags** table. Inputs `I0` to `I7`, lamps `O0` to `O7`, analog in `AI0` and analog out `AO0` are already wired to the panel.\n\nTry `XIC(I0)OTE(O0);` then press Pushbutton 0." : sim.brief, "brief-md"));
+    var phone = isPhone();
+    var briefSrc = isBox && sim.legacy ? "A free workbench. Add rungs, use any instruction, and invent your own tags. New tags are created for you as you type them, and you can change their type in the **Tags** table. Inputs `I0` to `I7`, lamps `O0` to `O7`, analog in `AI0` and analog out `AO0` are already wired to the panel.\n\nTry `XIC(I0)OTE(O0);` then hold PB1 Start." : isBox ? "A free workbench. Add rungs, use any instruction, and invent your own tags. New tags are created for you as you type them, and you can change their type in the **Tags** table. The panel is wired like a Logix chassis: inputs `Local:1:I.Data.0` to `.7` (PB1 Start, PB2 Stop and so on), outputs `Local:2:O.Data.0` to `.7` (lamps, contactor, valve) and analog in `Local:3:I.Ch0Data` (REAL).\n\nTry `XIC(Local:1:I.Data.0)OTE(Local:2:O.Data.0);` then hold PB1 Start." : sim.brief;
+    var briefD = el("details", { class: "lab-brief", open: !phone }, [el("summary", { html: ico("book", 16) + "<span class='bl'>" + (isBox ? "About the sandbox" : "Brief") + "</span><span class='bx'></span><span class='bm'><span class='bm-c'>Read brief</span><span class='bm-o'>Hide brief</span></span>" })]);
+    briefD.querySelector(".bx").textContent = briefLine(briefSrc);
+    briefD.appendChild(mdEl(briefSrc, "brief-md"));
     if (sim.palette && !isBox) briefD.appendChild(el("p", { class: "lab-note", text: "This challenge limits the palette to: " + sim.palette.join(", ") + ". Text mode accepts anything." }));
     var briefCol = el("div", { class: "lab-brief-wrap" }, [briefD]);
     grid.appendChild(briefCol);
@@ -229,7 +245,7 @@
     // work column
     var work = el("div", { class: "lab-work" });
     var ioHost = el("div", { class: "lab-io-host" });
-    var ioD = el("details", { class: "lab-io", open: true, "data-tour": "io" }, [el("summary", { html: ico("flag", 16) + "<span>Inputs and outputs</span>" }), ioHost]);
+    var ioD = el("details", { class: "lab-io", open: !phone || (sim.io || []).length <= 4, "data-tour": "io" }, [el("summary", { html: ico("flag", 16) + "<span>Inputs and outputs</span>" }), ioHost]);
     work.appendChild(ioD);
     // controls
     var bRun = el("button", { type: "button", class: "btn primary run", html: ico("pause") + "<span>Pause</span>", "data-tour": "run" });
@@ -273,7 +289,7 @@
 
     // tags
     var tags = tagTable(eng, {
-      addTag: isBox, open: isBox,
+      addTag: isBox, open: isBox && !phone,
       refresh: function (rebuild) { if (rebuild) { loadText(editor.getText(), true); } refreshAll(); },
       retype: function (name, type) { try { eng.declare(name, type, { auto: true }); } catch (e) {} loadText(editor.getText(), true); tags.rebuild(); refreshAll(); }
     });
@@ -300,7 +316,7 @@
       if (made.length) {
         created.hidden = false;
         created.innerHTML = ico("info", 16) + "<span>Created tag" + (made.length > 1 ? "s" : "") + ": " + made.map(function (t) { return "<code>" + esc(t.name) + "</code> (" + t.type + ")"; }).join(", ") + ". Wrong type? Change it in the Tags table.</span>";
-        tags.el.open = true;
+        if (!phone) tags.el.open = true;
       } else if (!eng.tagList().some(function (t) { return t.auto; })) created.hidden = true;
       tags.rebuild();
     }
@@ -484,8 +500,12 @@
     if (!LC.simEngine || !LC.simEditor || !LC.ladder) { container.textContent = "The simulator scripts did not load."; return; }
     if (!id) return indexView(container);
     if (id === "sandbox") {
-      var tags = {}; for (var i = 0; i < 8; i++) { tags["I" + i] = "BOOL"; tags["O" + i] = "BOOL"; } tags.AI0 = "REAL"; tags.AO0 = "REAL";
-      return workbench(container, { id: "sandbox", title: "Sandbox", tags: tags, io: IO.sandboxIO(), starter: "", tests: [], hints: [] }, "sandbox");
+      var legacy = false, MODS = { "Local:1:I": "MOD_DI16", "Local:2:O": "MOD_DO16", "Local:3:I": "MOD_AI4", "Local:4:O": "MOD_AO2" };
+      try { E.engineFor({ id: "probe", tags: { "Local:1:I": "MOD_DI16" }, io: [], tests: [] }, {}); } catch (e) { legacy = true; } // engine without module tags
+      var tags = {}, sio = IO.sandboxIO(legacy);
+      if (legacy) sio.forEach(function (w) { tags[w.tag] = w.widget === "slider" || w.widget === "value" ? "REAL" : "BOOL"; });
+      else tags = MODS;
+      return workbench(container, { id: "sandbox", title: "Sandbox", tags: tags, io: sio, legacy: legacy, starter: "", tests: [], hints: [] }, "sandbox");
     }
     container.innerHTML = '<div class="lab"><p class="lab-loading">Loading challenge…</p></div>';
     loadSim(id).then(function (sim) {

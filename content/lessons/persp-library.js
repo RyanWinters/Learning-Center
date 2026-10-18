@@ -41,7 +41,7 @@ The central pattern is that a faceplate takes a **single view parameter**: the p
 
 \`\`\`text
 View: Library/Faceplates/Motor
-Params:  tagPath  (string)  e.g. [default]Plant1/Area2/M101
+Params:  tagPath  (string)  e.g. [default]Plant1/Area10/Line1/M101
 \`\`\`
 
 Inside the view, each binding builds its tag path from that parameter with an indirect tag binding, for example a label bound to \`{view.params.tagPath}/Status/Running\`. In expression form:

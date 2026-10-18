@@ -7,14 +7,13 @@
   const NAV = [
     ['home', '#/', 'Home', 'home'],
     ['tracks', '#/tracks', 'Tracks', 'tracks'],
-    ['map', '#/map', 'Skill map', 'map'],
     ['lab', '#/lab', 'Lab', 'lab'],
     ['review', '#/review', 'Review', 'review'],
     ['glossary', '#/glossary', 'Glossary', 'book'],
     ['profile', '#/profile', 'Profile', 'user']
   ];
-  const TAB_FOR = { home: 'home', tracks: 'tracks', track: 'tracks', lesson: 'tracks', quiz: 'tracks', lab: 'lab', review: 'review' };
-  const RAIL_FOR = { track: 'tracks', lesson: 'tracks', quiz: 'tracks' };
+  const TAB_FOR = { home: 'home', tracks: 'tracks', track: 'tracks', map: 'tracks', lesson: 'tracks', quiz: 'tracks', lab: 'lab', review: 'review' };
+  const RAIL_FOR = { track: 'tracks', map: 'tracks', lesson: 'tracks', quiz: 'tracks', readiness: 'profile' };
 
   function applyTheme() {
     const t = LC.store.get().settings.theme;
@@ -58,7 +57,7 @@
     const th = LC.store.get().settings.theme;
     const seg = (v, label, ic) => '<button type="button" class="seg-btn" data-theme-set="' + v + '" aria-pressed="' + (th === v) + '">' + icon(ic, 16) + label + '</button>';
     U.sheet('<h2 class="sheet-title">More</h2><nav class="more-list">' +
-      [['#/map', 'Skill map', 'map'], ['#/glossary', 'Glossary', 'book'], ['#/profile', 'Profile and settings', 'user'], ['#/search', 'Search', 'search']].map(n => '<a href="' + n[0] + '">' + icon(n[2], 20) + '<span>' + n[1] + '</span>' + icon('chev', 18) + '</a>').join('') +
+      [['#/glossary', 'Glossary', 'book'], ['#/readiness', 'Integrator readiness', 'gauge'], ['#/profile', 'Profile and settings', 'user'], ['#/search', 'Search', 'search']].map(n => '<a href="' + n[0] + '">' + icon(n[2], 20) + '<span>' + n[1] + '</span>' + icon('chev', 18) + '</a>').join('') + '<button type="button" class="more-btn" data-welcome>' + icon('note', 20) + '<span>How this works</span>' + icon('chev', 18) + '</button>' +
       '</nav><div class="more-theme"><span class="eyebrow">Theme</span><div class="seg" role="group" aria-label="Theme">' + seg('system', 'Auto', 'spark') + seg('light', 'Light', 'sun') + seg('dark', 'Dark', 'moon') + '</div></div>', { label: 'More' });
   }
 
@@ -94,6 +93,33 @@
     if (rq && name !== 'search' && rq.value) rq.value = '';
     if (rq && name === 'search' && p.q != null && document.activeElement !== rq) rq.value = p.q;
   }
+
+  /* First-run welcome: one dismissible sheet. The dismissed flag lives in settings so it syncs. */
+  function welcome(force) {
+    const sh = U.sheet('<h2 class="sheet-title">Welcome</h2><p class="muted">A quick tour of how this app keeps score. Nothing here is a gate.</p>' +
+      '<dl class="welcome">' +
+      [['bolt', 'XP', 'You earn XP for correct quiz answers, finishing lessons (harder lessons pay more), passing simulator challenges and review cards.'],
+       ['medal', 'Levels', 'XP fills your level, from Apprentice up to Systems Architect. Lessons have their own difficulty, shown as L1 to L4.'],
+       ['flame', 'Streak', 'Earn any XP on a day to keep your streak. The ring on Home tracks your daily goal.'],
+       ['review', 'Review queue', 'Every quiz question you miss comes back after 1, 2, 4, 8 and 16 days until it sticks.'],
+       ['skip', 'Skipping and test-out', 'Locks are only suggestions. Mark a lesson as known, or Test out with a cold quiz (80% or more) to earn XP and unlock what follows.'],
+       ['book', 'Glossary taps', 'Underlined words open a plain-language definition. Tap one anywhere.']
+      ].map(r => '<div><dt>' + icon(r[0], 18) + r[1] + '</dt><dd>' + r[2] + '</dd></div>').join('') + '</dl>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-primary" data-close>Got it</button></div>', { label: 'Welcome', onClose: () => { if (!force) LC.store.setting('welcomeSeen', true); } });
+    LC.glossaryLink(sh.el.querySelector('.welcome'));
+  }
+  function maybeWelcome() {
+    const s = LC.store.get();
+    if (s.settings.welcomeSeen || s.xp > 0 || Object.keys(s.lessons).length) return;
+    setTimeout(() => { if (!document.querySelector('.sheet-wrap') && !LC.store.get().settings.welcomeSeen) welcome(); }, 500);
+  }
+  /* Glossary batches load after first paint; link what is on screen once they have all arrived. */
+  LC.relink = function () {
+    if (!current) { LC._relinkPending = true; return; }
+    LC._relinkPending = false;
+    if (current.name === 'glossary' || current.name === 'search') LC.rerender();
+    else LC.glossaryLink(document.getElementById('view'));
+  };
 
   const leave = [];
   LC.onLeave = fn => leave.push(fn);
@@ -135,6 +161,7 @@
   document.addEventListener('click', e => {
     const th = e.target.closest('[data-theme-set]');
     if (th) { LC.store.setting('theme', th.dataset.themeSet); applyTheme(); document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', b === th)); return; }
+    if (e.target.closest('[data-welcome]')) { document.querySelectorAll('.sheet-wrap').forEach(w => { const b = w.querySelector('.sheet-backdrop'); if (b) b.click(); }); setTimeout(() => welcome(true), 220); return; }
     const cp = e.target.closest('[data-copy]');
     if (cp) {
       const text = cp.closest('.code').querySelector('code').textContent;
@@ -159,11 +186,13 @@
     LC.store.on('sync', syncIndicator);
     LC.store.on('change', e => {
       chrome();
-      if (e && e.remote && current && ['home', 'tracks', 'track', 'map', 'profile'].indexOf(current.name) >= 0) LC.rerender();
+      if (e && e.remote && current && ['home', 'tracks', 'track', 'map', 'profile', 'readiness'].indexOf(current.name) >= 0) LC.rerender();
     });
     LC.store.on('change', e => { if (e && e.remote) applyTheme(); });
     chrome();
     LC.router.start(dispatch);
+    if (LC._relinkPending && LC.glossaryReady) LC.relink();
+    maybeWelcome();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

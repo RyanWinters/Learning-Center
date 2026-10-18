@@ -5,6 +5,7 @@
   var LC = root.LC = root.LC || {};
   var P = LC.simParser || (typeof require !== "undefined" ? require("./parser.js") : null);
   var SPEC = P.SPEC;
+  var FLUID_MIN = 0.8; // smallest scale at which 12px labels stay legible (about 9.6px)
   var CW = 7.2; // IBM Plex Mono advance at 12px
 
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -226,7 +227,9 @@
       wire(out, railL + seq.w, railR, y, last ? last.id : null, 2);
     }
     var cls = "lad-svg" + (sel ? " sel" : "") + (r.error ? " bad" : "");
-    return '<svg class="' + cls + '" xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + hgt + '" viewBox="0 0 ' + W + " " + hgt + '" data-rung="' + idx + '" font-family="inherit">' + out.s.join("") + "</svg>";
+    // fluid: scale down with the container (viewBox) but never below FLUID_MIN of native size; below that the parent scrolls sideways.
+    var dim = o.fluid ? 'style="width:100%;max-width:' + Math.ceil(W) + "px;min-width:" + Math.ceil(W * FLUID_MIN) + 'px;height:auto" ' : 'width="' + W + '" height="' + hgt + '" ';
+    return '<svg class="' + cls + '" xmlns="http://www.w3.org/2000/svg" ' + dim + 'viewBox="0 0 ' + W + " " + hgt + '" data-rung="' + idx + '" font-family="inherit">' + out.s.join("") + "</svg>";
   }
 
   function programWidth(prog, o) {
@@ -235,7 +238,7 @@
   }
 
   function renderStatic(text) {
-    var prog = P.parse(text), o = { gap: 14 };
+    var prog = P.parse(text), o = { gap: 14, fluid: true };
     o.minW = programWidth(prog, o);
     var label = "Ladder logic: " + prog.rungs.map(function (r) { return P.printRung(r).replace(/;.*$/, ""); }).join("; ");
     var svgs = prog.rungs.map(function (r, i) { return '<div class="lad-rung">' + rungSVG(r, i, o) + "</div>"; }).join("");
@@ -267,6 +270,6 @@
     c.b.forEach(function (x) { x[0].classList.toggle("on", !!eng.values[x[1]]); });
   }
 
-  LC.ladder = { renderStatic: renderStatic, rungSVG: rungSVG, programWidth: programWidth, update: update, collect: collect, esc: esc, fmtVal: fmtVal };
+  LC.ladder = { renderStatic: renderStatic, rungSVG: rungSVG, programWidth: programWidth, FLUID_MIN: FLUID_MIN, update: update, collect: collect, esc: esc, fmtVal: fmtVal };
   if (typeof module !== "undefined" && module.exports) module.exports = LC.ladder;
 })(typeof window !== "undefined" ? window : globalThis);

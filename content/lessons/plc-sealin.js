@@ -28,12 +28,13 @@ That is **three-wire control**: a Start wire, a Stop wire and a common. The name
 {{diagram:threewire}}
 
 \`\`\`ladder
-[XIC(Start_PB) ,XIC(Motor_Run)] XIC(Stop_OK) XIC(Overload_OK) OTE(Motor_Run)
+[XIC(Start_PB) ,XIC(M101_RunCmd)] XIC(Stop_OK) OTE(M101_RunCmd)
+XIC(M101_RunCmd) OTE(M101_Out)
 \`\`\`
 
-Read it left to right. Either Start_PB is pressed *or* Motor_Run is already on. Both of those pass power to the next two conditions, which must both be true. If they are, the OTE turns Motor_Run on. On the next scan, the Motor_Run contact in the lower branch is true, so releasing Start_PB changes nothing. When Stop_OK goes false, the rung goes false, OTE writes Motor_Run to 0, and the seal-in contact opens. Pressing Start again is the only way back.
+Read it left to right. Either Start_PB is pressed *or* M101_RunCmd is already on. Either one passes power to Stop_OK, which must also be true. If it is, the OTE turns M101_RunCmd on. The second rung copies the run command to the physical output \`M101_Out\` (house standard: seal on a command bit, drive the output from it). On the next scan, the M101_RunCmd contact in the lower branch is true, so releasing Start_PB changes nothing. When Stop_OK goes false, the rung goes false, OTE writes M101_RunCmd to 0, and the seal-in contact opens. Pressing Start again is the only way back.
 
-This works because of how the scan is evaluated: the XIC(Motor_Run) reads the value the OTE wrote on the *previous* scan. The rung is feeding on its own last result. See {{lesson:plc-scan}} if that ordering is not clear.
+This works because of how the scan is evaluated: the XIC(M101_RunCmd) reads the value the OTE wrote on the *previous* scan. The rung is feeding on its own last result. See {{lesson:plc-scan}} if that ordering is not clear.
 
 ### Stop dominates
 
@@ -41,10 +42,26 @@ Put the Stop and fault conditions in series *after* the parallel branch, not bef
 
 ### Wire the stop fail-safe
 
-The Stop pushbutton is a **normally-closed** contact wired to the input card. With the button untouched, the input is energized (1). Pressing it, or a cut wire, or a loose terminal, drops the input to 0. In the program you therefore use **XIC** on the Stop input, which reads true when everything is healthy. Name the tag for the healthy state (\`Stop_OK\`, or \`Stop_PB_NC\`) so nobody reads it backwards. Overloads and E-stop feedback follow the same rule: a healthy circuit is a 1, and any failure takes the motor off.
+The Stop pushbutton is a **normally-closed** contact wired to the input card. With the button untouched, the input is energized (1). Pressing it, or a cut wire, or a loose terminal, drops the input to 0. In the program you therefore use **XIC** on the Stop input, which reads true when everything is healthy. Name the tag for the healthy state (\`Stop_OK\`, or \`Stop_PB_NC\`) so nobody reads it backwards. Status inputs such as the overload follow the same rule: a healthy circuit is a 1, and any failure is read as a trip.
 
 > [!warning] Never wire Stop normally-open
-> A normally-open Stop button reads 0 when idle and 1 when pressed. A broken wire looks identical to an idle button, so a motor you thought you could stop will not stop. Stop and safety circuits are always wired so that a loss of signal means stop. Remember too that a PLC rung is not a safety function. An E-stop must cut power through hardwired safety hardware, with the PLC only monitoring it.
+> A normally-open Stop button reads 0 when idle and 1 when pressed. A broken wire looks identical to an idle button, so a motor you thought you could stop will not stop. Stop and safety circuits are always wired so that a loss of signal means stop. Remember too that a PLC rung is not a safety function. An E-stop must cut power through hardwired safety hardware, with the PLC only monitoring it (next section).
+
+## What is hardwired and what is in the PLC
+
+In a real starter, the **overload relay's NC contact and the E-stop are wired in series with the contactor coil**, in the field wiring, outside the PLC. The PLC output (usually through an interposing relay) is only one more contact in that same series string. The PLC also gets two read-only inputs: an **auxiliary contact** on the contactor (proof that it pulled in) and the **overload status** (a second, separate overload contact). This is the arrangement NFPA 79 and UL 508A panels use, and it is the house standard for every example in this course.
+
+{{diagram:circuitvsrung}}
+
+The reason is plain. If the overload lived only in a rung, a program fault, a forced bit or a welded output relay could keep the coil energized with the motor overheating. With the contact in the coil circuit, no software state can hold the contactor in. The PLC rung is the *normal* start and stop. The hardwired string is the *protection*. See {{lesson:found-motor-control}} for the wiring side of this, including how the output card enters the coil circuit.
+
+| Item | Where it acts | What the PLC does with it |
+|---|---|---|
+| Overload relay NC contact | Hardwired in series with the coil | Reads a status input, raises an alarm, drops the run command |
+| E-stop / safety-rated stop | Hardwired (or safety relay / safety PLC) in the coil circuit | Monitors it only |
+| Normal Stop pushbutton | Input to the PLC rung | Opens the seal-in rung |
+| Process permissives (tank not empty, downstream running) | In the rung | Series XIC contacts |
+| Contactor auxiliary contact | Input only | Shows the motor really ran, feeds status and fail-to-start |
 
 {{sim:sim-sealin}}
 
@@ -91,24 +108,29 @@ Latches are correct when you *want* retention, or when set and clear really are 
 
 If a latched bit must not survive a restart, clear it on the first scan after power-up. Logix provides the first-scan status bit \`S:FS\`, which is true on the first scan only. A rung like \`XIC(S:FS) OTU(Fault_Latched)\` forces a known state.
 
-## Worked example: pump with two stops and a fault
+## Worked example: transfer pump motor M101
 
-A transfer pump has a start pushbutton, a normally-closed local stop, a remote HMI stop bit and a motor overload relay. The overload contact is normally-closed and wired to a digital input.
+Pump motor M101 (Meridian Plant 1, Area10) has a local start pushbutton, a normally-closed local stop, HMI Start and Stop bits in the \`M101.Cmd\` structure of its {{term:udt|UDT_Motor}}, an overload relay and a contactor auxiliary contact. The overload NC contact is **wired in the coil circuit**, and a second contact of the same relay goes to a digital input as \`M101_OL_OK\`. The contactor aux goes to \`M101_Aux\`.
 
 \`\`\`ladder
-[XIC(Local_Start) ,XIC(HMI_Start) ,XIC(Pump_Run)] XIC(Local_Stop_OK) XIO(HMI_Stop) XIC(Overload_OK) XIC(Tank_Not_Low) OTE(Pump_Run)
-XIC(Pump_Run) OTE(Starter_Coil)
-XIO(Overload_OK) OTL(Overload_Fault)
-XIC(Fault_Reset) XIC(Overload_OK) OTU(Overload_Fault)
+[XIC(Local_Start_PB) ,XIC(M101.Cmd.Start) ,XIC(M101_RunCmd)] XIC(Local_Stop_OK) XIO(M101.Cmd.Stop) XIC(M101_OL_OK) XIC(Tank_Not_Low) OTE(M101_RunCmd)
+XIC(M101_RunCmd) OTE(M101_Out)
+XIC(M101_Aux) OTE(M101.Sts.Running)
+XIO(M101_OL_OK) OTL(M101.Alm.Overload)
+XIC(M101.Cmd.Reset) XIC(M101_OL_OK) OTU(M101.Alm.Overload)
 \`\`\`
 
-Rung 1 is the seal-in. Local Start and an HMI Start bit are in parallel with the seal-in contact. The permissives are in series. Rung 2 copies the internal run bit to the starter output, so the logic can be tested without moving the real output. Rungs 3 and 4 are the one place a latch earns its keep: an overload trip is remembered for the operator until it is acknowledged, and the reset only works once the overload relay itself has reset.
+Rung 1 is the seal-in on the command bit. Local Start and the HMI Start are in parallel with the seal-in contact. The permissives are in series. Rung 2 drives the physical output from the command, so the logic can be tested without moving the real output. Rung 3 reports the **actual** running state from the auxiliary contact, which is what the HMI should show.
 
-Notice that \`HMI_Stop\` is XIO (a 0 means "not stopping"). An HMI-written bit is software and not a wire, so a stop pressed once and then released needs its own treatment, usually a momentary write from Ignition.
+Rungs 4 and 5 are the one place a latch earns its keep: an overload trip is remembered for the operator until it is acknowledged, and the reset only works once the overload relay itself has reset. \`XIC(M101_OL_OK)\` in rung 1 is **not** the protection, since the hardwired contact already dropped the coil. It drops the *command*, so M101 does not restart on its own when the overload relay is reset.
 
-## Seal in on the output or on the feedback?
+Notice that \`M101.Cmd.Stop\` is XIO (a 0 means "not stopping"). An HMI-written bit is software and not a wire, so a stop pressed once and then released needs its own treatment, usually a momentary write from Ignition that the PLC clears.
 
-The example seals on \`Pump_Run\`, the internal bit. Some designs seal on a contactor auxiliary input (\`Starter_Fbk\`) instead, so the rung only holds if the contactor truly pulled in. That is more honest but adds a start-up problem: the feedback is 0 when you press Start, so the Start branch has to hold the rung long enough for the contactor to close. A common compromise is to seal on the internal bit and add a separate "failed to start" timer that faults the motor if the feedback does not arrive within a second or two.`,
+## Seal in on the command, the output or the feedback?
+
+The example seals on \`M101_RunCmd\`, the internal bit. Sealing on the physical output (\`M101_Out\`) is acceptable in a quick teaching rung, but forcing or double-writing the output then corrupts the seal, so the house standard seals on a command bit and drives the output from it.
+
+Some designs seal on the contactor auxiliary input (\`M101_Aux\`) instead, so the rung only holds if the contactor truly pulled in. That is more honest but adds a start-up problem: the feedback is 0 when you press Start, so the Start branch has to hold the rung long enough for the contactor to close. A common compromise is to seal on the command bit and add a separate "failed to start" timer that sets \`M101.Alm.FailToStart\` and drops the command if the aux does not arrive within a second or two. A hardwired E-stop or overload trip then shows up as exactly that: command on, aux never made.`,
 
   eli5: `Think of a light switch and a doorbell button. A doorbell only rings while you hold it down. A light switch stays where you put it. A motor start button is a doorbell, but we want the motor to behave like the light.
 
@@ -129,18 +151,63 @@ The special part is what happens when the lights go out. The helper is only hold
   history: `The pattern is older than the PLC. Relay-ladder diagrams for motor starters were standard in industrial panels by the mid-20th century, and the first PLCs (late 1960s) were deliberately built to be programmed in that same ladder notation so electricians could read them. The seal-in contact, the series NC stop and the term three-wire control carried over unchanged.`,
 
   examples: [
-    { title: "Start/stop with a jog button", body: `Add a Jog pushbutton that runs the motor only while held. Jog must not seal in. Give it its own bit and feed the output from a separate rung: \`XIC(Jog_PB) OTE(Jog_Cmd)\`, then \`[XIC(Run_Seal) ,XIC(Jog_Cmd)] XIC(Stop_OK) OTE(Motor_Out)\`, where Run_Seal is the seal-in bit from the normal start rung. Releasing Jog drops Jog_Cmd and the motor stops, because Run_Seal was never set.` },
+    { title: "Start/stop with a jog button", body: `Add a Jog pushbutton that runs the motor only while held. Jog must not seal in. Give it its own bit and feed the output from a separate rung: \`XIC(Jog_PB) OTE(Jog_Cmd)\`, then \`[XIC(Run_Seal) ,XIC(Jog_Cmd)] XIC(Stop_OK) OTE(M101_Out)\`, where Run_Seal is the seal-in bit from the normal start rung. Releasing Jog drops Jog_Cmd and the motor stops, because Run_Seal was never set.` },
     { title: "Recovering from a power cycle", body: `A mixer uses OTL to hold Mixer_Run. After a 2 second outage it starts spinning the moment power returns, with the guard door open. The fix is to move to an OTE seal-in, or keep OTL but clear it with \`XIC(S:FS) OTU(Mixer_Run)\`. Test it by turning the controller off and on with the motor running.` }
   ],
 
   diagrams: {
+    circuitvsrung: `<svg viewBox="0 0 640 330" role="img" aria-label="Two views of one motor starter. Top: a relay-era three-wire circuit with every contact hardwired in series with the coil. Bottom: a PLC rung does the start and stop, but the E-stop and overload contacts stay hardwired in the coil circuit and the PLC only reads the overload status and the contactor auxiliary contact.">
+  <text class="dg-title" x="20" y="22">Control circuit versus rung</text>
+  <rect class="dg-zone" x="10" y="32" width="620" height="120" rx="4"/>
+  <text class="dg-text-sm" x="20" y="50">Relay-era three-wire circuit, all hardwired</text>
+  <text class="dg-text-sm" x="20" y="100">L1</text>
+  <line class="dg-line" x1="44" y1="96" x2="70" y2="96"/>
+  <rect class="dg-box-ok" x="70" y="82" width="70" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="105" y="100">E-stop NC</text>
+  <line class="dg-line" x1="140" y1="96" x2="150" y2="96"/>
+  <rect class="dg-box" x="150" y="82" width="64" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="182" y="100">Stop NC</text>
+  <line class="dg-line" x1="214" y1="96" x2="224" y2="96"/>
+  <rect class="dg-box" x="224" y="82" width="64" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="256" y="100">Start NO</text>
+  <path class="dg-line" d="M218,96 L218,133 L224,133"/>
+  <rect class="dg-box" x="224" y="120" width="64" height="26" rx="3"/><text class="dg-text-sm dg-mid" x="256" y="137">M aux NO</text>
+  <path class="dg-line" d="M288,133 L294,133 L294,96"/>
+  <line class="dg-line" x1="288" y1="96" x2="318" y2="96"/>
+  <rect class="dg-box-ok" x="318" y="82" width="64" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="350" y="100">OL NC</text>
+  <line class="dg-line" x1="382" y1="96" x2="412" y2="96"/>
+  <rect class="dg-box-accent" x="412" y="82" width="60" height="28" rx="14"/><text class="dg-text-sm dg-mid" x="442" y="100">Coil M</text>
+  <line class="dg-line" x1="472" y1="96" x2="500" y2="96"/>
+  <text class="dg-text-sm" x="506" y="100">L2</text>
+  <text class="dg-text-muted dg-text-sm" x="320" y="140">The aux contact is the seal-in.</text>
+  <rect class="dg-zone" x="10" y="162" width="620" height="160" rx="4"/>
+  <text class="dg-text-sm" x="20" y="180">PLC era: the rung starts and stops, protection stays in the coil circuit</text>
+  <rect class="dg-box-accent" x="20" y="192" width="230" height="120" rx="4"/>
+  <text class="dg-text-sm" x="30" y="212">PLC</text>
+  <text class="dg-text-sm" x="30" y="232">Rung: seal-in on M101_RunCmd</text>
+  <text class="dg-text-sm" x="30" y="250">Output: M101_Out</text>
+  <text class="dg-text-sm" x="30" y="268">Inputs: M101_Aux, M101_OL_OK</text>
+  <text class="dg-text-sm" x="30" y="286">These two inputs are monitor only</text>
+  <text class="dg-text-sm" x="266" y="244">L1</text>
+  <line class="dg-line" x1="284" y1="240" x2="290" y2="240"/>
+  <rect class="dg-box-ok" x="290" y="226" width="66" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="323" y="244">E-stop NC</text>
+  <line class="dg-line" x1="356" y1="240" x2="366" y2="240"/>
+  <rect class="dg-box-ok" x="366" y="226" width="56" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="394" y="244">OL NC</text>
+  <line class="dg-line" x1="422" y1="240" x2="432" y2="240"/>
+  <rect class="dg-box" x="432" y="226" width="70" height="28" rx="3"/><text class="dg-text-sm dg-mid" x="467" y="244">M101_Out</text>
+  <line class="dg-line" x1="502" y1="240" x2="512" y2="240"/>
+  <rect class="dg-box-accent" x="512" y="226" width="56" height="28" rx="14"/><text class="dg-text-sm dg-mid" x="540" y="244">Coil M</text>
+  <line class="dg-line" x1="568" y1="240" x2="594" y2="240"/>
+  <text class="dg-text-sm" x="598" y="244">L2</text>
+  <path class="dg-line-thin dg-dash" d="M394,254 L394,274 L250,274"/>
+  <text class="dg-text-muted dg-text-sm" x="300" y="270">OL status</text>
+  <path class="dg-line-thin dg-dash" d="M540,254 L540,296 L250,296"/>
+  <text class="dg-text-muted dg-text-sm" x="300" y="292">Aux contact status</text>
+</svg>`,
     threewire: `<svg viewBox="0 0 640 250" role="img" aria-label="Timing of a seal-in rung: a brief Start press turns the motor on and it stays on until the Stop circuit opens">
   <text class="dg-title" x="20" y="24">Seal-in rung over time</text>
   <text class="dg-text-sm" x="20" y="66">Start_PB</text>
   <path class="dg-line-accent" d="M170,72 L260.0,72 L260.0,50 L305.0,50 L305.0,72 L620,72"/>
   <text class="dg-text-sm" x="20" y="110">Stop_OK (NC)</text>
   <path class="dg-line-accent" d="M170,94 L440.0,94 L440.0,116 L476.0,116 L476.0,94 L620,94"/>
-  <text class="dg-text-sm" x="20" y="154">Motor_Run</text>
+  <text class="dg-text-sm" x="20" y="154">M101_RunCmd</text>
   <path class="dg-line-ok" d="M170,160 L260.0,160 L260.0,138 L440.0,138 L440.0,160 L620,160"/>
   <line class="dg-line-thin dg-dash" x1="260.0" y1="44" x2="260.0" y2="172"/>
   <text class="dg-text-muted dg-mid" x="260.0" y="188">press</text>
@@ -150,7 +217,7 @@ The special part is what happens when the lights go out. The helper is only hold
   <text class="dg-text-muted dg-mid" x="440.0" y="188">Stop</text>
   <line class="dg-line-thin dg-dash" x1="476.0" y1="44" x2="476.0" y2="172"/>
   <text class="dg-text-muted dg-mid" x="476.0" y="188">Stop released</text>
-  <text class="dg-text-sm" x="170" y="226">Motor_Run stays on after Start drops because its own contact is in parallel with Start.</text>
+  <text class="dg-text-sm" x="170" y="226">M101_RunCmd stays on after Start drops because its own contact is in parallel with Start.</text>
 </svg>`,
     powerloss: `<svg viewBox="0 0 640 250" role="img" aria-label="Power loss: an OTE-sealed motor drops out and stays off after power returns, an OTL-latched motor comes back on by itself">
   <text class="dg-title" x="20" y="24">What happens across a power loss</text>
@@ -181,7 +248,7 @@ The special part is what happens when the lights go out. The helper is only hold
     "Naming the input for the button (Stop_PB) rather than its healthy state, then reading the XIC backwards."
   ],
 
-  keyTerms: ["seal-in", "three-wire-control", "otl-otu", "retentive", "fail-safe-wiring", "first-scan"],
+  keyTerms: ["seal-in", "three-wire-control", "otl-otu", "retentive", "fail-safe-wiring", "first-scan", "udt"],
 
   quiz: [
     {
@@ -248,6 +315,17 @@ The special part is what happens when the lights go out. The helper is only hold
         "A parallel stop would act like a start.",
         "That is the latch method, with its drawbacks.",
         "The rung needs them in line with the output so they can break it."
+      ]
+    },
+    {
+      q: "A pump overload relay trips. Where must its protective contact act?",
+      options: ["Only as an XIC in the seal-in rung, since the PLC sees it faster than a relay", "Hardwired in series with the starter coil, with the PLC monitoring a status contact", "In an OTL rung that sets a fault bit", "Wired to the HMI so the operator can stop the pump"],
+      answer: 1,
+      explain: [
+        "A rung can be bypassed by a program fault, a force or a welded output relay, leaving the motor energized and overheating.",
+        "Correct. The hardwired contact cuts the coil whatever the software does. The PLC reads the status to alarm and to drop its own run command.",
+        "A fault latch is useful for the operator but protects nothing.",
+        "Protection must not depend on a person or a screen."
       ]
     }
   ],

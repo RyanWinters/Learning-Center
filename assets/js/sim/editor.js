@@ -79,6 +79,10 @@
     tx.appendChild(ta); tx.appendChild(terr); tx.appendChild(help);
     root.appendChild(bar); root.appendChild(scroll); root.appendChild(tx);
     host.appendChild(root);
+    // Rung toolbar and error notes are sticky inside a sideways-scrolling area; give them the visible width, not the content width.
+    function sizeBars() { root.style.setProperty("--sedw", scroll.clientWidth + "px"); }
+    if (root.ownerDocument.defaultView && root.ownerDocument.defaultView.ResizeObserver) new root.ownerDocument.defaultView.ResizeObserver(sizeBars).observe(scroll);
+    sizeBars();
 
     function emit(n, d) { if (opts.onEvent) opts.onEvent(n, d); }
 
@@ -115,14 +119,14 @@
       if (sel.rung != null && sel.rung >= prog.rungs.length) sel.rung = prog.rungs.length ? prog.rungs.length - 1 : null;
       scroll.innerHTML = "";
       var minW = Math.max(R.programWidth(prog, { gap: GAP }), 340);
-      var wrap = el("div", { class: "sed-rungs", style: "min-width:" + minW + "px" });
+      var wrap = el("div", { class: "sed-rungs", style: "min-width:" + Math.ceil(minW * R.FLUID_MIN) + "px" });
       if (!prog.rungs.length) {
         wrap.appendChild(el("div", { class: "sed-empty" }, [el("p", { text: "No rungs yet." }), el("button", { type: "button", class: "btn primary", text: "Add the first rung", onclick: addRungAt.bind(null, 0) })]));
       }
       prog.rungs.forEach(function (r, i) {
         var isSel = sel.rung === i;
         var box = el("div", { class: "sed-rung" + (isSel ? " sel" : ""), "data-r": i });
-        box.innerHTML = R.rungSVG(r, i, { gap: GAP, edit: true, slots: true, selected: sel.rung, minW: minW });
+        box.innerHTML = R.rungSVG(r, i, { gap: GAP, edit: true, slots: true, selected: sel.rung, minW: minW, fluid: true });
         var errs = errorsFor(i);
         if (errs.length) { var ed = el("div", { class: "sed-err", role: "alert", html: ico("info", 16) + "<span></span>" }); ed.lastChild.textContent = errs[0]; box.appendChild(ed); }
         if (isSel) box.appendChild(rungBar(i));

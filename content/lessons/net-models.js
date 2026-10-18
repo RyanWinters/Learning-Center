@@ -48,7 +48,7 @@ Walk from the bottom up.
 
 1. **Layer 1:** Is there a link light? Is the cable good, the port enabled, the fiber clean?
 2. **Layer 2:** Is the device on the right VLAN and does the switch see its MAC address? Is there a duplex mismatch?
-3. **Layer 3:** Right IP, right subnet mask, right default gateway? Does ping work?
+3. **Layer 3:** Right IP, right subnet mask, right default gateway? Does ping work? (Ping uses ICMP, which rides directly on IP at layer 3. It is neither TCP nor UDP, so a good ping says nothing about any port.)
 4. **Layer 4:** Is the port open? Is a firewall dropping TCP 502? Is the service listening?
 5. **Layer 7:** Is the device address, unit ID, tag path or credential correct?
 
@@ -89,7 +89,7 @@ A {{term:port-number|port number}} (0-65535) tells the receiving machine which p
 | NTP | 123 | UDP |
 | SQL Server / PostgreSQL / MySQL | 1433 / 5432 / 3306 | TCP |
 
-Those are defaults. A site can move any of them, and **Ignition's ports are configurable**. When you write a firewall rule, you specify the source, the destination, the protocol and the port: "allow TCP 502 from the Ignition gateway at 10.20.100.10 to 10.20.10.0/24." That one sentence is the difference between a segmented plant and a flat one.
+Those are defaults. A site can move any of them, and **Ignition's ports are configurable**. When you write a firewall rule, you specify the source, the destination, the protocol and the port: "allow TCP 502 from the Ignition master at 10.20.30.10 to the meter's single address, 10.20.10.20." That one sentence is the difference between a segmented plant and a flat one.
 
 ## Why EtherNet/IP uses both
 
@@ -133,7 +133,7 @@ The OSI reference model was published by ISO in 1984 as a framework for building
   examples: [
     {
       title: "Which layer is the fault?",
-      body: `An HMI at 10.20.10.50 cannot read a PLC at 10.20.10.10 over Modbus TCP. Ping works. A TCP test to port 502 fails. Layers 1-3 are fine. At layer 4, either something is dropping port 502, or the PLC is not listening. The PLC's Modbus TCP server was disabled in its configuration, so there was nothing on port 502 to answer.`
+      body: `An HMI at 10.20.20.50 (VLAN 20) cannot read a PLC at 10.20.10.10 over Modbus TCP. Ping works. A TCP test to port 502 fails. Layers 1-3 are fine. At layer 4, either something is dropping port 502, or the PLC is not listening. The PLC's Modbus TCP server was disabled in its configuration, so there was nothing on port 502 to answer.`
     },
     {
       title: "A firewall rule between zones",

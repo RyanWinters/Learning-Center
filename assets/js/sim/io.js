@@ -130,14 +130,22 @@
     };
   }
 
-  // Sandbox panel definition: 8 inputs, 8 lamps, one slider, one value.
-  function sandboxIO() {
-    var io = [];
-    for (var i = 0; i < 4; i++) io.push({ tag: "I" + i, widget: "pb", label: "Pushbutton " + i });
-    for (i = 4; i < 8; i++) io.push({ tag: "I" + i, widget: "toggle", label: "Switch " + i });
-    io.push({ tag: "AI0", widget: "slider", label: "Analog in", min: 0, max: 100, step: 1 });
-    for (i = 0; i < 8; i++) io.push({ tag: "O" + i, widget: "lamp", label: "Lamp " + i });
-    io.push({ tag: "AO0", widget: "value", label: "Analog out", dec: 1 });
+  // Sandbox panel definition, named like a real Logix chassis: slot 1 digital in, slot 2 digital out, slot 3 analog in, slot 4 analog out.
+  var SBX_IN = [["PB1 Start", "pb"], ["PB2 Stop", "pb"], ["PB3 Jog", "pb"], ["PB4 Reset", "pb"], ["SS1 Hand/Auto", "toggle"], ["LS1 Door closed", "toggle"], ["PE1 Photo-eye", "toggle"], ["ES1 E-stop OK", "toggle"]];
+  var SBX_OUT = ["PL1 Run lamp", "PL2 Fault lamp", "PL3 Ready lamp", "PL4 Alarm lamp", "M1 Motor contactor", "SV1 Fill valve", "SV2 Drain valve", "H1 Horn"];
+  function sandboxIO(legacy) {
+    var io = [], i;
+    if (legacy) { // plain I0/O0 names, used only when the engine cannot yet parse Logix-style tag names
+      for (i = 0; i < 8; i++) io.push({ tag: "I" + i, widget: SBX_IN[i][1], label: SBX_IN[i][0] });
+      io.push({ tag: "AI0", widget: "slider", label: "LT1 Level (analog in)", min: 0, max: 100, step: 1 });
+      for (i = 0; i < 8; i++) io.push({ tag: "O" + i, widget: "lamp", label: SBX_OUT[i], color: i === 1 || i === 3 || i === 7 ? "alarm" : undefined });
+      io.push({ tag: "AO0", widget: "value", label: "Analog out", dec: 1 });
+      return io;
+    }
+    for (i = 0; i < 8; i++) io.push({ tag: "Local:1:I.Data." + i, widget: SBX_IN[i][1], label: SBX_IN[i][0] });
+    io.push({ tag: "Local:3:I.Ch0Data", widget: "slider", label: "LT1 Level (analog in)", min: 0, max: 100, step: 1 });
+    for (i = 0; i < 8; i++) io.push({ tag: "Local:2:O.Data." + i, widget: "lamp", label: SBX_OUT[i], color: i === 1 || i === 3 || i === 7 ? "alarm" : undefined });
+    io.push({ tag: "Local:4:O.Ch0Data", widget: "value", label: "Analog out", dec: 1 });
     return io;
   }
 

@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## The path every value takes
 
-When you drag a tag onto a Perspective gauge, the value traveled a longer road than the screen suggests. In Ignition, PLC data enters through **device connections**. A device connection is a configured driver instance (an IP address, a driver type and a few settings) living in the Gateway's {{term:opc-ua|OPC UA}} module. Each connection publishes the device's data into Ignition's built-in **OPC UA server**. Ignition's tag system then acts as an OPC UA *client* of that server, and OPC tags reference items by server and {{term:node-id|node ID}}.
+When you drag a tag onto a Perspective gauge, the value traveled a longer road than the screen suggests. In Ignition, PLC data enters through **device connections**. A device connection is a configured driver instance (an IP address, a driver type and a few settings) living in the Gateway's {{term:opc-ua|OPC UA}} module. Each connection publishes the device's data into Ignition's built-in **OPC UA server**. Ignition's own tags read through the built-in OPC UA module: an OPC tag is an OPC UA *client* of that server, and it references an item by server name and {{term:node-id|node ID}}.
 
 {{diagram:path}}
 
@@ -37,7 +37,7 @@ The OPC UA module ships with drivers for many device families. Typical ones incl
 | DNP3 | {{term:dnp3|DNP3}} | Utilities and remote sites, supports {{term:unsolicited-response|unsolicited responses}} |
 | Others | BACnet, Omron, Mitsubishi and more | Availability varies by version |
 
-A native driver is usually the first choice. There is one fewer server in the chain, no extra license, and the driver lives in the same JVM as your tags. Adding a connection is a Gateway Config task: choose the driver, name the connection, enter the IP, save. Naming matters because the name becomes part of every OPC item path, for example \`[Line1_PLC]Tank1.Level\`. Pick short, stable names that mean the equipment, not the date.
+A native driver is usually the first choice. There is one fewer server in the chain, no extra license, and the driver lives in the same JVM as your tags. Adding a connection is a Gateway Config task: choose the driver, name the connection, enter the IP, save. Naming matters because the name becomes part of every OPC item path, for example \`[PLC1]LT101\` for the Plant1 Area10 PLC at \`10.20.10.10\`. Pick short, stable names that mean the equipment, not the date.
 
 ## Connecting to third-party OPC UA servers
 
@@ -68,6 +68,8 @@ The Gateway's Status section lists every device connection with its state. Learn
 - **Disconnected / Faulted**: a link failed. The driver retries on a timer. Look at the error in the connection's detail page.
 - **Disabled**: someone turned it off.
 
+(The exact status labels differ a little between versions. Match them against your Gateway's Status page.)
+
 The device page also shows per-connection statistics such as request counts, response times and the number of items subscribed. Combine them with the tag quality code on the tag itself.
 
 | Symptom | Likely cause | First check |
@@ -82,14 +84,14 @@ The device page also shows per-connection statistics such as request counts, res
 
 ## The Logix driver
 
-For Allen-Bradley ControlLogix and CompactLogix, the Logix driver reads controller tags by **symbolic name**. You do not map register numbers as you do in Modbus. The tag \`Tank1_Level\` in {{term:logix-designer|Studio 5000}} becomes \`Tank1_Level\` as an OPC item. Structures and arrays appear as browsable folders.
+For Allen-Bradley ControlLogix and CompactLogix, the Logix driver reads controller tags by **symbolic name**. You do not map register numbers as you do in Modbus. The tag \`LT101\` in {{term:logix-designer|Studio 5000}} becomes \`LT101\` as an OPC item, and a UDT tag such as \`M101\` appears as a folder with \`Cmd\`, \`Sts\`, \`Cfg\` and \`Alm\` below it. Arrays appear as browsable folders too. For connection tuning and bad-quality triage on this driver, continue with {{lesson:ign-logix-driver}}.
 
 Key points:
 
 - **Optimized for firmware v21 and up.** The driver supports newer controllers best, including 5380 CompactLogix and 5580 ControlLogix. On older firmware it works but with lower performance.
 - **Connection settings.** You enter the IP address and the **communication path** (backplane and slot). For a ControlLogix, the path is typically the slot number of the controller. For a CompactLogix with built-in Ethernet the slot is usually 0. A forum report for 8.3.1 against a 5380 shows a connection stuck in a reconnect-wait state until the slot was set to 0 for the front Ethernet port.
-- **CIP connection size.** Forward Open requests use a connection size, 500 by default in the 8.1 docs. Larger sizes allow more per packet but need the controller and network to support them.
-- **Max concurrent requests.** This setting controls how many requests Ignition keeps in flight with the PLC. The default is low (forum posters cite 2). Raising it reduces Ignition-side latency, and community advice reports gains up to a point, but it increases load on the controller and the docs warn that too high overwhelms the PLC.
+- **CIP connection size.** Forward Open requests use a connection size, 500 by default according to the Logix driver settings. Larger sizes allow more per packet but need the controller and network to support them.
+- **Max concurrent requests.** This setting controls how many requests Ignition keeps in flight with the PLC. The default is 2 according to the driver settings page. Raising it can reduce Ignition-side latency, and forum advice reports gains up to a point, but it increases load on the controller and too high a value can overwhelm the PLC. See {{lesson:ign-logix-driver}} for a tuning procedure.
 
 ### Controller tag design matters
 
@@ -99,10 +101,10 @@ A PLC polled by Ignition spends CPU time answering. How you design tags in the c
 - **Avoid reading AOI instances directly** when you can. Forum guidance says the driver can't bulk-read them efficiently. Expose the data through a UDT or mapped tags.
 - **{{term:external-access|External Access}} must allow it.** A Logix tag with External Access set to None is invisible to Ignition. Read/Write is needed to write, and Read Only works for reads. Unexpected bad quality on one tag is often this property.
 - **Respect the controller.** Heavy polling can show up in the controller's communication load. A continuous task with little spare time can cause comms to starve, and moving logic into a periodic task helps (forum advice).
-- **Scope matters.** Program-scoped tags are addressed as \`Program:MainProgram.Pump1_Run\`. Controller scope is simpler to reference.
+- **Scope matters.** Program-scoped tags are addressed as \`Program:MainProgram.M101.Sts.Running\`. Controller scope is simpler to reference. The house convention keeps equipment UDT instances such as \`M101\` and \`P101\` at controller scope.
 
-> [!example] Fixing a slow, bad-quality device
-> A CompactLogix feeds 3,000 Ignition tags, and the device shows response times near 800 ms. You find 2,200 of them are separate base tags scattered through the controller, and a tenth are inside AOI instances. You regroup them into 40 motor and valve UDTs, set External Access to Read Only for status data, raise Max Concurrent Requests from 2 to 4 and watch the PLC comms load stay below 50%. Response times drop to about 150 ms and the bad-quality tags disappear.
+> [!example] Fixing a slow, bad-quality device (illustrative numbers)
+> A CompactLogix feeds 3,000 Ignition tags, and the device shows response times near 800 ms. You find 2,200 of them are separate base tags scattered through the controller, and a tenth are inside AOI instances. You regroup them into 40 motor and valve UDTs, set External Access to Read Only for status data, raise Max Concurrent Requests from 2 to 4 and watch the PLC comms load stay below 50%. In this illustration, response times drop to about 150 ms and the bad-quality tags disappear. Your numbers will differ, so measure before and after.
 
 ## Request optimization
 
@@ -124,7 +126,7 @@ Practical habits:
 
 ## When things go wrong
 
-Work down the stack. Is the device connection Connected? If not, fix the network and path. If yes, is the tag path valid? Is External Access allowed? Is the data type compatible? Only then look at performance. Do not tune concurrency to fix a bad address. {{lesson:ign-tags}} follows the value from the device layer into the tag system.
+Work down the stack. Is the device connection Connected? If not, fix the network and path. If yes, is the tag path valid? Is External Access allowed? Is the data type compatible? Only then look at performance. Do not tune concurrency to fix a bad address. The Logix-specific checklist is in {{lesson:ign-logix-driver}}. {{lesson:ign-tags}} follows the value from the device layer into the tag system.
 `,
 
   eli5: `
@@ -154,7 +156,7 @@ Before Ignition, PLC data usually reached SCADA through OPC DA servers, then thr
   examples: [
     {
       title: "An OPC item path",
-      body: `Device connection named \`Line1_PLC\`, controller tag \`Tank1_Level\`. The OPC item path is \`ns=1;s=[Line1_PLC]Tank1_Level\`, and a tag in the default provider references that node. A program-scoped tag looks like \`[Line1_PLC]Program:MainProgram.Pump1_Run\`.`
+      body: `Device connection named \`PLC1\` (\`10.20.10.10\`), controller UDT tag \`M101\`. The OPC item path for the running status is \`ns=1;s=[PLC1]M101.Sts.Running\`, and a tag in the default provider (\`[default]Plant1/Area10/Line1/M101/Sts/Running\`) references that node. A program-scoped tag looks like \`[PLC1]Program:MainProgram.M101.Sts.Running\`.`
     },
     {
       title: "Kepware or native?",

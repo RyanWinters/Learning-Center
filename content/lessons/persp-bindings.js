@@ -25,7 +25,7 @@ A {{term:persp-binding|binding}} keeps one property equal to some source. When t
   "props.text": {
     "binding": {
       "type": "tag",
-      "config": { "mode": "direct", "tagPath": "[default]Plant1/Pump1/Speed" },
+      "config": { "mode": "direct", "tagPath": "[default]Plant1/Area10/Line1/M101/Sts/Speed" },
       "transforms": [
         { "type": "format", "formatType": "numeric", "format": "0.0" }
       ]
@@ -52,7 +52,7 @@ Every binding has a **type** (where the value comes from), optional **transforms
 
 ### Property bindings
 
-A property binding links to another property in the same view: \`{this.props.value}\`, \`{view.params.motorPath}\`, \`{../Slider.props.value}\`. It cannot reach into another view instance, not even an embedded one. Data crosses a view boundary only through view params. In 8.3 a tag or property binding can be made bidirectional with the Bidirectional option (see below).
+A property binding links to another property in the same view: \`{this.props.value}\`, \`{view.params.tagPath}\`, \`{../Slider.props.value}\`. It cannot reach into another view instance, not even an embedded one. Data crosses a view boundary only through view params. A tag or property binding can be made bidirectional with the Bidirectional option (see below).
 
 ### Expression bindings
 
@@ -72,31 +72,31 @@ This type builds one object from several expressions, one per key. It is the rig
 
 \`\`\`json
 {
-  "title": "Pump 1",
-  "running": "{[default]Plant1/Pump1/Run}",
-  "speed": "round({[default]Plant1/Pump1/Speed}, 1)"
+  "title": "M101",
+  "running": "{[default]Plant1/Area10/Line1/M101/Sts/Running}",
+  "speed": "round({[default]Plant1/Area10/Line1/M101/Sts/Speed}, 1)"
 }
 \`\`\`
 
-The output is \`{"title": "Pump 1", "running": true, "speed": 42.7}\`, so one binding replaces three plus a script.
+The output is \`{"title": "M101", "running": true, "speed": 42.7}\`, so one binding replaces three plus a script.
 
 ### Tag bindings
 
-A direct tag binding names a full path, including the provider: \`[default]Plant1/Pump1/Speed\`. The binding delivers the value, with its quality and timestamp available to transforms. An **indirect** tag binding has placeholders in the path, each linked to a source:
+A direct tag binding names a full path, including the provider: \`[default]Plant1/Area10/Line1/M101/Sts/Speed\`. The binding delivers the value, with its quality and timestamp available to transforms. An **indirect** tag binding has placeholders in the path, each linked to a source:
 
 \`\`\`json
 {
   "type": "tag",
   "config": {
     "mode": "indirect",
-    "tagPath": "{1}/Speed",
-    "references": { "1": "{view.params.motorPath}" },
+    "tagPath": "{1}/Sts/Speed",
+    "references": { "1": "{view.params.tagPath}" },
     "bidirectional": false
   }
 }
 \`\`\`
 
-If \`view.params.motorPath\` is \`[default]Plant1/Pump1\`, the binding resolves to \`[default]Plant1/Pump1/Speed\`. Change the param and the binding re-subscribes to the new tag automatically. One view definition, any number of {{term:indirect-tag-binding|indirect}} instances. This is the mechanism behind every reusable faceplate; the next lessons build on it ({{lesson:persp-embedding}}).
+If \`view.params.tagPath\` is \`[default]Plant1/Area10/Line1/M101\`, the binding resolves to \`[default]Plant1/Area10/Line1/M101/Sts/Speed\`. Change the param and the binding re-subscribes to the new tag automatically. One view definition, any number of {{term:indirect-tag-binding|indirect}} instances. This is the mechanism behind every reusable faceplate; the next lessons build on it ({{lesson:persp-embedding}}).
 
 > [!note] Direct, indirect and expression paths
 > Direct is the cheapest and clearest. Indirect is the right tool when the path varies by param or session. An expression-built path via \`tag()\` works too, but treat it as a last resort because it is invisible to refactoring tools and mixes path logic into formulas.
@@ -158,7 +158,7 @@ Its return value replaces the value, and that includes its type. It is the escap
 
 ## Binding to params
 
-View params are valid binding targets and sources, subject to direction. An embedded view's \`params.motorPath\` can be bound from the parent. Inside the child, \`{view.params.motorPath}\` is the source for indirect tag bindings. Because the param is an input, the child sees every change the parent makes and rebinds. See {{lesson:persp-views}}.
+View params are valid binding targets and sources, subject to direction. An embedded view's \`params.tagPath\` can be bound from the parent. Inside the child, \`{view.params.tagPath}\` is the source for indirect tag bindings. An input param is written by the parent, so the child sees every change the parent makes and rebinds. The other direction is an output param: the child writes it with a binding from inside, and the parent reads it through the embedded view component, for example \`{../Tile.props.params.isValid}\`. An in/out param is the bidirectional case, written from both sides. See {{lesson:persp-views}}.
 
 ## Performance habits
 
@@ -167,6 +167,45 @@ View params are valid binding targets and sources, subject to direction. An embe
 - Prefer map, format and expression transforms over script transforms.
 - Keep query polling modest (5 to 30 seconds is common for lists) and put shared queries behind caching where possible.
 - Do not bind to tag history and a chart's own history at the same time.
+## If you already build Perspective
+
+You know the binding types. The decisions that matter at scale are about where a value is computed and how many times.
+
+### A cost model you can use
+
+A binding is evaluated on the Gateway, so its cost has three factors: how often its inputs change, how many sessions hold it open, and what each evaluation does. Do not quote a per-binding millisecond figure. Measure your own Gateway with the performance tools in {{lesson:persp-performance}}. The model still ranks designs.
+
+- A tag binding on a slow tag costs almost nothing per update. The same binding on a noisy analog (a flow with no deadband) re-evaluates its whole transform chain on every change, for every session.
+- An expression binding that references five tags re-runs when any one of them changes. Ten such bindings on a screen that all reference the same tags do the work ten times per change.
+- A query binding costs a database round trip per session per poll unless the result is shared across sessions. Check the manual for your version for the caching option and what it keys on.
+
+### Move shared logic into the tag tier
+
+If 60 operators each evaluate "is M101 available for start" as an expression over \`Sts.Ready\`, \`Sts.Fault\`, \`Alm.CommLoss\` and a permissive, you compute it 60 times. Define it once as an **expression tag** inside the Ignition \`Motor\` UDT definition, for example an added \`Sts/Available\` member (a site extension of the house \`Motor\` definition), and bind every view to that one tag. The Gateway evaluates it once per input change, writes the result to the tag, and every session subscribes to a finished value. The rule: logic that depends only on tag values and gives the same answer to every viewer belongs in the UDT. Logic that depends on the viewer (role, selected area, theme) stays in the view or in session props.
+
+The tradeoff is that the logic is now in the tag provider, versioned with the UDT definition. That fits the semver discipline from {{lesson:persp-library}}, and it means a faceplate shows the same answer as a script or an alarm pipeline reading the same tag.
+
+### Bindings versus property change scripts
+
+A property change script (an event on a component property) runs when the property changes, whatever caused the change. It runs in the Gateway too, and it is imperative. Three pitfalls:
+
+1. **Derived state written by script.** Writing \`custom.x\` from a change script duplicates what a binding does, goes stale on any path that misses the script, and cannot be seen in the binding editor. Use a binding.
+2. **Loops.** A change script that writes a property another binding or script watches can ping-pong. The script receives an \`origin\` argument so you can ignore changes it caused itself. Guard on it.
+3. **The first call.** A change script may also fire for the initial value when the view loads, so test for it. Anything that sends a command from one needs a guard so opening a screen does not write to a device.
+
+Use a change script for side effects (write a tag after confirmation, send a message, log an audit row). Use a binding for values.
+
+### Fan-out and the shared custom prop
+
+When one expression feeds 40 components, compute it once into \`view.custom.x\` and bind the 40 components to that. This is also the way to stop a single noisy input from re-triggering a long transform chain 40 times. Order the chain so cheap, selective steps run first: a Map that collapses 1,000 distinct raw values to four states, before a Format, means the later steps see fewer distinct inputs. The chain still runs, but later steps work on fewer distinct values.
+
+### Review checklist
+
+- Does the same expression appear in more than one component? Hoist it.
+- Does the expression depend only on tags? Move it into the UDT.
+- Does any script transform call anything that blocks? Replace it.
+- Is every setpoint write an explicit action with an audit point?
+
 `,
 
   eli5: `
@@ -190,13 +229,13 @@ Two-way bindings are when you can also write on the board and the kitchen change
 `,
 
   history: `
-Perspective bindings follow the idea Vision made familiar, a property fed by a tag or expression, but evaluate on the Gateway to suit browser clients. Transforms cover many cases that Vision handled with scripted property-change events, and the script transform handles the remainder. In 8.3 the script transform receives the value, quality and timestamp.
+Perspective bindings follow the idea Vision made familiar, a property fed by a tag or expression, but evaluate on the Gateway to suit browser clients. Transforms cover many cases that Vision handled with scripted property-change events, and the script transform handles the remainder. The script transform receives the value, quality and timestamp.
 `,
 
   examples: [
     {
       title: "Speed text from a UDT member, three steps",
-      body: `A label's \`props.text\` has an indirect tag binding to \`{1}/Speed\` (with \`{1}\` = \`{view.params.motorPath}\`). Transforms in order: (1) Expression \`{value} / 100\` converts raw hundredths of hertz to hertz, (2) Format numeric \`0.00\`, (3) Expression \`{value} + " Hz"\`. A raw value 4512 becomes 45.12 then "45.12" then "45.12 Hz". Swap steps 1 and 2 and the format step would act on 4512 first and the division would then fail on a string.`
+      body: `A label's \`props.text\` has an indirect tag binding to \`{1}/Sts/Speed\` (with \`{1}\` = \`{view.params.tagPath}\`). Transforms in order: (1) Expression \`{value} / 100\` converts raw hundredths of hertz to hertz, (2) Format numeric \`0.00\`, (3) Expression \`{value} + " Hz"\`. A raw value 4512 becomes 45.12, then "45.12", then "45.12 Hz". Swap steps 1 and 2 and the format step acts on the raw number first, so the division then receives a formatted string. Depending on coercion that gives a wrong value or an error, so never rely on it.`
     },
     {
       title: "Replacing a script transform",
@@ -257,14 +296,14 @@ Perspective bindings follow the idea Vision made familiar, a property fed by a t
       q: "You have an expression transform {value} / 100 followed by a format transform '0.00'. What happens if you reorder them so format runs first?",
       options: [
         "Nothing, transform order does not matter",
-        "The format step acts on the raw number, the expression step then gets a string and the division is wrong or fails",
+        "The format step acts on the raw number, the expression step then gets a formatted string, and the result is unreliable (a wrong value or an error)",
         "The binding becomes bidirectional",
         "Perspective reorders them automatically"
       ],
       answer: 1,
       explain: [
         "Order is the whole point of a pipeline.",
-        "Correct. Each transform receives the previous output, so format first yields a string for the division.",
+        "Correct. Each transform receives the previous output, so format first hands a string to the division, which you should not rely on.",
         "Transform order has no effect on direction.",
         "Perspective runs transforms in the order listed."
       ]
@@ -328,7 +367,7 @@ Perspective bindings follow the idea Vision made familiar, a property fed by a t
       answer: 1,
       explain: [
         "Property bindings cannot cross the view boundary.",
-        "Correct. Output params are how a view exposes values, and the parent reads them through the embedded view's params.",
+        "Correct. An output param is written by a binding inside the child, and the parent reads it through the embedded view component's params.",
         "That adds shared state and hidden coupling when a param is available.",
         "It is a standard pattern."
       ]

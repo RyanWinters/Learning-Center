@@ -13,7 +13,8 @@
     [/^\/glossary(?:\/([^/]+))?$/, 'glossary', ['id']],
     [/^\/search(?:\/(.*))?$/, 'search', ['q']],
     [/^\/lab(?:\/([^/]+))?$/, 'lab', ['id']],
-    [/^\/profile$/, 'profile', []]
+    [/^\/profile$/, 'profile', []],
+    [/^\/readiness$/, 'readiness', []]
   ];
   function parse(hash) {
     const path = (hash == null ? location.hash : hash).replace(/^#/, '') || '/';

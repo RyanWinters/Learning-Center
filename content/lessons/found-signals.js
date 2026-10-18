@@ -19,16 +19,16 @@ LC.lesson({
   body: `
 ## Two kinds of signal
 
-Everything a PLC reads or writes at {{lesson:found-purdue}} Level 0 arrives as one of two electrical kinds.
+Everything a PLC (programmable logic controller) reads or writes at {{lesson:found-purdue}} Level 0 arrives as one of two electrical kinds.
 
 - **Discrete** ({{term:discrete-signal|digital}}): on or off, one bit. A pushbutton, a prox sensor, a contactor coil, a lamp.
 - **{{term:analog-signal|Analog}}**: a continuous range. A temperature, a flow, a valve position, a drive speed.
 
-The devices behind them are covered in {{lesson:found-devices}}. This lesson is about the wire between the device and the PLC's I/O card.
+The devices behind them are covered in {{lesson:found-devices}}. This lesson is about the wire between the device and the PLC's I/O (input/output) card.
 
 ## Discrete signals
 
-The standard in North American control panels is **24 VDC** for sensors and PLC I/O, and 120 VAC for some older or heavier devices. A discrete input card sees voltage above a threshold (roughly 11 V or more on a 24 VDC card) as ON and near zero as OFF. A discrete output card turns a voltage on and off to drive a relay coil, lamp or solenoid.
+The usual level in North American control panels is **24 VDC** (volts, direct current) for sensors and PLC I/O, and 120 VAC (volts, alternating current) for some older or heavier devices. A discrete input card sees voltage above a threshold as ON and near zero as OFF. The exact thresholds are on the card's datasheet. A discrete output card turns a voltage on and off to drive a relay coil, lamp or solenoid.
 
 ### Sinking and sourcing
 
@@ -37,7 +37,7 @@ DC input and output cards are described as **sinking** or **sourcing**, and the 
 - A **{{term:sinking-sourcing|sourcing}}** device pushes current out toward the load. A sourcing output puts +24 V on its terminal.
 - A **sinking** device pulls current in to a common. A sinking input provides a path to 0 V when the field device sends it +24 V.
 
-Current always needs a source on one side and a sink on the other, so a sourcing field device pairs with a sinking card and the reverse. For sensors this shows up as the wiring type. **PNP** sensors source: they switch +24 V onto the signal wire, and need a sinking input card. **NPN** sensors sink: they switch the signal wire to 0 V, and need a sourcing input card. PNP is the common choice in North America and Europe's modern installs, but both exist, and some cards accept either, so check the card's wiring diagram.
+Current always needs a source on one side and a sink on the other, so a sourcing field device pairs with a sinking card and the reverse. For sensors this shows up as the wiring type. **PNP** sensors source: they switch +24 V onto the signal wire, and need a sinking input card. **NPN** sensors sink: they switch the signal wire to 0 V, and need a sourcing input card. Which one you meet depends on the region, the industry and the machine builder. Both are used in North America, and PNP is widely used in Europe. Some cards accept either, so check the sensor datasheet and the card's wiring diagram.
 
 > [!warning] Check before you buy
 > Mixing an NPN sensor with a sinking input card gives you a sensor that appears dead. It is a common commissioning mistake that no software setting will fix. Check the sensor datasheet and the card's wiring diagram first.
@@ -48,7 +48,7 @@ Discrete signals also come as **normally open (NO)** and **normally closed (NC)*
 
 ### The 4-20 mA current loop
 
-The standard industrial analog signal is **4-20 mA**, a current that represents the range of a measurement. 4 mA means 0 percent of the range and 20 mA means 100 percent. The PLC's analog input card passes the current through a precision resistor (often 250 ohms), reads the resulting voltage (1 to 5 V across 250 ohms), and converts it to a number.
+The standard industrial analog signal is **4-20 mA**, a current that represents the range of a measurement. 4 mA means 0 percent of the range and 20 mA means 100 percent. The PLC's analog input (AI) card passes the current through a precision resistor (often 250 ohms), reads the resulting voltage (1 to 5 V across 250 ohms), and converts it to a number.
 
 Why current and not voltage?
 
@@ -58,16 +58,16 @@ Why current and not voltage?
 
 ### Why live zero (4 mA)
 
-The signal starts at 4 mA, not 0, so the value "zero percent" is distinguishable from "no signal". If a wire breaks, a transmitter dies or power is lost, the loop reads 0 mA, which can never be a valid measurement. The PLC can raise a "wire break" alarm. This is called a **{{term:live-zero|live zero}}**. The remaining 4 mA also powers the transmitter's own electronics in a 2-wire design.
+The signal starts at 4 mA, not 0, so the value "zero percent" is distinguishable from "no signal". If a wire breaks, a transmitter dies or power is lost, the loop reads 0 mA, which can never be a valid measurement. The PLC can raise a "wire break" alarm. This is called a **{{term:live-zero|live zero}}**. The remaining 4 mA also powers the transmitter's own electronics in a 2-wire (loop-powered) design, explained below.
 
 | Current | Meaning on a 0-100 PSI transmitter |
 |---|---|
 | 0 mA | Open loop, dead transmitter or failed power: a fault |
-| 3.6 mA | Below range: transmitter is reporting a fault |
 | 4 mA | 0 PSI |
 | 12 mA | 50 PSI |
 | 20 mA | 100 PSI |
-| 21+ mA | Above range: fault or burnout high |
+
+Currents just outside 4 to 20 mA (3.6 to 3.8 mA, or 20.5 to 21 mA, for example) have defined meanings in the NAMUR NE43 table later in this lesson.
 
 ### 2-wire vs 4-wire
 
@@ -87,46 +87,54 @@ A **0-10 V** signal is common on drives, HVAC actuators and cheap sensors. It is
 
 ### Scaling: raw counts to engineering units
 
-An analog input card converts current to an integer. Depending on its configuration, a Logix analog card reports raw counts or scales to engineering units itself. For the math, assume a 16-bit card where 0 to 20 mA spans 0 to 32,767 counts, so 4 mA reads about 6,242 counts and 20 mA about 31,208 counts. The scaling is a straight line:
+An analog input card converts current to an integer. Depending on its configuration, a Logix analog card reports raw counts or scales to engineering units itself. For the math, this course uses a teaching card in the style of the 1769-IF4: raw scale **0 to 21 mA = 0 to 32,767 counts**. That puts 4 mA at **6,242** counts, 20 mA at **31,208**, 3.8 mA at about 5,930, 3.6 mA at about 5,617 and 21 mA at 32,767. Counts are module-specific. ControlLogix 1756/5069 analog modules usually scale to engineering units in the module. The scaling is a straight line:
 
 \`EU = EUmin + (raw - rawMin) * (EUmax - EUmin) / (rawMax - rawMin)\`
 
-> [!example] Worked example
-> A level transmitter covers 0 to 10 m. At 4 mA the card reads 6,242 and at 20 mA it reads 31,208. The PLC reads **18,725**.
+> [!example] Worked example: 8 mA on a level transmitter, step by step
+> LT101 at Meridian Foods Plant 1 measures 0 to 5.0 m. The card sees **8 mA**.
 >
-> EU = 0 + (18,725 - 6,242) * (10 - 0) / (31,208 - 6,242)
-> = 12,483 * 10 / 24,966
-> = **5.00 m**
+> 1. Take off the live-zero offset: 8 - 4 = 4 mA above zero.
+> 2. Divide by the span (20 - 4 = 16 mA): 4 / 16 = 0.25, or 25 percent.
+> 3. Multiply by the range: 0.25 * 5.0 m = **1.25 m**.
 >
-> Check with current: 18,725 counts is exactly mid-scale, which is 12 mA, which is 50 percent of 10 m. Good.
+> The same signal in counts: 8 mA is 8 / 21 * 32,767 = about **12,483** counts.
+>
+> EU = 0 + (12,483 - 6,242) * (5.0 - 0) / (31,208 - 6,242)
+> = 6,241 * 5.0 / 24,966
+> = **1.25 m**
+>
+> Both routes agree. Check with the mid-point: 12 mA is 50 percent of 5.0 m, which is 2.50 m, at about 18,725 counts.
 
-If the raw value comes in below 6,242 minus a small tolerance, the signal is under 4 mA. Do not clamp it silently. Flag it as bad quality.
+If the raw value comes in below 6,242 minus a small tolerance, the signal is under 4 mA. Do not clamp it silently. The NE43 table below says when to treat it as uncertain and when as bad.
 
 In a Logix controller you can use the \`SCP\` (scale) instruction or compute with \`CPT\`. See {{lesson:plc-analog}} and try {{sim:sim-scp}}.
 
 \`\`\`st
-// Structured Text scaling with a bad-signal check
-Level_mA := (Raw - 6242.0) * 16.0 / 24966.0 + 4.0;
-IF Level_mA < 3.8 OR Level_mA > 20.5 THEN
-    Level_Bad := TRUE;
+// Structured Text scaling with NE43 checks (LT101: 0 to 5.0 m)
+LT101_mA := (LT101_Raw - 6242.0) * 16.0 / 24966.0 + 4.0;
+IF LT101_mA < 3.6 OR LT101_mA > 21.0 THEN
+    LT101_Bad := TRUE;            // device or loop failure: bad quality, fail-safe action
+    LT101_Uncertain := FALSE;
 ELSE
-    Level_Bad := FALSE;
-    Level_m := (Level_mA - 4.0) * 10.0 / 16.0;
+    LT101_Bad := FALSE;
+    // 3.6 to 3.8 and 20.5 to 21 mA: indeterminate, alarm after a delay
+    LT101_Uncertain := LT101_mA < 3.8 OR LT101_mA > 20.5;
+    LT101_Level := (LT101_mA - 4.0) * 5.0 / 16.0;   // clamp for display
 END_IF;
 \`\`\`
 
 ## NAMUR NE43: what out-of-range means
 
-The NAMUR NE43 recommendation standardizes the meaning of currents outside 4-20 mA. In the common summary of it:
+The NAMUR NE43 recommendation (NAMUR is an association of process-industry users) standardizes the meaning of currents outside 4-20 mA. This is the one table the whole course uses:
 
-| Current | Interpretation |
-|---|---|
-| 3.8 to 20.5 mA | Valid measurement (with a small allowance beyond 4 and 20) |
-| Below 3.6 mA | Failure: low |
-| Above 21 mA | Failure: high |
-| 3.6 to 3.8, 20.5 to 21 | Over- or under-range, not a clean fault |
+| Current | Meaning | Treat as |
+|---|---|---|
+| 3.8 to 20.5 mA | Measurement range (3.8 to 4 and 20 to 20.5 = slight under or over range) | Good, clamp for display |
+| 3.6 to 3.8 or 20.5 to 21 mA | Indeterminate | Uncertain quality, alarm after a delay |
+| Below 3.6 or above 21 mA | Device or loop failure | Bad quality, fail-safe action |
 
-A transmitter that detects an internal fault is configured to "burn out" high (about 21 to 23 mA) or low (about 3.5 mA or less). That direction is a setting on the transmitter, so the PLC program must be written for the direction the instrument is configured for. The PLC then treats values outside the valid window as bad quality rather than as a process excursion. This is how an Ignition tag ends up with a "bad" quality code rather than a believable-but-wrong number.
+A transmitter that detects an internal fault is configured to "burn out" high (above 21 mA) or low (below 3.6 mA). That direction is a setting on the transmitter, so the PLC program must be written for the direction the instrument is configured for. The PLC then treats values outside the valid window as bad quality rather than as a process excursion. This is how an Ignition tag ends up with a "bad" quality code rather than a believable-but-wrong number.
 
 ## HART: digital data on the same wires
 
@@ -139,7 +147,7 @@ What you get from HART on the same two wires:
 - Secondary measured variables (a flow transmitter's temperature, for example)
 - Calibration records
 
-A technician with a HART communicator can read all of this from anywhere on the loop. In larger systems an asset-management tool does it centrally, through HART-capable I/O cards, or through multiplexers. In a typical PLC project the PLC reads only the analog 4-20 mA value and HART is used by maintenance. A HART loop also needs a minimum loop resistance (commonly 230 ohms or more) so the digital signal has voltage to ride on.
+A technician with a HART communicator can read all of this from anywhere on the loop. In larger systems an asset-management tool does it centrally, through HART-capable I/O cards, or through multiplexers. In a typical PLC project the PLC reads only the analog 4-20 mA value and HART is used by maintenance. A HART loop also needs a minimum loop resistance so the digital signal has voltage to ride on. Check the HART documentation and the transmitter manual for the figure; the usual 250 ohm input shunt normally satisfies it.
 `,
 
   eli5: `
@@ -155,11 +163,11 @@ HART is like finding out the flashlight can also flicker a secret Morse code at 
   why: `
 **Why 4-20 mA beat everything else.** Older pneumatic systems used 3-15 psi air signals. When electronics took over, current was chosen over voltage because the same current flows everywhere in a series loop. A 300 m cable adds resistance, but the current stays the same. That robustness through noise and distance is why a 1950s signal convention still dominates new installations.
 
-**Why the offset of 4 mA?** It buys fault detection and power. The minimum current gives the transmitter electronics enough power to run, and the line between 0 mA (fault) and 4 mA (zero) lets software tell a dead loop from a true zero. The cost is that you give up 20 percent of the range, and resolution is slightly lower than a 0-20 mA scheme.
+**Why the offset of 4 mA?** It buys fault detection and power. The minimum current gives the transmitter electronics enough power to run, and the line between 0 mA (fault) and 4 mA (zero) lets software tell a dead loop from a true zero. The cost is that you give up 20 percent of the range, and resolution (the smallest change the card can tell apart) is slightly lower than a 0-20 mA scheme.
 
-**Why scaling errors cause real incidents.** The most common commissioning bug is scaling an input against the wrong range: 0 to 100 in the PLC, 0 to 150 in the transmitter. The tag looks perfectly healthy and is wrong by 50 percent. Always check the transmitter's configured range against the I/O list and verify with a known value (a calibrator injecting 12 mA should read exactly 50 percent).
+**Why scaling errors cause real incidents.** The most common commissioning bug is scaling an input against the wrong range: 0 to 100 in the PLC, 0 to 150 in the transmitter. The tag looks perfectly healthy and is wrong by 50 percent. Always check the transmitter's configured range against the I/O list and verify with a known value (a calibrator, a handheld tool that injects a known current, set to 12 mA should read exactly 50 percent).
 
-**Why bad-quality handling matters.** If your PLC clamps a 0 mA input to 0 percent, the high-level alarm will never fire and a pump will run dry. A level transmitter with a broken wire is a failure to report, not a reading of zero. Experienced integrators write analog handling once, in an AOI or UDT, with explicit out-of-range checking, and reuse it. See {{lesson:plc-aoi}}.
+**Why bad-quality handling matters.** If your PLC clamps a 0 mA input to 0 percent, the high-level alarm will never fire and a pump will run dry. A level transmitter with a broken wire is a failure to report, not a reading of zero. Experienced integrators write analog handling once, in an AOI (add-on instruction, a reusable block of logic) or a UDT (user-defined data type, a custom bundle of tags), with explicit out-of-range checking, and reuse it. See {{lesson:plc-aoi}}.
 
 **What integrators argue about.** Whether to put HART or fieldbus on everything. HART's extra data is valuable, but if no one reads it, you have wired cost for no benefit. Pay for it where maintenance will actually use it, such as critical control valves and custody-transfer meters.
 `,
@@ -234,7 +242,7 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
       ]
     },
     {
-      q: "A level transmitter spans 0 to 5 m. The PLC measures 8 mA. What is the level?",
+      q: "LT101 spans 0 to 5.0 m. The PLC measures 8 mA. What is the level?",
       options: ["1.25 m", "2.00 m", "1.60 m", "2.50 m"],
       answer: 0,
       explain: [

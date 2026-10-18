@@ -54,7 +54,7 @@ Ignition connects to databases through {{term:jdbc|JDBC}} drivers. Its documenta
 | {{term:sql-server|Microsoft SQL Server}} | Strong tooling (SSMS), common in Windows plants and IT shops | Licensing cost (Express edition is free but size-limited); T-SQL dialect |
 | {{term:mysql-mariadb|MySQL / MariaDB}} | Free, fast, huge community | Two similar but diverging products; dialect differs from the others |
 | {{term:postgresql|PostgreSQL}} | Free, very standards-compliant, powerful features | Fewer plant IT teams know it; tuning is your job |
-| {{term:sqlite|SQLite}} | Zero setup, one file | Ignition's docs note it allows a single connection, so it suits testing, not production history |
+| {{term:sqlite|SQLite}} | Zero setup, one file | The Ignition manual describes it as a single-connection, file-based option, so it suits testing, not production history (check the SQLite page for your version) |
 
 Pick the engine your plant's IT group can back up, patch and monitor. A "better" database that nobody maintains is worse than a plain one with nightly backups ({{lesson:db-operations}}).
 
@@ -66,7 +66,7 @@ Ignition does not ship with its own plant database. Instead, the Gateway holds *
 - The alarm journal and the audit log write to SQL.
 - Transaction Groups copy PLC values into rows, and back.
 - Named Queries run your own SQL from screens and scripts.
-- Store and forward buffers writes to local disk when the database is unreachable, then flushes them later.
+- Store and forward, where it is enabled on the feature that writes (for example the Tag Historian), buffers writes to local disk when the database is unreachable and flushes them later. Check the manual for which features support it in your version.
 
 So "how do I get this report" nearly always becomes "write a query". Ignition's historian leaves you tables with names starting \`sqlth_\` (metadata such as \`sqlth_te\`, the tag entries) and partitioned data tables named like \`sqlt_data_1_2026_03\`. The {{term:sqlth-tables|sqlth_ tables}} are system tables. Read them freely and never edit them by hand.
 
@@ -87,6 +87,11 @@ Connect with a host name, port (SQL Server 1433, MySQL/MariaDB 3306, PostgreSQL 
 ## The running example: a small plant database
 
 Every SQL lesson in this track uses the same five tables. Learn them once.
+
+> [!note] A different example on purpose
+> The Meridian Foods Plant 1 reference plant (Area10 Batching, Area20 Packaging, Line1, M101) is used for tags and paths elsewhere in the course. This SQL sample is a small bottling-and-packaging site with plain names (Line 1, Filler 1), because short numeric ids and obvious names make the join results easy to check by eye. In a real Plant 1 database, \`machine_name\` would hold the equipment number (\`M101\`) and \`line_name\` would hold \`Line1\`. The later lessons (schema, project, procedures) switch to those names where they build the real design.
+
+**Time convention for the whole track:** the tables below show clock times to keep them readable. In a real database you store every timestamp in UTC (\`DATETIME2\` on SQL Server, \`TIMESTAMPTZ\` on PostgreSQL) and convert to local time only when you display it. Mixing local and UTC values in one table is a classic silent error: nothing fails, but every duration is off by the UTC offset.
 
 {{diagram:schema}}
 
@@ -180,7 +185,7 @@ CREATE TABLE machine (
 | Need | SQL Server | MySQL / MariaDB | PostgreSQL |
 |---|---|---|---|
 | Auto-number key | \`INT IDENTITY(1,1)\` | \`INT AUTO_INCREMENT\` | \`INT GENERATED ALWAYS AS IDENTITY\` |
-| Timestamp type | \`DATETIME2\` | \`DATETIME\` | \`TIMESTAMP\` (or \`TIMESTAMPTZ\`) |
+| Timestamp type | \`DATETIME2\` (store UTC values) | \`DATETIME\` (store UTC values) | \`TIMESTAMPTZ\` |
 | Limit rows | \`TOP 5\` | \`LIMIT 5\` | \`LIMIT 5\` |
 | Quote a name | \`[name]\` | backticks | \`"name"\` |
 | Current time | \`SYSDATETIME()\` | \`NOW()\` | \`NOW()\` |

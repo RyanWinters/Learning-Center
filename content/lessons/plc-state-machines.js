@@ -29,14 +29,14 @@ In Logix the usual implementation is a single \`DINT\` tag, often called \`Step\
 | Step | Name | Outputs on | Moves on when |
 |---|---|---|---|
 | 0 | Idle | none | \`StartCmd\` and \`Tank_Empty\` |
-| 10 | Filling | \`Fill_Valve\` | \`Level >= 80.0\` |
-| 20 | Mixing | \`Mixer\` | \`Mix_Timer.DN\` (30 s) |
-| 30 | Draining | \`Drain_Valve\` | \`Level <= 2.0\` |
+| 10 | Filling | \`Fill_Valve\` | \`Level >= 800.0\` (litres) |
+| 20 | Mixing | \`Mixer\` | \`StepTmr.DN\` (90 s) |
+| 30 | Draining | \`Drain_Valve\` | \`Level <= 5.0\` (litres) |
 | 900 | Fault | alarm horn | \`ResetCmd\` and fault cleared |
 
 {{diagram:flow}}
 
-The rule that makes this robust: **outputs are decided only by the current step, and the step changes in one place.** Nothing else in the program writes to \`Step\`.
+This is the one numbering used for the rest of the lesson, the worked example, the diagram and the quiz. The rule that makes this robust: **outputs are decided only by the current step, and the step changes in one place.** Nothing else in the program writes to \`Step\`.
 
 ## Structured text with CASE
 
@@ -50,7 +50,7 @@ CASE Seq.Step OF
     END_IF;
 
   10: // Filling
-    IF Tank.Level >= 80.0 THEN
+    IF Tank.Level >= 800.0 THEN
       Seq.Step := 20;
     END_IF;
 
@@ -60,7 +60,7 @@ CASE Seq.Step OF
     END_IF;
 
   30: // Draining
-    IF Tank.Level <= 2.0 THEN
+    IF Tank.Level <= 5.0 THEN
       Seq.Step := 0;
     END_IF;
 
@@ -94,13 +94,13 @@ EQU(Seq.Step,20) OTE(Mixer)
 Keep transitions and outputs in separate sections of the routine. Use \`OTE\` for outputs, not \`OTL\`/\`OTU\`. The output goes false by itself when the step changes, so nothing is left latched behind.
 
 > [!warning] Transitions in one scan
-> A \`MOV\` in the middle of the routine changes \`Step\` for every rung below it in the same scan. If step 10's transition sits above step 20's transition rung, the machine can fall through two steps in one scan. Put all transitions at the bottom of the routine, or in one CASE.
+> A \`MOV\` anywhere in the routine changes \`Step\` for every rung *below* it in the same scan. So if step 10's transition rung sits above step 20's, and step 20's exit condition is already true, the machine falls through both steps in one scan. Whether that happens depends on the conditions, not on a rule that only one transition can fire per scan. Timer-based steps are protected by a different mechanism: the step's timer rung is gated by \`EQU(Seq.Step,n)\`, so the timer starts counting from zero only after \`Step\` equals \`n\`, and its \`.DN\` cannot be true in the scan it was entered. Level and switch conditions have no such protection. Put all transition rungs at the bottom of the routine (after the outputs and timers), or use one CASE, so each step is seen for at least one full scan.
 
 ## Timeouts, faults and pause
 
-**Step timeout.** Every step that waits for the real world (a valve limit switch, a level) needs a timer so a failed device cannot hold the sequence forever. Use one timer, \`StepTmr\`, that runs while the step is unchanged and resets when it changes. A common pattern keeps \`LastStep\` and compares: if \`Step <> LastStep\`, reset the timer and copy \`Step\` into \`LastStep\`. Each step then has a limit, for example \`Step 10\` allows 120 s to fill. If \`StepTmr.ACC\` passes it, set \`Seq.FaultCode := 10\` and \`Seq.Step := 900\`.
+**Step timeout.** Every step that waits for the real world (a valve limit switch, a level) needs a timer so a failed device cannot hold the sequence forever. Use one timer, \`StepTmr\`, that runs while the step is unchanged and resets when it changes. A common pattern keeps \`LastStep\` and compares: if \`Step <> LastStep\`, reset the timer and copy \`Step\` into \`LastStep\`. Each step then has a limit, for example step 10 (Filling) allows 180 s. If \`StepTmr.ACC\` passes it, set \`Seq.FaultCode := 10\` and \`Seq.Step := 900\`.
 
-**Fault state.** The fault state turns off process outputs, raises an alarm and records which step failed (\`Seq.FaultStep\`). Write the fault code and the failed step before moving. Reset returns to Idle, not to the step that failed, unless you design a safe restart.
+**Fault state.** Step 900 is the fault state. It turns off process outputs, raises an alarm and records which step failed (\`Seq.FaultStep\`). Write the fault code and the failed step before moving. Reset returns to Idle, not to the step that failed, unless you design a safe restart.
 
 **Pause and resume.** Add a hold flag rather than a new step number per step. When \`Cmd.Hold\` is true, freeze the timer and force outputs off, but leave \`Step\` alone. Releasing \`Hold\` resumes in place. For a mixer, hold pauses the motor but keeps the elapsed mix time. For a full hold/restart design with states like Held and Aborted, see {{lesson:plc-isa88-packml}}.
 
@@ -118,15 +118,15 @@ The older style uses \`OTL\` and \`OTU\` rungs: set "filling" when start is pres
 
 ## Worked example: mixer batch
 
-Take a mixer with a 1,000 L tank. Steps: 0 Idle, 10 Fill A to 400 L, 20 Fill B to 800 L, 30 Mix 90 s, 40 Drain to 5 L, 900 Fault. Timeouts: fill steps 180 s, drain 240 s.
+Take the mixer from the step table, a 1,000 L tank: 0 Idle, 10 Filling to 800 L, 20 Mixing 90 s, 30 Draining to 5 L, 900 Fault. Timeouts: fill step 180 s, drain step 240 s.
 
-If \`Step\` is 20 and the level stops rising for 180 s, \`StepTmr\` passes the limit and the fault state records \`FaultStep = 20\`, \`FaultCode = 2\`. The HMI shows "Fault in Fill B". The operator opens the valve, presses reset, and the sequence returns to Idle. Nothing was left latched.
+If \`Step\` is 10 and the level stops rising for 180 s, \`StepTmr\` passes the limit and the fault state records \`FaultStep = 10\`, \`FaultCode = 10\`. The HMI shows "Fault in Filling". The operator opens the valve, presses reset, and the sequence returns to Idle. Nothing was left latched.
 
-Try the same ideas in the simulator: {{sim:sim-traffic}} is the smallest state machine, {{sim:sim-tank-fill}} adds levels, {{sim:sim-pump-alternation}} uses a state to remember which pump leads, and {{sim:sim-mixer-batch}} puts it together with timers.
+Try the same ideas in the simulator: {{sim:sim-traffic}} is the smallest state machine, {{sim:sim-tank-fill}} adds levels, {{sim:sim-pump-alternation}} uses a state to remember which pump leads, and {{sim:sim-mixer-batch}} puts it together with timers. {{sim:sim-step-fault}} exercises exactly the step timeout and fault state described above: let a step stall, watch the timeout, then reset out of Fault.
 
 ## Showing it in Ignition
 
-Because the state is one DINT, an Ignition tag \`[PLC]Mixer.Seq.Step\` is enough. A Perspective view can map the number to text with an expression \`map({[.]Step}, 0, "Idle", 10, "Filling A", 20, "Filling B", 30, "Mixing", 40, "Draining", 900, "Fault")\`. Better yet, keep the text in the PLC (\`Seq.StepName\` as a STRING or a lookup array) so the screen stays correct when the sequence changes. The SFC module in Ignition ({{lesson:arch-sfc}}) uses the same ideas at the supervisory level.
+Because the state is one DINT, an Ignition tag \`[PLC]Mixer.Seq.Step\` is enough. A Perspective view can map the number to text with an expression \`map({[.]Step}, 0, "Idle", 10, "Filling", 20, "Mixing", 30, "Draining", 900, "Fault")\`. Better yet, keep the text in the PLC (\`Seq.StepName\` as a STRING or a lookup array) so the screen stays correct when the sequence changes. The SFC module in Ignition ({{lesson:arch-sfc}}) uses the same ideas at the supervisory level.
 `,
 
   eli5: `
@@ -160,7 +160,7 @@ Sequential control predates PLCs. Relay panels used drum sequencers and stepping
     },
     {
       title: "Reading a stuck sequence",
-      body: `The operator says the mixer "just sits there". You open the tag: \`Step = 20\`, \`StepTmr.ACC = 61000\`. Step 20 is Fill B, which waits for level >= 800. The level is 640 and not rising. You skip the program and go check the supply valve. The step number told you what the machine was waiting for.`
+      body: `The operator says the mixer "just sits there". You open the tag: \`Step = 10\`, \`StepTmr.ACC = 61000\`. Step 10 is Filling, which waits for level >= 800. The level is 640 and not rising. You skip the program and go check the supply valve. The step number told you what the machine was waiting for.`
     }
   ],
 
@@ -231,12 +231,12 @@ Sequential control predates PLCs. Relay panels used drum sequencers and stepping
       ]
     },
     {
-      q: "A ladder state machine skips from step 10 to step 30 in one scan. Most likely cause?",
-      options: ["The step DINT is too small", "Transition rungs for step 10 and step 20 are ordered so the second sees the updated step", "The timer preset is zero", "The HMI wrote to the step"],
+      q: "A ladder state machine skips from step 10 to step 30 in one scan, with no timer involved. Most likely cause?",
+      options: ["The step DINT is too small", "Step 10's transition sits above step 20's, so the second sees the updated step, and its condition was already true", "The timer preset is zero", "The HMI wrote to the step"],
       answer: 1,
       explain: [
         "A DINT holds values far larger than 30.",
-        "Correct. A MOV changes Step for the rungs below it in the same scan, so later transitions can fire immediately.",
+        "Correct. A MOV changes Step for the rungs below it in the same scan, so a later transition whose condition is already true fires immediately. Timer steps are protected because their EQU-gated timer starts at zero.",
         "A zero preset would finish the timer, but the skip described happens because of rung order.",
         "An HMI write is possible but not the typical cause of a double jump."
       ]

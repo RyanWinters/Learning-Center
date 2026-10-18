@@ -40,7 +40,7 @@ Every routine belongs to a program, every program is scheduled in a task, and a 
 | **Periodic** | A fixed timer (e.g. every 10 ms) | Many | Motion, PID, fast I/O, anything that needs a steady interval |
 | **Event** | A defined event: a consumed tag, an EVENT instruction, a motion event | Many | Reacting to a specific trigger with low latency |
 
-A controller can hold several tasks (the limit depends on the controller family, commonly 32 on ControlLogix 5580 and CompactLogix 5380). Check the product's documentation for your hardware.
+A controller can hold several tasks (the limit depends on the controller family). Check the controller manual for the task limit on your hardware.
 
 ### Priority and preemption
 
@@ -56,7 +56,7 @@ Each periodic or event task has a **priority** from 1 to 15. A lower number mean
 - Reserve **event** tasks for specific needs such as a fast response to a consumed tag. Most projects need none.
 - Keep the number of tasks low. Every extra task adds scheduling interactions you must reason about. Many solid projects have one continuous task and one or two periodic tasks.
 
-Data shared between tasks has a special risk. A higher-priority task can interrupt a lower one while it is halfway through writing a multi-word value, so the reader may see half-old, half-new data. Use the program-parameter and produced-tag mechanisms, or copy a whole structure at a controlled point, when tasks exchange anything bigger than a single DINT.
+Data shared between tasks has a special risk. A higher-priority task can interrupt a lower one while it is halfway through writing a multi-word value, so the reader may see half-old, half-new data. Program parameters and produced tags do not make a multi-word copy atomic, so they are not the protection. Real protections: write the data into a staging structure and set a valid or sequence-number flag last (the reader copies only when the flag says the data is complete), or do the whole copy inside one task so nothing can preempt it. Do this whenever tasks exchange anything bigger than a single DINT.
 
 ## Programs
 
@@ -100,17 +100,17 @@ Controller: Line1_PLC
     Program: Common
       MainRoutine, R01_Inputs, R90_Outputs, R95_Diagnostics
     Program: Area10_Mixer
-      MainRoutine, R10_Sequence, R20_Pumps, R30_Valves, R40_Analogs
+      MainRoutine, R10_Sequence, R20_Motors, R30_Valves, R40_Analogs
     Program: Area20_Filler
       MainRoutine, R10_Sequence, R20_Conveyors, R30_Fillers
   Task: Fast_100ms (periodic, priority 5)
     Program: Loops
       MainRoutine, R10_Mixer_Temp_PID, R20_Mixer_Level_PID
-  Data types: Motor, Valve, AnalogIn, PID_Loop
+  Data types: UDT_Motor, UDT_Valve, UDT_AnalogIn, UDT_PID_Loop
   Add-On Instructions: AOI_Motor, AOI_Valve, AOI_AnalogIn
 \`\`\`
 
-The pattern is: tasks by timing need, programs by physical area or machine, routines by function inside the area. The equipment is represented by UDT tags, and the routines call AOIs to operate them. Someone who has never seen the project can answer "where is the Mixer pump 2 logic?" from the names alone: Area10_Mixer, R20_Pumps.
+The pattern is: tasks by timing need, programs by physical area or machine, routines by function inside the area. The equipment is represented by UDT tags, and the routines call AOIs to operate them. Someone who has never seen the project can answer "where is the logic for mixer motor M101?" from the names alone: Area10_Mixer, R20_Motors. The layout stops at the Area level; the ISA-95 Line level (Plant1 > Area10 > Line1 > equipment) is carried by tag and UDT instance names and by the Ignition tag path, not by extra programs.
 
 Some integrators split further, one program per major piece of equipment (a pump station, a tank). That scales well for copies of the same unit, since a program can be duplicated. The cost is more programs to manage. Choose by how many copies you expect.
 
@@ -143,7 +143,7 @@ If you label the classrooms by subject and number the topics in order, a new tea
 
 **Why program-scope by default?** Scope is a fence. A tag at controller scope can be written by any routine in the controller, and a hundred-program project has no easy way to know who. A tag in program scope has a short list of possible writers. That cuts debugging time and lets you reuse a program in another controller without name collisions.
 
-**The tradeoff with program scope:** Ignition and other clients must address tags with the program path (\`Program:Area10_Mixer.Pump1\`), and some teams find that awkward. Others keep all equipment UDT tags at controller scope so the HMI paths are short, and keep only internal temporaries in the program. Both are defensible. What matters is a written rule.
+**The tradeoff with program scope:** Ignition and other clients must address tags with the program path (\`Program:Area10_Mixer.M101\`), and some teams find that awkward. Others keep all equipment UDT tags at controller scope so the HMI paths are short, and keep only internal temporaries in the program. Both are defensible. What matters is a written rule.
 
 **Why MainRoutine as an index?** It makes the execution order readable in one glance, which is exactly the thing you need when a timing-related bug appears.
 `,
@@ -155,11 +155,11 @@ Early PLCs ran one program from the top in a single scan. The ControlLogix platf
   examples: [
     {
       title: "A PID that needs a steady sample time",
-      body: `A temperature loop is tuned for a 100 ms update. In the continuous task, the scan might take 8 ms one moment and 35 ms the next, so the PID's effective sample time wanders. Move the loop into a 100 ms periodic task (priority 5), and the PID gets a regular tick. If the task takes 12 ms to execute, it uses 12 percent of the CPU.`
+      body: `A temperature loop is tuned for a 100 ms update. In the continuous task, the scan might take 8 ms one moment and 35 ms the next, so the PID's effective sample time wanders. Move the loop into a 100 ms periodic task (priority 5), and the PID gets a regular tick. If the task takes 12 ms to execute, it uses 12 percent of that task's 100 ms period (the CPU load also depends on every other task).`
     },
     {
       title: "Torn data between tasks",
-      body: `A periodic task writes a 6-member structure of setpoints, while the continuous task copies it to a recipe record. The continuous task is interrupted halfway through the copy, and the record ends up with new values in the first three members and old values in the last three. Fix: have the periodic task write to a staging structure and set a 'valid' flag, or do the copy inside the same task.`
+      body: `A periodic task writes a 6-member structure of setpoints, while the continuous task copies it to a recipe record. The continuous task is interrupted halfway through the copy, and the record ends up with new values in the first three members and old values in the last three. Fix: have the periodic task write to a staging structure and set a 'valid' flag as its last step, or do the copy inside the same task.`
     }
   ],
 
@@ -172,7 +172,7 @@ Early PLCs ran one program from the top in a single scan. The ControlLogix platf
   <rect class="dg-box" x="56" y="92" width="150" height="140" rx="4"/>
   <text class="dg-text-sm" x="66" y="112">Program Area10</text>
   <text class="dg-text-mono" x="66" y="134">MainRoutine</text>
-  <text class="dg-text-mono" x="66" y="152">R20_Pumps</text>
+  <text class="dg-text-mono" x="66" y="152">R20_Motors</text>
   <text class="dg-text-mono" x="66" y="170">R30_Valves</text>
   <text class="dg-text-muted" x="66" y="204">program tags</text>
   <rect class="dg-box" x="224" y="92" width="150" height="140" rx="4"/>

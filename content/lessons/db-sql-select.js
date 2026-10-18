@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## SELECT is a question, not a command
 
-{{term:select-statement|SELECT}} reads rows and changes nothing. That makes it the safest SQL to learn on a production database, and the one you will write most. Everything in this lesson uses the plant tables from {{lesson:db-intro}}.
+{{term:select-statement|SELECT}} reads rows and changes nothing. That makes it the safest SQL to learn on a production database, and the one you will write most. Everything in this lesson uses the five plant tables from {{lesson:db-intro}}. If you skipped it, the only things you need are: \`machine\`, \`downtime_event\` and \`downtime_reason\` are tables, each row is one thing, and \`line_id\`, \`machine_id\` and \`reason_id\` are the numeric keys that link them.
 
 The basic shape is three clauses in a fixed order:
 
@@ -56,7 +56,7 @@ WHERE event_id <= 3;
 | 2 | 45 |
 | 3 | 8 |
 
-You can also compute columns: \`duration_min / 60.0 AS hours_down\`. Dividing by \`60.0\` rather than \`60\` matters, because two integers divide as integers in SQL Server and PostgreSQL (45 / 60 gives 0).
+You can also compute columns, for example \`duration_min * 2 AS double_minutes\`. (Division has a trap of its own. See "Why" below before you divide one whole-number column by another.)
 
 ## Filtering with WHERE
 
@@ -101,8 +101,7 @@ SELECT machine_id, machine_name FROM machine WHERE machine_name LIKE 'Capper%';
 | 2 | Capper 1 |
 | 5 | Capper 2 |
 
-> [!note] Dialect: case and LIKE
-> SQL Server and MySQL/MariaDB compare text case-insensitively under their default collations, so \`LIKE 'capper%'\` matches. PostgreSQL's \`LIKE\` is case-sensitive. Use \`ILIKE\` for case-insensitive matching there.
+Pattern matching is case-sensitive on some engines and not on others. The "Why" section explains which.
 
 ### NULL needs its own tests
 
@@ -138,14 +137,12 @@ ORDER BY duration_min DESC;
 
 You can sort by several columns (\`ORDER BY machine_id, start_time DESC\`) and by an alias.
 
-To get only the top few rows, the engines disagree. This is the most common dialect trap when you move a query between systems.
+To get only the top few rows, SQL Server and the other engines spell it differently.
 
 | Engine | Three longest events |
 |---|---|
 | SQL Server | \`SELECT TOP 3 event_id, duration_min FROM downtime_event ORDER BY duration_min DESC;\` |
-| MySQL / MariaDB | \`SELECT event_id, duration_min FROM downtime_event ORDER BY duration_min DESC LIMIT 3;\` |
-| PostgreSQL | same as MySQL: \`... LIMIT 3;\` |
-| Standard SQL (PostgreSQL; SQL Server spells it \`OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY\`) | \`... ORDER BY duration_min DESC FETCH FIRST 3 ROWS ONLY;\` |
+| MySQL, MariaDB, PostgreSQL | \`SELECT event_id, duration_min FROM downtime_event ORDER BY duration_min DESC LIMIT 3;\` |
 
 All return:
 
@@ -155,7 +152,7 @@ All return:
 | 7 | 30 |
 | 5 | 15 |
 
-Always pair TOP or LIMIT with ORDER BY. Microsoft's own documentation says ORDER BY is the only way to predict which rows TOP picks. Sorting NULLs also differs: SQL Server and MySQL put NULLs first in ascending order, PostgreSQL puts them last.
+Always pair TOP or LIMIT with ORDER BY. Without it, you get three arbitrary rows.
 
 ### DISTINCT
 
@@ -202,33 +199,21 @@ ORDER BY start_time;
 
 Event 8 started at 12:20 and is correctly excluded. The ISO form with a \`T\` between date and time is safe on every engine. SQL Server's older \`DATETIME\` type can read \`'2026-03-02 06:00:00'\` differently depending on language settings.
 
-Why not \`BETWEEN '2026-03-02' AND '2026-03-02 23:59:59'\`? Because timestamps may hold fractions of a second. A row at 23:59:59.500 is missed, and a bare date means midnight at the *start* of the day. "Up to but not including the next day's midnight" never misses a row and never double-counts the boundary row when you run adjacent ranges.
+Avoid \`BETWEEN '2026-03-02' AND '2026-03-02T23:59:59'\`. Timestamps can hold fractions of a second, so a row at 23:59:59.500 falls outside it. "Up to but not including the next midnight" never misses a row.
 
-### 2. Know whether the column is local time or UTC
+### 2. Know which clock the column uses
 
-A timestamp column has no idea what time zone it is in, unless the type says so. Ignition's historian stores time as **epoch milliseconds in {{term:utc|UTC}}**. Many hand-built tables store the gateway's local time instead. A 06:00 local shift start in Chicago in winter is 12:00 UTC. Compare the wrong pair and your "first shift" report shows the wrong six hours.
-
-Pick one convention per table and write it in the column name or documentation. UTC for storage and local time for display avoids most arguments.
-
-### 3. Daylight saving time creates a missing hour and a duplicate hour
-
-When clocks move forward, 02:00 to 03:00 does not exist. When they move back, 01:00 to 02:00 happens twice. A local-time "shift" query on those days spans 7 or 9 hours instead of 8. Store UTC, and convert at the edges.
-
-| Task | SQL Server | MySQL / MariaDB | PostgreSQL |
-|---|---|---|---|
-| Now | \`SYSDATETIME()\` | \`NOW()\` | \`NOW()\` |
-| Today at midnight | \`CAST(SYSDATETIME() AS date)\` | \`CURDATE()\` | \`CURRENT_DATE\` |
-| 24 hours ago | \`DATEADD(HOUR, -24, SYSDATETIME())\` | \`NOW() - INTERVAL 1 DAY\` | \`NOW() - INTERVAL '1 day'\` |
+A timestamp column does not say what time zone it is in. Ignition's historian stores **epoch milliseconds in {{term:utc|UTC}}**, and this track stores every timestamp in UTC and converts to local time only for display. A 06:00 shift start in Chicago in winter is 12:00 UTC. Compare the wrong pair and a "first shift" report shows the wrong six hours. Daylight saving and the dialect-specific time functions are covered in "Why" below.
 
 > [!tip] In Ignition
-> Pass dates into Named Queries as Date parameters from Perspective Date Range components or script \`system.date\` functions, rather than building date strings in SQL text. Ignition handles the conversion, and you avoid the quoting problems covered in {{lesson:db-sql-modify}}.
+> When a screen supplies the dates, pass them as parameters (a Named Query takes Date parameters) instead of building date strings in SQL text. {{lesson:db-sql-modify}} explains why.
 
 ## Putting it together
 
 A realistic request: "Which downtime events over 10 minutes happened this morning on Line 1's machines, longest first, top 2?" Line 1's machines are 1, 2 and 3 (a join would find those for you, next lesson).
 
 \`\`\`sql
--- PostgreSQL / MySQL / MariaDB version; use SELECT TOP 2 on SQL Server
+-- LIMIT version; on SQL Server use SELECT TOP 2 instead
 SELECT event_id, machine_id, duration_min
 FROM downtime_event
 WHERE machine_id IN (1, 2, 3)
@@ -263,7 +248,18 @@ Time is the other tricky bit. If one calendar uses the factory's wall clock and 
 
 **Why the half-open time range?** Because ranges then tile perfectly. Hour 1 is \`>= 06:00 AND < 07:00\`, hour 2 is \`>= 07:00 AND < 08:00\`, and a row at exactly 07:00 lands in one and only one. Using BETWEEN with an "end of day" literal either misses the final fraction of a second or counts the boundary row twice. Production totals that are off by one event are very hard to track down later.
 
-**Why do dialects differ for something as basic as TOP and LIMIT?** SQL has an ISO standard, but vendors shipped their own syntax years before the standard caught up and then had to keep it for compatibility. The takeaway is practical. Prove a query in the same engine you will run it on. Do not assume that a snippet from a forum works on your database.
+**Why does 45 / 60 give 0?** Two whole numbers divide as whole numbers in SQL Server and PostgreSQL, so the fraction is thrown away. Write \`duration_min / 60.0\` to get 0.75. Other engines may differ, so test the first time.
+
+**Why do TOP, LIMIT, LIKE and NULL sorting differ between engines?** SQL has an ISO standard, but vendors shipped their own syntax years before the standard caught up and then kept it for compatibility. Four differences to remember:
+
+- Row limiting: SQL Server \`TOP n\`; MySQL, MariaDB and PostgreSQL \`LIMIT n\`; the standard form is \`FETCH FIRST n ROWS ONLY\` (PostgreSQL accepts it as is; SQL Server needs \`OFFSET 0 ROWS FETCH NEXT n ROWS ONLY\`).
+- Text case: SQL Server and MySQL/MariaDB compare text case-insensitively under their default collations, so \`LIKE 'capper%'\` matches. PostgreSQL's \`LIKE\` is case-sensitive; use \`ILIKE\`.
+- NULL sort position: SQL Server and MySQL put NULLs first in ascending order, PostgreSQL puts them last.
+- Time functions: now is \`SYSDATETIME()\` on SQL Server and \`NOW()\` on MySQL, MariaDB and PostgreSQL; "24 hours ago" is \`DATEADD(HOUR, -24, SYSDATETIME())\` or \`NOW() - INTERVAL '1 day'\`.
+
+Prove a query in the same engine you will run it on. Do not assume a forum snippet works on your database.
+
+**Why does daylight saving matter for time filters?** When clocks move forward, 02:00 to 03:00 does not exist. When they move back, 01:00 to 02:00 happens twice. A local-time "shift" query on those days spans 7 or 9 hours instead of 8. Store UTC and convert at the edges, and the problem disappears. SQL Server's older \`DATETIME\` type can also read \`'2026-03-02 06:00:00'\` differently depending on language settings, so use the ISO form with a \`T\`.
 
 **Why prefer named columns to SELECT *?** A script or binding that depends on column order breaks when someone adds a column. It also pulls data you do not use across the network on every poll, which matters when a Perspective screen refreshes every few seconds.
 `,
@@ -310,35 +306,35 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
       ]
     },
     {
-      q: "You want the 5 longest downtime events on SQL Server. Which is right?",
+      q: "You want the machine_name and machine_type of every machine on line 2. Which statement does that?",
       options: [
-        "SELECT * FROM downtime_event ORDER BY duration_min DESC LIMIT 5",
-        "SELECT TOP 5 * FROM downtime_event ORDER BY duration_min DESC",
-        "SELECT TOP 5 * FROM downtime_event",
-        "SELECT * FROM downtime_event ORDER BY duration_min DESC OFFSET 5"
+        "SELECT machine_name, machine_type FROM machine WHERE line_id = 2;",
+        "SELECT machine_name, machine_type FROM line WHERE line_id = 2;",
+        "WHERE line_id = 2 SELECT machine_name, machine_type FROM machine;",
+        "SELECT line_id = 2 FROM machine;"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "LIMIT is MySQL, MariaDB and PostgreSQL syntax. Older SQL Server versions reject it.",
-        "Correct. TOP N with ORDER BY DESC returns the five largest.",
-        "Without ORDER BY the five rows are arbitrary, not the longest.",
-        "OFFSET skips rows. It does not select the first five."
+        "Correct. SELECT picks the columns, FROM names the table that holds them, and WHERE keeps only the rows for line 2.",
+        "The machine names live in the machine table, not the line table.",
+        "The clauses must be written in the order SELECT, FROM, WHERE.",
+        "That returns a true/false value for every machine instead of filtering rows and picking columns."
       ]
     },
     {
-      q: "A report for 2026-03-02 uses WHERE start_time BETWEEN '2026-03-02' AND '2026-03-02T23:59:59'. What is the flaw?",
+      q: "Which statement about SELECT and row order is correct?",
       options: [
-        "BETWEEN is not allowed on timestamps",
-        "It includes events from 2026-03-03 00:00:00",
-        "It can miss a row at 23:59:59.500 because the bound has no fractional seconds",
-        "It excludes events at exactly midnight on 2026-03-02"
+        "Rows always come back in the order they were inserted",
+        "Rows always come back sorted by the primary key",
+        "SELECT changes the data it reads, so use it carefully",
+        "Row order is only guaranteed if you write ORDER BY"
       ],
-      answer: 2,
+      answer: 3,
       explain: [
-        "BETWEEN works on timestamps. The issue is the bound you chose.",
-        "The upper bound is before midnight of the next day, so it does not include 03-03.",
-        "Correct. Timestamps may hold fractions of a second. Use >= start AND < next-day midnight instead.",
-        "BETWEEN is inclusive, so midnight at the start is included."
+        "The engine returns rows in whatever order is convenient. It may look like insertion order today and change later.",
+        "A primary key does not promise output order either.",
+        "SELECT only reads. It is the safest statement to run on a production database.",
+        "Correct. Without ORDER BY the order is not defined, even when it looks sorted."
       ]
     },
     {
@@ -358,14 +354,19 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
       ]
     },
     {
-      q: "Shift 1 runs 06:00 to 14:00 local time. Your table stores UTC and the plant is 6 hours behind UTC. Which window do you query?",
-      options: ["06:00 to 14:00 UTC", "00:00 to 08:00 UTC", "12:00 to 20:00 UTC", "It does not matter if the dates match"],
-      answer: 2,
+      q: "Which clause lists the reasons that were actually used, with no repeats?",
+      options: [
+        "SELECT DISTINCT reason_id FROM downtime_event",
+        "SELECT reason_id FROM downtime_event WHERE reason_id IS NULL",
+        "SELECT reason_id FROM downtime_event ORDER BY reason_id",
+        "SELECT UNIQUE FROM downtime_event"
+      ],
+      answer: 0,
       explain: [
-        "That would be 00:00 to 08:00 local time, the wrong shift.",
-        "That is the reverse conversion. UTC is ahead of local time here, so subtracting is wrong.",
-        "Correct. Local 06:00 is 12:00 UTC when the plant is UTC-6, so the shift is 12:00 to 20:00 UTC. (The offset changes with daylight saving.)",
-        "It matters. A 6-hour mistake puts events in the wrong shift."
+        "Correct. DISTINCT removes duplicate result rows, so each reason appears once.",
+        "That finds events with no reason, which is a different question.",
+        "ORDER BY sorts the rows but keeps every duplicate.",
+        "That is not valid SQL."
       ]
     },
     {

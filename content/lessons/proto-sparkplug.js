@@ -35,10 +35,10 @@ spBv1.0 / group_id / message_type / edge_node_id / [device_id]
 | \`spBv1.0\` | Namespace and version token. Fixed. | \`spBv1.0\` |
 | \`group_id\` | A logical grouping chosen by you, often a site or area | \`Plant1\` |
 | \`message_type\` | What this message is (see below) | \`DDATA\` |
-| \`edge_node_id\` | The gateway or Edge Node that owns the connection | \`Line2-Gateway\` |
-| \`device_id\` | Optional. A device or data source *behind* that node | \`Filler\` |
+| \`edge_node_id\` | The gateway or Edge Node that owns the connection | \`Area10_Line1\` |
+| \`device_id\` | Optional. A device or data source *behind* that node | \`M101\` |
 
-So \`spBv1.0/Plant1/DDATA/Line2-Gateway/Filler\` means "new data from the Filler device behind the Line2-Gateway node in group Plant1." Node-level message types carry no device ID.
+So \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\` means "new data from device M101 (a motor) behind the Area10_Line1 node in group Plant1." Sparkplug's namespace is fixed, so never put an ISA-95 path like \`meridian/plant1/area10/...\` in these topics. The hierarchy shows up in the group and node IDs and in metric names such as \`Sts/Running\`. Plain MQTT topics follow a different, lowercase form; see {{lesson:proto-mqtt}}. Node-level message types carry no device ID.
 
 Two roles matter. An **Edge Node** is the MQTT client that talks to the broker, typically a gateway, a PLC with MQTT built in or Ignition Edge. A **Device** is something the Edge Node represents, like a PLC or a drive. A **host application**, usually an Ignition server running MQTT Engine, subscribes to everything and builds the tags.
 
@@ -60,7 +60,7 @@ The first thing a node publishes after connecting is NBIRTH. It is the **birth c
 
 ## The payload: protobuf, metrics, aliases
 
-Sparkplug B payloads are {{term:protobuf|Protocol Buffers}}: a compact binary encoding where a schema defines the fields. A payload holds a timestamp, a **seq** number and a list of **metrics**. Each metric has a name (like \`Motor1/Speed\`), a data type (Int32, Float, Boolean, String, DataSet, Template for UDTs, and others), a value, a timestamp and optional properties such as engineering units or quality.
+Sparkplug B payloads are {{term:protobuf|Protocol Buffers}}: a compact binary encoding where a schema defines the fields. A payload holds a timestamp, a **seq** number and a list of **metrics**. Each metric has a name (like \`Sts/Speed\`), a data type (Int32, Float, Boolean, String, DataSet, Template for UDTs, and others), a value, a timestamp and optional properties such as engineering units or quality.
 
 Names are long strings. To avoid sending them every time, the birth message assigns each metric a numeric **alias**, and later data messages can use the alias alone:
 
@@ -68,11 +68,17 @@ Names are long strings. To avoid sending them every time, the birth message assi
 // NBIRTH (shown as JSON for readability)
 { "timestamp": 1760000000000, "seq": 0, "metrics": [
   { "name": "bdSeq", "dataType": "Int64", "value": 3 },
-  { "name": "Motor1/Speed", "alias": 17, "dataType": "Float", "value": 1450.0 }
+  { "name": "Node Control/Rebirth", "dataType": "Boolean", "value": false }
 ]}
 
-// Later NDATA: alias only, no name
-{ "timestamp": 1760000002000, "seq": 1, "metrics": [
+// DBIRTH for device M101: names and aliases for its metrics
+{ "timestamp": 1760000000100, "seq": 1, "metrics": [
+  { "name": "Sts/Speed", "alias": 17, "dataType": "Float", "value": 1450.0 },
+  { "name": "Sts/Running", "alias": 18, "dataType": "Boolean", "value": true }
+]}
+
+// Later DDATA for M101: alias only, no name
+{ "timestamp": 1760000002000, "seq": 2, "metrics": [
   { "alias": 17, "dataType": "Float", "value": 1462.5 }
 ]}
 \`\`\`
@@ -95,13 +101,25 @@ A **primary host application** is the single system of record, typically the SCA
 Sparkplug is built to publish only on change ({{lesson:proto-polling-rbe}}). That is dangerous in plain MQTT, since a silent tag could mean "unchanged" or "device dead." Sparkplug fixes this by making the *state* explicit. Births give a full snapshot, DDEATH marks devices stale, and NDEATH marks the entire node and all its devices stale. Ignition's MQTT Engine sets the quality of every tag under a dead node or device to stale or bad, so your screen shows a grey tag instead of a confidently wrong number.
 
 > [!example] Following a node through a day
-> 1. Gateway \`Line2-Gateway\` connects. Broker holds its will: \`NDEATH\` with bdSeq 3.
-> 2. It publishes \`spBv1.0/Plant1/NBIRTH/Line2-Gateway\` with seq 0, bdSeq 3 and 600 metrics.
-> 3. It publishes \`DBIRTH\` for \`Filler\` and \`Capper\` (seq 1 and 2).
-> 4. Motor speed changes. It publishes \`DDATA\` with seq 3, one metric, alias only.
-> 5. Cable to the Capper PLC is cut. The node publishes \`DDEATH\` for \`Capper\` (seq 4). Its tags go stale in Ignition. The Filler tags stay good.
-> 6. The WAN drops. The broker publishes the NDEATH will with bdSeq 3. All Line2 tags go stale.
+> 1. Edge node \`Area10_Line1\` connects. Broker holds its will: \`NDEATH\` with bdSeq 3.
+> 2. It publishes \`spBv1.0/Plant1/NBIRTH/Area10_Line1\` with seq 0, bdSeq 3 and its node metrics.
+> 3. It publishes \`DBIRTH\` for \`M101\` and \`P101\` (seq 1 and 2).
+> 4. Motor speed changes. It publishes \`DDATA\` for M101 with seq 3, one metric, alias only.
+> 5. The cable to the P101 drive is cut. The node publishes \`DDEATH\` for \`P101\` (seq 4). Its tags go stale in Ignition. The M101 tags stay good.
+> 6. The WAN drops. The broker publishes the NDEATH will with bdSeq 3. All Area10_Line1 tags go stale.
 > 7. The WAN returns. The node reconnects with bdSeq 4 and publishes a new NBIRTH. Everything refreshes.
+
+## Securing a Sparkplug network
+
+Sparkplug defines topics and payloads. It does not define authentication or authorization, so security comes from the MQTT broker and the network. The risk is concrete: anyone who can publish to \`spBv1.0/#\` can forge an NBIRTH to create tags in the host, and anyone who can publish NCMD or DCMD can send writes or a rebirth storm to an edge node. This is a {{lesson:net-security}} conduit problem, so treat the broker like any other Level 3 or DMZ service.
+
+- **TLS on 8883.** Use MQTT over TLS (port 8883) for every edge node and host. Plain 1883 sends credentials and payloads in the clear. Validate the broker certificate on the client.
+- **A unique credential per edge node.** One shared username for every gateway means one stolen password impersonates the whole plant, and you cannot revoke one node. Give \`Area10_Line1\` its own username (or client certificate) and tie the MQTT client ID to it.
+- **Broker ACLs by group and edge node.** Allow \`Area10_Line1\` to publish only \`spBv1.0/Plant1/+/Area10_Line1/#\`, and to subscribe only to its own NCMD and DCMD topics and the host's STATE topic. Edge nodes must not subscribe to other nodes' data or publish under another node's ID. Only the primary host may publish \`spBv1.0/STATE/<host_id>\`, NCMD and DCMD.
+- **Write authorization for NCMD and DCMD.** A command topic is a write path into the process. Limit which accounts can publish to it (normally the host application only), and have the host enforce its own tag-level permissions before it publishes a command. The edge node should also accept only the commands and metrics you intend to be writable. Wrong or missing ACLs here are how a compromised account turns into a process change. The same motor-safety rule as everywhere applies: stops and protection stay hardwired, never a Sparkplug command.
+- **Network placement.** Edge nodes make outgoing connections to a broker in the plant or DMZ, and no connection passes straight from Level 3 to Level 4. Open only 8883 from the node to the broker. Details of the zone and conduit pattern are in {{lesson:net-security}}.
+
+Check your broker's manual for how it expresses ACLs, since the syntax differs between products.
 
 ## Sparkplug in Ignition
 
@@ -138,7 +156,7 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
   examples: [
     {
       title: "Reading a topic",
-      body: `\`spBv1.0/Mill/NCMD/Boiler-GW\` is a **command to the node** (no device ID) in group \`Mill\`. If the payload is a single Boolean metric \`Node Control/Rebirth\` = true, the host is asking the node to resend its birth. \`spBv1.0/Mill/DDATA/Boiler-GW/Feedwater\` is changed data from the \`Feedwater\` device.`
+      body: `\`spBv1.0/Plant1/NCMD/Area10_Line1\` is a **command to the node** (no device ID) in group \`Plant1\`. If the payload is a single Boolean metric \`Node Control/Rebirth\` = true, the host is asking the node to resend its birth. \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\` is changed data from device \`M101\`.`
     },
     {
       title: "Spotting a missed message",
@@ -162,12 +180,12 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
   <line class="dg-line" x1="70" y1="86" x2="316" y2="86" marker-end="url(#proto-sparkplug-ah)"/>
   <text class="dg-text-sm" x="84" y="80">NBIRTH seq 0, bdSeq 3</text>
   <line class="dg-line" x1="70" y1="120" x2="316" y2="120" marker-end="url(#proto-sparkplug-ah)"/>
-  <text class="dg-text-sm" x="84" y="114">DBIRTH Filler</text>
+  <text class="dg-text-sm" x="84" y="114">DBIRTH M101</text>
   <line class="dg-line-accent" x1="70" y1="154" x2="316" y2="154" marker-end="url(#proto-sparkplug-ah)"/>
   <text class="dg-text-sm" x="84" y="148">DDATA alias only</text>
   <line class="dg-line" x1="324" y1="154" x2="546" y2="154" marker-end="url(#proto-sparkplug-ah)"/>
   <line class="dg-line" x1="70" y1="188" x2="316" y2="188" marker-end="url(#proto-sparkplug-ah)"/>
-  <text class="dg-text-sm" x="84" y="182">DDEATH Filler</text>
+  <text class="dg-text-sm" x="84" y="182">DDEATH M101</text>
   <line class="dg-line-alarm" x1="320" y1="228" x2="546" y2="228" marker-end="url(#proto-sparkplug-ah)"/>
   <text class="dg-text-sm" x="340" y="222">NDEATH (will)</text>
   <text class="dg-text-muted" x="84" y="246">link lost</text>
@@ -186,12 +204,12 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
 
   quiz: [
     {
-      q: "In topic spBv1.0/Plant1/DDATA/Line2-Gateway/Filler, what is Line2-Gateway?",
+      q: "In topic spBv1.0/Plant1/DDATA/Area10_Line1/M101, what is Area10_Line1?",
       options: ["The group ID", "The device ID", "The Edge Node ID", "The message type"],
       answer: 2,
       explain: [
         "The group ID is Plant1, the segment before the message type.",
-        "The device ID is the last segment, Filler.",
+        "The device ID is the last segment, M101.",
         "Correct. The Edge Node is the MQTT client that owns the connection and the devices behind it.",
         "The message type is DDATA."
       ]
@@ -274,6 +292,23 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
         "Correct. The consumer knows the node and devices are alive or dead, so a quiet tag isn't ambiguous.",
         "Sparkplug messages are normally QoS 0 or 1 depending on type.",
         "Deadbands are applied by the publisher, not defined by Sparkplug itself."
+      ]
+    }
+    ,
+    {
+      q: "Who should be allowed to publish NCMD and DCMD topics on a Sparkplug broker?",
+      options: [
+        "Every edge node, so they can coordinate",
+        "Only the primary host application (and other explicitly authorized accounts), enforced by broker ACLs",
+        "Anyone on the plant network, since Sparkplug authenticates senders",
+        "Nobody, because commands are not part of Sparkplug"
+      ],
+      answer: 1,
+      explain: [
+        "Edge nodes only need to receive commands for themselves. Letting them publish commands lets one compromised node write to others.",
+        "Correct. Command topics are write paths, so limit publishers with ACLs and add tag-level permission checks in the host.",
+        "Sparkplug has no sender authentication. The broker must provide it.",
+        "NCMD and DCMD are part of Sparkplug, used for writes and rebirth requests."
       ]
     }
   ],

@@ -22,15 +22,19 @@ A {{term:vlan|VLAN}} (virtual LAN) splits one physical switch into several logic
 
 Plants use VLANs for three reasons. They shrink broadcast domains, so a chatty device cannot disturb everything. They separate trust levels, so a vendor laptop on the line cannot see the PLCs. And they let you reuse one switch stack for cell traffic, cameras and office uplinks without running separate cabling.
 
-A typical plant plan looks like this:
+The Meridian Foods Plant 1 plan (site supernet \`10.20.0.0/16\`, gateway \`.1\` on each subnet) is the one used across this course:
 
-| VLAN | Name | Subnet | Contents |
+| VLAN | Purpose | Subnet | Notable hosts |
 |---|---|---|---|
-| 10 | CELL1-CONTROL | 10.10.10.0/24 | PLC, drives, I/O blocks, HMI |
-| 20 | CELL2-CONTROL | 10.10.20.0/24 | Second line, same layout |
-| 30 | SCADA | 10.10.30.0/24 | Ignition gateway, historian |
-| 40 | MGMT | 10.10.40.0/24 | Switch management, NTP |
-| 50 | VENDOR | 10.10.50.0/24 | Vendor remote access, laptops |
+| 10 | Control: PLCs, I/O adapters, drives | 10.20.10.0/24 | PLC1 \`10.20.10.10\`, PLC2 \`.11\` |
+| 20 | HMI clients and panels | 10.20.20.0/24 | |
+| 30 | Level 3 servers | 10.20.30.0/24 | Ignition master \`10.20.30.10\`, backup \`.11\`, SQL \`.20\` |
+| 40 | OEM skid uplinks (1:1 NAT) | 10.20.40.0/24 | |
+| 50 | Engineering workstations | 10.20.50.0/24 | |
+| 99 | Network management | 10.20.99.0/24 | |
+| 250 | DMZ (Level 3.5) | 10.20.250.0/24 | Reverse proxy \`10.20.250.10\`, historian replica \`.20\`, jump host \`.30\` |
+
+Larger plants often add a VLAN per line or cell (for example a second control VLAN). That is a design choice. This plan keeps one control VLAN for PLC1 and PLC2.
 
 ## The 802.1Q tag
 
@@ -61,7 +65,7 @@ The **native VLAN** is the one VLAN on a trunk that travels untagged. If the two
 
 VLANs cannot talk to each other at layer 2 by design. To cross, traffic goes through a router, either a layer 3 switch (a switch with routing built in, using a **switched virtual interface**, SVI, per VLAN) or a router/firewall on a trunk (the classic "router on a stick"). This is {{term:inter-vlan-routing|inter-VLAN routing}}.
 
-The router is also your choke point. Access control lists or firewall rules there decide who may reach what, for example "the Ignition gateway at 10.10.30.5 may reach TCP 44818 on the cell 1 PLC, and nothing else may."
+The router is also your choke point. Access control lists or firewall rules there decide who may reach what, for example "the Ignition master at 10.20.30.10 (VLAN 30) may reach TCP 44818 on PLC1 at 10.20.10.10 (VLAN 10), and nothing else may."
 
 Two things to remember about routing between VLANs:
 
@@ -94,7 +98,7 @@ Rules for a working design:
 3. If several devices are queriers, the one with the lowest IP wins the election. Check that the winner is the one you intended.
 4. Leave Rockwell's multicast setting alone unless you have a reason: a connection can often be set to unicast if the I/O adapter supports it, which sidesteps the issue for small cells.
 
-Cisco's Rockwell-oriented designs ship with snooping and a querier enabled on the access switches, which is why a Stratix switch from the box handles it with a Smartports role applied.
+Do not assume your switch has snooping or a querier enabled out of the box. Defaults differ by vendor, model and firmware version, so check the manual for your switch and write the querier down as an explicit design decision.
 
 ## QoS and DSCP for CIP
 
@@ -139,7 +143,7 @@ IEEE 802.1Q, published in 1998, standardized VLAN tagging and replaced vendor-sp
   examples: [
     {
       title: "Adding a drive in another cabinet",
-      body: `Cell 1 is VLAN 10 (10.10.10.0/24). A new drive goes in a remote panel with an unmanaged-looking 5-port switch. Replace it with a managed switch, set the drive's port as an access port in VLAN 10, and make the uplink a trunk allowing only VLAN 10 (and 40 for management). Enable IGMP snooping for VLAN 10 and leave the querier on the core layer 3 switch. Check with \`show ip igmp snooping groups\` (Cisco syntax) that the drive's multicast group lists only its own port and the controller port.`
+      body: `The control network is VLAN 10 (10.20.10.0/24). A new drive goes in a remote panel with an unmanaged-looking 5-port switch. Replace it with a managed switch, set the drive's port as an access port in VLAN 10, and make the uplink a trunk allowing only VLAN 10 (and 99 for management). Enable IGMP snooping for VLAN 10 and leave the querier on the core layer 3 switch. Check with \`show ip igmp snooping groups\` (Cisco syntax) that the drive's multicast group lists only its own port and the controller port.`
     },
     {
       title: "Symptom: HMI loses connection every few minutes",

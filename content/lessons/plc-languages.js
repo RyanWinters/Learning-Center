@@ -31,16 +31,16 @@ The reader already knows ladder. The question is not which language is best. It 
 
 ## The same logic in LD and ST
 
-Take a latched motor start with a stop button and a fault.
+Take a latched motor start command with a stop button and a fault. It seals in on the command bit \`M101_RunCmd\`, and the starter output is driven from that bit. (The overload and E-stop are hardwired in the starter coil circuit, not in this rung.)
 
 \`\`\`ladder
-[XIC(Start) ,XIC(Motor)] XIC(Stop_NC) XIO(Fault) OTE(Motor)
+[XIC(Start) ,XIC(M101_RunCmd)] XIC(Stop_NC) XIO(Fault) OTE(M101_RunCmd)
 \`\`\`
 
 In structured text:
 
 \`\`\`st
-Motor := (Start OR Motor) AND Stop_NC AND NOT Fault;
+M101_RunCmd := (Start OR M101_RunCmd) AND Stop_NC AND NOT Fault;
 \`\`\`
 
 Both produce the same behavior. Ladder shows the power path at a glance, which is exactly what an electrician wants at 3 a.m. Text is shorter and scales better. Now a comparison that is clumsy in ladder:
@@ -93,23 +93,23 @@ END_CASE;
 ### FOR, WHILE and REPEAT
 
 \`\`\`st
-// Count how many of ten pumps are running
+// Count how many of ten motors are running
 RunCount := 0;
 FOR i := 0 TO 9 DO
-  IF Pumps[i].Sts.Running THEN
+  IF Motors[i].Sts.Running THEN
     RunCount := RunCount + 1;
   END_IF;
 END_FOR;
 \`\`\`
 
-A FOR loop over an array of UDTs, like the \`Pumps\` array from {{lesson:plc-udt}}, is where ST pays off: ten lines of ladder repeated ten times become one loop.
+A FOR loop over an array of UDTs, like the \`Motors\` array of \`UDT_Motor\` from {{lesson:plc-udt}}, is where ST pays off: ten lines of ladder repeated ten times become one loop.
 
 > [!warning] Loops run inside one scan
 > A loop executes fully every time the routine runs. A FOR over 10 items is trivial. A WHILE that waits for a condition that only changes in a later scan never exits, and the watchdog will fault the controller. Never wait inside ST. Set a flag and return, then check it next scan.
 
 ### Practical ST notes in Logix
 
-- Timers and counters are called as instructions: \`TON(MyTimer);\` after setting the preset and enable bits. They keep their normal tag structure.
+- Timers and counters are called as instructions: \`TON(MyTimer);\` after setting the preset (and enable) members in the tag first, as the counter lessons do. They keep their normal tag structure.
 - Instructions that are rung-based in ladder, like OTL/OTU, are replaced with assignments. One-shots need explicit storage bits and are handled differently, so check the ST syntax in the Logix help for each.
 - Always initialize variables you rely on. ST makes it easy to read a tag that nothing writes.
 - Online editing works in ST, and the editor highlights pending edits. A syntax error stops the verify.
@@ -176,7 +176,7 @@ None of them is the winner. A good cook uses a whisk, a knife and an oven for di
 `,
 
   history: `
-The IEC 61131-3 standard was first published in 1993 as part of IEC 1131, to end the situation where every PLC vendor had its own incompatible programming style. It standardized languages that already existed: ladder from relay diagrams, function blocks from DCS practice, and SFC from the French GRAFCET method. Structured text borrowed its style from Pascal. Later editions added object-oriented extensions. Allen-Bradley added ST, FBD and SFC to RSLogix 5000 alongside ladder at the start of the Logix platform.
+The IEC 61131-3 standard was first published in 1993 as part of IEC 1131, to end the situation where every PLC vendor had its own incompatible programming style. It standardized languages that already existed: ladder from relay diagrams, function blocks from DCS practice, and SFC from the French GRAFCET method. Structured text borrowed its style from Pascal. Later editions added object-oriented extensions. Allen-Bradley's Logix platform (RSLogix 5000, now Studio 5000 Logix Designer) went on to offer ST, FBD and SFC alongside ladder.
 `,
 
   examples: [
@@ -277,11 +277,11 @@ In ladder this needs eight or more rungs plus careful handling of the divide-by-
       ]
     },
     {
-      q: "A routine contains WHILE NOT Done DO ... END_WHILE; where Done is set by a different task. What happens?",
+      q: "A routine contains WHILE NOT Done DO ... END_WHILE; where Done is set by a rung later in the same routine or by a lower-priority task. What happens?",
       options: ["It waits politely until Done is set", "The loop never ends within the scan, the watchdog expires and the controller faults", "The compiler rejects it", "The scan skips the loop"],
       answer: 1,
       explain: [
-        "Nothing can set Done while this task is stuck in the loop.",
+        "No. The setter cannot run while this task is stuck in the loop. Only a higher-priority task could preempt the loop and set Done, and designing around that is a bug, not a wait. A lower-priority or same-task setter never runs while the loop spins.",
         "Correct. Loops run to completion inside one scan. Never wait in ST.",
         "It compiles. The failure is at run time.",
         "There is no such skipping."

@@ -78,18 +78,38 @@
       });
       if (!id) return;
       seen.add(id);
-      const um = unmet(id).length;
-      out.push({ id: id, why: t === 'found' ? 'Start of ' + LC.trackById[t].code : (um ? 'Jump in at ' + LC.trackById[t].code + ' (skips ' + um + ' intro ' + (um === 1 ? 'lesson' : 'lessons') + ')' : 'Start of ' + LC.trackById[t].code) });
+      out.push({ id: id, why: t === 'found' ? 'Start of ' + LC.trackById[t].code : (unmet(id).length ? 'Jump in at ' + LC.trackById[t].code + ' · ' + skipsText(id) : 'Start of ' + LC.trackById[t].code) });
     });
     return out.slice(0, n);
   }
+  /* "Skips: A, B" for a soft-locked lesson, so a shortcut always says what it leaves out. */
+  function skipsText(id) {
+    const u = unmet(id);
+    if (!u.length) return '';
+    return 'skips ' + u.slice(0, 2).map(x => LC.index[x].title).join(', ') + (u.length > 2 ? ' +' + (u.length - 2) + ' more' : '');
+  }
+  /* Last lesson the user actually opened. A lesson whose prerequisites are unmet only counts if it
+     was opened (in-progress is only set by opening or reading it). */
   function continueLesson() {
     let best = null, at = -1;
     const L = LC.store.get().lessons;
     Object.keys(L).forEach(id => {
-      if (L[id].status === 'in-progress' && LC.index[id] && (L[id].updatedAt || 0) > at) { best = id; at = L[id].updatedAt || 0; }
+      const r = L[id];
+      if (r.status !== 'in-progress' || !LC.index[id] || LC.missing[id]) return;
+      if (unmet(id).length && !(r.startedAt || r.readAt || r.attempts)) return;
+      if ((r.updatedAt || 0) > at) { best = id; at = r.updatedAt || 0; }
     });
     return best;
+  }
+  /* What to do after finishing a lesson: the next open lesson in its track, else the first "Up next" pick. */
+  function nextAfter(id) {
+    const m = LC.index[id]; if (!m) return null;
+    const ids = lessonsIn(m.track), at = ids.indexOf(id);
+    const open = i => i !== id && !LC.missing[i] && (status(i) === 'available' || status(i) === 'in-progress');
+    const pick = ids.slice(at + 1).find(open) || ids.slice(0, at).find(open);
+    if (pick) return { id: pick, why: 'Next in ' + LC.trackById[m.track].code };
+    const alt = upNextWhy(4, [id])[0];
+    return alt ? { id: alt.id, why: alt.why } : null;
   }
   function markStarted(id) {
     const s = stored(id);
@@ -112,5 +132,5 @@
     LC.store.update(d => { const r = d.lessons[id]; if (r && r.status === 'skipped') r.status = 'available'; });
   }
 
-  LC.graph = { status: status, stored: stored, isSatisfied: isSatisfied, unmet: unmet, lessonsIn: lessonsIn, progress: progress, trackComplete: trackComplete, dependents: dependents, depth: depth, upNext: upNext, upNextWhy: upNextWhy, continueLesson: continueLesson, markStarted: markStarted, skip: skip, unskip: unskip, readAnyway: readAnyway };
+  LC.graph = { status: status, stored: stored, isSatisfied: isSatisfied, unmet: unmet, lessonsIn: lessonsIn, progress: progress, trackComplete: trackComplete, dependents: dependents, depth: depth, upNext: upNext, upNextWhy: upNextWhy, continueLesson: continueLesson, nextAfter: nextAfter, skipsText: skipsText, markStarted: markStarted, skip: skip, unskip: unskip, readAnyway: readAnyway };
 })();

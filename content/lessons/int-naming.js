@@ -20,18 +20,19 @@ LC.lesson({
 
 A plant has one pump and at least six different names for it. The P&ID calls it P-101. The PLC programmer typed \`Pump1\`. The Perspective view says "Mix Tank Feed Pump". The historian has \`mixer/pump_a\`. The MES has "Feed Pump A" and the maintenance system has asset number 40022. Every one of those is a join waiting to fail. Reports need translation tables, alarms need lookup spreadsheets, and a night-shift technician cannot find the drawing for the thing screaming on the screen.
 
-A {{term:naming-convention|naming convention}} is a written rule that gives each thing one identity and derives the other names from it mechanically. This lesson builds one that runs from ISA-style tag numbers to Ignition paths, SQL columns and MQTT topics. {{lesson:plc-best-practices}} and {{lesson:plc-udt}} cover the PLC half. {{lesson:ign-udts}} covers UDT mechanics in Ignition.
+A {{term:naming-convention|naming convention}} is a written rule that gives each thing one identity and derives the other names from it mechanically. This lesson is the canonical explanation of the Meridian Foods naming standard (the house standard every example in this course follows). It builds a convention that runs from ISA-style tag numbers to Ignition paths, SQL columns, UNS topics and Sparkplug B. {{lesson:plc-best-practices}} and {{lesson:plc-udt}} cover the PLC half. {{lesson:ign-udts}} covers UDT mechanics in Ignition.
 
 ## Start with the plant tag number
 
-The root of everything is the plant {{term:tag-number|tag number}} on the P&ID. ISA-5.1 style numbers combine a function code and a loop number, such as \`FT-205\` (flow transmitter, loop 205), \`LSH-101\` (level switch high) or \`P-101\` (pump). Many plants add an area prefix: \`10-P-101\`. See {{lesson:found-pid-docs}}.
+The root of everything is the plant {{term:tag-number|tag number}} on the P&ID. ISA-5.1 style numbers combine a function code and a loop number, such as \`LT-101\` (level transmitter, loop 101), \`FV-101\` (flow valve) or \`LAHH-101\` (level alarm high-high). Many plants add an area prefix: \`10-LT-101\`. See {{lesson:found-pid-docs}}.
 
 Use that number as the spine. Rules that help:
 
-- **Keep the tag number's letters and digits intact.** \`P-101\` becomes \`P101\` where hyphens are illegal or awkward. Do not renumber for software.
-- **Name equipment, not just instruments.** The pump is \`P101\`; its discharge pressure transmitter is \`PT101\`. Both exist on the drawing.
-- **Add a role only when the number is not enough.** \`P101_Pump\` is acceptable if you want a type word in the name. Be consistent: either every instance carries the type word or none does.
-- **Never reuse a number.** If P-101 is replaced by a new pump, it can keep the number. If it is scrapped and a different pump takes its place elsewhere, issue a new number.
+- **Drawings keep the hyphen, code drops it.** On P&IDs, loop sheets, I/O lists and alarm worksheets the tag is \`LT-101\`, \`FV-101\`, \`LAHH-101\`. In PLC, Ignition, database and MQTT names it is \`LT101\`, \`FV101\`, because hyphens are not valid in Logix tag names. Make that mapping once, in the standard, and never invent another.
+- **Keep the tag number's letters and digits intact.** Do not renumber for software. Number ranges are per area: Area10 uses the 100s, Area20 the 200s.
+- **Name equipment, not just instruments.** The motor is \`M101\`, the pump \`P101\`, the valve \`FV101\` and the level transmitter \`LT101\`. Loop numbers match the equipment: LT-101's alarms are LAH-101 and LAHH-101.
+- **Do not add type words.** \`M101\`, not \`M101_Motor\`. The type is in the UDT definition, so a suffix repeats what the type already says.
+- **Never reuse a number.** If M-101 is replaced by a new motor, it can keep the number. If it is scrapped and a different motor takes its place elsewhere, issue a new number.
 
 ## Layer by layer
 
@@ -41,69 +42,74 @@ Pick one style per layer and write it down. A common, workable set:
 
 | Layer | Style | Example |
 |---|---|---|
-| Plant tag number | ISA, hyphens | \`P-101\`, \`FT-205\` |
-| PLC tags and UDT members | PascalCase, underscore only as area separator | \`P101_Pump\`, \`Sts.Running\` |
+| Drawings (P&ID, loop sheet, I/O list, alarm worksheet) | ISA, with hyphen | \`LT-101\`, \`LAHH-101\` |
+| PLC tags | Uppercase tag number, hyphen dropped | \`LT101\`, \`M101\` |
+| PLC UDT members | PascalCase. An underscore only after a prefix or between an area and a name | \`Sts.Running\`, \`Cfg.StartDelay\`, \`Area10_Mixing\` |
 | PLC types | Type prefix | \`UDT_Motor\`, \`AOI_Valve\` |
-| Ignition folders and tags | PascalCase, no spaces | \`Mixing/Line1/P101_Pump\` |
-| Ignition UDT definitions | PascalCase, no prefix, in folders | \`Equipment/Motor\` |
-| Perspective views | PascalCase paths | \`Equipment/Motor/Faceplate\` |
-| SQL tables and columns | lower snake_case, singular tables | \`equipment_event\`, \`site_code\` |
-| MQTT / UNS topics | lowercase, slash-separated | \`acme/chicago/mixing/line1/p101_pump\` |
+| Ignition folders and tags | PascalCase, no spaces | \`Plant1/Area10/Line1/M101\` |
+| Ignition UDT definitions | PascalCase, no prefix, in folders | \`Motor\` |
+| Perspective views | PascalCase paths | \`Faceplates/Motor\` |
+| SQL tables and columns | lower snake_case, singular tables | \`equipment_event\`, \`site_id\` |
+| Plain MQTT / UNS topics | lowercase, slash-separated | \`meridian/plant1/area10/line1/m101\` |
+| Sparkplug B | Fixed namespace, house mapping below | \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\` |
 
+**Units never go in member names.** \`Cfg.StartDelay\`, not \`Cfg.StartDelay_ms\`. Units live in the description and in the engineering-unit properties (tags, UDT members, the data dictionary).
 Spaces and special characters are legal in many places but cause trouble in scripts, bindings, OPC item paths and URLs. Avoid them.
 
 ### Why case matters in some layers and not others
 
-Ignition tag paths are not a place to rely on case. Treat \`P101_Pump\` and \`p101_pump\` as the same thing in your head and never create two tags that differ only by case. **MQTT topics are case sensitive**: \`Chicago/Mixing\` and \`chicago/mixing\` are different topics, and a subscriber will miss messages if the case differs. SQL identifiers vary by database and quoting. A rule that is easy to remember beats a rule that is correct in one place: the only safe route is **one canonical form per layer, generated by a script where possible**.
+Ignition tag paths are not a place to rely on case. Treat \`M101\` and \`m101\` as the same thing in your head and never create two tags that differ only by case. **MQTT topics are case sensitive**: \`Meridian/Plant1\` and \`meridian/plant1\` are different topics, and a subscriber will miss messages if the case differs. SQL identifiers vary by database and quoting. A rule that is easy to remember beats a rule that is correct in one place: the only safe route is **one canonical form per layer, generated by a script where possible**.
 
 ### The PLC layer
 
-Follow the structure in {{lesson:plc-best-practices}}. Instance names come from the drawing, types carry a prefix, members read as statements:
+Follow the structure in {{lesson:plc-best-practices}}. Instance names come from the drawing, types carry a prefix, members read as statements. The house \`UDT_Motor\` has nested member structures (\`Cmd\`, \`Sts\`, \`Cfg\`, \`Alm\`):
 
 \`\`\`text
-P101_Pump         : UDT_Motor
-  Cmd.Start       BOOL
-  Cmd.Stop        BOOL
-  Sts.Running     BOOL
-  Sts.Faulted     BOOL
-  Sts.Auto        BOOL
-  Cfg.RunTimeout_s DINT
-PT101_Disch       : UDT_AnalogIn
-  Val             REAL
-  Cfg.RangeHi_psi REAL
-  Alm.HighHigh    BOOL
+M101                : UDT_Motor
+  Cmd.Start         BOOL   (written by HMI, cleared by PLC)
+  Cmd.Stop          BOOL
+  Cmd.Reset         BOOL
+  Sts.Running       BOOL
+  Sts.Ready         BOOL
+  Sts.Fault         BOOL
+  Sts.Auto          BOOL
+  Cfg.StartDelay    DINT   (ms)
+  Alm.Overload      BOOL
+LT101               : an analog-input type in the same style
+  Value             REAL   (m, 0.0 to 5.0)
+  Alm.HighHigh      BOOL
 \`\`\`
 
-Units go in the name only when they are not obvious from context (\`_psi\`, \`_gpm\`, \`_degC\`, \`_s\`).
+The units are in the comments above, not in the member names. See {{lesson:plc-udt}} for the full member table.
 
 ### The Ignition layer
 
-Ignition has three kinds of names to plan: the {{term:ign-tag-provider|tag provider}}, the folder tree and the UDT definitions. The 8.3 manual notes that tag names are free-form, must start with a letter or underscore and stay under 256 characters, and that a tag provider's name should not match a database connection name. Beyond that the structure is yours.
+Ignition has three kinds of names to plan: the {{term:ign-tag-provider|tag provider}}, the folder tree and the UDT definitions. Check the 8.3 manual's tag and tag-provider pages for the legal characters and any length limits before you fix your rules. Beyond that the structure is yours. The house provider is \`default\`.
 
-A {{term:ign-tag-path|tag path}} looks like \`[Plant]Chicago/Mixing/Line1/P101_Pump/Sts/Running\`. The part in square brackets is the provider. Everything after is folders, the UDT instance and its members.
+A {{term:ign-tag-path|tag path}} looks like \`[default]Plant1/Area10/Line1/M101/Sts/Running\`. The part in square brackets is the provider. Everything after is folders, the UDT instance and its members.
 
-Put the **ISA-95 hierarchy** in the folders: enterprise (usually the provider), site, area, line, cell/unit, then equipment. Use the levels you have and no more.
+Put the **ISA-95 hierarchy** in the folders: site (Plant1), area (Area10 Batching, Area20 Packaging), line, then equipment. The enterprise (Meridian) shows up in the UNS topic and the MES model, not in the tag path. Use the levels you have and no more.
 
 {{diagram:tree}}
 
 In text form:
 
 \`\`\`text
-[Plant]
-  Chicago                 (site)
-    Mixing                (area)
+[default]
+  Plant1                  (site)
+    Area10                (area, Batching)
       Line1               (line)
-        P101_Pump         (UDT instance, type Equipment/Motor)
-        PT101_Disch       (UDT instance, type Equipment/AnalogIn)
+        M101              (UDT instance, type Motor)
+        LT101             (UDT instance, type AnalogIn)
 \`\`\`
 
 {{diagram:chain}}
 
-Keep UDT definitions in a folder tree of their own (\`Equipment\`, \`Instruments\`, \`Valves\`). The manual warns that renaming a definition after instances exist orphans those instances, so name definitions as you would name a database table: once, carefully. Parameterize them: \`{PLCName}\`, \`{Area}\`, \`{Unit}\` can build the OPC item path of each member, so an instance needs only parameter values, not 40 edited tags. See {{lesson:ign-udts}}.
+Keep UDT definitions in a folder tree of their own if the list grows. Renaming a definition after instances exist breaks the link to those instances, so name definitions as you would name a database table: once, carefully. Parameterize them: the house \`Motor\` definition has parameters \`PLC\` and \`InstanceName\` that build each member's OPC item path (\`ns=1;s=[{PLC}]{InstanceName}.Sts.Running\`), so an instance needs only parameter values, not 40 edited tags. See {{lesson:ign-udts}}.
 
 ### Views, scripts and bindings
 
-Perspective views, custom properties and script functions follow the same casing as the tag tree. A faceplate takes the path of the UDT instance as a parameter, so \`Equipment/Motor/Faceplate\` with \`tagPath = [Plant]Chicago/Mixing/Line1/P101_Pump\` works for every motor. Names inside views that are shown to operators (labels) can be human text, kept in one place such as the tag's Documentation property or a description, not retyped on screens.
+Perspective views, custom properties and script functions follow the same casing as the tag tree. A faceplate takes the path of the UDT instance as a parameter, so \`Faceplates/Motor\` with \`tagPath = [default]Plant1/Area10/Line1/M101\` works for every motor. Names inside views that are shown to operators (labels) can be human text, kept in one place such as the tag's Documentation property or a description, not retyped on screens.
 
 ### Databases
 
@@ -112,38 +118,52 @@ SQL names should read well in a query. Use \`snake_case\`, singular table names 
 \`\`\`sql
 CREATE TABLE equipment_event (
   event_id       BIGINT PRIMARY KEY,
-  site_code      VARCHAR(8)   NOT NULL,   -- 'CHI'
-  equipment_id   VARCHAR(40)  NOT NULL,   -- 'P101_Pump'
+  site_id        VARCHAR(16)  NOT NULL,   -- 'Plant1'
+  equipment_id   VARCHAR(40)  NOT NULL,   -- 'M101'
   event_type     VARCHAR(20)  NOT NULL,   -- 'RUN', 'STOP', 'FAULT'
   event_time     TIMESTAMP    NOT NULL
 );
 \`\`\`
 
-Store the same \`equipment_id\` string you use in the tag path and the PLC. If a report must display "Mixing Feed Pump A", look it up in an equipment table; do not store the label as the key.
+Store the same \`equipment_id\` string you use in the tag path and the PLC. Tag numbers are unique per area range, so the key is \`site_id\` plus \`equipment_id\`. If a report must display "Batching Mixer Motor", look it up in an equipment table; do not store the label as the key.
 
 ### MES and the UNS
 
-In a MES equipment model, the enterprise > site > area > line > cell levels mirror the ISA-95 hierarchy, so reuse the same names. For the {{term:uns|Unified Namespace}}, the MQTT topic follows the same hierarchy in lowercase. Sparkplug fixes its own topic shape (namespace, group ID, message type, edge node ID, device ID), so the deeper hierarchy is usually carried in the group ID, the edge node, the device and the metric name. Decide up front which levels go where and document it. See {{lesson:proto-sparkplug}} and {{lesson:mes-uns}}.
+In a MES equipment model, the enterprise > site > area > line > cell levels mirror the ISA-95 hierarchy, so reuse the same names. The {{term:uns|Unified Namespace}} has two rules, and they must not be mixed:
+
+1. **Plain MQTT / UNS topics** carry the ISA-95 path in lowercase: \`meridian/plant1/area10/line1/m101/sts/running\`.
+2. **Sparkplug B** has a fixed namespace, \`spBv1.0/<group_id>/<msg_type>/<edge_node_id>/<device_id>\`. The house map is group_id = \`Plant1\`, edge_node_id = \`Area10_Line1\`, device_id = \`M101\`, and the metric name is \`Sts/Running\`. **Never put an ISA-95 path inside a Sparkplug topic.** The hierarchy rides in the group, node, device and metric names.
+
+Decide up front which levels go where and document it. See {{lesson:proto-sparkplug}} and {{lesson:mes-uns}}.
 
 ## Worked example: one motor everywhere
 
-Mixing tank feed pump P-101 at the Chicago plant, Line 1:
+Mixer motor M-101 at Meridian Foods Plant 1 (Chicago), Area10 Batching, Line 1:
 
 | System | Name | Notes |
 |---|---|---|
-| P&ID | \`P-101\` | Source of truth. Area 10 (Mixing), tank T-101 feed pump |
-| Electrical drawing | \`M-P101\` | Motor starter schedule references the same number |
-| PLC (Logix) | \`P101_Pump\` : \`UDT_Motor\` | Member \`Sts.Running\` |
-| OPC item path | \`[Line1_PLC]P101_Pump.Sts.Running\` | Built by the UDT's parameters |
-| Ignition tag path | \`[Plant]Chicago/Mixing/Line1/P101_Pump/Sts/Running\` | UDT type \`Equipment/Motor\` |
+| P&ID, I/O list | \`M-101\` | Source of truth, with the hyphen |
+| PLC (Logix) | \`M101\` : \`UDT_Motor\` | Hyphen dropped. Member \`Sts.Running\`, path \`M101.Sts.Running\` |
+| OPC item path | \`ns=1;s=[PLC1]M101.Sts.Running\` | Built by the UDT's parameters (\`PLC\` = \`PLC1\`, \`InstanceName\` = \`M101\`) |
+| Ignition tag path | \`[default]Plant1/Area10/Line1/M101/Sts/Running\` | UDT type \`Motor\` |
 | Historian | same tag path | History is stored against the tag, so the name above is the series name |
-| Perspective | \`Equipment/Motor/Faceplate\`, param \`tagPath\` | One view for all motors |
-| SQL | \`site_code = 'CHI'\`, \`equipment_id = 'P101_Pump'\` | Event and downtime tables |
-| MES equipment model | \`Acme/Chicago/Mixing/Line1/P101_Pump\` | Enterprise/site/area/line/cell |
-| UNS topic | \`acme/chicago/mixing/line1/p101_pump/sts/running\` | Lowercase, same hierarchy |
-| CMMS asset | \`CHI-MIX-P101\` | Maintenance asset ID, with the tag number embedded |
+| Perspective | \`Faceplates/Motor\`, param \`tagPath\` = \`[default]Plant1/Area10/Line1/M101\` | One view for all motors |
+| SQL | \`site_id = 'Plant1'\`, \`equipment_id = 'M101'\` | Event and downtime tables |
+| MES equipment model | \`Meridian/Plant1/Area10/Line1/M101\` | Enterprise/site/area/line/equipment |
+| Plain MQTT / UNS topic | \`meridian/plant1/area10/line1/m101/sts/running\` | Lowercase, same hierarchy |
+| Sparkplug B | \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\`, metric \`Sts/Running\` | group_id \`Plant1\`, edge node \`Area10_Line1\`, device \`M101\`. No ISA-95 path in the topic |
+| CMMS asset | \`P1-M101\` | Maintenance asset ID, with the tag number embedded |
 
-The test is a mechanical one: given the P&ID tag \`P-101\`, a person can write the other names without looking them up. If a name needs a spreadsheet to decode, the convention has a gap.
+The same walk for an instrument, with the drawing-to-code mapping shown once:
+
+| Layer | Name |
+|---|---|
+| P&ID, loop sheet, alarm worksheet | \`LT-101\`, alarms \`LAH-101\` and \`LAHH-101\` |
+| PLC tag | \`LT101\` (0 to 5.0 m) |
+| Ignition path | \`[default]Plant1/Area10/Line1/LT101\` |
+| UNS topic | \`meridian/plant1/area10/line1/lt101\` |
+
+The test is a mechanical one: given the P&ID tag \`M-101\`, a person can write the other names without looking them up. If a name needs a spreadsheet to decode, the convention has a gap.
 
 ## What a good tag-naming standard document contains
 
@@ -153,7 +173,7 @@ Write it as a short document, not a manual. Put it where the team works and unde
 2. **Identity rules.** How a tag number is formed and issued, who issues it, how a new one is requested.
 3. **Per-layer styles.** The table above, for your plant.
 4. **Hierarchy.** The ISA-95 levels, with the allowed names at each (site codes, area codes).
-5. **Member vocabulary.** The shared words: \`Running\`, \`Faulted\`, \`Auto\`, \`Ready\`, \`Cmd\`, \`Sts\`, \`Cfg\`, \`Alm\`. A {{term:data-dictionary|data dictionary}} lists them with types, units and meaning.
+5. **Member vocabulary.** The shared words: \`Running\`, \`Fault\`, \`Auto\`, \`Ready\`, \`Cmd\`, \`Sts\`, \`Cfg\`, \`Alm\`. A {{term:data-dictionary|data dictionary}} lists them with types, units and meaning.
 6. **Reserved words and prohibited characters.**
 7. **Worked examples**, including the table above for a real piece of equipment.
 8. **Change process.** How names change and what else gets updated.
@@ -164,10 +184,10 @@ Write it as a short document, not a manual. Put it where the team works and unde
 
 ## Common conflicts and how to resolve them
 
-- **PLC programmer uses \`Pump1\`, drawing says \`P-101\`.** The drawing wins. Rename in the PLC while the project is small.
+- **PLC programmer uses \`Pump1\`, drawing says \`P-101\`.** The drawing wins; the PLC tag becomes \`P101\`. Rename in the PLC while the project is small.
 - **The OEM skid has its own tag names.** Wrap the OEM tags in your UDT or alias, and keep the OEM name in the description. Do not rename the skid's internal program.
 - **A site already has a convention.** Adopt it if it is coherent, and document the translation to the enterprise convention at the boundary (gateway network or UNS).
-- **Several plants, different old names.** Standardize the enterprise names and site codes first (\`CHI\`, \`DAL\`, \`PHX\`). The site folder is the first level, and everything beneath can be migrated plant by plant.
+- **Several plants, different old names.** Standardize the enterprise names and site codes first (\`Plant1\`, \`Plant2\`, \`Plant3\`). The site folder is the first level, and everything beneath can be migrated plant by plant.
 
 ## Renaming safely
 
@@ -208,7 +228,7 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
   examples: [
     {
       title: "Checking a tag tree with a regular expression",
-      body: `A team agrees that every UDT instance under a line folder must match \`^[A-Z]{1,4}[0-9]{3}[A-Za-z0-9]*$\` (tag number first, then an optional role word). A short script exports the tag tree to JSON and prints violations: \`Pump1\`, \`mixer_pump\` and \`P-101\` all fail, while \`P101_Pump\` and \`PT101_Disch\` pass. It runs in the code review for every tag export.`
+      body: `A team agrees that every UDT instance under a line folder must match \`^[A-Z]{1,4}[0-9]{3}[A-Z]?$\` (one to four letters, three digits, an optional loop suffix letter). A short script exports the tag tree to JSON and prints violations: \`Pump1\`, \`mixer_pump\`, \`P-101\` and \`P101_Pump\` all fail, while \`M101\`, \`LT101\` and \`TIC210A\` pass. It runs in the code review for every tag export.`
     },
     {
       title: "Merging two plants into one UNS",
@@ -217,46 +237,47 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
   ],
 
   diagrams: {
-    chain: `<svg viewBox="0 0 640 230" role="img" aria-label="One identity, P-101, derives names in the PLC, Ignition, the historian, the database and the UNS topic">
+    chain: `<svg viewBox="0 0 640 290" role="img" aria-label="One identity, M-101, derives names in the PLC, Ignition, the database, the UNS topic and the Sparkplug B mapping">
   <defs><marker id="int-naming-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker></defs>
-  <rect class="dg-box-accent" x="14" y="86" width="116" height="58" rx="6"/>
-  <text class="dg-title dg-mid" x="72" y="112">P&amp;ID tag</text>
-  <text class="dg-text-mono dg-mid" x="72" y="132">P-101</text>
-  <rect class="dg-box" x="200" y="14" width="426" height="38" rx="5"/>
-  <text class="dg-text-sm" x="212" y="38">PLC: P101_Pump : UDT_Motor, Sts.Running</text>
-  <rect class="dg-box" x="200" y="62" width="426" height="38" rx="5"/>
-  <text class="dg-text-sm" x="212" y="86">Ignition: [Plant]Chicago/Mixing/Line1/P101_Pump/Sts/Running</text>
-  <rect class="dg-box" x="200" y="110" width="426" height="38" rx="5"/>
-  <text class="dg-text-sm" x="212" y="134">SQL: site_code = 'CHI', equipment_id = 'P101_Pump'</text>
-  <rect class="dg-box" x="200" y="158" width="426" height="38" rx="5"/>
-  <text class="dg-text-sm" x="212" y="182">MES: Acme/Chicago/Mixing/Line1/P101_Pump</text>
-  <rect class="dg-box" x="200" y="196" width="426" height="30" rx="5"/>
-  <text class="dg-text-sm" x="212" y="216">UNS: acme/chicago/mixing/line1/p101_pump/sts/running</text>
-  <line class="dg-line" x1="130" y1="108" x2="200" y2="33" marker-end="url(#int-naming-ah)"/>
-  <line class="dg-line" x1="130" y1="112" x2="200" y2="81" marker-end="url(#int-naming-ah)"/>
-  <line class="dg-line" x1="130" y1="116" x2="200" y2="129" marker-end="url(#int-naming-ah)"/>
-  <line class="dg-line" x1="130" y1="120" x2="200" y2="177" marker-end="url(#int-naming-ah)"/>
-  <line class="dg-line" x1="130" y1="124" x2="200" y2="211" marker-end="url(#int-naming-ah)"/>
+  <rect class="dg-box-accent" x="14" y="108" width="116" height="58" rx="6"/>
+  <text class="dg-title dg-mid" x="72" y="134">P&amp;ID tag</text>
+  <text class="dg-text-mono dg-mid" x="72" y="154">M-101</text>
+  <rect class="dg-box" x="200" y="12" width="426" height="38" rx="5"/>
+  <text class="dg-text-sm" x="212" y="36">PLC: M101 : UDT_Motor, M101.Sts.Running</text>
+  <rect class="dg-box" x="200" y="58" width="426" height="38" rx="5"/>
+  <text class="dg-text-sm" x="212" y="82">Ignition: [default]Plant1/Area10/Line1/M101/Sts/Running</text>
+  <rect class="dg-box" x="200" y="104" width="426" height="38" rx="5"/>
+  <text class="dg-text-sm" x="212" y="128">SQL: site_id = 'Plant1', equipment_id = 'M101'</text>
+  <rect class="dg-box" x="200" y="150" width="426" height="38" rx="5"/>
+  <text class="dg-text-sm" x="212" y="174">UNS: meridian/plant1/area10/line1/m101/sts/running</text>
+  <rect class="dg-box" x="200" y="196" width="426" height="38" rx="5"/>
+  <text class="dg-text-sm" x="212" y="220">Sparkplug: spBv1.0/Plant1/DDATA/Area10_Line1/M101</text>
+  <text class="dg-text-muted" x="212" y="256">metric Sts/Running. The ISA-95 path never goes inside a Sparkplug topic.</text>
+  <line class="dg-line" x1="130" y1="128" x2="200" y2="31" marker-end="url(#int-naming-ah)"/>
+  <line class="dg-line" x1="130" y1="132" x2="200" y2="77" marker-end="url(#int-naming-ah)"/>
+  <line class="dg-line" x1="130" y1="137" x2="200" y2="123" marker-end="url(#int-naming-ah)"/>
+  <line class="dg-line" x1="130" y1="142" x2="200" y2="169" marker-end="url(#int-naming-ah)"/>
+  <line class="dg-line" x1="130" y1="146" x2="200" y2="215" marker-end="url(#int-naming-ah)"/>
 </svg>`,
     tree: `<svg viewBox="0 0 640 230" role="img" aria-label="An Ignition tag tree following the ISA-95 hierarchy: provider, site, area, line, then UDT instances with Cmd, Sts and Cfg members">
   <rect class="dg-box-accent" x="16" y="16" width="110" height="34" rx="5"/>
-  <text class="dg-text-sm dg-mid" x="71" y="38">[Plant]</text>
+  <text class="dg-text-sm dg-mid" x="71" y="38">[default]</text>
   <rect class="dg-box" x="56" y="62" width="110" height="34" rx="5"/>
-  <text class="dg-text-sm dg-mid" x="111" y="84">Chicago</text>
+  <text class="dg-text-sm dg-mid" x="111" y="84">Plant1</text>
   <rect class="dg-box" x="96" y="108" width="110" height="34" rx="5"/>
-  <text class="dg-text-sm dg-mid" x="151" y="130">Mixing</text>
+  <text class="dg-text-sm dg-mid" x="151" y="130">Area10</text>
   <rect class="dg-box" x="136" y="154" width="110" height="34" rx="5"/>
   <text class="dg-text-sm dg-mid" x="191" y="176">Line1</text>
   <rect class="dg-box-accent" x="290" y="130" width="140" height="34" rx="5"/>
-  <text class="dg-text-sm dg-mid" x="360" y="152">P101_Pump</text>
+  <text class="dg-text-sm dg-mid" x="360" y="152">M101</text>
   <rect class="dg-box-accent" x="290" y="176" width="140" height="34" rx="5"/>
-  <text class="dg-text-sm dg-mid" x="360" y="198">PT101_Disch</text>
+  <text class="dg-text-sm dg-mid" x="360" y="198">LT101</text>
   <rect class="dg-box" x="480" y="104" width="140" height="30" rx="5"/>
   <text class="dg-text-mono dg-mid" x="550" y="124">Cmd/Start</text>
   <rect class="dg-box" x="480" y="140" width="140" height="30" rx="5"/>
   <text class="dg-text-mono dg-mid" x="550" y="160">Sts/Running</text>
   <rect class="dg-box" x="480" y="176" width="140" height="30" rx="5"/>
-  <text class="dg-text-mono dg-mid" x="550" y="196">Cfg/RunTimeout_s</text>
+  <text class="dg-text-mono dg-mid" x="550" y="196">Cfg/StartDelay</text>
   <line class="dg-line" x1="71" y1="50" x2="71" y2="79"/>
   <line class="dg-line" x1="111" y1="96" x2="111" y2="125"/>
   <line class="dg-line" x1="151" y1="142" x2="151" y2="171"/>
@@ -265,7 +286,7 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
   <line class="dg-line" x1="430" y1="147" x2="480" y2="119"/>
   <line class="dg-line" x1="430" y1="147" x2="480" y2="155"/>
   <line class="dg-line" x1="430" y1="147" x2="480" y2="191"/>
-  <text class="dg-text-muted" x="16" y="224">enterprise / site / area / line / equipment instance / UDT members</text>
+  <text class="dg-text-muted" x="16" y="224">site / area / line / equipment instance / UDT members</text>
 </svg>`
   },
 
@@ -317,7 +338,7 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
     },
     {
       q: "Which database design best follows a system-wide naming standard?",
-      options: ["Store equipment_id = 'P101_Pump' and look up the display label from an equipment table", "Store the display label as the key", "Store a new random number for each plant", "Store the full Ignition tag path in every column name"],
+      options: ["Store equipment_id = 'M101' (with site_id) and look up the display label from an equipment table", "Store the display label as the key", "Store a new random number for each plant", "Store the full Ignition tag path in every column name"],
       answer: 0,
       explain: [
         "Correct. A stable key shared with the PLC and Ignition joins everywhere, and labels can change without breaking data.",

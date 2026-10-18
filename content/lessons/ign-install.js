@@ -30,7 +30,7 @@ A Gateway you can build by clicking can also be lost by clicking. The difference
 
 On Windows and Linux the installer sets Ignition to start with the machine. Plan the host the way you would a database server: dedicated, patched on a schedule and sized for the sessions and tag changes you expect. Ignition does not need a database installed on the same host, and in production it normally should not share one.
 
-The Docker image reads settings such as the HTTP and HTTPS ports from environment variables (for example \`GATEWAY_HTTP_PORT\`, default 8088, and \`GATEWAY_HTTPS_PORT\`, default 8043), and it can accept commissioning options at start so a new container comes up already configured. See {{lesson:arch-containers}} for the full container story.
+The Docker image reads settings such as the HTTP and HTTPS ports from environment variables (for example \`GATEWAY_HTTP_PORT\` and \`GATEWAY_HTTPS_PORT\`; confirm the names in the image documentation for the tag you use), and it can accept commissioning options at start so a new container comes up already configured. See {{lesson:arch-containers}} for the full container story.
 
 ## Commissioning
 
@@ -38,10 +38,10 @@ The first time you reach a new Gateway in a browser (\`http://<host>:8088\`) you
 
 1. Accept the license agreement.
 2. Create the **administrator** account. This is the account that owns the Gateway until you connect an identity provider. Record it in your password manager.
-3. Confirm the **ports** for HTTP, HTTPS and the Gateway Network. On a clean install the Gateway checks whether the defaults are free and increments the port number until it finds one that is. Upgraded Gateways do not search, so a port conflict faults the Gateway.
+3. Confirm the **ports** for HTTP, HTTPS and the Gateway Network. According to the install guide, on a clean install the Gateway checks whether the defaults are free and increments the port number until it finds one that is. Upgraded Gateways do not search, so a port conflict faults the Gateway. Check the guide for your version.
 4. Finish, and the Gateway starts its modules.
 
-After commissioning the Gateway's UI is available at the port you chose. The ports live in the Gateway's \`data/gateway.xml\` file as \`gateway.port\` and \`gateway.sslport\`, and Inductive recommends talking to support before editing them by hand.
+After commissioning the Gateway's UI is available at the port you chose. The ports are stored in the Gateway's configuration files (in the \`data/gateway.xml\` file in the versions we looked at). Change them through the Gateway UI. If you must edit a file by hand, do it with the Gateway stopped and check the docs for your version first.
 
 | Port | Default | Purpose |
 |---|---|---|
@@ -87,7 +87,7 @@ Why that matters:
 - **Cloning.** A new Gateway for dev or test is a copy of the config folders with the settings that must differ (IPs, passwords) changed.
 - **Review.** Colleagues review a pull request instead of asking "who changed the database connection?"
 
-Practical rules from the version control guide: switch project encoding to XML so projects diff cleanly, and expect some resource types, such as transaction groups and alarm pipelines, to still be binary and worth excluding from Git. Do not commit secrets in plain form, and watch for long paths on Windows, since 8.3 tag files can sit deep enough to hit the 255-character path limit. {{lesson:ign-versioning}} goes deeper.
+Practical rules from the version control guide: switch project encoding to XML so projects diff cleanly, and expect some resource types, such as transaction groups and alarm pipelines, to still be binary and worth excluding from Git. Do not commit secrets in plain form, and watch for long paths on Windows, since deeply nested resource folders can approach the Windows path length limit. {{lesson:ign-versioning}} goes deeper.
 
 > [!warning] Edit files only through a rescan
 > If you change files on disk while the Gateway is running, the Gateway will not notice until a scan runs. Use the Gateway's scan trigger (UI or API) rather than assuming a change took effect.
@@ -107,11 +107,11 @@ A **deployment mode** lets one set of configuration files contain variants, for 
 Authentication uses **API keys** created in the Gateway's security settings. A client sends the key in the \`X-Ignition-API-Token\` header. Give each key the narrowest security level that works. A key that cannot read the Gateway returns 401/403 errors, which is the most common first-day issue.
 
 \`\`\`text
-# After a git pull on the production Gateway host
-curl -X POST http://gw-prod:8088/data/api/v1/scan/projects -H "X-Ignition-API-Token: <key>"
+# After a git pull on the Plant1 master Gateway host (confirm the path against /openapi on your Gateway)
+curl -X POST https://10.20.30.10:8043/data/api/v1/scan/projects -H "X-Ignition-API-Token: <key>"
 \`\`\`
 
-Not everything is exposed. As of the forum replies at the time of writing, tag groups cannot be created through the API or scripting, so check before designing automation around a specific resource type.
+Not everything is exposed. Forum replies at the time of writing indicate tag groups could not be created through the API or scripting, so check your version before designing automation around a specific resource type.
 
 ## Day-one settings
 
@@ -131,7 +131,7 @@ Before you hand the Gateway to anyone:
 A Gateway backup (\`.gwbk\`) contains the configuration, projects and, depending on options, other state. Take it from the web UI or schedule it. The rule experienced integrators repeat: a backup you have not restored is a hope, not a backup. Restore into a scratch Gateway of the same version at least once, and store backups off the Gateway host. With 8.3, a Git repository of the configuration is a second, independent copy and also gives you history. Use both.
 
 > [!example] A day-one build
-> You provision a Linux VM, install 8.3, and commission with HTTP on 8088 and HTTPS on 8043. You set the system name to \`PlantA-GW1\`, import a certificate, connect a PostgreSQL database, create an API key limited to read for monitoring, schedule a nightly \`.gwbk\` to a network share, and commit the \`data/config\` and \`data/projects\` directories to a private Git repo. The firewall allows 8043 and the OPC UA port from the plant network only.
+> You provision a Linux VM, install 8.3, and commission with HTTP on 8088 and HTTPS on 8043. You put it on the Level 3 server VLAN at \`10.20.30.10\` (the Plant1 master) and set the system name to \`Plant1-GW1\`, import a certificate, connect a PostgreSQL database, create an API key limited to read for monitoring, schedule a nightly \`.gwbk\` to a network share, and commit the \`data/config\` and \`data/projects\` directories to a private Git repo. The firewall allows 8043 and the OPC UA port (62541) from the plant networks that need them only, allows 8060 only between Gateways that have a Gateway Network link, and closes 8088 once HTTPS works.
 `,
 
   eli5: `

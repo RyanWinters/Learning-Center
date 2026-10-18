@@ -29,7 +29,7 @@ A **fieldbus** connects a controller to field devices such as I/O blocks, drives
 
 ## PROFIBUS
 
-{{term:profibus|PROFIBUS}} has two main flavors. **PROFIBUS DP** (Decentralized Periphery) is the factory-automation version. It runs on RS-485 twisted pair, with speeds from 9.6 kbit/s to 12 Mbit/s depending on cable length, up to 32 stations per segment and addresses 0 to 125. A DP master polls its slaves in a fixed cycle, and every slave has a numeric address set by DIP switches or software. **PROFIBUS PA** (Process Automation) carries both power and data over a two-wire intrinsically safe cable at 31.25 kbit/s, which is why you find it on instruments in hazardous areas.
+{{term:profibus|PROFIBUS}} has two main flavors. **PROFIBUS DP** (Decentralized Periphery) is the factory-automation version. It runs on RS-485 twisted pair, with speeds from 9.6 kbit/s to 12 Mbit/s depending on cable length, up to 32 stations per segment and addresses 0 to 125. A DP master polls its slaves in a fixed cycle, and every slave has a numeric address set by DIP switches or software. **PROFIBUS PA** (Process Automation) carries both power and data over a two-wire intrinsically safe cable at 31.25 kbit/s, which is why you find it on instruments in hazardous areas. The figures in this section (stations per segment, speeds, node counts, terminator values) are typical published values. Check the manual or specification for your version and devices.
 
 The physical layer is plain {{term:rs485|RS-485}}, so everything in {{lesson:proto-serial}} applies: terminate both ends, keep a daisy chain, and watch your shield grounding. PROFIBUS connectors have a small switch to turn termination on at the end nodes. A bus with a missing terminator or a loose connector shows intermittent device dropouts, and a PROFIBUS-specific tester or a PLC with diagnostics can show you which station lost the message.
 
@@ -52,6 +52,8 @@ Non-real-time traffic such as configuration, web servers and SNMP uses ordinary 
 ## DeviceNet
 
 {{term:devicenet|DeviceNet}} is a CIP network over a CAN (Controller Area Network) bus, designed to replace the point-to-point wiring of sensors, push buttons and small drives. One 4-wire cable carries two data conductors and two power conductors (24 V DC) to the devices, which makes wiring cheap. A trunk-and-drop topology supports up to 64 nodes, and data rates are 125, 250 and 500 kbit/s, with maximum trunk length falling as speed rises. Because it speaks CIP, it shares the object model in {{lesson:proto-enip}} and uses EDS files. Typical faults are a missing 24 V supply, a missing terminator (121 ohm at each end) and duplicate node addresses.
+
+Safety I/O on these networks (PROFIsafe on PROFIBUS and PROFINET, CIP Safety on DeviceNet and EtherNet/IP) is outside the SCADA integration scope and stays in the safety PLC.
 
 ## ControlNet
 
@@ -114,7 +116,7 @@ PROFIBUS was developed in a German public research project and standardized in t
     },
     {
       title: "Bringing PROFIBUS data into a Modbus-only SCADA",
-      body: `A packaging line has a PROFIBUS master on a PLC that Ignition cannot reach, but a spare gateway can act as a PROFIBUS slave and a Modbus TCP server. The PLC writes the 20 values into the gateway's input area. Ignition reads the gateway as a Modbus device, as in {{lesson:proto-modbus}}.`
+      body: `A packaging line has a PROFIBUS master on a PLC that Ignition cannot reach, but a spare gateway can act as a PROFIBUS slave and a Modbus TCP server. The PLC (the PROFIBUS master) writes the 20 values to the gateway's output area, meaning the data the master sends to this slave, and the gateway's Modbus server exposes them as holding registers. (In the other direction, a slave's input area is what it sends to the master. Check the gateway vendor's manual for its exact terms.) Ignition reads the gateway as a Modbus device, as in {{lesson:proto-modbus}}.`
     }
   ],
 

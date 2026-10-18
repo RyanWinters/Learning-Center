@@ -20,7 +20,7 @@ LC.lesson({
 
 An {{term:aoi|Add-On Instruction}} (AOI) is a custom instruction you write in Logix Designer. It has a name, parameters, its own private data and its own logic, and once it exists you drop it into a rung like XIC or TON. Each time you use it, you give it a tag of its own, called the **instance**. The logic is shared. The data is per-instance.
 
-That is the whole appeal. Motor control logic (interlock, seal-in, fail-to-start timer, run feedback, fault latch) is identical for 50 motors. Write it once as \`AOI_Motor\`, then call it with 50 different \`Motor\` UDT tags. Fix a bug in one place and every call gets the fix.
+That is the whole appeal. Motor control logic (interlock, seal-in, fail-to-start timer, run feedback, fault latch) is identical for 50 motors. Write it once as \`AOI_Motor\`, then call it with 50 different \`UDT_Motor\` tags (\`M101\`, \`M102\`...). Fix a bug in one place and every call gets the fix.
 
 An AOI gives you three things you do not get from copy-pasted rungs: one definition to maintain, a private scope for temporary tags, and a clean interface that hides the internals from callers.
 
@@ -34,9 +34,9 @@ Parameters are the interface. Each has a name, a data type, a **usage** and sett
 |---|---|---|---|
 | **Input** | Into the AOI | By value (copied in) | Permissives, setpoints, feedback bits |
 | **Output** | Out of the AOI | By value (copied out) | Output command, status bits |
-| **InOut** | Both | By reference (pointer to caller's tag) | A whole UDT such as a \`Motor\`, arrays, structures |
+| **InOut** | Both | By reference (pointer to caller's tag) | A whole UDT such as a \`UDT_Motor\`, arrays, structures |
 
-Input and Output copy the value on each call. InOut passes a reference, so the AOI reads and writes the caller's tag directly. That is why the standard pattern puts the equipment UDT, the one with Cmd/Sts/Cfg/Alm from {{lesson:plc-udt}}, in a single InOut parameter. The AOI has no copy of it, so the HMI-facing data always shows current values.
+Input and Output copy the value on each call. InOut passes a reference, so the AOI reads and writes the caller's tag directly. That is why the standard pattern puts the equipment UDT, the \`UDT_Motor\` with Cmd/Sts/Cfg/Alm from {{lesson:plc-udt}}, in a single InOut parameter. The AOI has no copy of it, so the HMI-facing data always shows current values.
 
 **Required** parameters must be wired when you place the instruction. **Visible** controls whether the parameter appears on the instruction block in ladder. InOut parameters are always required.
 
@@ -79,7 +79,7 @@ An AOI instance behaves according to which of its routines the controller runs o
 
 \`\`\`text
 AOI_Motor
-  InOut  Motor        Motor   (the UDT from the UDT lesson)
+  InOut  Motor        UDT_Motor   (the house UDT from the UDT lesson)
   Input  Interlock    BOOL    permissive from process logic
   Input  RunFbk       BOOL    auxiliary contact from the starter
   Output RunCmd       BOOL    to the physical output
@@ -87,35 +87,35 @@ AOI_Motor
   Local  StopTmr      TIMER
 \`\`\`
 
-Logic, in structured text for readability:
+Logic, in structured text for readability. Inside the AOI the InOut parameter is called \`Motor\`; when you place the block for motor M101, you wire the tag \`M101\` to it, so \`Motor.Cmd.Start\` here is \`M101.Cmd.Start\` on the controller. Teaching note: the Stop and fault handling below is process logic. The overload and E-stop are hardwired in the starter coil circuit, and the PLC only reads their status (see {{lesson:plc-safety}}).
 
 \`\`\`st
 // Ready when nothing blocks starting
-Motor.Sts.Ready := Interlock AND NOT Motor.Sts.Faulted;
+Motor.Sts.Ready := Interlock AND NOT Motor.Sts.Fault;
 
 // Start request seals in; stop request or fault drops it
 IF Motor.Cmd.Start AND Motor.Sts.Ready THEN
   RunCmd := 1;
 END_IF;
-IF Motor.Cmd.Stop OR NOT Interlock OR Motor.Sts.Faulted THEN
+IF Motor.Cmd.Stop OR NOT Interlock OR Motor.Sts.Fault THEN
   RunCmd := 0;
 END_IF;
 Motor.Cmd.Start := 0;   // consume the request
 Motor.Cmd.Stop  := 0;
 
 // Fail to start: commanded but no feedback after the configured time
-FailTmr.PRE := Motor.Cfg.StartTimeMs;
+FailTmr.PRE := Motor.Cfg.StartDelay;
 FailTmr.TimerEnable := RunCmd AND NOT RunFbk;
 TON(FailTmr);
 IF FailTmr.DN THEN
   Motor.Alm.FailToStart := 1;
-  Motor.Sts.Faulted := 1;
+  Motor.Sts.Fault := 1;
 END_IF;
 
 Motor.Sts.Running := RunFbk;
 IF Motor.Cmd.Reset THEN
   Motor.Alm.FailToStart := 0;
-  Motor.Sts.Faulted := 0;
+  Motor.Sts.Fault := 0;
   Motor.Cmd.Reset := 0;
 END_IF;
 \`\`\`
@@ -123,10 +123,10 @@ END_IF;
 Usage in ladder is a single block per motor:
 
 \`\`\`ladder
-XIC(Area1_Enable) AOI_Motor(Pump1_M,Pump1_Interlock,Pump1_Fbk,Pump1_Out)
+XIC(Area10_Enable) AOI_Motor(M101,M101_Interlock,M101_RunFbk,M101_RunOut)
 \`\`\`
 
-In the {{sim:sim-udt-motor}} challenge you build the same idea with a Motor UDT and a fault. Note one design decision: clearing Cmd.Start inside the AOI means the HMI button acts as a pulse. Many teams prefer that the HMI writes a bit and the PLC consumes it, since a held-high Start bit from a stuck screen would otherwise restart the motor after every fault reset.
+In the {{sim:sim-udt-motor}} challenge you build the same idea with a motor UDT and a fault. Note one design decision: clearing Cmd.Start inside the AOI means the HMI button acts as a pulse. Many teams prefer that the HMI writes a bit and the PLC consumes it, since a held-high Start bit from a stuck screen would otherwise restart the motor after every fault reset.
 
 ## Signatures, revisions and protection
 
@@ -186,18 +186,18 @@ Add-On Instructions arrived in RSLogix 5000 around version 16 (2007), at a time 
   examples: [
     {
       title: "Parameter design for a valve AOI",
-      body: `AOI_Valve: InOut \`Valve\` (the UDT), Inputs \`Interlock\`, \`OpenLS\`, \`CloseLS\`, Outputs \`OpenCmd\`, \`CloseCmd\`. Locals: \`TravelTmr\`. If the valve is commanded open and \`OpenLS\` is not made within \`Valve.Cfg.TravelTimeMs\`, set \`Valve.Alm.FailToOpen\`. The same block serves every valve on site, and the HMI faceplate reads the same UDT.`
+      body: `\`AOI_Valve\`: InOut \`Valve\` (a \`UDT_Valve\` tag such as \`FV101\`), Inputs \`Interlock\`, \`OpenLS\`, \`CloseLS\`, Outputs \`OpenCmd\`, \`CloseCmd\`. Locals: \`TravelTmr\`. If the valve is commanded open and \`OpenLS\` is not made within \`Valve.Cfg.TravelTime\` (milliseconds), set \`Valve.Alm.FailToOpen\`. The same block serves every valve on site, and the HMI faceplate reads the same UDT.`
     },
     {
       title: "The disabled-area bug",
-      body: `Area 2 is put in 'maintenance'. The rung calling \`AOI_Motor\` for Pump 7 goes false. Pump 7's \`RunCmd\` output stays on because the Logic routine never ran again. Fix: add an EnableInFalse routine that sets RunCmd to 0 and clears Sts bits, or call the AOI unconditionally and pass the area-enable as an input to the interlock.`
+      body: `Area20 is put in 'maintenance'. The rung calling \`AOI_Motor\` for motor M201 goes false. M201's \`RunCmd\` output stays on because the Logic routine never ran again. Fix: add an EnableInFalse routine that sets RunCmd to 0 and clears Sts bits, or call the AOI unconditionally and pass the area-enable as an input to the interlock.`
     }
   ],
 
   diagrams: {
     aoi: `<svg viewBox="0 0 640 260" role="img" aria-label="An Add-On Instruction with Input, Output and InOut parameters, local tags and its routines">
   <rect class="dg-box-accent" x="200" y="20" width="240" height="210" rx="8"/>
-  <text class="dg-title dg-mid" x="320" y="46">AOI_Motor (instance Pump1_M)</text>
+  <text class="dg-title dg-mid" x="320" y="46">AOI_Motor (instance M101)</text>
   <text class="dg-text-sm dg-mid" x="320" y="72">Routines</text>
   <text class="dg-text-mono dg-mid" x="320" y="92">Prescan  Logic</text>
   <text class="dg-text-mono dg-mid" x="320" y="110">EnableInFalse  Postscan</text>
@@ -209,7 +209,7 @@ Add-On Instructions arrived in RSLogix 5000 around version 16 (2007), at a time 
   <text class="dg-text-mono" x="20" y="82">Interlock</text>
   <text class="dg-text-mono" x="20" y="100">RunFbk</text>
   <text class="dg-text-sm" x="20" y="150">InOut (reference)</text>
-  <text class="dg-text-mono" x="20" y="172">Motor : Motor UDT</text>
+  <text class="dg-text-mono" x="20" y="172">Motor : UDT_Motor</text>
   <text class="dg-text-sm" x="470" y="60">Outputs (copied out)</text>
   <text class="dg-text-mono" x="470" y="82">RunCmd</text>
   <text class="dg-text-mono" x="470" y="100">EnableOut</text>
@@ -256,7 +256,7 @@ Add-On Instructions arrived in RSLogix 5000 around version 16 (2007), at a time 
       ]
     },
     {
-      q: "Which parameter usage should carry a Motor UDT into an AOI?",
+      q: "Which parameter usage should carry a UDT_Motor tag into an AOI?",
       options: ["Input", "Output", "Local", "InOut"],
       answer: 3,
       explain: [

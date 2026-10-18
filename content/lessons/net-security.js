@@ -82,25 +82,35 @@ What lives in the DMZ:
 
 A {{term:firewall|firewall}} allows or blocks traffic by source, destination, port and protocol, and modern ones can inspect application-layer content. The default stance is **deny all, then allow what you can justify**, in a table you can show an auditor.
 
+The rows below use the Meridian Foods Plant 1 addressing (site \`10.20.0.0/16\`, DMZ on VLAN 250 at \`10.20.250.0/24\`, Corporate \`10.100.0.0/16\`).
+
 | Conduit | Source | Destination | Port | Why |
 |---|---|---|---|---|
-| Plant to DMZ | Ignition gateway 10.10.30.5 | Historian replica 10.20.1.10 | TCP 1433 | Push history to replica |
-| IT to DMZ | Enterprise BI server | Historian replica | TCP 1433 | Reporting reads the copy |
-| DMZ to plant | Jump host 10.20.1.20 | Engineering workstation | TCP 3389 | Vendor session, time-limited |
-| Plant to PLC | Ignition gateway | PLC 10.10.10.10 | TCP 44818 | EtherNet/IP |
-| Plant to PLC | Ignition gateway | Modbus meter | TCP 502 | Power data |
+| Plant to DMZ | Ignition master 10.20.30.10 | DMZ gateway 10.20.250.10 | TCP 8060 | Gateway Network, outgoing connection from the site |
+| Corporate to DMZ | Corporate gateway | DMZ gateway 10.20.250.10 | TCP 8060 | Gateway Network, outgoing connection from Corporate. It reaches site services through the DMZ gateway |
+| Office to DMZ | Office browsers | Reverse proxy 10.20.250.10 | TCP 8043 | Perspective over HTTPS. The proxy passes it to the site over the Gateway Network |
+| Plant to DMZ | SQL 10.20.30.20 | Historian replica 10.20.250.20 | TCP 1433 | Push history to the replica |
+| IT to DMZ | Enterprise BI server | Historian replica 10.20.250.20 | TCP 1433 | Reporting reads the copy |
+| Plant to DMZ | Edge publisher or Ignition MQTT client | MQTT broker in the DMZ | TCP 8883 | MQTT over TLS, outgoing only. Use 1883 (plain) only on a trusted isolated segment |
+| DMZ to plant | Jump host 10.20.250.30 | Engineering workstation (VLAN 50) | TCP 3389 | Vendor session, time-limited |
+| Plant to PLC | Ignition master 10.20.30.10 | PLC1 10.20.10.10 | TCP 44818 | EtherNet/IP explicit messaging |
+| Plant to PLC | Ignition master 10.20.30.10 | Modbus meter (one address, for example 10.20.10.20) | TCP 502 | Power data |
+| Plant internal | OPC UA clients in Level 3 | Ignition master 10.20.30.10 | TCP 62541 | Ignition's built-in OPC UA server. Never opened to IT |
+| Plant internal | Ignition master 10.20.30.10 | Third-party OPC UA server | TCP 4840 (or the vendor's port) | 4840 is the OPC UA default. Many servers use another port |
+
+Two things stand out in this table. Every row that touches the DMZ is an outgoing connection from the side that starts it, and nothing runs straight from Level 3 to Level 4. Also, 8060 appears twice because the site and Corporate each dial *out* to the DMZ gateway. Neither side opens an inbound port to the other. A direct plant-to-HQ Gateway Network link can exist, but it is a documented exception, not the default.
 
 Each row names source, destination, port and reason. Every row you cannot justify is a row to delete.
 
 ## Where Ignition sits
 
-An Ignition gateway that talks to PLCs lives in the **site operations zone (Level 3)**: it has a leg toward the control network and a leg toward clients. The Gateway's ports are well known: 8088 (HTTP) and 8043 (HTTPS) for web and Perspective sessions, 62541 for the built-in OPC UA server, and a Gateway Network port (8060 is the usual default for secure connections, but verify it on your gateway). Database connections go to the DB port, and tag data goes to PLCs on 44818 or 502.
+An Ignition gateway that talks to PLCs lives in the **site operations zone (Level 3)**: it has a leg toward the control network and a leg toward clients. The Gateway's ports are well known: 8088 (HTTP) and 8043 (HTTPS) for web and Perspective sessions, 62541 for the built-in OPC UA server, and 8060 for the Gateway Network (verify the port on your gateway). Database connections go to the DB port (1433, 3306 or 5432), and tag data goes to PLCs on 44818 or 502. MQTT uses 1883, or 8883 with TLS.
 
 A common layout is:
 
 1. **Site gateway** inside the plant, talking to PLCs, never exposed outward.
-2. **Perspective access** for office users through a reverse proxy or a second, "front-end" gateway in the DMZ, reached over HTTPS, so users never connect to the plant gateway directly.
-3. **Gateway Network** links between site and enterprise gateways carry only the allowed ports through the firewall.
+2. **Perspective access** for office users: browser, HTTPS 8043, DMZ reverse proxy or front-end gateway, then the Gateway Network to the site gateway. Users never connect to the plant gateway directly.
+3. **Gateway Network** links follow the DMZ pattern. The site gateway makes an outgoing connection to the DMZ gateway, and the corporate gateway also makes an outgoing connection to it, so corporate reaches site services through the DMZ gateway and no inbound port opens into the plant.
 4. Engineering access through a jump host, with multi-factor authentication.
 
 ## Remote access patterns
@@ -114,6 +124,8 @@ Vendors need access to their equipment, and a lot of incidents begin there.
 ## Defense in depth
 
 No single control is trusted. Layers stack so that a failure of one is caught by another: physical locks on cabinets and disabled unused switch ports, VLANs and firewalls between zones, application allow lists on workstations, role-based accounts in Ignition, controller key switches in RUN mode, and monitoring that watches for new devices and unusual traffic. Safety systems add a last layer that cannot be reached from any of the above.
+
+For the highest-risk boundaries, a **data diode** (a unidirectional gateway) lets data flow out of the plant with no return path at all, and passive monitoring builds an asset inventory and a baseline so a new device stands out. Both are covered in {{lesson:net-ot-monitoring}}.
 `,
 
   eli5: `

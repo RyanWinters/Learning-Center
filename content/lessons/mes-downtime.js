@@ -44,11 +44,11 @@ A downtime event begins when the state leaves "Running" during planned productio
 
 ## Micro-stops
 
-A {{term:micro-stop|micro-stop}} is a very short stop, often seconds, that the operator clears without calling anyone. A packaging line with 40 jams a shift at 25 seconds each loses 16 minutes and no one logs a single event.
+A {{term:micro-stop|micro-stop}} is a very short stop, often seconds, that the operator clears without calling anyone. A packaging line with 40 jams a shift at 25 seconds each loses about 17 minutes and no one logs a single event.
 
 Two choices:
 
-1. **Threshold.** Ignore stops shorter than a set time, such as 30 seconds, as events and let them show up as lost speed in Performance. Sepasoft's equipment state configuration includes a short stop threshold in seconds for this purpose, and setting it to zero includes every event.
+1. **Threshold.** Ignore stops shorter than a set time, such as 30 seconds, as events and let them show up as lost speed in Performance. Sepasoft's equipment state configuration includes a short stop threshold in seconds for this purpose: a state must last that long before it is logged against availability. Check [Configuring Equipment States](https://docs.sepasoft.com/articles/user-manual/configuring-equipment-states) for how your release treats very small values.
 2. **Count and aggregate.** Record every micro-stop but do not prompt for a reason. Show the count and total time per shift and let engineering sample the causes.
 
 Do not prompt the operator on every short stop. They will pick the first code in the list to make the screen go away, and your Pareto will say the top problem is "Adjustment."
@@ -79,21 +79,21 @@ Planned
 
 Rules that experienced integrators repeat:
 
-- **Keep it short.** Two or three levels. Around 8 top-level choices and 30 to 50 leaves in total. An operator should reach a code in two taps.
+- **Keep it short.** Two or three levels, a handful of top-level choices (the example tree above has four) and a few dozen leaves at most. This is practitioner experience, not a standard. An operator should reach a code in two taps.
 - **Make the reason tell you who acts.** Maintenance, production, materials, quality, planned. A report that sorts by owner is more useful than one sorted by alphabet.
 - **Separate planned from unplanned at the top level.** That one choice drives OEE's planned production time.
-- **Avoid "Other" with free text as the common case.** If "Other" is more than about 5 percent of downtime, the tree needs work. Review it quarterly.
+- **Avoid "Other" with free text as the common case.** If "Other" is a large share of downtime (many teams treat anything above a few percent as a warning, a rule of thumb rather than a standard), the tree needs work. Review it quarterly.
 - **Design it with the operators.** Use their words. A code nobody understands gets misused.
 - **Keep one master list.** Codes should live in master data with an ID, not as strings typed into screens. Retire codes rather than deleting them so history still resolves.
 
 ## Splitting events and the schedule
 
-One stop is not always one cause. A 30-minute stop might be 20 minutes of jam clearing followed by 10 minutes waiting for a mechanic. Allow an event to be **split**, with each part carrying its own reason. Sepasoft's Perspective downtime table lets operators assign more than one reason to an event and split it at the line level. If you build your own, store split pieces as child rows that sum to the parent duration.
+One stop is not always one cause. A 30-minute stop might be 20 minutes of jam clearing followed by 10 minutes waiting for a mechanic. Allow an event to be **split**, with each part carrying its own reason. Sepasoft's Perspective downtime table is built for operators to edit events and reasons, and splitting is covered in its documentation (see [OEE Downtime Table - Perspective](https://docs.sepasoft.com/articles/user-manual/oee-downtime-table-perspective); confirm the split options for your release). If you build your own, store split pieces as child rows that sum to the parent duration.
 
 Context decides whether a stop counts at all:
 
 - **Shift boundaries.** A stop that spans a shift change should be cut at the boundary so each shift reports its own time.
-- **Schedule.** A stop during a scheduled break, a "no order scheduled" window or a planned maintenance block is not a loss against planned production time. Sepasoft documents that planned breaks and similar scheduled stops do not count against line OEE Availability.
+- **Schedule.** A stop during a scheduled break, a "no order scheduled" window or a planned maintenance block is not a loss against planned production time. Sepasoft lets you give a state a Planned Downtime type, which is how scheduled stops are kept out of the availability loss. Verify the exact rules for your release in the equipment-state pages.
 - **Overlap.** Two machines in a line can fault together. Decide the rule up front: line downtime is attributed to the *key* machine (the bottleneck) or to the first cause. Sepasoft's detection modes exist for exactly this question.
 
 ## Pareto analysis
@@ -115,7 +115,7 @@ One week on one line. Three reasons account for 78 percent of the lost time. Not
 \`\`\`sql
 SELECT reason_code, COUNT(*) AS events, SUM(duration_s)/60.0 AS minutes
 FROM downtime_event
-WHERE line_id = 3
+WHERE line_id = :line_id
   AND start_ts >= :week_start AND start_ts < :week_end
   AND planned = 0
 GROUP BY reason_code
@@ -127,10 +127,12 @@ ORDER BY minutes DESC;
 When a conveyor jams, the PLC often shows ten faults in the next second: the jam, a downstream starved alarm, a low-air warning caused by the e-stop. The operator sees a screen full of red. Only the first one matters. A **first-out** latch captures the first fault that occurred and holds it until reset, so MES can suggest the right reason code.
 
 \`\`\`st
-// Runs every scan. FaultCode is the ID of the fault that just became active (0 if none).
+// Pseudo-ST: FaultCode is the ID of the fault that just became active (0 if none).
+// WallClockNow stands for a timestamp read from the controller clock (for example via GSV);
+// check the instruction form for your Studio 5000 version.
 IF FaultCode <> 0 AND FirstOutCode = 0 THEN
     FirstOutCode := FaultCode;
-    FirstOutTime := NowTimestamp;
+    FirstOutTime := WallClockNow;
 END_IF;
 
 IF NOT MachineFaulted AND ResetPulse THEN
@@ -179,7 +181,7 @@ So you do two things. The bus itself tells you the first warning light that came
 
 **Why keep trees short?** Every extra level costs taps and invites guessing. A long tree also hides the problem it was built to expose. If "Jam" is split into 40 jam locations, none of them rank high on a Pareto, and the real total looks small. Start coarse. Split a bucket only when it is large enough to deserve attention.
 
-**Why the PLC must supply the first-out fault.** Cascade faults make most of the alarm list noise. Without a first-out indicator, MES records a cascade as the cause, or a human guesses. Giving MES one integer that is correct 90 percent of the time is worth more than a thousand alarm tags.
+**Why the PLC must supply the first-out fault.** Cascade faults make most of the alarm list noise. Without a first-out indicator, MES records a cascade as the cause, or a human guesses. Giving MES one integer that is usually correct is worth more than a thousand alarm tags.
 
 **Why timestamps from the source.** If events are stamped when the gateway polls, a stop that lasted 4 seconds can appear as 0 or 10 depending on poll alignment. At scale that bias moves Availability by points. Use PLC or edge timestamps and sort out clock sync (see {{lesson:net-data}}).
 

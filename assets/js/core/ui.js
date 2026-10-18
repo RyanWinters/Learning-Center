@@ -48,7 +48,11 @@
     cards: '<rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/>',
     star: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3z"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
-    reset: '<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/>'
+    reset: '<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/>',
+    download: '<path d="M12 4v11M7 11l5 5 5-5"/><path d="M5 20h14"/>',
+    list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+    flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+    gauge: '<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>'
   };
   function icon(name, size) {
     size = size || 20;
@@ -73,10 +77,10 @@
     const s = STATUS[status] || STATUS.available;
     return '<span class="sico sico-' + s.cls + '" title="' + s.label + '">' + icon(s.icon, 16) + '</span>';
   }
+  /* Lesson difficulty, shown as L1-L4 so it is never confused with the XP level. */
   function pips(level) {
-    let h = '';
-    for (let i = 1; i <= 4; i++) h += '<i class="' + (i <= level ? 'on' : '') + '"></i>';
-    return '<span class="pips" role="img" aria-label="Level ' + level + ' of 4">' + h + '</span>';
+    const n = LEVEL_NAMES[level] || '';
+    return '<span class="ltag l' + level + '" role="img" aria-label="Difficulty L' + level + ', ' + n + '" title="L' + level + ' · ' + n + '">L' + level + '</span>';
   }
   const LEVEL_NAMES = ['', 'Intro', 'Core', 'Advanced', 'Expert'];
 
@@ -88,6 +92,8 @@
       '<div class="ring-in">' + (inner || '') + '</div></div>';
   }
 
+  const isLab = id => /^build-/.test(id);
+
   /* A lesson as a list row (not a card). */
   function lessonRow(id, o) {
     o = o || {};
@@ -97,7 +103,7 @@
     const unmet = st === 'locked' ? LC.graph.unmet(id) : [];
     let meta = '';
     if (o.track) meta += '<span class="mono-tag">' + esc(LC.trackById[m.track].code) + '</span>';
-    meta += '<span>' + m.minutes + ' min</span>' + pips(m.level);
+    meta += '<span>' + m.minutes + ' min</span>' + pips(m.level) + (isLab(id) ? '<span class="labchip">' + icon('lab', 12) + 'Lab</span>' : '');
     if (unmet.length) meta += '<span class="needs">Needs: ' + esc(unmet.slice(0, 2).map(u => LC.index[u].title).join(', ')) + (unmet.length > 2 ? ' +' + (unmet.length - 2) : '') + '</span>';
     const end = soon ? chip('soon', true) : (st === 'available' ? icon('chev', 18) : chip(st, true));
     return '<a class="lrow st-' + st + '" href="#/lesson/' + id + '">' + statusIcon(soon ? 'soon' : st) +
@@ -153,5 +159,5 @@
   }
   function plural(n, w, p) { return n + ' ' + (n === 1 ? w : (p || w + 's')); }
 
-  LC.ui = { esc: esc, icon: icon, chip: chip, statusIcon: statusIcon, pips: pips, ring: ring, lessonRow: lessonRow, toast: toast, sheet: sheet, greeting: greeting, plural: plural, STATUS: STATUS, LEVEL_NAMES: LEVEL_NAMES };
+  LC.ui = { esc: esc, icon: icon, chip: chip, statusIcon: statusIcon, pips: pips, ring: ring, lessonRow: lessonRow, toast: toast, sheet: sheet, isLab: isLab, greeting: greeting, plural: plural, STATUS: STATUS, LEVEL_NAMES: LEVEL_NAMES };
 })();

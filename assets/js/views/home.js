@@ -18,25 +18,29 @@
     const due = LC.quiz.due().length;
     const cont = LC.graph.continueLesson();
     const pool = LC.graph.upNextWhy(6, cont ? [cont] : []);
-    const first = cont ? null : (pool[0] ? pool[0].id : 'found-history');
+    const open = pool.find(x => LC.graph.status(x.id) === 'available') || pool[0];
+    const first = cont ? null : (open ? open.id : 'found-history');
     const next = pool.filter(x => x.id !== first).slice(0, 5);
     const fresh = Object.keys(s.lessons).filter(k => s.lessons[k].status).length === 0;
 
     let contHtml;
     if (cont) {
       const m = LC.index[cont], tr = LC.trackById[m.track], r = s.lessons[cont];
-      const step = r.readAt ? 'Take the quiz to finish' : 'Pick up where you left off';
+      const skips = LC.graph.skipsText(cont);
+      const step = (r.readAt ? 'Take the quiz to finish' : 'Pick up where you left off') + (skips ? ' · opened early, ' + skips : '');
       contHtml = '<a class="continue" href="#/lesson/' + cont + (r.readAt ? '/quiz' : '') + '"><span class="eyebrow">Continue · ' + esc(tr.code) + ' ' + esc(tr.title) + '</span>' +
         '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + step + ' · ' + m.minutes + ' min</span><span class="continue-go">' + (r.readAt ? 'Start quiz' : 'Resume') + icon('right', 18) + '</span></a>';
     } else {
-      const m = LC.index[first];
+      const m = LC.index[first], skips = LC.graph.skipsText(first);
       contHtml = '<a class="continue continue-new" href="#/lesson/' + first + '"><span class="eyebrow">' + (fresh ? 'Start here' : 'Next lesson') + '</span>' +
-        '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + (fresh ? 'The ten tracks run from signals and networks to MES architecture. Begin with the story so far.' : 'Nothing in progress. This is the next open lesson.') + '</span><span class="continue-go">Begin' + icon('right', 18) + '</span></a>';
+        '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + (skips ? 'Nothing in progress. Starting here ' + skips + '; you can read it anyway.' : fresh ? 'The ten tracks run from signals and networks to MES architecture. Begin with the story so far.' : 'Nothing in progress. This is the next open lesson.') + '</span><span class="continue-go">' + (skips ? 'Read anyway' : 'Begin') + icon('right', 18) + '</span></a>';
     }
 
     const reviewHtml = due
       ? '<a class="today-review" href="#/review">' + icon('review', 18) + '<span><b class="num">' + due + '</b> ' + (due === 1 ? 'card' : 'cards') + ' due for review</span>' + icon('chev', 16) + '</a>'
       : '<div class="today-review is-idle">' + icon('check', 18) + '<span>Review queue is clear</span></div>';
+    const rd = LC.readiness ? LC.readiness.summary() : null;
+    const readyHtml = rd ? '<a class="ready-link" href="#/readiness"><span class="ready-top">' + icon('gauge', 18) + '<b>Integrator readiness</b>' + icon('chev', 16) + '</span><span class="bar" aria-hidden="true"><i style="width:' + rd.pct + '%"></i></span><span class="muted small num">' + rd.done + ' of ' + rd.total + ' advanced lessons · capstone ' + (rd.capstone ? 'done' : 'ahead') + '</span></a>' : '';
 
     root.innerHTML = '<div class="page home">' +
       '<header class="hero"><p class="eyebrow">' + U.greeting() + '</p><h1 class="hero-title">' + esc(li.title) + '</h1>' +
@@ -48,7 +52,7 @@
       '<aside class="today" aria-label="Today"><div class="today-top">' +
         U.ring(today.pct, 104, 9, '<span class="ring-num num">' + today.xp + '</span><span class="ring-sub">of ' + today.goal + ' XP</span>') +
         '<div class="today-side"><p class="eyebrow">Today</p><p class="today-state">' + (today.hit ? 'Goal reached' : (today.goal - today.xp) + ' XP to go') + '</p>' +
-        '<p class="streak ' + (streak ? '' : 'is-off') + '">' + icon('flame', 18) + '<b class="num">' + streak + '</b> day streak</p></div></div>' + reviewHtml + '</aside></div>' +
-      '<section class="sec"><div class="sec-head"><h2>Tracks</h2><a href="#/map">Skill map</a></div><div class="ttiles">' + LC.tracks.map(trackTile).join('') + '</div></section></div>';
+        '<p class="streak ' + (streak ? '' : 'is-off') + '">' + icon('flame', 18) + '<b class="num">' + streak + '</b> day streak</p></div></div>' + reviewHtml + readyHtml + '</aside></div>' +
+      '<section class="sec"><div class="sec-head"><h2>Tracks</h2><a href="#/tracks">List and skill map</a></div><div class="ttiles">' + LC.tracks.map(trackTile).join('') + '</div></section></div>';
   };
 })();

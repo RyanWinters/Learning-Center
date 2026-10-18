@@ -35,7 +35,7 @@ The important point is that EtherNet/IP is a *transport*. The actual language is
 
 A request names a **service** (such as Get Attribute Single, 0x0E) plus the class/instance/attribute path. This is why every compliant device answers an identity request: ask class 0x01, instance 1 and you get vendor ID, device type, product code, revision, serial number and name. Tools use this to "browse" a network and list what is there.
 
-Logix controllers add their own services on top for symbolic access, so you can ask for a tag by name (\`Tank1.Level\`) rather than by a numeric path.
+Logix controllers add their own services on top for symbolic access, so you can ask for a tag by name (\`M101.Sts.Running\`) rather than by a numeric path.
 
 ## Two ways to move data
 
@@ -87,6 +87,18 @@ Each Ignition device connection opens CIP connections to the controller, so a Ga
 
 > [!tip] If Ignition cannot connect to a controller
 > Test in order. Ping the IP. Confirm TCP 44818 is open (a firewall or VLAN may block it). Check the slot number of the processor in the chassis. Check controller connection usage in the Ethernet module's diagnostic pages. Check that the controller is in a mode that allows reads.
+
+## Securing EtherNet/IP
+
+Classic CIP has no built-in authentication or encryption. A client that can reach TCP 44818 can read tags, and a client that can write can change the process. Layer the defenses:
+
+- **Network first.** Keep controllers such as PLC1 (10.20.10.10) in the control VLAN, allow 44818 and 2222 only from the hosts that need them (for example the Ignition server, an engineering workstation), and keep enterprise and vendor traffic out. See {{lesson:net-security}}.
+- **CIP Security.** ODVA's CIP Security extension adds device identity, integrity and optional encryption to EtherNet/IP, using TLS for explicit traffic and DTLS for implicit I/O. It works only if the controller, communication module and peers all support it, and it needs certificate or key management. Check the product documentation for supported firmware and profiles before you plan around it.
+- **Controller mode and keyswitch.** On Logix controllers the keyswitch (RUN, REM, PROG) and the controller mode limit what a remote user can do. With the keyswitch in RUN, the mode cannot be changed remotely and downloads are blocked. Leaving controllers in REM or PROG makes remote mode changes and downloads possible, so set the mode your site policy requires.
+- **Trusted sources and write restrictions.** Many Ethernet modules and controllers can disable unused services (such as the web server), restrict which sources may connect, or limit what an HMI or SCADA account may write. Rockwell's FactoryTalk Security and controller security settings are examples. The names and options vary by product and firmware, so check the manual for your version. In Ignition, use a read-only account or device connection where write access is not needed.
+- **Protect the source.** Source protection and change tracking on the controller project make unauthorized edits visible.
+
+Safety traffic on EtherNet/IP (CIP Safety) stays in the safety system and is outside the SCADA integration scope.
 `,
 
   eli5: `
@@ -108,7 +120,7 @@ The board can get crowded, though. If every student pins a note and the school o
 
 **Why do connection counts matter to a SCADA person?** Because a new Ignition Gateway, a historian or a diagnostic tool is a *client* of the controller, and clients consume connections. A controller that is "full" fails in confusing ways: some devices drop out when another client connects. Treat connections as a budget when you add integrations, and put them in the design document.
 
-**Why security matters here.** Explicit CIP will carry a write from anyone who can reach port 44818. Put controllers behind firewalls and segment I/O traffic from enterprise traffic. See {{lesson:net-security}}.
+**Why security matters here.** Explicit CIP will carry a write from anyone who can reach port 44818. Put controllers behind firewalls and segment I/O traffic from enterprise traffic. CIP Security, controller mode and write restrictions add layers where the hardware supports them (see the section above and {{lesson:net-security}}).
 `,
 
   history: `
@@ -118,7 +130,7 @@ ODVA published the EtherNet/IP specification in 2000 (the group was formed in 19
   examples: [
     {
       title: "Reading a tag from Ignition",
-      body: `A ControlLogix at 10.10.5.20 has its processor in slot 0 of the chassis. In the Gateway, add a Logix device connection with hostname 10.10.5.20 and slot 0. A controller-scoped tag named \`Line1_Speed\` then appears under the device in the OPC browser. Drag it to the tag browser and Ignition reads it with explicit messages on TCP 44818. Program-scoped tags are addressed with their program prefix, for example \`Program:MainProgram.Counter\`.`
+      body: `PLC1, a ControlLogix at 10.20.10.10, has its processor in slot 0 of the chassis. In the Gateway, add a Logix device connection with hostname 10.20.10.10 and slot 0. A controller-scoped UDT tag named \`M101\` then appears under the device in the OPC browser. Drag it to the tag browser and Ignition reads it with explicit messages on TCP 44818. Program-scoped tags are addressed with their program prefix, for example \`Program:MainProgram.Counter\`.`
     },
     {
       title: "A drive added with a Generic Ethernet Module",
@@ -138,8 +150,8 @@ ODVA published the EtherNet/IP specification in 2000 (the group was formed in 19
   <text class="dg-text-sm dg-mid" x="545" y="68">Logix controller</text>
   <line class="dg-line" x1="152" y1="53" x2="466" y2="53" marker-end="url(#proto-enip-ah)"/>
   <line class="dg-line" x1="466" y1="75" x2="152" y2="75" marker-end="url(#proto-enip-ah)"/>
-  <text class="dg-text-sm dg-mid" x="309" y="46">read tag Line1_Speed</text>
-  <text class="dg-text-sm dg-mid" x="309" y="96">value = 42.5</text>
+  <text class="dg-text-sm dg-mid" x="309" y="46">read M101.Sts.Speed</text>
+  <text class="dg-text-sm dg-mid" x="309" y="96">value = 1450.0</text>
   <text class="dg-text-muted" x="20" y="116">TCP 44818 · carries service + path or tag name · any time</text>
   <text class="dg-title" x="20" y="152">Implicit: scheduled stream</text>
   <rect class="dg-box" x="20" y="166" width="130" height="50" rx="6"/>

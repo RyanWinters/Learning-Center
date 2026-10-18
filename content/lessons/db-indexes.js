@@ -29,7 +29,7 @@ Almost every index you create is a {{term:b-tree|B-tree}}. Picture a phone book.
 
 {{diagram:btree}}
 
-Because each node is so wide, the tree stays very shallow. An index on 50 million rows is typically only 3 to 4 levels deep, so finding one row costs 3 or 4 page reads instead of millions. The leaf level is sorted and linked, which also makes **range** scans efficient: find the first leaf for \`2026-03-02 00:00\`, then walk right until you pass \`2026-03-03 00:00\`. That is exactly the shape of time-based plant queries.
+Because each node is so wide, the tree stays very shallow. The depth depends on key width and page size, but even for tens of millions of rows it stays small, so finding one row costs a handful of page reads instead of millions (check your engine's index-size view or the query plan to see the real numbers). The leaf level is sorted and linked, which also makes **range** scans efficient: find the first leaf for \`2026-03-02 00:00\`, then walk right until you pass \`2026-03-03 00:00\`. That is exactly the shape of time-based plant queries.
 
 ## Clustered vs nonclustered
 
@@ -82,7 +82,7 @@ Nearly every production and downtime question has a time window: this shift, thi
 > [!example] The slow shift report
 > A shift report query takes 38 seconds on a table of 30 million count rows. Adding \`CREATE INDEX ix_count_machine_time ON production_count (machine_id, count_time);\` drops it to under 100 ms. Nothing else changed. The query was already correct; it was just scanning the whole table.
 
-Index the columns that appear in \`WHERE\`, \`JOIN ... ON\` and \`ORDER BY\`. Foreign key columns used in joins are the usual forgotten ones: PostgreSQL and SQL Server do not index them automatically.
+Index the selective columns that appear in \`WHERE\`, \`JOIN ... ON\` and \`ORDER BY\` of queries you have measured, not every column you can think of. Foreign key columns used in joins are the usual forgotten ones: PostgreSQL and SQL Server do not index them automatically.
 
 ## Reading an execution plan
 
@@ -149,7 +149,7 @@ The B-tree was invented by Rudolf Bayer and Edward McCreight at Boeing in 1970 a
   examples: [
     {
       title: "Choosing an index for the OEE downtime query",
-      body: `The OEE report asks: for line 2, total downtime minutes per machine for last week. The filter is \`machine_id IN (...)\` and a start_time range, and it groups by machine. An index on \`(machine_id, start_time)\` serves the equality-then-range shape. Adding \`end_time\` as an INCLUDE column (SQL Server) or as a third key column lets the database sum durations from the index alone.`
+      body: `The OEE report asks: for line 2, total downtime minutes per machine for last week. The filter is \`machine_id IN (...)\` and a start_time range, and it groups by machine. An index on \`(machine_id, start_time)\` serves the equality-then-range shape. Adding \`duration_min\` as an INCLUDE column (SQL Server) or as a third key column lets the database sum durations from the index alone.`
     },
     {
       title: "The index that wasn't used",
@@ -215,7 +215,7 @@ The B-tree was invented by Rudolf Bayer and Edward McCreight at Boeing in 1970 a
     },
     {
       q: "Why does a B-tree index on 50 million rows take only a few page reads to find one row?",
-      options: ["It stores a copy of the table in memory", "Each node holds many sorted keys, so the tree is only 3 or 4 levels deep", "It hashes the key to a direct location", "It only indexes the most recent rows"],
+      options: ["It stores a copy of the table in memory", "Each node holds many sorted keys, so the tree stays only a few levels deep", "It hashes the key to a direct location", "It only indexes the most recent rows"],
       answer: 1,
       explain: [
         "Indexes live on disk and are cached like other pages. They don't require the whole table in memory.",

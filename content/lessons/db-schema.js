@@ -44,7 +44,7 @@ A {{term:primary-key|primary key}} is the column (or columns) that uniquely iden
 
 ### Surrogate vs natural keys
 
-A **natural key** is a real-world identifier: a machine tag like \`PKG-L1-FILLER\`, a work order number, a lot code. A **surrogate key** is a meaningless number the database generates, usually named \`<table>_id\`.
+A **natural key** is a real-world identifier: a machine tag like \`M101\`, a work order number, a lot code. A **surrogate key** is a meaningless number the database generates, usually named \`<table>_id\`.
 
 | | Natural key | Surrogate key |
 |---|---|---|
@@ -81,7 +81,7 @@ With a composite key (event_date, line, machine), the supervisor depends only on
 
 ### Third normal form: depend on nothing but the key
 
-\`reason_cat\` depends on \`reason\`, not on the event. Change "Jam" from Mechanical to Material-handling and you must edit thousands of rows, and miss one. 3NF says non-key columns may not depend on other non-key columns. Move reason and its category into a lookup table. The supervisor phone depends on the supervisor, so people get their own table too.
+\`reason_cat\` depends on \`reason\`, not on the event. Change "Jam" from Mechanical to Material-handling and you must edit thousands of rows, and miss one. 3NF says non-key columns may not depend on other non-key columns. Move reason and its category into a lookup table. The supervisor phone depends on the supervisor, so people get their own \`supervisor\` table, and a small assignment table says who supervised which line on which day.
 
 A common memory aid: every non-key column depends on **the key, the whole key, and nothing but the key**.
 
@@ -92,24 +92,53 @@ CREATE TABLE downtime_reason (
   reason_id    INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   reason_code  VARCHAR(20)  NOT NULL UNIQUE,
   description  VARCHAR(100) NOT NULL,
-  category     VARCHAR(30)  NOT NULL,
-  is_planned   BOOLEAN      NOT NULL DEFAULT FALSE
+  category     VARCHAR(30)  NOT NULL      -- 'Planned' is a category value, not a second flag
 );
 
 CREATE TABLE downtime_event (
   event_id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  machine_id  INTEGER   NOT NULL REFERENCES machine(machine_id),
-  reason_id   INTEGER   NOT NULL REFERENCES downtime_reason(reason_id),
-  start_time  TIMESTAMP NOT NULL,
-  end_time    TIMESTAMP,
+  machine_id  INTEGER     NOT NULL REFERENCES machine(machine_id),
+  reason_id   INTEGER     NOT NULL REFERENCES downtime_reason(reason_id),
+  start_time  TIMESTAMPTZ NOT NULL,       -- an absolute instant; see the UTC note below
+  end_time    TIMESTAMPTZ,
   CHECK (end_time IS NULL OR end_time > start_time)
 );
+
+CREATE TABLE supervisor (
+  supervisor_id  INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  full_name      VARCHAR(80) NOT NULL,
+  phone          VARCHAR(30)
+);
+
+CREATE TABLE line_supervisor (            -- who supervised which line on which day
+  line_id        INTEGER NOT NULL REFERENCES line(line_id),
+  shift_date     DATE    NOT NULL,
+  supervisor_id  INTEGER NOT NULL REFERENCES supervisor(supervisor_id),
+  PRIMARY KEY (line_id, shift_date)
+);
+
+-- PostgreSQL does NOT index foreign key columns for you (it indexes the primary key
+-- and UNIQUE columns only). Add the ones your joins and deletes will use.
+CREATE INDEX ix_downtime_event_machine ON downtime_event (machine_id, start_time);
+CREATE INDEX ix_downtime_event_reason  ON downtime_event (reason_id);
 \`\`\`
+
+The first draft of \`downtime_reason\` had an \`is_planned\` flag beside \`category\`. That is the same 3NF mistake as \`reason_cat\` in the spreadsheet: whether a reason is planned depends on its category, not on the reason row itself, so the two can disagree. Keep one of them. Here the category holds it, and a view or query derives the flag (\`category = 'Planned'\`). (If planned-ness is a real attribute of each reason that you set independently, keep the flag and drop it from the category's meaning instead. The rule is one source for each fact.)
+
+Now the spreadsheet's supervisor columns have a home. \`supervisor\` holds each person once with one phone number, and \`line_supervisor\` records the date-and-line dependency from the 2NF step. Changing Dana's phone is one UPDATE.
+> [!note] How UTC is enforced
+> \`TIMESTAMPTZ\` does not store a time zone. PostgreSQL converts what you give it to an absolute instant (UTC internally) and shows it in the session's time zone. So set the application connection to UTC (or write explicit offsets such as \`'2026-03-02T12:00:00Z'\`) and the column holds the right instant whatever clock a client uses. SQL Server has no such type; use \`DATETIME2\` and write UTC values with \`SYSUTCDATETIME()\`, or use \`DATETIMEOFFSET\`. A plain \`TIMESTAMP\` or \`DATETIME2\` stores whatever wall-clock value it is given and cannot tell local from UTC, which is how the silent errors start.
 
 > [!note] Identity syntax differs by database
 > \`GENERATED ALWAYS AS IDENTITY\` is PostgreSQL (and standard SQL). MySQL uses \`AUTO_INCREMENT\`, and SQL Server uses \`IDENTITY(1,1)\`. The ideas are identical.
 
 Notice \`end_time\` can be NULL. An open event is one that has started and not yet ended, which is a real state in a plant. The \`CHECK\` constraint stops impossible rows.
+
+## Changing the schema safely: migrations
+
+A schema is code. Keep every change as a small, numbered SQL script in version control (\`001_create_tables.sql\`, \`002_add_supervisor.sql\`) and apply them in order with a migration tool or a documented manual run. Record which scripts have run in a table. That way test and production databases end up identical, and "what changed last Tuesday" has an answer. Tools such as Flyway and Liquibase do this bookkeeping for you.
+
+Plan for concurrent writers too: several screens, scripts and Transaction Groups will write to these tables at once. Constraints (keys, CHECK, NOT NULL) are the guard that works no matter who writes, which is why they belong in the database and not only in the Ignition script.
 
 ## Lookup tables for reason codes
 
@@ -131,8 +160,9 @@ Pick one set of rules and apply them everywhere. A workable set:
 
 - Singular table names (\`machine\`, not \`machines\`), lowercase with underscores. Quoted mixed-case names cause trouble in PostgreSQL.
 - Primary key \`<table>_id\`. A foreign key has the same name as the key it points at.
-- Times end in \`_time\` (or \`_ts\`) and are stored in UTC. Booleans start with \`is_\`.
-- No spaces, no reserved words (\`order\`, \`user\`, \`group\`), no units hidden in names unless it matters (\`ideal_rate_per_min\`).
+- Times end in \`_time\` (or \`_ts\`) and are stored in UTC (\`TIMESTAMPTZ\` on PostgreSQL). Booleans start with \`is_\`.
+- No spaces, no reserved words (\`order\`, \`user\`, \`group\`). Put units in the description or in a name that states them (\`ideal_rate_per_min\`) when they are not obvious.
+- Where a table holds Plant 1 equipment, store the equipment number without a hyphen (\`M101\`, \`LT101\`), as PLC and Ignition names do.
 `,
 
   eli5: `

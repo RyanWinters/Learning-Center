@@ -12,22 +12,22 @@ LC.lesson({
     "Pick a sensing technology for presence, temperature, pressure, flow and level",
     "Explain what a valve positioner and a solenoid do",
     "Trace power and control from breaker to motor through contactor, overload and VFD",
-    "Describe what an MCC is and why motor starters have three separate protections"
+    "Describe what an MCC is and why a starter splits disconnect and short-circuit protection, the switch, and overload protection into separate parts"
   ],
 
   body: `
 ## Level 0 is where the truth is
 
-Every number on a Perspective screen started as a physical effect at {{lesson:found-purdue}} Level 0: a pipe warmed up, a tank filled, a box passed a beam. Bad data almost always starts here, with a wrong sensor, a bad install or a failed actuator, and not in the software. If you can reason about the device, you can tell whether a strange reading is real.
+Every number on a Perspective screen (the web-based HMI, or human-machine interface, in Ignition) started as a physical effect at {{lesson:found-purdue}} Level 0: a pipe warmed up, a tank filled, a box passed a beam. Bad data almost always starts here, with a wrong sensor, a bad install or a failed actuator, and not in the software. If you can reason about the device, you can tell whether a strange reading is real.
 
 Devices fall into two families.
 
-- **Inputs:** *sensors* and *transmitters* tell the controller what is happening.
+- **Inputs:** *sensors* and *transmitters* tell the controller (the PLC, or programmable logic controller) what is happening.
 - **Outputs:** *actuators* and *drives* make something happen.
 
 ## Sensors vs. transmitters
 
-A **{{term:sensor|sensor}}** detects a physical quantity. A **{{term:transmitter|transmitter}}** is a sensor plus electronics that conditions the raw effect into a standard signal the PLC can read, usually 4-20 mA ({{lesson:found-signals}}). A bare thermocouple produces a few millivolts. A temperature transmitter turns that into 4-20 mA for a chosen range, so the PLC card does not need to know thermocouple math.
+A **{{term:sensor|sensor}}** detects a physical quantity. A **{{term:transmitter|transmitter}}** is a sensor plus electronics that conditions the raw effect into a standard signal the PLC can read, usually 4-20 mA (four to twenty milliamps of loop current, see {{lesson:found-signals}}). A bare thermocouple produces a few millivolts. A temperature transmitter turns that into 4-20 mA for a chosen range, so the PLC card does not need to know thermocouple math.
 
 ### Discrete sensors (on/off)
 
@@ -46,7 +46,7 @@ Photo-eyes come in three styles. **Through-beam** has a separate emitter and rec
 
 | Measurement | Common technologies | Notes |
 |---|---|---|
-| Temperature | {{term:rtd|RTD}} (Pt100), {{term:thermocouple|thermocouple}} | RTD: accurate and stable to about 600 C. Thermocouple: wide range (types K, J, T, and others), fast, less accurate |
+| Temperature | {{term:rtd|RTD}} (resistance temperature detector, Pt100), {{term:thermocouple|thermocouple}} | RTD: accurate and stable to about 600 C. Thermocouple: wide range (types K, J, T, and others), fast, less accurate |
 | Pressure | Strain gauge or capacitive cell | Gauge, absolute and differential variants. A differential cell also measures flow and level |
 | Flow | Magnetic, Coriolis, vortex, differential pressure (orifice), turbine, ultrasonic | Magmeters need conductive liquid. Coriolis gives mass flow and density |
 | Level | Differential pressure, radar, ultrasonic, guided wave, capacitance | Radar is unaffected by vapor and temperature changes. Ultrasonic is cheaper and fooled by foam |
@@ -78,20 +78,22 @@ Motors are the largest electrical load in a plant, and there are three common wa
 
 ## The motor starter anatomy
 
-A conventional starter combines three jobs. Many field problems come from confusing them.
+A conventional starter is three parts doing three jobs: a disconnect with short-circuit protection, a switch (the contactor), and overload protection. Only the first and third are protections. Many field problems come from confusing them.
 
 | Part | Job | Protects against |
 |---|---|---|
-| Breaker or fuses (short-circuit protection) | Disconnect and short-circuit trip | Dead shorts, wiring faults |
+| Breaker or fuses | Disconnect and short-circuit trip | Dead shorts, wiring faults |
 | {{term:contactor|Contactor}} | Switch the motor power on and off; coil controlled by the PLC or a button | Not a protection, it is a switch |
 | {{term:motor-overload|Overload relay}} | Trips on sustained excess current | Overheating from overload or locked rotor |
 
-The PLC drives only the contactor coil (small power). The contactor switches big power. The overload contact feeds back to the PLC as a status input, so the HMI can show "motor tripped on overload." This is what a ladder rung like \`XIC(Start) XIC(OL_OK) OTE(Contactor)\` represents.
+The PLC drives only the contactor coil (small power). The contactor switches big power. **Overloads and E-stops are hardwired in the starter coil circuit**: the overload relay's normally closed contact and the E-stop contacts sit in series with the coil, so opening any of them drops the contactor even if the PLC is dead, forced or wrong. The PLC gets a separate auxiliary contact from the overload relay and the contactor as status inputs, so the HMI can show "motor tripped on overload." It never provides the only means of stopping or protecting the motor. Process permissives (for example, "tank not empty") do belong in PLC logic. A teaching rung such as \`XIC(M101_RunCmd) OTE(M101_Contactor)\` therefore drives only the part of the coil circuit the PLC is allowed to control.
+
+So the motor has three protections working together: short-circuit protection (breaker or fuses), overload protection (the relay), and the hardwired stop chain (E-stop and safety stops). The contactor is not one of them. It is the switch they act on.
 
 An **{{term:mcc|MCC}}** (motor control center) is a row of cabinets holding many starters or VFDs in plug-in buckets, sharing a common bus. When someone says "the pump is in the MCC," they mean the starter, not the pump, is in that room.
 
 > [!example] Worked example: what the PLC sees for one pump
-> Pump P-101 on a VFD in MCC-2 has these I/O points:
+> Pump P-101 on a VFD in MCC-2 has these I/O points. On drawings the tag is written P-101 and the flow transmitter FT-101. In PLC tag names the hyphen is dropped (P101, FT101), so the I/O list below uses P101 and FT101:
 > - DO: \`P101_Run_Cmd\` (24 VDC to the drive's run terminal)
 > - AO: \`P101_Speed_SP\` (4-20 mA = 0-60 Hz)
 > - DI: \`P101_Running\` (drive relay output)
@@ -99,13 +101,13 @@ An **{{term:mcc|MCC}}** (motor control center) is a row of cabinets holding many
 > - AI: \`P101_Speed_FB\` (4-20 mA from drive output)
 > - AI: \`FT101_Flow\` (flow transmitter on the discharge)
 >
-> Often the drive also reports status and current over EtherNet/IP, replacing many of those wires. The PLC logic ties all of these into one UDT per pump.
+> The VFD's own stop input and any E-stop are hardwired, as for a starter, and the run command from the PLC is only the normal start. Often the drive also reports status and current over EtherNet/IP, replacing many of those wires. The PLC logic ties all of these into one UDT per pump.
 
 {{diagram:motor}}
 
 ## Intelligent devices
 
-Modern field devices rarely stop at a single signal. A smart transmitter on HART reports diagnostics. A VFD on EtherNet/IP reports current, torque and fault codes. An IO-Link sensor sends its parameters over a three-wire cable. These blur the boundary between Level 0 and Level 1, and give your SCADA much richer data than a plain 4-20 mA.
+Modern field devices rarely stop at a single signal. A smart transmitter on HART (Highway Addressable Remote Transducer, a digital signal riding on the 4-20 mA wires) reports diagnostics. A VFD on EtherNet/IP (an industrial Ethernet protocol) reports current, torque and fault codes. An IO-Link sensor sends its parameters over a three-wire cable. These blur the boundary between Level 0 and Level 1, and give your SCADA much richer data than a plain 4-20 mA.
 
 > [!note] Diagnostics are free data
 > If a drive already reports motor current and a fault code over the network, log them. Trends of current catch a worn bearing weeks before it trips.
@@ -124,13 +126,13 @@ And just as your body has safety reflexes (pull your hand away from a hot stove)
   why: `
 **Why transmitters and not raw sensors?** A raw thermocouple signal is millivolts, sensitive to noise and wire length. Putting the conditioning electronics at the sensor and sending a robust 4-20 mA lets you run long cable through a noisy plant and keep the PLC input card generic. The cost is one more device to buy and calibrate. That tradeoff is almost always worth it.
 
-**Why separate the contactor, overload and breaker?** Each handles a different failure at a different speed. A short circuit needs a trip in milliseconds, which the breaker does. An overload is slow heating that the overload relay models with a thermal curve. Combining them would mean a device that trips too late for shorts or too soon for normal motor start-up current. Keeping them separate also means the PLC can open the contactor without touching the protection.
+**Why separate the contactor, overload and breaker?** Each handles a different failure at a different speed. A short circuit needs a trip in milliseconds, which the breaker does. An overload is slow heating that the overload relay models with a thermal curve. Combining them would mean a device that trips too late for shorts or too soon for normal motor start-up current. Keeping them separate also means the PLC can open the contactor in normal operation while the protection stays hardwired and independent of the PLC.
 
 **Why VFDs instead of throttle valves?** Throttling a pump with a valve wastes energy as heat across the valve. Slowing the motor reduces power roughly with the cube of speed for centrifugal loads, so a pump at 80 percent speed uses about half the power. This is why VFDs are the default in new pumping and HVAC. The tradeoff is harmonics, heat in the panel, and a more complex failure mode to troubleshoot.
 
 **Why fail-safe positions matter to you.** The PLC program and the alarm logic must agree with the valve's mechanical fail state. If the valve fails closed and the PLC treats 0 mA as open, you will lose your first batch on commissioning day. Always read the instrument datasheet.
 
-**What integrators argue about.** Hardwired signals versus networked devices. Hardwired is simple and debuggable with a multimeter. Networked gives diagnostics and saves wiring but depends on the network and the right EDS or driver files. Most modern plants use both: critical interlocks hardwired, diagnostics networked.
+**What integrators argue about.** Hardwired signals versus networked devices. Hardwired is simple and debuggable with a multimeter. Networked gives diagnostics and saves wiring but depends on the network and the right EDS (electronic data sheet) or driver files. Most modern plants use both: critical interlocks hardwired, diagnostics networked.
 `,
 
   history: `
@@ -154,6 +156,7 @@ Pneumatic 3-15 psi signals dominated process control until the 1950s and 1960s, 
     <marker id="found-devices-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker>
   </defs>
   <text class="dg-title" x="20" y="26">Power path (heavy) and control path (light)</text>
+  <text class="dg-text-muted" x="20" y="46">Overload and E-stop contacts sit in the coil circuit; the PLC only monitors them</text>
   <rect class="dg-box" x="20" y="60" width="100" height="56" rx="4"/>
   <text class="dg-text-sm dg-mid" x="70" y="84">Breaker</text>
   <text class="dg-text-muted dg-mid" x="70" y="102">short circuit</text>
@@ -170,7 +173,7 @@ Pneumatic 3-15 psi signals dominated process control until the 1950s and 1960s, 
   <line class="dg-line-accent" x1="420" y1="88" x2="488" y2="88" marker-end="url(#found-devices-ah)"/>
   <rect class="dg-box-2" x="170" y="160" width="200" height="50" rx="4"/>
   <text class="dg-text-sm dg-mid" x="270" y="182">PLC</text>
-  <text class="dg-text-muted dg-mid" x="270" y="198">DO coil, DI overload OK</text>
+  <text class="dg-text-muted dg-mid" x="270" y="198">run cmd, DI status</text>
   <line class="dg-line-thin dg-dash" x1="220" y1="160" x2="220" y2="116" marker-end="url(#found-devices-ah)"/>
   <line class="dg-line-thin dg-dash" x1="370" y1="116" x2="370" y2="160" marker-end="url(#found-devices-ah)"/>
   <text class="dg-text-muted" x="228" y="140">coil</text>

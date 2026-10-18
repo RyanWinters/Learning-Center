@@ -28,7 +28,7 @@ You will meet MQTT whenever a plant wants data to leave the building: edge gatew
 
 - **Client**: anything that opens a TCP connection to the broker. A PLC gateway, an Ignition module, a Python script and a phone app are all clients. A client can publish, subscribe, or both.
 - **Broker**: the server that accepts connections, keeps the subscription list and routes messages. Examples are Mosquitto, HiveMQ, EMQX and the Chariot broker from Cirrus Link. The broker is the single point everything depends on, so production designs often cluster it.
-- **Topic**: a UTF-8 string with levels separated by slashes, such as \`plant1/line2/filler/temperature\`. Topics are not created in advance. Publishing to one brings it into existence.
+- **Topic**: a UTF-8 string with levels separated by slashes, such as \`meridian/plant1/area10/line1/m101/sts/running\` (the lowercase plain-MQTT form used throughout this course; {{lesson:proto-sparkplug}} uses its own fixed namespace instead). Topics are not created in advance. Publishing to one brings it into existence.
 - **Payload**: the message body. MQTT does not care what is in it. It can be plain text, JSON or binary. Agreeing on the format is your problem, which is the reason {{lesson:proto-sparkplug}} exists.
 
 ## Topics and wildcards
@@ -37,13 +37,13 @@ Subscribers can use a **topic filter** with two wildcards. Publishers always use
 
 | Wildcard | Meaning | Filter | Matches | Does not match |
 |---|---|---|---|---|
-| \`+\` | Exactly one level | \`plant1/+/filler/temperature\` | \`plant1/line2/filler/temperature\`, \`plant1/line3/filler/temperature\` | \`plant1/line2/zone4/filler/temperature\` |
-| \`#\` | Everything below, must be last | \`plant1/line2/#\` | \`plant1/line2/filler/temperature\`, \`plant1/line2/capper/speed\` | \`plant1/line3/filler/speed\` |
+| \`+\` | Exactly one level | \`meridian/plant1/area10/+/m101/sts/running\` | \`meridian/plant1/area10/line1/m101/sts/running\`, \`meridian/plant1/area10/line2/m101/sts/running\` | \`meridian/plant1/area10/line1/zone4/m101/sts/running\` |
+| \`#\` | Everything below, must be last | \`meridian/plant1/area10/line1/#\` | \`meridian/plant1/area10/line1/m101/sts/running\`, \`meridian/plant1/area10/line1/p101/sts/running\` | \`meridian/plant1/area10/line2/m101/sts/running\` |
 
 A subscription to \`#\` alone receives every message on the broker. That is useful when debugging with a tool like MQTT Explorer and a bad idea in production. Topics starting with \`$\` (such as \`$SYS/...\`) are reserved for broker statistics and are not matched by a leading wildcard.
 
 > [!tip] Design topics like a folder path
-> Put the broadest level first and the most specific last: \`site/area/line/cell/tag\`. Never put data in the topic that changes (like a timestamp). Keep the level count modest, because each level is more bytes on every message.
+> Put the broadest level first and the most specific last: \`enterprise/site/area/line/equipment/...\`. Never put data in the topic that changes (like a timestamp). Keep the level count modest, because each level is more bytes on every message.
 
 ## Quality of Service
 
@@ -63,7 +63,7 @@ Three features turn a basic message bus into something you can run a plant on.
 
 **{{term:retained-message|Retained messages}}.** A publisher can set the retain flag. The broker then stores the last retained message for that topic and gives it to every new subscriber the moment they subscribe. Without it, a dashboard that connects at 9 a.m. waits until the next change to see a value that has not changed since midnight. Publishing an empty retained payload clears it.
 
-**{{term:last-will|Last Will and Testament}}.** When a client connects, it can hand the broker a message to publish on its behalf if the client disappears without a clean disconnect. Network failure, power loss and a crashed gateway all trigger it. The classic use is \`plant1/line2/gateway/status\`: the gateway publishes \`online\` (retained) when it connects, and its will is \`offline\` (retained). Everyone who watches the topic learns about the failure within the keep-alive window, which is typically 1.5 times the interval the client agreed to.
+**{{term:last-will|Last Will and Testament}}.** When a client connects, it can hand the broker a message to publish on its behalf if the client disappears without a clean disconnect. Network failure, power loss and a crashed gateway all trigger it. The classic use is \`meridian/plant1/area10/line1/gateway/status\`: the gateway publishes \`online\` (retained) when it connects, and its will is \`offline\` (retained). Everyone who watches the topic learns about the failure within the keep-alive window, which is typically 1.5 times the interval the client agreed to.
 
 **{{term:persistent-session|Persistent sessions}}.** Normally a broker forgets a client's subscriptions when it disconnects. With a persistent session (the "clean session" flag off in 3.1.1, or a session expiry interval in 5), the broker keeps the subscriptions and queues QoS 1 and 2 messages while the client is offline. When the client reconnects with the same client ID, it receives what it missed. Always use a unique client ID per client. Two clients with the same ID will kick each other off in a loop.
 
@@ -76,13 +76,13 @@ Three features turn a basic message bus into something you can run a plant on.
 
 | Feature | 3.1.1 | 5 |
 |---|---|---|
-| Reason codes on acknowledgments | Mostly none, a failed connect just closes | Detailed codes on CONNACK, PUBACK, DISCONNECT |
+| Reason codes on acknowledgments | CONNACK return codes only (0 to 5). No reason codes on PUBACK, SUBACK or DISCONNECT | Detailed reason codes on CONNACK, PUBACK, SUBACK and DISCONNECT |
 | Session control | Clean session flag only | Session expiry and message expiry intervals |
 | Metadata on messages | None | User properties (key/value), content type, response topic |
 | Shared subscriptions | Vendor extension | Standard, lets a pool of consumers split a topic |
 | Topic aliases | No | Replace a long topic string with a small integer |
 
-Ignition's MQTT modules and many gateways speak 3.1.1 first. Check what both ends and the broker support before you assume version 5 features.
+Many gateways and brokers still default to 3.1.1. Check the manual for each product and version (client, broker and any Ignition MQTT module) before you assume version 5 features.
 
 ## Ports and security
 
@@ -95,7 +95,7 @@ Ignition's MQTT modules and many gateways speak 3.1.1 first. Check what both end
 Plain MQTT has a username and password in the connect packet, sent unencrypted on port 1883. Over a plant boundary, use port 8883 with TLS, ideally with client certificates, and set per-client topic permissions on the broker so a sensor gateway cannot subscribe to \`#\`. See {{lesson:net-security}}.
 
 > [!example] A worked example
-> An edge gateway at a pump station publishes to \`water/stationA/pump1/flow\` with payload \`{"v": 412.7, "q": "good", "t": 1760000000000}\`, QoS 1, retained. The SCADA server subscribes to \`water/+/+/flow\`. A new analyst opens a trend tool that subscribes to \`water/stationA/#\` and sees the last retained value for every tag instantly. The gateway's will on \`water/stationA/status\` is \`offline\`, so when a backhoe cuts the fiber, SCADA gets the offline flag within about 45 seconds if the keep-alive is 30. No one at the station had to know any of these consumers existed.
+> An edge gateway on Area10 Line1 publishes the level of LT101 to \`meridian/plant1/area10/line1/lt101/sts/level\` with payload \`{"v": 2.41, "q": "good", "t": 1760000000000}\` (metres), QoS 1, retained. The SCADA server subscribes to \`meridian/plant1/area10/line1/+/sts/#\`. A new analyst opens a trend tool that subscribes to \`meridian/plant1/area10/line1/#\` and sees the last retained value for every tag instantly. The gateway's will on \`meridian/plant1/area10/line1/gateway/status\` is \`offline\`, so when a switch loses power, SCADA gets the offline flag within about 45 seconds if the keep-alive is 30. No one at the gateway had to know any of these consumers existed.
 
 ## Why pub/sub changes the architecture
 
@@ -127,7 +127,7 @@ Andy Stanford-Clark of IBM and Arlen Nipper, then at Arcom (now part of Eurotech
   examples: [
     {
       title: "Which filters match?",
-      body: `Topic published: \`plant1/line2/filler/temperature\`. **Matches:** \`plant1/+/filler/temperature\`, \`plant1/line2/#\`, \`+/+/+/+\`, \`#\`. **Does not match:** \`plant1/+/temperature\` (wrong number of levels), \`plant1/line2/filler\` (no wildcard, so it must be exact), \`plant1/line3/#\` (different line).`
+      body: `Topic published: \`meridian/plant1/area10/line1/m101/sts/running\`. **Matches:** \`meridian/plant1/area10/+/m101/sts/running\`, \`meridian/plant1/area10/line1/#\`, \`+/+/+/+/+/+/+\`, \`#\`. **Does not match:** \`meridian/plant1/area10/+/sts/running\` (wrong number of levels), \`meridian/plant1/area10/line1/m101\` (no wildcard, so it must be exact), \`meridian/plant1/area10/line2/#\` (different line).`
     },
     {
       title: "Choosing QoS for three payloads",
@@ -145,20 +145,20 @@ Andy Stanford-Clark of IBM and Arlen Nipper, then at Arcom (now part of Eurotech
   <text class="dg-title" x="490" y="24">Subscribers</text>
   <rect class="dg-box" x="20" y="44" width="150" height="56" rx="6"/>
   <text class="dg-text-sm dg-mid" x="95" y="68">Edge gateway</text>
-  <text class="dg-text-mono dg-mid" x="95" y="88">line2/filler/temp</text>
+  <text class="dg-text-mono dg-mid" x="95" y="88">line1/m101/sts</text>
   <rect class="dg-box" x="20" y="150" width="150" height="56" rx="6"/>
   <text class="dg-text-sm dg-mid" x="95" y="174">PLC gateway</text>
-  <text class="dg-text-mono dg-mid" x="95" y="194">line3/capper/rpm</text>
+  <text class="dg-text-mono dg-mid" x="95" y="194">line1/p101/sts</text>
   <rect class="dg-box-accent" x="250" y="60" width="130" height="130" rx="8"/>
   <text class="dg-text dg-mid" x="315" y="108">MQTT</text>
   <text class="dg-text dg-mid" x="315" y="130">broker</text>
   <text class="dg-text-muted dg-mid" x="315" y="156">routes by topic</text>
   <rect class="dg-box" x="460" y="36" width="160" height="48" rx="6"/>
   <text class="dg-text-sm dg-mid" x="540" y="56">Historian</text>
-  <text class="dg-text-mono dg-mid" x="540" y="74">line2/#</text>
+  <text class="dg-text-mono dg-mid" x="540" y="74">line1/#</text>
   <rect class="dg-box" x="460" y="100" width="160" height="48" rx="6"/>
   <text class="dg-text-sm dg-mid" x="540" y="120">SCADA</text>
-  <text class="dg-text-mono dg-mid" x="540" y="138">+/+/+/temp</text>
+  <text class="dg-text-mono dg-mid" x="540" y="138">line1/+/sts/#</text>
   <rect class="dg-box" x="460" y="164" width="160" height="48" rx="6"/>
   <text class="dg-text-sm dg-mid" x="540" y="184">Cloud analytics</text>
   <text class="dg-text-mono dg-mid" x="540" y="202">#</text>
@@ -200,14 +200,14 @@ Andy Stanford-Clark of IBM and Arlen Nipper, then at Arcom (now part of Eurotech
       ]
     },
     {
-      q: "Which filter matches plant1/line2/filler/temperature but NOT plant1/line2/zone4/filler/temperature?",
-      options: ["plant1/#", "plant1/line2/#", "plant1/+/filler/temperature", "plant1/+/+/+/temperature"],
+      q: "Which filter matches meridian/plant1/area10/line1/m101/sts/running but NOT meridian/plant1/area10/line1/zone4/m101/sts/running?",
+      options: ["meridian/plant1/#", "meridian/plant1/area10/line1/#", "meridian/plant1/area10/+/m101/sts/running", "meridian/plant1/area10/+/+/m101/sts/running"],
       answer: 2,
       explain: [
         "# matches everything below plant1, including the zone4 topic.",
         "# also matches the longer topic.",
         "Correct. + matches exactly one level, so the extra zone4 level breaks the match.",
-        "This has five levels in total, so it matches only the longer zone4 topic, the opposite of what you want."
+        "This has eight levels in total, so it matches only the longer zone4 topic, the opposite of what you want."
       ]
     },
     {

@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## Start with one gateway
 
-Ignition licenses by server, not by tag or client count. A single {{term:ignition|Ignition}} gateway on decent hardware can do a surprising amount, so the default question is not "which architecture?" but "what forces me off one box?" Inductive Automation (IA) publishes a set of reference patterns for the cases where one gateway is not enough. This lesson covers each, when it fits, and what it costs.
+Ignition licenses by gateway and by module, not by tag count, and the standard platform has no per-client fee. Some products and some older or special license types do carry session or client caps, so check what your contract says (see {{lesson:ign-licensing}}). A single {{term:ignition|Ignition}} gateway on decent hardware can do a surprising amount, so the default question is not "which architecture?" but "what forces me off one box?" Inductive Automation (IA) publishes a set of reference patterns for the cases where one gateway is not enough. This lesson covers each, when it fits, and what it costs.
 
 ## Pattern 1: Standard
 
@@ -26,7 +26,7 @@ One on-premise gateway does everything: talks to the PLCs, logs history to a SQL
 
 {{diagram:standard}}
 
-This is where almost every project should start. It is simple to back up, simple to secure and simple to debug. The limit is hardware, not the licence. IA's sizing guide gives example benchmark tiers (for instance, roughly 4 to 8 cores and 16 GB of memory for tens of thousands of tags and up to about 50 concurrent clients). It also says the numbers depend on device count, tag subscriptions, history change rate and client count. A blog from IA says many organizations stay within about 100 clients, 100 devices and 150,000 tags before considering a larger deployment. Treat these as starting points to test against, not promises, and check the current guide before quoting them to a customer.
+This is where almost every project should start. It is simple to back up, simple to secure and simple to debug. The limit is hardware, not the licence. IA's Server Sizing and Architecture Guide gives example benchmark tiers for a single gateway, and the numbers depend on device count, tag subscriptions, history change rate and client count. {{lesson:ign-licensing}} summarizes the tiers. As a rule of thumb used in this track, a single well-sized gateway is the default up to roughly the upper tier of that guide (on the order of 100,000 tags and 50 to 100 clients). That is the author's reading, not an IA limit. Treat it as a starting point to test against, and check the current guide before quoting any figure to a customer.
 
 If uptime matters, you add {{lesson:arch-redundancy}} to this pattern. A redundant pair is still the standard pattern.
 
@@ -40,9 +40,9 @@ Scale-out splits one site's work across several gateways joined by the {{lesson:
 |---|---|---|
 | **Back-end (I/O) gateways** | Talk to PLCs and devices, own the tag providers, run historian and alarming | Adding gateways as devices or tag counts grow |
 | **Front-end (visualization) gateways** | Serve Perspective sessions or Vision clients, read tags through remote tag providers | Adding gateways as concurrent clients grow |
-| **Load balancer** | Spreads client sessions across front-ends | Sits in front of the front-end group |
+| **Load balancer** | Spreads new client sessions across front-ends and pins each client to the one that owns its session | Sits in front of the front-end group |
 
-Each front-end sees back-end tags through a {{term:remote-tag-provider|remote tag provider}}, so screens bind to the same tag paths whichever gateway they run on. IA's scale-out guidance says the front-end tier should be stateless, because sessions can land on any front-end, and that load balancer stickiness should be long (the guide mentions an hour or more). IA's guide gives an example of about 250,000 tags and 200 devices spread over two back-end gateways, with multiple front-ends able to serve thousands of clients. Read those as illustrations of the shape, not guarantees.
+Each front-end sees back-end tags through a {{term:remote-tag-provider|remote tag provider}}, so screens bind to the same tag paths whichever gateway they run on. A Perspective session lives in memory on the one front-end gateway that owns it, so the load balancer must pin each client to that front-end (session affinity, also called sticky sessions). Check the 8.3 scale-out guide for the stickiness settings it recommends. If a front-end fails, the sessions on it are lost: clients reconnect through the load balancer to another front-end and start new sessions, and any unsaved page state is gone. What should be identical on every front-end is configuration (projects, tag provider connections, security), which is why teams manage the group with {{lesson:arch-eam}} or the same project sources. The IA guide gives example sizes for large scale-out systems. Read those as illustrations of the shape, not guarantees.
 
 **Why split I/O from visualization?** The two workloads load the machine differently. Device polling is steady and memory heavy. Client sessions are spiky and tied to people. Separating them means a rush of operators logging in does not slow data collection.
 
@@ -71,7 +71,7 @@ The hybrid pattern keeps control and local HMI on premises and puts the enterpri
 
 | Situation | Reach for |
 |---|---|
-| One site, under about 100k tags, under about 50 clients | Standard, plus redundancy if downtime is costly |
+| One site that fits the single-gateway tiers in IA's sizing guide (rule of thumb above) | Standard, plus redundancy if downtime is costly |
 | One very large site, many devices, hundreds of clients | Scale-out |
 | Many sites, WAN links that can fail | Hub-and-spoke |
 | Executives or partners need global views | Hub-and-spoke with a cloud hub |
@@ -104,7 +104,7 @@ You don't pick the biggest setup first. You start with one shop and only add mor
 
 **Why keep control local?** The cardinal rule in hub-and-spoke and cloud designs is that the plant must not need the WAN to run. If a spoke needs the hub to start a pump, a fibre cut becomes a production outage. Local gateway, local history buffer, local alarm pipeline. The hub is for visibility and analytics.
 
-**Why scale-out's front-end must be stateless.** A load balancer can send a user's next request to a different front-end. If a front-end holds something that exists nowhere else, such as a local-only tag or unsaved state, that user will see inconsistent behavior after a rebalance or a failover. Put shared state in the back-end or the database.
+**Why the load balancer must pin clients.** A Perspective session lives on the front-end gateway that created it. If the load balancer sent a client's next request to a different front-end, that front-end would know nothing about the session. So the balancer keeps each client on one front-end (session affinity). The price is that a front-end failure drops its sessions: users reconnect to another front-end and lose in-flight state. That is why the front-ends are kept as interchangeable as possible. Configuration is identical on each, and anything that must survive lives in the back-end, the tag providers or the database, never in front-end-only tags or scripts.
 
 **Gateway Network or MQTT between sites?** This is a live argument. The Gateway Network is quick to set up, and gives you tag semantics and history forwarding for free. MQTT scales to many more sites, decouples versions and vendors, and fits a unified namespace. Many designs use both: Gateway Network inside a site (scale-out), MQTT between sites.
 
@@ -151,13 +151,13 @@ IA's reference architectures have been published for years as a standard, a scal
   <rect class="dg-box" x="240" y="14" width="160" height="40" rx="6"/>
   <text class="dg-text-sm dg-mid" x="320" y="39">Clients (Perspective)</text>
   <rect class="dg-box-2" x="240" y="76" width="160" height="40" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="320" y="101">Load balancer</text>
+  <text class="dg-text-sm dg-mid" x="320" y="101">Load balancer (sticky)</text>
   <rect class="dg-box-accent" x="110" y="144" width="170" height="52" rx="6"/>
   <text class="dg-text-sm dg-mid" x="195" y="166">Front-end gateway 1</text>
-  <text class="dg-text-muted dg-mid" x="195" y="184">visualization, stateless</text>
+  <text class="dg-text-muted dg-mid" x="195" y="184">owns its sessions</text>
   <rect class="dg-box-accent" x="360" y="144" width="170" height="52" rx="6"/>
   <text class="dg-text-sm dg-mid" x="445" y="166">Front-end gateway 2</text>
-  <text class="dg-text-muted dg-mid" x="445" y="184">visualization, stateless</text>
+  <text class="dg-text-muted dg-mid" x="445" y="184">owns its sessions</text>
   <rect class="dg-box" x="110" y="238" width="170" height="52" rx="6"/>
   <text class="dg-text-sm dg-mid" x="195" y="260">Back-end gateway A</text>
   <text class="dg-text-muted dg-mid" x="195" y="278">devices, tags, history</text>
@@ -202,7 +202,7 @@ IA's reference architectures have been published for years as a standard, a scal
   pitfalls: [
     "Splitting into scale-out before measuring. One properly sized gateway often covers it.",
     "Using hub-and-spoke but letting spokes depend on the hub for local control or login.",
-    "Putting stateful content on a scale-out front-end behind a load balancer.",
+    "Running a scale-out front-end group without session affinity on the load balancer, or keeping front-end-only tags and state that users expect to survive a failover.",
     "Quoting IA's example sizing numbers as guarantees. They are benchmarks that depend on history rates and device mix.",
     "Designing the architecture with no plan to patch, back up and license the extra gateways.",
     "Forgetting the database is a single point of failure in every one of these patterns."
@@ -260,19 +260,19 @@ IA's reference architectures have been published for years as a standard, a scal
       ]
     },
     {
-      q: "Why does the scale-out front-end tier need to be stateless?",
+      q: "Why must the load balancer in front of scale-out front-ends use session affinity, and what happens when a front-end fails?",
       options: [
-        "Front-ends cannot store files",
-        "The licence forbids local settings",
-        "A load balancer may send a user to any front-end, so anything stored only on one would appear inconsistent",
-        "Front-ends do not run Perspective"
+        "Front-ends cannot store files, so each user needs a dedicated one",
+        "The licence forbids moving a user between front-ends",
+        "A Perspective session lives on one front-end, so the client must stay pinned to it. If that front-end fails, its sessions are lost and clients reconnect to another",
+        "Sessions are replicated to every front-end, so affinity only improves speed"
       ],
       answer: 2,
       explain: [
-        "Front-ends can store files. The issue is consistency across front-ends.",
+        "Front-ends can store files. The issue is where the session state lives.",
         "Licensing is not the reason.",
-        "Correct. Shared state belongs in back-ends or the database so any front-end can serve any session.",
-        "Front-ends are the gateways that run Perspective sessions in this pattern."
+        "Correct. Session state is held in memory on the owning front-end. Failover means new sessions on a surviving front-end and loss of in-flight state.",
+        "Sessions are not replicated across front-ends. Without affinity a request could reach a gateway that does not know the session."
       ]
     },
     {

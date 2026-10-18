@@ -40,7 +40,7 @@ Names change, so treat this as orientation, not an endorsement list.
 
 | Vendor | What they provide | Notes |
 |---|---|---|
-| **Cirrus Link** | MQTT Engine, MQTT Transmission, and MQTT Distributor (a broker), which implement Sparkplug in Ignition | Inductive Automation's Strategic Partner. Their modules also supply the MQTT event stream sources and handlers ({{lesson:arch-event-streams}}) |
+| **Cirrus Link** | MQTT Engine, MQTT Transmission, and MQTT Distributor (a broker), which implement Sparkplug in Ignition | Recognized by Inductive Automation as a Strategic Partner (check IA's partner pages). Cirrus Link builds and supports its modules, and the module documentation is theirs. IA's price list lists them too, but that does not move support to IA (see {{lesson:arch-mqtt}}). Their modules also supply the MQTT event stream sources and handlers ({{lesson:arch-event-streams}}) |
 | **Sepasoft** | MES modules for OEE, SPC, track and trace, recipes and batch | A Premier Technology Provider. See {{lesson:mes-sepasoft}} |
 | **Embr** (from Musson Industrial) | Utility modules such as SNMP device support, server-sent events and charting | Community listings also show its Charts module succeeding an earlier charting module from a different developer |
 | **Others** | Drivers for specific PLC families, extra charting, document and PDF tools, mapping, OEE widgets | Browse the Showcase for the current set |
@@ -71,7 +71,7 @@ This is the main skill in this lesson. A module is a dependency of your customer
 - **Cost model.** Per-gateway license, subscription or per-seat? Check what happens to price at renewal.
 
 > [!example] A quick scorecard
-> Rate each of the seven questions 0 to 2. A score under 8 out of 14 for a module that sits on the critical path is a reason to choose a different design, or to sign a support agreement with the vendor before you build on it. A cosmetic module, such as a chart type you could swap, can tolerate a lower score.
+> Rate each of the seven questions 0 to 2. A score under 8 out of 14 for a module that sits on the critical path is, by this lesson's own rule of thumb (not a standard), a reason to choose a different design, or to sign a support agreement with the vendor before you build on it. A cosmetic module, such as a chart type you could swap, can tolerate a lower score.
 
 ## Building your own: the Ignition SDK
 

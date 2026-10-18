@@ -35,7 +35,7 @@ When you enable history on tags, the module creates a set of tables in your conn
 | \`sqlth_partitions\` | A map from time ranges to data tables | \`pname\`, \`drvid\`, \`start_time\`, \`end_time\` |
 | \`sqlt_data_X_YYYY_MM\` | The actual values, one table per partition | \`tagid\`, \`intvalue\`, \`floatvalue\`, \`stringvalue\`, \`datevalue\`, \`dataintegrity\`, \`t_stamp\` |
 
-The data tables are named \`sqlt_data_<driverId>_<year>_<month>\` for the default monthly partition size, so \`sqlt_data_1_2026_10\` holds October 2026 for driver 1. Daily partitions use a different suffix pattern, and if partitioning is turned off all data goes into a single \`sqlth_1_data\` table.
+The data tables are named \`sqlt_data_<driverId>_<year>_<month>\` for the default monthly partition size, so \`sqlt_data_1_2026_10\` holds October 2026 for driver 1. If you choose a different partition size, the suffix and table names change, so read \`sqlth_partitions\` for the real names instead of guessing them.
 
 ### What a data row looks like
 
@@ -48,7 +48,7 @@ The data tables are named \`sqlt_data_<driverId>_<year>_<month>\` for the defaul
 Two details trip people up:
 
 - \`t_stamp\` is **milliseconds since 1970-01-01 UTC** in a BIGINT, not a SQL timestamp. 1792195200000 is 2026-10-17 00:00 UTC.
-- The value goes in one of four typed columns, chosen by the tag's \`datatype\` in \`sqlth_te\`. The others are NULL. \`dataintegrity\` is the quality code, where 192 means good in the stored table. In scripts and expressions never compare to 192. Use \`isGood()\` or \`.quality.isGood()\`.
+- The value goes in one of four typed columns, chosen by the tag's \`datatype\` in \`sqlth_te\`. The others are NULL. \`dataintegrity\` holds the quality code. The 192 shown above is an example from the older numbering, and Ignition 8 changed quality codes, so check the table reference for your version before relying on any number. In scripts and expressions never compare to 192. Use \`isGood()\` or \`.quality.isGood()\`.
 
 ### Tag versions
 
@@ -64,12 +64,12 @@ To read raw history for one tag from SQL you must do the historian's job by hand
 4. UNION the results.
 
 \`\`\`sql
--- One tag, one day, all inside October 2026 (partition sqlt_data_1_2026_10)
+-- One tag, one day, all inside October 2026 (partition sqlt_data_1_2026_10).
+-- No quality filter here: quality codes are version-dependent. The historian API filters quality for you.
 SELECT te.tagpath, d.t_stamp, d.floatvalue
 FROM sqlt_data_1_2026_10 d
 JOIN sqlth_te te ON te.id = d.tagid
-WHERE te.tagpath = 'line1/filler/speed'
-  AND d.dataintegrity = 192
+WHERE te.tagpath = 'plant1/area10/line1/m101/sts/speed'
   AND d.t_stamp >= 1792195200000   -- 2026-10-17 00:00 UTC
   AND d.t_stamp <  1792281600000   -- 2026-10-18 00:00 UTC
 ORDER BY d.t_stamp;
@@ -77,7 +77,7 @@ ORDER BY d.t_stamp;
 
 {{diagram:join}}
 
-That works for one day inside one month. Cross a month boundary and you need a second table name in a UNION, built dynamically. Query "last 90 days" and you may touch four tables. Tag path matching also has quirks (the stored path is lowercase, provider handling differs between historian setups), and the gateway tracks the table names so the query does not have to.
+That works for one day inside one month. Cross a month boundary and you need a second table name in a UNION, built dynamically. Query "last 90 days" and you may touch four tables. Tag path matching also has quirks (the stored path is normalized, typically to lowercase, and provider handling differs between historian setups, so check what \`sqlth_te\` actually holds), and the gateway tracks the table names so the query does not have to.
 
 ## Partitioning and pruning
 
@@ -122,7 +122,7 @@ What the API does for you:
 - Works with other history providers, including remote gateways and non-SQL stores, with the same call.
 - Survives internal schema changes between versions, which raw SQL does not.
 
-Use raw SQL against these tables for administration: counting rows per partition, finding the biggest tags, checking for gaps. Never write application logic that depends on them, and never INSERT or UPDATE them directly. Inductive Automation's guidance is to use the provided functions for reads and the historian store functions (the older \`system.tag.storeTagHistory\` in 8.1) for writes.
+Use raw SQL against these tables for administration: counting rows per partition, finding the biggest tags, checking for gaps. Never write application logic that depends on them, and never INSERT or UPDATE them directly. Inductive Automation's guidance is to use the provided functions for reads and the historian store functions for writes. In 8.3 those live in \`system.historian\` (look for \`storeDataPoints\` on the 8.3 \`system.historian\` page); in 8.1 the call is \`system.tag.storeTagHistory\`.
 
 ## Data volume math
 

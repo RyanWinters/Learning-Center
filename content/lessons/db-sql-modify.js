@@ -133,7 +133,7 @@ COMMIT;
 
 If the INSERT fails (a bad reason id, a lost connection), you issue \`ROLLBACK\` and the UPDATE is undone as though it never ran. Without the transaction, you would be left with 15 minutes of downtime missing and a report that totals 128 instead of 143.
 
-By default each statement is its own transaction (**autocommit**). MySQL's manual says autocommit is on by default, and the other engines behave the same way when you do not open one explicitly. \`BEGIN\` turns autocommit off until you COMMIT or ROLLBACK.
+By default each statement is its own transaction (**autocommit**). MySQL's manual says autocommit is on by default, and the other engines behave the same way when you do not open one explicitly. \`BEGIN\` starts an explicit transaction that holds until you COMMIT or ROLLBACK.
 
 > [!warning] Never leave a transaction open
 > An open transaction holds locks on the rows it touched. A forgotten BEGIN in a client window can block production writers for hours. Commit or roll back right away, and close the tab.
@@ -163,7 +163,7 @@ For plant reporting, the default is almost always fine. Reach for stricter level
 > [!note] Deadlocks
 > If transaction A holds row 1 and wants row 2, while B holds row 2 and wants row 1, the engine picks one as the victim and rolls it back with a deadlock error. Your code should be ready to retry. Touching tables in the same order everywhere reduces them.
 
-In Ignition, scripts can group several database calls in one transaction with \`system.db.beginTransaction\`, \`commitTransaction\`, \`rollbackTransaction\` and \`closeTransaction\`. A Named Query is a single statement and commits on its own.
+In Ignition, scripts can group several database calls in one transaction with \`system.db.beginTransaction\`, \`commitTransaction\`, \`rollbackTransaction\` and \`closeTransaction\`. A standalone Named Query call is a single statement and commits on its own; check the manual for how Named Queries behave when you pass a transaction handle.
 
 ## Parameterized queries and SQL injection
 
@@ -185,16 +185,14 @@ and every machine is returned. Worse values can end a statement and start anothe
 The fix is a {{term:parameterized-query|parameterized query}}. The SQL text contains placeholders, and the values travel separately. The database parses the statement first and fills the values in afterward, so a value can never be read as SQL.
 
 \`\`\`python
-rows = system.db.runPrepQuery(
-    "SELECT machine_id FROM machine WHERE machine_name = ?",
-    [name]
-)
+# 8.3: a Named Query (saved SQL: SELECT machine_id FROM machine WHERE machine_name = :name)
+rows = system.db.execQuery("Plant/MachineByName", {"name": name})
 \`\`\`
 
-> [!note] In 8.3
-> \`runPrepQuery\` is still available, but the \`system.db.runQuery\` family is on the deprecated list. In 8.3, prefer a named query with \`system.db.execQuery\`, or see the 8.3 manual for the current prepared-statement calls.
+> [!note] In 8.1
+> The classic call is \`system.db.runPrepQuery("SELECT machine_id FROM machine WHERE machine_name = ?", [name])\`, or \`system.db.runNamedQuery\`. Both still work in 8.3 but the \`runQuery\` and \`runNamedQuery\` families are on the deprecated list, so write new code with \`execQuery\` and \`execUpdate\` (see the 8.3 \`system.db\` page).
 
-The \`?\` is the placeholder. \`x' OR '1'='1\` now means "a machine literally named x' OR '1'='1", which matches nothing.
+The \`:name\` in the saved query, or the \`?\` in the 8.1 call, is the placeholder. \`x' OR '1'='1\` now means "a machine literally named x' OR '1'='1", which matches nothing.
 
 Placeholders hold **values**. They cannot stand in for table or column names. If a name must vary, choose it from a fixed allow-list in code rather than from user text.
 
@@ -258,7 +256,7 @@ Transactions were formalized in the late 1970s and early 1980s. Jim Gray's work 
     },
     {
       title: "Rehearsing a risky update",
-      body: `Before running \`UPDATE downtime_event SET reason_id = 3 WHERE reason_id = 6\` on production, wrap it: BEGIN, run it, then \`SELECT reason_id, COUNT(*) FROM downtime_event GROUP BY reason_id\`. The counts should show Material Shortage at 0 and No Product up by exactly the number of rows you expected. If anything looks off, ROLLBACK and nothing has changed.`
+      body: `Before running \`UPDATE downtime_event SET reason_id = 3 WHERE reason_id = 4\` on production (folding Sensor Fault into No Product), wrap it: BEGIN, run it, then \`SELECT reason_id, COUNT(*) FROM downtime_event GROUP BY reason_id\`. On the sample data the update reports 3 rows affected (events 3, 9 and 10), Sensor Fault drops from 3 to 0 and No Product rises from 2 to 5. If anything looks off, ROLLBACK and nothing has changed.`
     }
   ],
 

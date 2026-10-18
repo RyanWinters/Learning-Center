@@ -40,8 +40,8 @@ The recovery time, called convergence, is what separates the protocols.
 |---|---|---|---|
 | {{term:spanning-tree|STP}} (Spanning Tree) | IEEE 802.1D | 30 to 50 seconds | Too slow for control. Often enabled by default |
 | {{term:spanning-tree|RSTP}} (Rapid Spanning Tree) | IEEE 802.1w | Under 1 to a few seconds | Common in plants, scales to mesh |
-| {{term:dlr|DLR}} (Device Level Ring) | ODVA, EtherNet/IP | Typically 3 ms to under 100 ms | Needs DLR-capable devices |
-| {{term:rep-mrp|REP}} (Resilient Ethernet Protocol) | Cisco proprietary | Typically under 50 ms | Cisco and Stratix switches only |
+| {{term:dlr|DLR}} (Device Level Ring) | ODVA, EtherNet/IP | Fast, typically tens of milliseconds. Check the supervisor and device specs | Needs DLR-capable devices |
+| {{term:rep-mrp|REP}} (Resilient Ethernet Protocol) | Cisco proprietary | Fast, but check the vendor documentation for your switch | Cisco-family switches. Check which Stratix models support it |
 | {{term:rep-mrp|MRP}} (Media Redundancy Protocol) | IEC 62439-2 | Around 200 ms (a faster profile exists) | Common with PROFINET |
 
 Treat the numbers as ranges. They depend on ring size, switch models and configuration, and vendor test figures are best cases.
@@ -76,11 +76,11 @@ In practice, you configure the supervisor in the controller or in a switch such 
 
 - It only protects a single ring. Rings connect to the wider network through switches, and that connection point is its own single point of failure unless you attach the ring to two switches (redundant gateways).
 - It needs every node to be DLR-capable. A non-DLR device must connect through a switch or a DLR-aware media converter.
-- Ring size is limited, commonly around 50 nodes in vendor guidance.
+- Ring size is limited. Check your DLR supervisor's documented node limit rather than assuming a number.
 
 ## REP and MRP in brief
 
-Switch vendors have their own ring protocols. Cisco's **REP** runs on Cisco and Rockwell Stratix switches and is designed for rings of switches rather than devices, with recovery typically under 50 ms. **MRP** is the open standard favored in the PROFINET world. On a mixed plant you may see DLR at the machine level, REP or RSTP in the distribution layer and MRP on a Siemens skid, and each is its own island.
+Switch vendors have their own ring protocols. Cisco's **REP** runs on Cisco switches and on some Rockwell Stratix models (check the documentation for yours) and is designed for rings of switches rather than devices, with recovery far faster than spanning tree. Look up the recovery time in the vendor guide for your hardware. **MRP** is the open standard favored in the PROFINET world. On a mixed plant you may see DLR at the machine level, REP or RSTP in the distribution layer and MRP on a Siemens skid, and each is its own island.
 
 ## The CPwE reference architecture
 
@@ -96,7 +96,7 @@ Cisco and Rockwell publish a set of validated designs called Converged Plantwide
 Cell zones typically attach to the distribution layer by two uplinks, one to each of a redundant switch pair. This gives you a ring or a redundant star at the bottom and a routed, redundant design above. The DMZ at the top is the subject of {{lesson:net-security}}.
 
 > [!example] Sizing a cell
-> A packaging line has 18 devices: 12 drives, 4 I/O blocks and 2 HMIs. Drives and blocks with two ports go in a single DLR with a ControlLogix 5580 as supervisor, for 16 nodes. Both HMIs plug into a Stratix access switch that also connects the ring (the switch is a ring node itself) and has two uplinks to the plant distribution pair. A cable cut inside the ring recovers in tens of milliseconds. The loss of one uplink is handled by the distribution layer's own redundancy.
+> A packaging line has 18 devices: 12 drives, 4 I/O blocks and 2 HMIs. Drives and blocks with two ports go in a single DLR with a ControlLogix 5580 as supervisor, for 16 nodes. Both HMIs plug into an access switch that supports DLR node operation (check that your switch model does) and joins the ring as a node itself and has two uplinks to the plant distribution pair. A cable cut inside the ring recovers in tens of milliseconds. The loss of one uplink is handled by the distribution layer's own redundancy.
 
 ## Choosing
 
@@ -129,7 +129,7 @@ Different ring systems differ mostly in how fast the supervisor notices and move
 `,
 
   history: `
-Spanning tree was invented by Radia Perlman at DEC in the 1980s and standardized as IEEE 802.1D. Rapid Spanning Tree (802.1w) followed in 2001 to fix its slow convergence. The ODVA added Device Level Ring to the EtherNet/IP specification around 2009 so that devices with embedded two-port switches could form rings without separate infrastructure switches. Cisco and Rockwell's CPwE guides grew out of their alliance on validated designs for plant networks.
+Spanning tree was invented by Radia Perlman at DEC in the 1980s and standardized as IEEE 802.1D. Rapid Spanning Tree (802.1w) followed in 2001 to fix its slow convergence. The ODVA added Device Level Ring to the EtherNet/IP specification (check ODVA's documentation for the exact release) so that devices with embedded two-port switches could form rings without separate infrastructure switches. Cisco and Rockwell's CPwE guides grew out of their alliance on validated designs for plant networks.
 `,
 
   examples: [
@@ -139,7 +139,7 @@ Spanning tree was invented by Radia Perlman at DEC in the 1980s and standardized
     },
     {
       title: "Spotting a hidden break",
-      body: `The ring supervisor on a bottling line exposes a ring status and a fault location as tags. In Ignition, an alarm on \`[PLC1]Line3_DLR.RingFault\` shows "Ring fault between Drive 7 and Block 3". Maintenance finds a crushed cable behind a conveyor, replaced during the next break, before a second fault stops the line.`
+      body: `The ring supervisor on a bottling line exposes a ring status and a fault location as tags. In Ignition, an alarm on \`[PLC1]Line3DLR.RingFault\` shows "Ring fault between Drive 7 and Block 3". Maintenance finds a crushed cable behind a conveyor, replaced during the next break, before a second fault stops the line.`
     }
   ],
 

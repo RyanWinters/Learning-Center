@@ -37,21 +37,21 @@ Per the 8.1.33 and later documentation, both editions include the capabilities t
 
 ## Limits to know
 
-The manual is the source of truth here, and numbers have moved between releases. As of the 8.3 documentation:
+The manual is the source of truth here, and limits have moved between releases. Check the [Ignition Edge page of the manual](https://docs.inductiveautomation.com/docs/8.3/other-editions/ignition-edge) for your version before you quote any of these:
 
-- **Tags and devices:** unlimited tags and device connections for the drivers Edge includes. An older two-device limit is gone.
-- **Panel visualization:** Perspective with two sessions, or Vision with one local and one remote client. Panel is a machine HMI, not a plant-wide screen server.
-- **Local history:** the Edge gateway keeps a limited window of tag history, alarm journal and audit log locally. The tag history window was extended in 8.1.35; older notes quoting one week are out of date. Verify the current window in the manual for your version.
-- **No database connectivity and no add-on modules.** You cannot run Reporting, SFC or the SQL Bridge module on Edge, and Edge cannot be installed on a central gateway.
+- **Tags and devices:** Edge is not capped the way early Edge products were (an older two-device limit is gone), but the drivers and modules included depend on the edition.
+- **Panel visualization:** Panel allows only a small number of Perspective sessions or Vision clients (see {{lesson:ign-licensing}}). Panel is a machine HMI, not a plant-wide screen server.
+- **Local history:** the Edge gateway keeps a limited window of tag history, alarm journal and audit log locally. That window has been extended between releases, so older notes are out of date. Verify the current window in the manual for your version.
+- **No database connectivity, and only the modules each edition includes.** You cannot run Reporting, SFC, the SQL Bridge module or Event Streams on Edge. Edge ships with a fixed set of included modules and features, so you cannot add arbitrary modules the way you can on a standard gateway. Edge is also a spoke: it is not the central hub other gateways connect to for management or history.
 
 > [!warning] Edge is a spoke, not a server
-> If a design needs SQL databases, Reporting, more than a couple of client sessions or third-party modules at the site, you need a standard gateway there. Edge is the wrong tool, however cheap it looks.
+> If a design needs SQL databases, Reporting, more than a few client sessions or modules the Edge edition does not include at the site, you need a standard gateway there. Edge is the wrong tool, however cheap it looks.
 
 ## Sync Services and store-and-forward
 
 {{term:sync-services|Sync Services}} connects the Edge gateway to a central gateway over the Gateway Network (see {{lesson:arch-gateway-network}}). It exposes the Edge tag provider, tag history and alarms to the central gateway, and keeps working during outages. While the link is down the Edge gateway stores history and alarm events locally. When the link returns, the data backfills into the central historian and journal. The buffer is bounded by the local retention window, so a very long outage can still lose the oldest data.
 
-Edge can also act as an MQTT edge node using the Cirrus Link modules, publishing Sparkplug to a broker instead of to a gateway. That route is covered in {{lesson:arch-mqtt}}.
+Edge IIoT can also act as an MQTT edge node, publishing Sparkplug to a broker instead of to a gateway. This is the one case where an MQTT module runs on Edge: the publishing side (MQTT Transmission). The subscribing side (MQTT Engine) belongs on the hub gateway. Confirm on the Edge edition page which MQTT capability your edition includes and whether it is licensed separately. That route is covered in {{lesson:arch-mqtt}}.
 
 ## When Edge is the right answer
 
@@ -62,7 +62,7 @@ Edge can also act as an MQTT edge node using the Cirrus Link modules, publishing
 A full gateway is better when the site needs a plant historian, reports, a database, many operators or modules like SFC.
 
 > [!example] Fifty pump stations
-> A water utility has 50 stations, each with one PLC and a cellular modem. Each gets an Edge IIoT gateway (no screen needed). Each polls its PLC every second and keeps local history. Sync Services forwards to a central gateway in the control room, where operators see all 50 as remote tag providers. When a station's cell link drops for four hours, the Edge node keeps logging, and the central historian fills the gap when the link returns. Total licensing is 50 small Edge licenses plus one standard gateway, not 51 standard gateways.
+> A water utility has 50 stations, each with one PLC and a cellular modem. Each gets an Edge IIoT gateway (no screen needed). Each polls its PLC every second and keeps local history. Sync Services forwards to a central gateway in the control room, where operators see all 50 as remote tag providers. When a station's cell link drops for four hours, the Edge node keeps logging, and the central historian fills the gap when the link returns. Licensing is 50 Edge licenses plus one standard gateway, not 51 standard gateways (check current prices and edition terms with Inductive Automation).
 
 ## Design checks
 
@@ -100,7 +100,7 @@ Edge started as a way to put Ignition on small machine-side and remote hardware.
     },
     {
       title: "Sizing the outage buffer",
-      body: `A remote lift station loses cellular service for up to 3 days a few times a year. The Edge gateway's local history window comfortably covers 3 days, so Sync Services will backfill the gap. If the site needed to survive 60 days offline, Edge would not be enough, and you would put a standard gateway with a database there.`
+      body: `A remote lift station loses cellular service for up to 3 days a few times a year. Check whether the Edge gateway's local history window for your version covers 3 days. If it does, Sync Services will backfill the gap. If the site needed to survive 60 days offline, Edge would not be enough, and you would put a standard gateway with a database there.`
     }
   ],
 
@@ -127,7 +127,7 @@ Edge started as a way to put Ignition on small machine-side and remote hardware.
   },
 
   pitfalls: [
-    "Quoting an Edge license for a site that needs a database, Reporting or extra modules. Edge has none of those.",
+    "Quoting an Edge license for a site that needs a database, Reporting, SFC, Event Streams or modules the edition does not include.",
     "Assuming the local history window covers any outage. It is finite, so size it against the worst case.",
     "Quoting old Edge product names and prices. Compute, EAM and Sync Services are bundled into current editions.",
     "Forgetting to manage dozens of Edge gateways as a fleet, then hand-patching each one.",

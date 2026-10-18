@@ -51,13 +51,29 @@
   /* Complete = reader reached the end AND quiz >= 70. Returns XP awarded (0 if not completed now). */
   function maybeComplete(id) {
     const r = LC.store.lesson(id), L = LC.lessons[id];
-    if (!r || DONE[r.status] || !r.readAt) return 0;
+    if (!r || DONE[r.status]) return 0;
+    const lab = !!(L && L.checklist && L.checklist.length);
+    if (lab ? !checksDone(id) : !r.readAt) return 0;       // a lab is proven by its checklist, other lessons by reading
     if (L && L.quiz && L.quiz.length && !(r.quizPassed || r.bestScore >= PASS)) return 0;
-    const lvl = (LC.index[id] || {}).level || 1, xp = 40 + 10 * lvl;
+    const lvl = (LC.index[id] || {}).level || 1, xp = LC.gamify.lessonXp(lvl);
     LC.store.update(d => { const x = d.lessons[id]; x.status = 'complete'; x.completedAt = Date.now(); });
     LC.gamify.addXp(xp, 'Lesson complete');
     LC.gamify.checkBadges();
     return xp;
+  }
+  /* Build labs: lessons[id].checks = { index: true } per checklist item. */
+  function checksDone(id) {
+    const L = LC.lessons[id], c = (LC.store.lesson(id).checks) || {};
+    return !!(L && L.checklist && L.checklist.length && L.checklist.every((_, i) => c[i]));
+  }
+  function toggleCheck(id, i, on) {
+    LC.store.update(d => {
+      const x = d.lessons[id] = d.lessons[id] || { attempts: 0, startedAt: Date.now() };
+      x.checks = Object.assign({}, x.checks);
+      if (on) x.checks[i] = true; else delete x.checks[i];
+      if (!x.status || x.status === 'available') x.status = 'in-progress';
+    });
+    return on ? maybeComplete(id) : 0;
   }
   function markRead(id) {
     const r = LC.store.lesson(id);
@@ -85,5 +101,5 @@
     return c ? c.due : null;
   }
 
-  LC.quiz = { PASS: PASS, TESTOUT: TESTOUT, BOX_DAYS: BOX_DAYS, grade: grade, record: record, maybeComplete: maybeComplete, markRead: markRead, allCards: allCards, due: due, answerCard: answerCard, nextDue: nextDue };
+  LC.quiz = { PASS: PASS, TESTOUT: TESTOUT, BOX_DAYS: BOX_DAYS, grade: grade, record: record, maybeComplete: maybeComplete, checksDone: checksDone, toggleCheck: toggleCheck, markRead: markRead, allCards: allCards, due: due, answerCard: answerCard, nextDue: nextDue };
 })();
