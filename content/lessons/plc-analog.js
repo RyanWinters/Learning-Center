@@ -24,10 +24,10 @@ A discrete input is a bit. An analog input is a number the PLC invents from a cu
 
 A {{term:4-20-ma|4-20 mA}} transmitter sends a current proportional to the measurement. 4 mA means the bottom of the calibrated range and 20 mA means the top. The "live zero" at 4 mA is deliberate: 0 mA can only mean a broken loop, so a dead wire is distinguishable from a real low reading.
 
-The analog input module has an ADC (analog-to-digital converter) that turns the current into an integer called **raw counts**. The count range depends on the module and the range you choose in its configuration. Treat the numbers below as an illustration and read your module's manual for the real mapping.
+The analog input module has an ADC (analog-to-digital converter) that turns the current into an integer called **raw counts**. The count range depends on the module and the range you choose in its configuration. **Counts are module-specific. ControlLogix 1756/5069 analog modules usually scale to engineering units in the module**, so read your module's manual for the real mapping. This course uses one teaching card throughout: a 1769-IF4-style raw scale where 0 to 21 mA spans 0 to 32,767 counts.
 
-> [!example] A level transmitter on a 10 m tank
-> Assume a module that reports 0 to 20 mA as 0 to 16,384 counts. Then 4 mA is 3,277 counts and 20 mA is 16,384 counts. The transmitter is ranged 0 to 10 m. A reading of 9,830 counts sits in the middle of the span, so the level is about 5.0 m.
+> [!example] Level transmitter LT101 on the Plant 1 batching tank
+> On the teaching card, 4 mA is **6,242** counts and 20 mA is **31,208** counts (21 mA is 32,767). LT101 is ranged **0 to 5.0 m**. A reading of 18,725 counts sits in the middle of the span, so the level is 2.5 m. (On the P&ID it is LT-101. In PLC and Ignition names the hyphen is dropped: \`LT101\`.)
 
 ## Scaling: y = mx + b
 
@@ -38,7 +38,7 @@ m = (EU_high - EU_low) / (Raw_high - Raw_low)
 y = m * (x - Raw_low) + EU_low
 \`\`\`
 
-With the tank: m = 10 / (16384 - 3277) = 10 / 13107 = 0.000763 m per count. For x = 9830, y = 0.000763 x (9830 - 3277) = 5.0 m. Equivalent form: y = 0.000763x - 2.5, so b is -2.5 m. That negative offset is why a dead loop (0 counts) scales to -2.5 m instead of 0, which is a useful tell.
+With LT101: m = 5.0 / (31208 - 6242) = 5.0 / 24966 = 0.0002003 m per count. For x = 18725, y = 0.0002003 x (18725 - 6242) = 2.5 m. Equivalent form: y = 0.0002003x - 1.25, so b is -1.25 m. That negative offset is why a dead loop (0 counts) scales to -1.25 m instead of 0, which is a useful tell.
 
 {{diagram:scaling}}
 
@@ -48,10 +48,10 @@ Logix has a one-instruction version called {{term:scp-instruction|SCP}} (Scale).
 
 \`\`\`st
 // Structured Text form. In ladder, the same arguments go in the SCP box.
-SCP(Level_Raw, 3277, 16384, 0.0, 10.0, Level_m);
+SCP(LT101_Raw, 6242, 31208, 0.0, 5.0, LT101_Level);
 \`\`\`
 
-Do the math on an out-of-range input: 2,000 counts extrapolates to -0.97 m. Check your Logix Designer instruction help to see whether SCP clamps the output or lets it run past the scaled endpoints. Decide on purpose, because the unclamped value is what tells you the loop is broken.
+Do the math on an out-of-range input: 2,000 counts extrapolates to about -0.85 m. Check your Logix Designer instruction help to see whether SCP clamps the output or lets it run past the scaled endpoints. Decide on purpose, because the unclamped value is what tells you the loop is broken.
 
 You can also write the math by hand with CPT (compute) or in ST. That is slightly faster to review when the scaling has an offset or a square-root flow calculation.
 
@@ -71,21 +71,20 @@ Many integrators scale in logic into a UDT member (the AnalogIn UDT in {{lesson:
 
 ## Under-range, over-range and wire-off
 
-A 4-20 mA loop is meant to stay between 4 and 20 mA. Outside that, something is wrong or the measurement is saturated.
+A 4-20 mA loop is meant to stay between 4 and 20 mA. Outside that, something is wrong or the measurement is saturated. The course uses one table, **NAMUR NE43**, for the current ranges:
 
-| Condition | Current | What it usually means |
+| Current | Meaning | Treat as |
 |---|---|---|
-| Wire-off / open loop | about 0 mA | Broken wire, blown fuse, dead transmitter, no loop power |
-| Under-range | below about 3.8 mA | Transmitter failure low, or process below the calibrated span |
-| Normal | 4 to 20 mA | Valid measurement |
-| Over-range | above about 20.5 mA | Transmitter failure high, or process above the span |
+| 3.8 to 20.5 mA | Measurement range (3.8 to 4 and 20 to 20.5 are slight under- and over-range) | Good, clamp for display |
+| 3.6 to 3.8 or 20.5 to 21 mA | Indeterminate | Uncertain quality, alarm after a delay |
+| below 3.6 or above 21 mA | Device or loop failure | Bad quality, fail-safe action |
 
-Many NAMUR-style transmitters deliberately drive about 3.6 mA or 21 mA on an internal fault. The exact thresholds vary by module and instrument.
+A wire-off or open loop reads about 0 mA, which is far below 3.6 mA: broken wire, blown fuse, dead transmitter or no loop power. On the teaching card, 3.8 mA is about 5,930 counts and 3.6 mA is about 5,617 counts. Many NAMUR-style transmitters deliberately drive a failure current outside the measurement range when they detect an internal fault. The exact thresholds vary by module and instrument, so confirm them in the instrument and module documentation.
 
-Modules report these conditions as status bits on the channel, typically under-range and over-range flags, and some modules add open-wire detection when the input type supports it. In logic you can also check the raw count yourself:
+Modules report these conditions as status bits on the channel, typically under-range and over-range flags, and some modules add open-wire detection when the input type supports it. Use the status bit first. In logic you can also check the raw count yourself, as a second test that does not depend on the module:
 
 \`\`\`ladder
-LES(Level_Raw,3000) OTE(Level_BadSignal)
+LES(LT101_Raw,5617) OTE(LT101_BadSignal)
 \`\`\`
 
 A bad-signal flag should do three things. It shows the operator that the value is suspect, it forces a fail-safe behavior (a bad level must not start a pump), and it prevents the alarm logic below from reporting a process alarm that is really an instrument fault. Latch the last good value if the process needs one, but never hide the fault.
@@ -97,25 +96,25 @@ Process alarms are comparisons against limits, normally four of them:
 - **HH** (high-high) and **LL** (low-low): critical, often tied to an interlock or trip.
 - **H** (high) and **L** (low): warnings that give the operator time to act.
 
-Naive logic is \`GRT(Level_m, 8.0) OTE(Level_H)\`. It fails in two ways. A noisy signal brushes 8.0 and the alarm flickers. And when the level hovers at 7.99 to 8.01, the operator is told a hundred times.
+Naive logic is \`GRT(LT101_Level, 4.0) OTE(LT101_H)\`. It fails in two ways. A noisy signal brushes 4.0 and the alarm flickers. And when the level hovers at 3.99 to 4.01, the operator is told a hundred times.
 
 ### On-delay and deadband
 
 Two cheap fixes solve nearly all of it.
 
 1. **On-delay**: the condition must hold for a time, say 3 seconds, before the alarm sets. A one-scan noise spike never becomes an alarm. Use a TON ({{lesson:plc-timers}}).
-2. **Deadband** (also called hysteresis): the alarm sets at the limit but clears only after the value has moved a margin back inside. With H = 8.0 m and a deadband of 0.2 m, the alarm sets at 8.0 and clears at 7.8.
+2. **Deadband** (also called hysteresis): the alarm sets at the limit but clears only after the value has moved a margin back inside. With H = 4.0 m and a deadband of 0.1 m, the alarm sets at 4.0 and clears at 3.9.
 
 \`\`\`st
-// High alarm with 3 s on-delay and 0.2 m deadband
-Cond_H := (Level_m >= H_Limit) OR (H_Alarm AND (Level_m > (H_Limit - H_Deadband)));
+// High alarm with 3 s on-delay and 0.1 m deadband
+Cond_H := (LT101_Level >= H_Limit) OR (H_Alarm AND (LT101_Level > (H_Limit - H_Deadband)));
 HiTmr.PRE := 3000;       // 3 s on-delay (TIMER tag)
 HiTmr.TimerEnable := Cond_H;   // drives the timer's enable bit
 TON(HiTmr);
 H_Alarm := HiTmr.DN;
 \`\`\`
 
-The second term in Cond_H is the memory: once the alarm is on, the condition stays true until the value drops below 7.8. A common mistake is putting the on-delay after the deadband, which makes the clear delayed too. Size the deadband to your noise: 1 to 2 percent of span for a quiet level, more for a bouncy flow. The {{sim:sim-alarm-deadband}} challenge lets you watch a signal cross a limit with and without the deadband.
+The second term in Cond_H is the memory: once the alarm is on, the condition stays true until the value drops below 3.9. A common mistake is putting the on-delay after the deadband, which makes the clear delayed too. Size the deadband to your noise: 1 to 2 percent of span for a quiet level, more for a bouncy flow. The {{sim:sim-alarm-deadband}} challenge lets you watch a signal cross a limit with and without the deadband.
 
 {{diagram:alarm}}
 
@@ -156,16 +155,16 @@ The 4-20 mA current loop became the dominant analog signal in process plants in 
   examples: [
     {
       title: "Scaling a 0-150 PSI pressure transmitter",
-      body: `Raw range 3277 to 16384, EU range 0 to 150 PSI. m = 150 / 13107 = 0.01144 PSI per count. A raw reading of 8,000 gives 0.01144 x (8000 - 3277) = 54.0 PSI. In ST: \`SCP(Press_Raw, 3277, 16384, 0.0, 150.0, Press_PSI);\``
+      body: `On the teaching card the raw range is 6242 to 31208 and the EU range is 0 to 150 PSI. m = 150 / 24966 = 0.006008 PSI per count. A raw reading of 18,725 (mid-span) gives 0.006008 x (18725 - 6242) = 75.0 PSI. In ST: \`SCP(Press_Raw, 6242, 31208, 0.0, 150.0, Press_PSI);\``
     },
     {
       title: "Alarm timeline with deadband",
-      body: `H limit 8.0 m, deadband 0.2 m, on-delay 3 s. The level crosses 8.0 at t=0 and stays above. At t=3 s the alarm sets. Later the level falls to 7.9 m: the alarm stays on, because it must drop below 7.8. It clears at 7.79. A noisy 8.01/7.99 flicker never gets past the 3 s delay, so no alarm at all.`
+      body: `LT101 H limit 4.0 m, deadband 0.1 m, on-delay 3 s. The level crosses 4.0 at t=0 and stays above. At t=3 s the alarm sets. Later the level falls to 3.95 m: the alarm stays on, because it must drop below 3.9. It clears at 3.89. A noisy 4.01/3.99 flicker never gets past the 3 s delay, so no alarm at all.`
     }
   ],
 
   diagrams: {
-    scaling: `<svg viewBox="0 0 640 230" role="img" aria-label="Scaling line mapping raw counts 3277 to 16384 onto 0 to 10 meters, with wire-off region below 3277">
+    scaling: `<svg viewBox="0 0 640 230" role="img" aria-label="Scaling line mapping raw counts 6242 to 31208 onto 0 to 5.0 meters, with the bad-signal region below 5617">
   <line class="dg-line" x1="70" y1="190" x2="600" y2="190"/>
   <line class="dg-line" x1="70" y1="190" x2="70" y2="30"/>
   <text class="dg-text-sm" x="300" y="222">Raw counts (x)</text>
@@ -173,26 +172,26 @@ The 4-20 mA current loop became the dominant analog signal in process plants in 
   <line class="dg-line-accent" x1="150" y1="170" x2="560" y2="50"/>
   <circle class="dg-fill-accent" cx="150" cy="170" r="5"/>
   <circle class="dg-fill-accent" cx="560" cy="50" r="5"/>
-  <text class="dg-text-mono" x="86" y="160">3277 = 0 m</text>
-  <text class="dg-text-mono" x="430" y="42">16384 = 10 m</text>
+  <text class="dg-text-mono" x="86" y="160">6242 = 0 m</text>
+  <text class="dg-text-mono" x="430" y="42">31208 = 5.0 m</text>
   <line class="dg-dash" x1="355" y1="190" x2="355" y2="110"/>
   <line class="dg-dash" x1="70" y1="110" x2="355" y2="110"/>
-  <text class="dg-text-sm" x="362" y="150">9830 = 5.0 m</text>
+  <text class="dg-text-sm" x="362" y="150">18725 = 2.5 m</text>
   <rect class="dg-box-alarm" x="72" y="196" width="76" height="14" rx="3"/>
-  <text class="dg-text-sm" x="152" y="208">below 3277: bad signal</text>
+  <text class="dg-text-sm" x="152" y="208">below 5617: bad signal</text>
 </svg>`,
     alarm: `<svg viewBox="0 0 640 240" role="img" aria-label="Level signal crossing the H limit, alarm setting after the on-delay and clearing below limit minus deadband">
   <line class="dg-line-thin" x1="40" y1="60" x2="610" y2="60"/>
-  <text class="dg-text-sm" x="44" y="52">H limit 8.0</text>
+  <text class="dg-text-sm" x="44" y="52">H limit 4.0 m</text>
   <line class="dg-line-thin" x1="40" y1="90" x2="610" y2="90"/>
-  <text class="dg-text-sm" x="44" y="106">Clear point 7.8 (deadband 0.2)</text>
+  <text class="dg-text-sm" x="44" y="106">Clear point 3.9 (deadband 0.1)</text>
   <polyline class="dg-line-accent" fill="none" points="40,130 120,110 170,56 190,70 210,50 260,40 330,58 400,76 450,64 500,86 540,110 600,130"/>
   <line class="dg-dash" x1="170" y1="30" x2="170" y2="190"/>
   <text class="dg-text-sm" x="132" y="24">crosses H</text>
   <line class="dg-dash" x1="290" y1="30" x2="290" y2="190"/>
   <text class="dg-text-sm" x="236" y="24">+3 s: alarm sets</text>
   <line class="dg-dash" x1="520" y1="30" x2="520" y2="190"/>
-  <text class="dg-text-sm" x="478" y="24">below 7.8: clears</text>
+  <text class="dg-text-sm" x="478" y="24">below 3.9: clears</text>
   <rect class="dg-box" x="40" y="200" width="250" height="24" rx="3"/>
   <rect class="dg-box-alarm" x="290" y="200" width="230" height="24" rx="3"/>
   <rect class="dg-box" x="520" y="200" width="90" height="24" rx="3"/>
@@ -213,14 +212,14 @@ The 4-20 mA current loop became the dominant analog signal in process plants in 
 
   quiz: [
     {
-      q: "A 4-20 mA input reports 3,277 counts at 4 mA and 16,384 at 20 mA. The range is 0 to 10 m. What is the level at 9,830 counts?",
-      options: ["About 9.8 m", "About 0.6 m", "About 3.3 m", "About 5.0 m"],
+      q: "A 4-20 mA input reports 6,242 counts at 4 mA and 31,208 at 20 mA. The range is 0 to 5.0 m. What is the level at 18,725 counts?",
+      options: ["About 3.0 m", "About 0.6 m", "About 5.0 m", "About 2.5 m"],
       answer: 3,
       explain: [
-        "That treats counts as 1,000 per meter and ignores the 4 mA offset.",
-        "This divides raw counts by the full 16,384 range without the offset or EU span.",
-        "Roughly 3277 / 1000, which is not any step of the scaling formula.",
-        "Correct. (9830 - 3277) x 10 / 13107 = 5.0 m, the midpoint of the span."
+        "That scales 18,725 / 31,208 against the span and ignores the 4 mA offset.",
+        "This is the fraction of the full count range, 18,725 / 32,767, never mapped onto the EU span.",
+        "5.0 m is the top of the span, which is 31,208 counts.",
+        "Correct. (18725 - 6242) x 5.0 / 24966 = 2.5 m, the midpoint of the span."
       ]
     },
     {

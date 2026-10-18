@@ -56,9 +56,9 @@ If a child defines a resource with the same path as one in the parent, the child
 
 ### Scripts and events do not inherit the way screens do
 
-Screens, scripts and templates inherit. **Gateway event scripts** (timers, tag change scripts, message handlers) run only in the project that is not merely inherited. A timer defined in \`Global\` does not run once for each child. The common pattern is to write the real logic as a library function in the base project and call it from a one-line event script in the leaf project.
+Screens, scripts and templates inherit. **Gateway event scripts** (timers, tag change scripts, message handlers) run only in the project that defines them. Children that inherit the project do not run a copy, so a timer defined in \`Global\` does not run once for each child. The common pattern is to write the real logic as a library function in the base project and call it from a one-line event script in the leaf project.
 
-The gateway also has one **gateway scripting project** setting. It names the project whose script library is available to scripts that run outside any project, such as tag event scripts on tags and some gateway-wide scripting. If your shared utilities live in \`Global\` and that is not designated, tag scripts cannot see them. A good habit is to designate the base scripting project early.
+The gateway also has one **gateway scripting project** setting. It names the project whose script library is available to scripts that run outside any project, such as tag event scripts on tags and some gateway-wide scripting. Tag event scripts (see {{lesson:ign-events}}) depend on it. If your shared utilities live in \`Global\` and that is not designated, tag scripts cannot see them. A good habit is to designate the base scripting project early.
 
 ## Vision versus Perspective
 
@@ -69,7 +69,7 @@ Both modules build screens on top of the same gateway, tags, historian and alarm
 | Runs as | Java Swing desktop client, launched from the gateway | Web app in a browser, built on React |
 | Install on the operator side | Client launcher or Vision Client Launcher | None. A URL, or a native wrapper |
 | Layout | Pixel-based windows, absolute positioning | Responsive containers (flex, breakpoints, column) |
-| Scripting scope | Client scope and gateway scope | All scripts run on the gateway |
+| Scripting scope | Client scope and gateway scope | The scripts you write run in gateway scope (see the Perspective scripting pages for details) |
 | Mobile and tablets | Poor | Designed for it |
 | Heavy native integration | Strong (local files, printing, serial) | Limited by the browser |
 | Bindings | Property, expression, tag, SQL, with polling | Same ideas, plus transforms and a session model |
@@ -77,7 +77,7 @@ Both modules build screens on top of the same gateway, tags, historian and alarm
 ### When Vision still wins
 
 - **Big existing Vision apps.** Rewriting hundreds of windows is a project in itself. Many plants run both for years.
-- **Client-side scripting.** Vision can touch the local machine: print to a specific printer, read a file, talk to a barcode scanner. In Perspective those scripts run on the server.
+- **Client-side scripting.** Vision can touch the local machine: print to a specific printer, read a file, talk to a barcode scanner. In Perspective the scripts you write run on the server.
 - **Dense, fixed-resolution control rooms.** Wall-mounted HMIs at a known resolution do not need responsive layout.
 - **Some third-party modules** only support Vision. Check before you commit.
 

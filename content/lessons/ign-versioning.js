@@ -84,7 +84,7 @@ Each resource is a folder with its payload (\`view.json\`, \`code.py\`, \`config
 A working pattern:
 
 1. **Put \`data/projects\` and the gateway config you want to track under git.** A repository per gateway, or one per customer site, works well.
-2. **Commit small.** One change to a view is one commit with a message like \`Pump faceplate: add run-hours\`.
+2. **Commit small.** One change to a view is one commit with a message like \`Motor faceplate: add run-hours\`.
 3. **Use branches for features.** Engineers work on a dev gateway on a branch and merge when it is tested.
 4. **Review diffs.** Because views are JSON, a diff shows what changed, though large Perspective views are noisy. Review the intent, not every line.
 5. **Keep secrets out.** Database passwords and certificates do not belong in a public or widely shared repo. Treat them as environment-specific.
