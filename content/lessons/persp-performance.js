@@ -26,7 +26,7 @@ A {{term:perspective-session|session}} lives from page open to page close or tim
 
 {{diagram:cost}}
 
-Think of costs in layers, from cheapest to most expensive.
+Think of costs in layers, from cheapest to most expensive. The ranking is relative and directional. Do not quote a figure from this table. Measure on your own Gateway (see below).
 
 | Pattern | Cost per session | Notes |
 |---|---|---|
@@ -55,14 +55,14 @@ A **tag binding** asks the Gateway to subscribe once and push updates when a val
 Rules of thumb that senior integrators repeat:
 
 - **Tag bindings over polling queries** for anything that already exists as a tag.
-- **Expressions over scripts.** An expression is evaluated by the Gateway's expression engine and is far cheaper than a Jython call. If \`if(\${tag} > 80, 'hot', 'ok')\` will do, do not write a script transform.
+- **Expressions over scripts.** An expression is evaluated by the Gateway's expression engine and is far cheaper than a Jython call. If \`if({[default]Plant1/Area10/Line1/LT101} > 4.0, 'high', 'ok')\` will do, do not write a script transform.
 - **Avoid \`runScript\`** except for work that needs it. Replace with a tag, an expression or a property computed once on view load.
 - **Do heavy work once, share the result.** Computation that is identical for every session belongs in the Gateway scope (a timer script, a tag change script), not in each view.
 - **Use indirect bindings sparingly** in repeated components. Each is a separate subscription to resolve.
 
 ## Named query caching
 
-{{term:named-query-cache|Caching}} on a named query lets the Gateway reuse a result for a set time instead of hitting the database. A reporting query behind a 30 second poll, with a cache lifetime of 30 seconds, hits the database once per half minute for everyone. Caching only helps when the data is identical for every caller. A query with a per-user parameter makes a separate cache entry for each distinct value. And a cache hides changes: if someone edits the table, viewers see the old data until the lifetime ends. A scripting call exists to clear named query caches when you need to force a refresh, so a save button can clear the cache for the data it just changed.
+{{term:named-query-cache|Caching}} on a named query lets the Gateway reuse a result for a set time instead of hitting the database. A reporting query behind a 30 second poll, with a cache lifetime of 30 seconds, hits the database once per half minute for everyone. Caching only helps when the data is identical for every caller. A query with a per-user parameter makes a separate cache entry for each distinct value. And a cache hides changes: if someone edits the table, viewers see the old data until the lifetime ends. The function \`system.db.clearNamedQueryCache\` clears a named query's cache when you need to force a refresh, so a save button can clear the cache for the data it just changed. From shared scope (tag event scripts, alarm pipelines) it also needs the project name, and the manual notes that each distinct parameter set makes its own cache entry.
 
 ## Embedded views and repeaters
 
@@ -81,7 +81,7 @@ Guessing wastes days. Measure.
 
 1. **Gateway status pages.** The status section of the Gateway web page shows CPU and memory, the list of active Perspective sessions, database connection status and script performance figures. Start with CPU and memory over time, then sessions: how many are open, who owns the oldest, which screens they are on.
 2. **Session count and ownership.** A hundred sessions with 70 idle on a hidden browser tab still hold their subscriptions. Set a session timeout and make sure kiosks recover from a Gateway restart.
-3. **Thread viewer and thread dump.** When CPU spikes, take a thread dump (the Gateway diagnostics threads page, or \`system.util.threadDump()\` triggered from a script). Threads parked in your library script names, in database drivers or in the historian tell you who is eating time. Take two or three dumps a few seconds apart. A thread that appears in all of them is the culprit.
+3. **Thread viewer and thread dump.** When CPU spikes, take a thread dump (the Gateway diagnostics threads page, or \`system.util.threadDump()\`, which returns the dump as a string). Threads parked in your library script names, in database drivers or in the historian tell you who is eating time. Take two or three dumps a few seconds apart. A thread that appears in all of them is the culprit.
 4. **Time your own code.** Wrap suspect functions with \`java.lang.System.nanoTime()\` or \`time.time()\` and log durations above a threshold with \`system.util.getLogger\`. The Gateway's script performance figures also point to hot library functions.
 5. **Database side.** Check the database for slow or repeated queries. A Gateway that looks busy may be waiting on a lock.
 
@@ -109,6 +109,45 @@ Do not learn your limit on go-live day.
 4. **Ramp and soak.** Increase sessions in steps and then hold the peak for hours. Memory leaks and unreleased subscriptions show up in the soak, not the ramp.
 5. **Test the bad day.** Kill the database, restart the Gateway and watch 150 sessions reconnect at once. The reconnect storm is often the real peak.
 6. **Record the result** as a baseline, so a future change can be compared to it.
+## If you already build Perspective
+
+The measuring habits matter more than the rules of thumb. Here is how to turn a complaint into numbers.
+
+### Trace one binding chain from tag change to paint
+
+Pick a slow symptom, such as a label that lags. Write the chain down: PLC value changes, driver update, tag subscription, indirect binding resolves \`{1}/Sts/Speed\`, expression transform, Map transform, property change pushed to the session, browser paint. Each arrow is a place to measure. Tag and driver latency show on the tag and driver diagnostics. Binding and script time shows in script performance figures and in your own timers. Delivery to the browser is a network and session-queue question: look at the session's connection and the browser's network panel. Most "slow screen" tickets stop at the first or last arrow, not the middle ones.
+
+### Reading profiler and thread output
+
+The Gateway status pages report script execution figures per function. Sort by total time, not by one slow call. A 5 ms function called 40,000 times a minute outranks a 2 s function called once. In thread dumps, ignore parked pool threads and look for the same project function in consecutive dumps. Record the dumps with timestamps and the symptom in the ticket, so a later change can be compared.
+
+### Measure your own session cost
+
+Do not borrow a "memory per session" figure. Measure it:
+
+1. Note heap after a forced garbage collection with zero sessions.
+2. Open N sessions of the heaviest operator screen from separate browsers or a test tool.
+3. Note heap again after garbage collection and divide the difference by N.
+4. Repeat for a light screen and for a kiosk that has run overnight.
+
+Keep the table. It is your capacity model: sessions times cost per screen, plus headroom.
+
+### Session timeout and idle load
+
+A session on a hidden browser tab still holds subscriptions and bindings. Set a session timeout that matches how long a screen may sit unattended, and use a different policy for kiosks that must stay up. Test what happens when a kiosk times out.
+
+### Database pool and cache lifetime together
+
+Pool size, query time and cache lifetime form one calculation. Queries per second to the database is roughly sessions divided by poll interval for uncached queries, and distinct parameter sets divided by cache lifetime for cached ones. Pool size must cover peak concurrent queries times query duration, with the database's own limit as the ceiling. A cache lifetime shorter than the poll interval saves nothing. Put numbers from your site in a short table and revisit it when screens change.
+
+### An alarm table that does not hurt
+
+The alarm status table queries the alarm system for every session that shows it. Constrain it: filter by area source path, by priority (an operator screen rarely needs Diagnostic), and by state (active and unacknowledged first). Show one unit's alarms on a unit screen, and the plant list only on the alarm page. For a summary count in a header, read a Gateway-side tag that a single script updates, as in the work-order example above.
+
+### A performance review gate
+
+Before release: count bindings per view (the heaviest screen), list every script transform and \`runScript\`, list every short poll interval, and run the soak test. A screen that fails does not go live.
+
 `,
 
   eli5: `
@@ -138,7 +177,7 @@ Vision scaled by pushing work to client PCs, which limited how many Gateway reso
   examples: [
     {
       title: "Replacing a polling query with a tag",
-      body: `A header banner shows "Open work orders: 14" using a named query polled every 2 seconds. With 120 operators that is 60 queries per second against the maintenance database. Replace it: a Gateway timer script runs the query every 30 seconds with \`system.db.runNamedQuery\`, writes the count to a memory tag \`[default]Site/OpenWorkOrders\`, and the banner binds to that tag. Database load drops from 60 queries per second to about 0.03, and the number is at most 30 seconds old.`
+      body: `A header banner shows "Open work orders: 14" using a named query polled every 2 seconds. With 120 operators that is 60 queries per second against the maintenance database. Replace it: a Gateway timer script runs the query every 30 seconds with \`system.db.execQuery("Maintenance/OpenWorkOrders", {})\` (in 8.1, \`system.db.runNamedQuery\`; the old call still runs in 8.3 but is deprecated), writes the count to a memory tag \`[default]Plant1/Maintenance/OpenWorkOrders\`, and the banner binds to that tag. Database load drops from 60 queries per second to about 0.03, and the number is at most 30 seconds old.`
     },
     {
       title: "A reconnect storm",

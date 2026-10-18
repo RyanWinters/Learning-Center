@@ -26,7 +26,7 @@ Perspective ships several chart components. For process data you will use three.
 | {{term:time-series-chart|Time Series Chart}} | A fixed trend on a screen: the three pens that matter for this unit | You, at design time | Bindings, usually a tag history binding |
 | {{term:xy-chart|XY Chart}} | One variable against another (pump curve, temperature vs pressure) | You | Bindings; each axis is a data column, not time |
 
-The **Power Chart** is the "give me a trend of whatever I want" tool. At runtime the user opens a tag browser, picks the database and the tag provider, and adds tags. Each becomes a **pen**. They can change the time range and pen scale, save and reload setups, and zoom. You can also build the pen list in script, which is handy when the tag set depends on the asset. It reads from the historian, so a tag only shows up if history is enabled on it. It does not trend string tags, so an operator will not find a state-name tag next to the analog ones.
+The **Power Chart** is the "give me a trend of whatever I want" tool. At runtime the user opens a tag browser, picks the database and the tag provider, and adds tags. Each becomes a **pen**. They can change the time range and pen scale, save and reload setups, and zoom. You can also build the pen list in script, which is handy when the tag set depends on the asset. It reads from the historian, so a tag only shows up if history is enabled on it. It is built for numeric pens, so do not expect a state-name string tag to trend like an analog one. Check the manual for what your version supports.
 
 The **Time Series Chart** is the one you design. You decide which pens, which colors, which axes and what the time window is. Because it is binding driven, you control exactly what query it sends. Pick it for the trend that lives on a unit overview or inside a faceplate.
 
@@ -44,7 +44,7 @@ Chart data arrives in three ways.
 
 Every historian query is the same three questions.
 
-**Range.** Start and end, absolute or relative. Be careful if the end is "now". Intervals can include the end instant, so the last window may reach into the future and be filled with an interpolated value. That draws a cliff on the right edge of the trend. Pin the end to a value you control, or follow the manual's guidance for the binding's range setting.
+**Range.** Start and end, absolute or relative. Be careful if the end is "now". If the last window extends past the final real sample, it can be filled with a held or interpolated value and draw a cliff on the right edge of the trend. Test the right edge of your trend with a live tag, and follow the manual's guidance for the binding's range settings.
 
 **Aggregate (how to reduce).** The historian can return stored points as they were, or reduce each time slice to one value.
 
@@ -57,7 +57,7 @@ Every historian query is the same three questions.
 | Sum | Total of values in the slice | Flow increments, counts |
 | Count and duration modes | How many values, or how long in a state | Run-time and cycle analysis |
 
-**Return size.** How many rows come back. The binding offers query modes. A *point count* mode splits the range into N slices. A *periodic* mode returns one row per fixed interval. An *as stored* mode returns the raw values, without reduction. The scripting API has the same idea: a return size of a positive number means "give me about this many rows", while zero lets the historian pick based on the logging rate, and -1 means raw values as they changed. If you pass an explicit return size, interval arguments are ignored.
+**Return size.** How many rows come back. The binding offers query modes. A *point count* mode splits the range into N slices. A *periodic* mode returns one row per fixed interval. An *as stored* mode returns the raw values, without reduction. The scripting API has the same idea: a positive return size caps the number of rows, and -1 retrieves raw data with no aggregation or interpolation (see the Tag History guide in the 8.3 manual). Read the function page for how a return size interacts with other arguments such as intervals, and for what zero does, before relying on it.
 
 {{diagram:funnel}}
 
@@ -87,17 +87,18 @@ For custom shaping, call the historian and convert the result to a dataset.
 # Last 8 hours, 480 buckets (one per minute), time-weighted average
 end = system.date.now()
 start = system.date.addHours(end, -8)
-paths = ["[default]Plant1/Boiler1/DrumLevel", "[default]Plant1/Boiler1/DrumPressure"]
+paths = ["[default]Plant1/Area10/Line1/LT101", "[default]Plant1/Area10/Line1/M101/Sts/Speed"]
 
 ds = system.historian.queryAggregatedPoints(
     paths=paths,
-    startDate=start,
-    endDate=end,
-    returnSize=480,
-    aggregates=["Average"])
+    startTime=start,
+    endTime=end,
+    aggregates=["Average"],
+    returnFormat="Wide",
+    returnSize=480)
 \`\`\`
 
-The result has a \`t_stamp\` column and one column per path. If you bind this to a chart, you rarely need the script at all: the tag history binding does the same query with no code and lets the chart refresh as the window moves. Reach for a script when you must merge in another source, rename columns for display, or downsample in a custom way.
+The result is a dataset with a timestamp column and one column per path (wide format). Pass the optional arguments by keyword, because their order differs between functions. If you bind this to a chart, you rarely need the script at all: the tag history binding does the same query with no code and lets the chart refresh as the window moves. Reach for a script when you must merge in another source, rename columns for display, or downsample in a custom way.
 
 > [!note] In 8.1
 > The same query in 8.1 uses \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=480, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Check the 8.3 manual for the full parameters before porting scripts.
@@ -116,6 +117,34 @@ A trend is for judging, not for decoration. Apply the same HP-HMI discipline you
 - **Consistent scale.** Put pens with the same units on a shared axis. Add separate axes only for different units. Do not let each pen auto-scale independently, because a flat signal then looks wildly noisy.
 - **Sensible window.** Default to a window that matches the process time constant: 15 minutes for a flow loop, 8 hours for a tank, 7 days for a utility load.
 - **Labels the operator knows.** Use equipment names from the P&ID, with units, not the tag's folder path.
+## If you already build Perspective
+
+Trends fail in subtler ways than slow queries. Check how the line is drawn, what the historian actually stored, and what is missing from the picture.
+
+### Stair-step or interpolated
+
+A line between two stored samples is an assumption. An analog signal such as LT101 is usually drawn as a straight line from one stored point to the next. A discrete signal (a run bit, a mode, a valve state) must be drawn as a stair: the value holds until the next change. Interpolating a state makes a diagonal ramp that never happened. In the Time Series Chart, set the pen's interpolation or line style per pen (check the property names in the 8.3 component page), and pair each discrete pen with LastValue in the query. Check that the historian is also treating the tag as discrete, since that affects the values it returns.
+
+### Reading deadband-compressed history
+
+With on-change storage and a deadband, a flat line can mean either "steady" or "the value moved less than the deadband". A straight diagonal across an hour can mean "no samples were stored", not "slow ramp". When a trend looks too smooth, open the raw points with \`system.historian.queryRawPoints\` for the same window and count the stored rows. If the minimum and maximum time between samples are configured, flat segments are also forced samples. Teach operators what the pen's deadband is. Show it in the pen legend for key tags, because a 2 percent deadband hides a 1 percent drift.
+
+### Bounding values and edges
+
+The first and last points of a window need a value, and the historian may supply an interpolated or held one at the edge. This is why a trend can start at a value that was never stored in the window. If you export trend data or compute from it, decide whether you want bounding values and state it in the report.
+
+### Event markers
+
+A level trace alone does not say why it moved. Overlay events: alarm activations from the alarm journal (query by source for LT101), mode changes, and batch phase changes from the batch table. Query them separately from the pens and bind them to the chart's annotation or a second small timeline under the trend with the same time axis. Put the alarm marker in the alarm-priority colour and shape from {{lesson:persp-hphmi}} and keep pen colours for pens only.
+
+### Quality is part of the data
+
+Bad-quality periods show as gaps or flat lines. Decide how they are drawn. A visible gap is honest. Draw a flat held value and the operator reads a stable process during a comm loss. For key pens, query a quality aggregate (for example PctGood, if listed on the 8.3 aggregates page) and flag windows below a limit your style guide sets.
+
+### Cost per refresh
+
+Every open trend re-queries on its refresh. Use the same query across sessions where possible: round window ends to the refresh interval so queries are identical and can share cached results where your version offers that, and share one popup per asset. Measure with the profiling steps in {{lesson:persp-performance}}.
+
 `,
 
   eli5: `
@@ -144,8 +173,8 @@ Trending is older than SCADA. Strip-chart recorders drew pen lines on paper, and
 
   examples: [
     {
-      title: "Operator trend popup for a boiler drum",
-      body: `A Time Series Chart shows drum level, steam flow and feedwater flow for the last 4 hours. The binding uses a point count of 600 with MinMax for level and Average for the flows. The setpoint is a dashed line and the high and low alarm limits are thin red bands. The chart refreshes every 30 seconds. When the operator zooms to 15 minutes, a script re-issues the query for that window, still at 600 points, so detail returns without raising the row count.`
+      title: "Operator trend popup for the Area10 mixing tank",
+      body: `A Time Series Chart shows LT101 level (0 to 5.0 m), the M101 agitator speed and the FV101 position for the last 4 hours. The binding uses a point count of 600 with MinMax for level and Average for speed and position. The level setpoint is a dashed line and the LAH-101 and LAHH-101 limits are thin horizontal bands in the alarm-priority colours, not pen colours. The chart refreshes every 30 seconds. When the operator zooms to 15 minutes, a script re-issues the query for that window, still at 600 points, so detail returns without raising the row count.`
     },
     {
       title: "Why a status trend lies",
@@ -203,7 +232,7 @@ Trending is older than SCADA. Strip-chart recorders drew pen lines on paper, and
       answer: 1,
       explain: [
         "The cost is in rows read and sent, not the browser alone.",
-        "Correct. Reduce on the server to roughly one row per pixel, using MinMax if spikes matter.",
+        "Correct. Reduce on the server to about one slice per pixel, remembering that MinMax returns two rows per slice.",
         "Fewer pens helps, but each remaining pen still returns a huge series.",
         "A deadband change affects future storage, not how this query returns past data."
       ]
@@ -236,7 +265,7 @@ Trending is older than SCADA. Strip-chart recorders drew pen lines on paper, and
       answer: 1,
       explain: [
         "Bad quality shows differently, usually as gaps or flagged data.",
-        "Correct. Inclusive intervals at 'now' can add a window with no real data, which then draws wrongly.",
+        "Correct. A final window past the last real sample can be filled with a held or interpolated value. Check the binding's range settings in the manual.",
         "Color has no effect on data.",
         "Layout does not change the query result."
       ]

@@ -199,13 +199,6 @@ Use a change script for side effects (write a tag after confirmation, send a mes
 
 When one expression feeds 40 components, compute it once into \`view.custom.x\` and bind the 40 components to that. This is also the way to stop a single noisy input from re-triggering a long transform chain 40 times. Order the chain so cheap, selective steps run first: a Map that collapses 1,000 distinct raw values to four states, before a Format, means the later steps see fewer distinct inputs. The chain still runs, but later steps work on fewer distinct values.
 
-### Review checklist
-
-- Does the same expression appear in more than one component? Hoist it.
-- Does the expression depend only on tags? Move it into the UDT.
-- Does any script transform call anything that blocks? Replace it.
-- Is every setpoint write an explicit action with an audit point?
-
 `,
 
   eli5: `

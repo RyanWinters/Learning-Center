@@ -44,13 +44,13 @@ View: Library/Faceplates/Motor
 Params:  tagPath  (string)  e.g. [default]Plant1/Area10/Line1/M101
 \`\`\`
 
-Inside the view, each binding builds its tag path from that parameter with an indirect tag binding, for example a label bound to \`{view.params.tagPath}/Status/Running\`. In expression form:
+Inside the view, each binding builds its tag path from that parameter with an indirect tag binding, for example a label bound to \`{view.params.tagPath}/Sts/Running\`. An expression-built path with \`tag()\` also works, though it hides the dependency from tooling (see {{lesson:persp-bindings}}):
 
 \`\`\`text
-tag({view.params.tagPath} + "/Status/Running")
+tag({view.params.tagPath} + "/Sts/Running")
 \`\`\`
 
-The UDT defines the member names (\`Status/Running\`, \`Status/Fault\`, \`Cmd/Start\`, \`Cmd/Stop\`, \`Cfg/Description\`, \`Cfg/Units\`). The faceplate depends on that contract, not on any particular motor. If your {{term:udt|UDT}} for motors has the same member names on every site, the same faceplate works everywhere. That makes **UDT design the real interface of the library**. Treat member names like an API: add members freely, never rename or remove one without a version bump. See {{lesson:ign-udts}}.
+The UDT defines the member names (\`Sts/Running\`, \`Sts/Fault\`, \`Cmd/Start\`, \`Cmd/Stop\`, \`Cfg/Description\`, \`Cfg/SpeedHigh\`). The faceplate depends on that contract, not on any particular motor. If your {{term:udt|UDT}} for motors (the house \`Motor\`, with \`Cmd\`, \`Sts\`, \`Cfg\` and \`Alm\` folders) has the same member names on every site, the same faceplate works everywhere. That makes **UDT design the real interface of the library**. Treat member names like an API: add members freely, never rename or remove one without a version bump. See {{lesson:ign-udts}}.
 
 Perspective views take parameters as strings, numbers, objects and more, but there is no first-class "UDT" parameter type, so passing the path as a string and using indirect bindings is the standard approach. Dragging a UDT instance onto a view can map to a path parameter, which is a convenience in the Designer.
 
@@ -60,7 +60,7 @@ Resist adding parameters. If you find yourself passing \`tagPath\`, \`descriptio
 
 ### Selecting the right faceplate by type
 
-A generic open-faceplate action should not need an if-else tree. Use the UDT's type id to look up the view:
+A generic open-faceplate action should not need an if-else tree. Use the UDT's type id to look up the view. The code below runs in a project library script that a symbol's click event calls. Perspective event scripts run in the Gateway scope, so \`system.tag.getConfiguration\` and \`system.perspective.openPopup\` are both available there. Confirm the returned keys (including \`typeId\`) in the 8.3 manual for your version.
 
 \`\`\`python
 # Library script: library.faceplates
@@ -70,10 +70,16 @@ TYPE_TO_VIEW = {
     'Analog':  'Library/Faceplates/Analog',
     'PID':     'Library/Faceplates/PID',
 }
+_typeCache = {}   # tag path -> short type name, filled on first use
+
+def _typeOf(tagPath):
+    if tagPath not in _typeCache:
+        cfg = system.tag.getConfiguration(tagPath, False)[0]   # one config read per path, not per click
+        _typeCache[tagPath] = str(cfg.get('typeId', '')).split('/')[-1]
+    return _typeCache[tagPath]
 
 def openFaceplate(tagPath):
-    typeId = system.tag.getConfiguration(tagPath, False)[0]['typeId']  # UDT type of the instance
-    view = TYPE_TO_VIEW.get(str(typeId).split('/')[-1], 'Library/Faceplates/Generic')
+    view = TYPE_TO_VIEW.get(_typeOf(tagPath), 'Library/Faceplates/Generic')
     system.perspective.openPopup(
         'fp-' + tagPath, view,
         params={'tagPath': tagPath},
@@ -81,13 +87,15 @@ def openFaceplate(tagPath):
         modal=False)
 \`\`\`
 
+The cache avoids a tag-configuration query on every click. The cost is staleness: if a tag is retyped, clear the cache (restart, or a message handler that empties it). Where the symbol already knows its type, pass it as an optional second argument and skip the lookup.
+
 A single popup action on every symbol, \`library.faceplates.openFaceplate(self.view.params.tagPath)\`, now opens the right view for every device type. When you add a Heater type, you add one line in the map and one view. Keep the map in a dataset tag or a JSON resource if sites need to extend it without editing the library.
 
 ## Popups as faceplates
 
 Operators expect a faceplate to appear over the current screen and to be ignored or dismissed quickly. A popup does that and keeps the underlying page alive.
 
-- **Give each popup a unique id** based on the tag path (\`fp-\` plus the path). Opening the same device again focuses or replaces the existing popup, and opening a different device creates another. Without a stable id you get stacks of identical windows.
+- **Give each popup a unique id** based on the tag path (\`fp-\` plus the path). Opening a different device creates another popup, and a stable id gives you one handle per device to close or toggle (check how your version treats a repeat open). Without a stable id you get stacks of identical windows.
 - **Non-modal for monitoring, modal for confirmation.** The faceplate itself is non-modal. A "Confirm stop" dialog opened from it is modal.
 - **Position and size.** Standardize the size per device class so operators build muscle memory.
 - **Close behavior.** Closing a popup disposes its bindings. That is a performance reason to prefer popups to always-open embedded views. See {{lesson:persp-navigation}}.
@@ -118,12 +126,12 @@ Keep state colors few and meaningful per ISA-101 practice ({{lesson:persp-hphmi}
 A minimal motor faceplate, top to bottom:
 
 1. **Header**: description from \`Cfg/Description\`, tag name small and muted.
-2. **State**: Running, Stopped, Faulted, shown by a symbol and text (not color alone) with a state class chosen by an expression on \`Status/State\`.
-3. **Live values**: speed, current, run hours.
+2. **State**: Running, Stopped, Faulted, shown by a symbol and text (not color alone) with a state class chosen by an expression over \`Sts/Running\`, \`Sts/Fault\` and \`Alm/*\`.
+3. **Live values**: speed and run hours from \`Sts/Speed\` and \`Sts/RunHours\`.
 4. **Commands**: Start, Stop, and a Local/Remote indicator. Commands are disabled when the device is in local mode or the user lacks the role.
-5. **Interlocks and permissives**: a small list reading \`Status/Permissives\` bits.
+5. **Alarms and permissives**: the \`Alm/FailToStart\`, \`Alm/Overload\` and \`Alm/CommLoss\` bits, plus any site-added permissive member. Overload and E-stop protection are hardwired, so the faceplate only displays them.
 6. **Trend**: a small Time Series Chart for current and speed, 15 minute window, with a capped row count. See {{lesson:persp-charts}}.
-7. **Alarms**: a filtered alarm table for this path.
+7. **Alarm list**: a filtered alarm table for this path.
 
 Commands should write to a command member (\`Cmd/Start\`), and the PLC logic decides whether to act. The HMI asks, the PLC decides. See {{lesson:plc-udt}}.
 
@@ -167,6 +175,41 @@ When you can answer yes to each, the library is ready for a second site:
 4. Does one script or action open the correct faceplate for any device?
 5. Is there a version number, a change log and a catalog view?
 6. Does the library pass the same performance test as the rest of the project ({{lesson:persp-performance}})?
+## If you already build Perspective
+
+Library work is mostly contract management. These are the points that bite at the third site.
+
+### Parameter design as a versioned API
+
+Treat \`tagPath\` as required and everything else as optional with a safe default. Never change the meaning of an existing param. To rename, add the new one, accept both for one major version, and log use of the old one. Write the contract in the view's description: required UDT type, required members, optional members and what the faceplate shows when each is missing. Use \`Sts/\` and \`Cmd/\` names that match the PLC UDT so the OPC item path built from the Ignition UDT parameters and the faceplate agree.
+
+### Make missing members a normal state
+
+A new faceplate release that reads a member an older UDT lacks will show Bad_NotFound. Design for it: wrap optional reads in \`isGood()\` checks and hide the section when bad. That is what lets an addition be a minor release.
+
+### Script scope and cost in library code
+
+Library functions called from bindings or events share Gateway threads. Keep them pure and fast: no database calls, no tag-config reads per call without a cache (as in \`openFaceplate\` above), and no \`runScript\` in repeated components. A library script that is cheap on one screen can be expensive across 100 sessions.
+
+### Override governance
+
+Keep an override register: view path, site, reason, owner, library version it forked from. At every major release, diff each override against the new library view and decide to merge back, rebase, or retire. An override with no entry is a defect.
+
+### Theme and token contract
+
+The library publishes a token list (see {{lesson:persp-styles}}) and ships the base theme. Sites override tokens, not classes. A faceplate that needs a new token adds it with a default in the library theme, so older sites do not break.
+
+### Release and rollback
+
+1. Freeze, run the catalog project against a simulated UDT set with good, bad quality and missing members.
+2. Tag the export in source control with the version and release notes.
+3. Stage on a test Gateway, then install per site in the agreed window.
+4. Keep the previous export ready. A rollback is an import of the last good release, and it works only if you did not change the UDT contract in the same window.
+
+### Cross-site UDT drift
+
+The library trusts that \`Motor\` means the same everywhere. Check it. Export UDT definitions from each site and diff them against the library's reference definition on a schedule. A single renamed member at one plant turns every faceplate there into Bad_NotFound. The fix belongs in the UDT, not in a site override.
+
 `,
 
   eli5: `
@@ -198,11 +241,11 @@ Reusable symbol libraries predate HMI software: P&ID standards define symbols so
   examples: [
     {
       title: "A valve faceplate from one path",
-      body: `A site drops a valve symbol on a P&ID and sets its parameter \`tagPath\` to \`[default]Plant1/Area2/XV-204\`. Clicking the symbol calls \`library.faceplates.openFaceplate\`. The type lookup returns the Valve view. The faceplate reads \`Cfg/Description\` ("Feed isolation valve"), shows \`Status/Position\` (Open, Closed, Travelling, Fault) as text and symbol, and enables Open and Close buttons from \`Status/Permissives\`. No other configuration was needed. A second site with the same UDT gets the identical faceplate on import of the library.`
+      body: `A site drops a valve symbol on a P&ID and sets its parameter \`tagPath\` to \`[default]Plant1/Area10/Line1/FV101\`. Clicking the symbol calls \`library.faceplates.openFaceplate\`. The type lookup returns the Valve view. The faceplate reads \`Cfg/Description\` ("Feed valve"), shows \`Sts/Position\` (Open, Closed, Travelling, Fault) as text and symbol, and enables Open and Close buttons from \`Sts/Ready\`. (This assumes a \`Valve\` UDT built to the same \`Cmd\`, \`Sts\`, \`Cfg\`, \`Alm\` pattern as the motor.) No other configuration was needed. A second site with the same UDT gets the identical faceplate on import of the library.`
     },
     {
       title: "Releasing version 2.4.0",
-      body: `The team adds an optional "Maintenance mode" indicator to the Motor faceplate. Because it reads \`Status/MaintMode\` only if the member exists, older UDTs still work, so it is a minor version bump. The release notes say: "Motor 2.4.0: new Maintenance indicator; requires UDT Motor v1.3 or later for the indicator; no action for older UDTs." The library goes to a test Gateway, the catalog view is checked, and each site installs it at its next maintenance window.`
+      body: `The team adds an optional "Maintenance mode" indicator to the Motor faceplate. Because it reads \`Sts/MaintMode\` only if the member exists, older UDTs still work, so it is a minor version bump. The release notes say: "Motor 2.4.0: new Maintenance indicator; requires UDT Motor v1.3 or later for the indicator; no action for older UDTs." The library goes to a test Gateway, the catalog view is checked, and each site installs it at its next maintenance window.`
     }
   ],
 
@@ -254,8 +297,8 @@ Reusable symbol libraries predate HMI software: P&ID standards define symbols so
       ]
     },
     {
-      q: "You rename the UDT member Status/Running to Status/IsRunning to match a new naming standard. What is the consequence for the library?",
-      options: ["None; bindings update automatically", "Every faceplate binding to Status/Running breaks, so it needs a major version bump and migration", "Only popups are affected", "Only style classes are affected"],
+      q: "You rename the UDT member Sts/Running to Sts/IsRunning to match a new naming standard. What is the consequence for the library?",
+      options: ["None; bindings update automatically", "Every faceplate binding to Sts/Running breaks, so it needs a major version bump and migration", "Only popups are affected", "Only style classes are affected"],
       answer: 1,
       explain: [
         "Indirect bindings use the string path. They do not follow renames.",
@@ -266,11 +309,11 @@ Reusable symbol libraries predate HMI software: P&ID standards define symbols so
     },
     {
       q: "Why open a faceplate as a popup with an id built from the tag path?",
-      options: ["Popups are required for faceplates", "Opening the same device again reuses the same popup instead of stacking duplicates, and bindings are released on close", "It makes the faceplate read-only", "It avoids needing a view"],
+      options: ["Popups are required for faceplates", "A stable id gives one handle per device, so you avoid stacking duplicate windows, and bindings are released on close", "It makes the faceplate read-only", "It avoids needing a view"],
       answer: 1,
       explain: [
         "They are a good pattern, not a requirement.",
-        "Correct. A stable id prevents duplicate windows, and closing frees the Gateway resources.",
+        "Correct. A stable id gives one handle per device and prevents duplicate windows, and closing releases the popup's bindings.",
         "Popups can write if the view and user permissions allow.",
         "A popup still opens a view."
       ]
