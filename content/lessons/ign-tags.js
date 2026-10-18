@@ -250,7 +250,7 @@ Early SCADA systems tied every tag to a licensed point count, so tags were scarc
       ]
     },
     {
-      q: "Which tag path is the most robust to put in a gateway script?",
+      q: "Which tag path is the most robust to put in a Gateway script?",
       options: ["M101/Sts/Speed", "[default]Plant1/Area10/Line1/M101/Sts/Speed", "[.]Speed", "Plant1.Area10.Line1.M101.Sts.Speed"],
       answer: 1,
       explain: [

@@ -11,7 +11,7 @@ LC.lesson({
     "Choose between the installer, the zip distribution and Docker for a given environment",
     "Walk through Gateway commissioning and name the first settings to review",
     "Explain how 8.3 stores configuration as files and why that makes Git practical",
-    "Describe deployment modes and what the gateway REST API and API keys are for",
+    "Describe deployment modes and what the Gateway REST API and API keys are for",
     "Identify the default ports and what to firewall"
   ],
 
@@ -94,9 +94,9 @@ Practical rules from the version control guide: switch project encoding to XML s
 
 ## Deployment modes
 
-A **deployment mode** lets one set of configuration files contain variants, for example a \`dev\` and a \`prod\` mode, where device IPs or database URLs differ. The Gateway applies the resources for the mode it started in. The same repository can then deploy to both environments without hand editing. A system tag for the current mode did not exist as of the forum threads on it, but a script can read the active mode through the platform's configuration manager, and the gateway info API returns it.
+A **deployment mode** lets one set of configuration files contain variants, for example a \`dev\` and a \`prod\` mode, where device IPs or database URLs differ. The Gateway applies the resources for the mode it started in. The same repository can then deploy to both environments without hand editing. A system tag for the current mode did not exist as of the forum threads on it, but a script can read the active mode through the platform's configuration manager, and the Gateway info API returns it.
 
-## The gateway REST API
+## The Gateway REST API
 
 8.3 adds a REST API served by the Gateway itself. The Gateway publishes an interactive documentation page at \`/openapi\` and the raw spec at \`/openapi.json\`. Typical uses:
 
@@ -145,7 +145,7 @@ A backup is the photocopy you keep at your neighbor's house. It only counts once
   why: `
 **Why file-based configuration was worth a rewrite.** Plants run for decades, and the person who set a device IP in 2026 will not be there in 2036. Version control gives the system a memory: who changed what, when and why, and a way to undo it. It also makes the promise of dev, test and prod environments real, since a configuration you can diff is a configuration you can promote. A database blob cannot be reviewed.
 
-**Why you still keep gateway backups.** Git captures the files you commit. A backup captures the whole, consistent state, including things you excluded from Git (binary resources, secrets). They answer different questions. Git answers "what changed?" and a backup answers "can we get the plant back by 3 a.m.?"
+**Why you still keep Gateway backups.** Git captures the files you commit. A backup captures the whole, consistent state, including things you excluded from Git (binary resources, secrets). They answer different questions. Git answers "what changed?" and a backup answers "can we get the plant back by 3 a.m.?"
 
 **Why deployment modes exist.** The classic failure is copying production configuration to a dev Gateway and having the dev copy start writing to production PLCs. Modes let identical files hold different targets, but they also introduce a new way to be wrong: the Gateway started in the wrong mode. Teams argue about whether a mode should be set by the host, the container or a launch parameter. The safest answer is the one an operator cannot change from a web page.
 
@@ -163,7 +163,7 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
     },
     {
       title: "First-login 403 on the API",
-      body: `Your script calls the gateway info endpoint and gets 403. The API key exists, but its security level has no read access to the Gateway. Add a level that grants read access, rotate the key and retry. Do not widen the key to full access to make the error go away.`
+      body: `Your script calls the Gateway info endpoint and gets 403. The API key exists, but its security level has no read access to the Gateway. Add a level that grants read access, rotate the key and retry. Do not widen the key to full access to make the error go away.`
     }
   ],
 

@@ -29,7 +29,7 @@ When you enable history on tags, the module creates a set of tables in your conn
 
 | Table | Role | Key columns |
 |---|---|---|
-| \`sqlth_drv\` | One row per historian "driver": which gateway and tag provider wrote the data | \`id\`, \`name\`, \`provider\` |
+| \`sqlth_drv\` | One row per historian "driver": which Gateway and tag provider wrote the data | \`id\`, \`name\`, \`provider\` |
 | \`sqlth_scinfo\` | Scan class (tag group) info, linked to a driver | \`id\`, \`drvid\`, \`scname\` |
 | \`sqlth_te\` | **Tag entries**: one row per historical tag configuration | \`id\`, \`tagpath\`, \`scid\`, \`datatype\`, \`created\`, \`retired\` |
 | \`sqlth_partitions\` | A map from time ranges to data tables | \`pname\`, \`drvid\`, \`start_time\`, \`end_time\` |
@@ -77,7 +77,7 @@ ORDER BY d.t_stamp;
 
 {{diagram:join}}
 
-That works for one day inside one month. Cross a month boundary and you need a second table name in a UNION, built dynamically. Query "last 90 days" and you may touch four tables. Tag path matching also has quirks (the stored path is normalized, typically to lowercase, and provider handling differs between historian setups, so check what \`sqlth_te\` actually holds), and the gateway tracks the table names so the query does not have to.
+That works for one day inside one month. Cross a month boundary and you need a second table name in a UNION, built dynamically. Query "last 90 days" and you may touch four tables. Tag path matching also has quirks (the stored path is normalized, typically to lowercase, and provider handling differs between historian setups, so check what \`sqlth_te\` actually holds), and the Gateway tracks the table names so the query does not have to.
 
 ## Partitioning and pruning
 
@@ -119,7 +119,7 @@ What the API does for you:
 - Resolves tag paths to the right \`sqlth_te\` ids, across retired versions.
 - Finds and queries only the partitions covering your window.
 - Handles aggregation (average, min, max, the right number of points per pixel), interpolation, gaps and quality filtering.
-- Works with other history providers, including remote gateways and non-SQL stores, with the same call.
+- Works with other history providers, including remote Gateways and non-SQL stores, with the same call.
 - Survives internal schema changes between versions, which raw SQL does not.
 
 Use raw SQL against these tables for administration: counting rows per partition, finding the biggest tags, checking for gaps. Never write application logic that depends on them, and never INSERT or UPDATE them directly. Inductive Automation's guidance is to use the provided functions for reads and the historian store functions for writes. In 8.3 those live in \`system.historian\` (look for \`storeDataPoints\` on the 8.3 \`system.historian\` page); in 8.1 the call is \`system.tag.storeTagHistory\`.
@@ -230,7 +230,7 @@ Process historians date from the 1980s, when vendors such as OSIsoft (PI) built 
       explain: [
         "sqlth_te holds tag entries (path, datatype, id), not time ranges.",
         "sqlth_scinfo stores tag group (scan class) information.",
-        "sqlth_drv identifies the gateway and provider that wrote the data.",
+        "sqlth_drv identifies the Gateway and provider that wrote the data.",
         "Correct. sqlth_partitions maps start and end times to the name of the sqlt_data table."
       ]
     },

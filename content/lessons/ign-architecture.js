@@ -11,7 +11,7 @@ LC.lesson({
     "Describe what runs on the Gateway and what runs on a Designer or client",
     "Differentiate a Vision client from a Perspective session and say where each runs",
     "List the core modules and what each one adds to the Gateway",
-    "Separate gateway-level resources (devices, databases, tag providers) from project resources (views, scripts)",
+    "Separate Gateway-level resources (devices, databases, tag providers) from project resources (views, scripts)",
     "Predict where a piece of code runs using the Gateway, Designer and Client scopes"
   ],
 
@@ -26,7 +26,7 @@ Everything in Ignition revolves around the {{term:ign-gateway|Gateway}}. It is a
 
 A Gateway has three jobs.
 
-1. **Run the engine.** Device connections poll PLCs, tags evaluate, the historian writes to the database, alarm pipelines fire, and gateway scripts execute.
+1. **Run the engine.** Device connections poll PLCs, tags evaluate, the historian writes to the database, alarm pipelines fire, and Gateway scripts execute.
 2. **Serve projects.** It hands project resources to Designers and clients and executes the server-side half of Perspective sessions.
 3. **Host the admin web UI.** At \`http://host:8088\` you get Status pages (what is happening) and Config pages (what is configured), plus links to download launchers.
 
@@ -88,7 +88,7 @@ This distinction explains where to look when something is missing.
 | Alarm pipelines, notification profiles | Session event scripts, styles |
 | Modules, licensing | Project properties and permissions |
 
-Gateway-level items are shared by every project on that Gateway. Project-level items belong to one project, though a project can inherit from a parent, which the {{lesson:ign-projects}} lesson covers. Tags are gateway-level; a view binding that points to them is project-level.
+Gateway-level items are shared by every project on that Gateway. Project-level items belong to one project, though a project can inherit from a parent, which the {{lesson:ign-projects}} lesson covers. Tags are Gateway-level; a view binding that points to them is project-level.
 
 ## Scopes: where does my code run?
 
@@ -127,7 +127,7 @@ Modules are the kitchen's extra equipment. A basic kitchen cooks. Add a pizza ov
 
 **Why scopes matter so much.** A script that works in the Designer script console may fail or behave differently in a Perspective session. Reading a local file, showing a popup or getting the current user are all scope-dependent. Knowing where code executes is half of debugging in Ignition.
 
-**Why keep resource levels separate?** Putting devices and databases at gateway level lets many projects share them. Putting views at project level lets a team iterate on one screen set without touching others. Integrators argue about how many projects to create. A common rule is one project per distinct audience or deployable unit, plus a shared parent project for common scripts and styles.
+**Why keep resource levels separate?** Putting devices and databases at Gateway level lets many projects share them. Putting views at project level lets a team iterate on one screen set without touching others. Integrators argue about how many projects to create. A common rule is one project per distinct audience or deployable unit, plus a shared parent project for common scripts and styles.
 
 **Why the Vision-versus-Perspective choice is not trivial.** Perspective has the momentum and the better architecture for web and mobile, but a Gateway carrying hundreds of live sessions has a real memory budget. Vision pushes work to client machines. Neither is wrong, and many plants run both during a long migration.
 `,
@@ -167,7 +167,7 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
   pitfalls: [
     "Assuming Perspective scripts run in the browser. They run in the Gateway scope.",
     "Testing a script only in the Designer script console, where the scope and session context differ.",
-    "Forgetting that devices, databases and tag providers are gateway-level and shared by all projects.",
+    "Forgetting that devices, databases and tag providers are Gateway-level and shared by all projects.",
     "Loading many heavy sessions on an undersized Gateway because 'licensing is unlimited'.",
     "Installing third-party modules on a production Gateway without testing them on a copy."
   ],
@@ -194,7 +194,7 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
         "Views belong to a project.",
         "Script libraries belong to a project, though they can be inherited.",
         "Named queries are project resources.",
-        "Correct. Database, device and tag provider connections are gateway-level resources."
+        "Correct. Database, device and tag provider connections are Gateway-level resources."
       ]
     },
     {

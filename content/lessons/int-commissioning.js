@@ -171,7 +171,7 @@ The tag diagnostics pages in the 8.3 manual (see Resources) describe what Igniti
 - Confirm each historized tag is writing. Tag diagnostics report the time of last storage and the timestamp of the last stored value.
 - Compare a trend of the last hour to the raw value you see in the PLC.
 - Confirm sample modes and deadbands are sensible. A tight deadband on a noisy analog fills the database; a loose one hides process movement.
-- Check history through a **gateway restart** and through a **database outage** if store-and-forward is configured. Pull the database connection for two minutes, then reconnect and verify the gap fills.
+- Check history through a **Gateway restart** and through a **database outage** if store-and-forward is configured. Pull the database connection for two minutes, then reconnect and verify the gap fills.
 
 ### Everything else
 
@@ -223,7 +223,7 @@ Commissioning is that same walk-through, done with wires, sensors, valves and sc
 
 **Where integrators argue.** Some insist on testing 100 % of points with full range for analogs; others test only three points per loop and trust the transmitter calibration. Safety and regulated environments tend to require the full record. Another argument is who owns the loop check: instrument techs argue that it is a field calibration task, while controls engineers argue it must include the logic. The answer is usually shared, with the I/O list showing who signed what.
 
-**Why commission the Ignition layer separately?** Operators judge the system by the screen. An alarm that exists in the PLC but is not configured in Ignition does not exist for them. A trend with no history is a lie. Treat the gateway as a controlled deliverable with its own checks and its own backup at handover.
+**Why commission the Ignition layer separately?** Operators judge the system by the screen. An alarm that exists in the PLC but is not configured in Ignition does not exist for them. A trend with no history is a lie. Treat the Gateway as a controlled deliverable with its own checks and its own backup at handover.
 
 **Why plan the rollback?** A cutover without a rollback plan is a bet that nothing will go wrong. Brownfield plants run 24 hours a day, and the cost of a failed cutover is measured in lost production per hour. The plan lets the person on site make a calm decision at the trigger point rather than inventing a plan under pressure.
 `,

@@ -230,7 +230,7 @@ The B-tree was invented by Rudolf Bayer and Edward McCreight at Boeing in 1970 a
       answer: 2,
       explain: [
         "More RAM may hide it briefly, but the query still reads 30 million rows.",
-        "That moves the full scan and network transfer to the gateway, which is worse.",
+        "That moves the full scan and network transfer to the Gateway, which is worse.",
         "Correct. The plan shows nearly all rows read and discarded. An index on the filter columns lets the database read about 48 rows.",
         "The primary key is usually the clustered index and supports lookups. Removing it harms performance."
       ]

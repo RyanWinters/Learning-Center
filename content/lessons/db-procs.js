@@ -157,7 +157,7 @@ Integrators argue about this constantly. Both camps are right some of the time.
 
 A practical rule many integrators use: **put the *what* in the database and the *when* in Ignition.** The database knows how a downtime event is closed. Ignition knows the operator pressed the button, which user is logged in and which machine is selected. Business rules that must survive a change of SCADA vendor belong in the database. Presentation logic, tag-driven triggers and anything that depends on live process values belong in Ignition.
 
-Whichever you choose, write it down. The worst case is half the rules in a stored procedure nobody remembers and half in a gateway script nobody can find.
+Whichever you choose, write it down. The worst case is half the rules in a stored procedure nobody remembers and half in a Gateway script nobody can find.
 
 ## Calling stored procedures from Ignition
 
@@ -192,7 +192,7 @@ Parameters can be registered by position or by name. Input, output, in/out and r
 
 **2. A Stored Procedure transaction group.** The SQL Bridge module's transaction groups run on a schedule or trigger. A stored procedure group maps group items (usually tags) to the procedure's parameters. Input items send tag values in, and output items write returned values back to tags. The [transaction group documentation](https://docs.inductiveautomation.com/docs/8.3/ignition-modules/sql-bridge-transaction-groups/transaction-group-examples) describes it, and the procedure must already exist in the database. Two gotchas from the docs: Oracle needs index-based rather than named parameters, and PostgreSQL may need \`escapeSyntaxCallMode=callIfNoReturn\` on the JDBC connection string.
 
-This is a good fit for "when the batch-complete bit goes true, call \`usp_record_batch\` with the product code, quantity and end time tags." It needs no scripting and runs under the gateway's trigger logic. If the call fails, the group reports the error on its status, so you still need to watch it.
+This is a good fit for "when the batch-complete bit goes true, call \`usp_record_batch\` with the product code, quantity and end time tags." It needs no scripting and runs under the Gateway's trigger logic. If the call fails, the group reports the error on its status, so you still need to watch it.
 
 > [!example] Worked decision
 > The plant wants downtime events closed with a reason. Choices: (a) a Perspective script that runs three queries; (b) \`usp_close_downtime\` called from the button's script. You pick (b). Another system, a Power BI report, already reads \`v_downtime_report\`, and the supervisor's phone app will soon close events too. The rule lives once, in the database. The button stays a three-line script. Ignition still handles user, machine selection and error toasts.
@@ -273,7 +273,7 @@ Stored procedures became common in the 1980s and 1990s as client/server database
   pitfalls: [
     "Treating a view as a performance feature. It is a saved query and runs every time.",
     "Writing a trigger that assumes one row per statement, then bulk-loading 5,000 rows.",
-    "Putting business logic in three places (screen script, gateway script, procedure) with no document saying which wins.",
+    "Putting business logic in three places (screen script, Gateway script, procedure) with no document saying which wins.",
     "Granting the Ignition account full table rights when a handful of EXECUTE grants would do.",
     "Assuming createSProcCall behaves the same on PostgreSQL as on SQL Server.",
     "Calling a slow stored procedure on the UI thread and freezing a screen."

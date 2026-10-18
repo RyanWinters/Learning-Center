@@ -9,7 +9,7 @@ LC.lesson({
   summary: "A web-deployed, SQL-centric, modular platform licensed per Gateway and per module instead of by the tag. That pricing and architecture combination is why it spread.",
   objectives: [
     "Explain how Ignition's per-Gateway licensing (unlimited tags and devices, licensed modules) differs from per-tag SCADA pricing",
-    "Describe the four properties that define the platform: Java gateway, web deployment, modularity, SQL at the center",
+    "Describe the four properties that define the platform: Java Gateway, web deployment, modularity, SQL at the center",
     "Place Ignition at the right Purdue levels for a given job",
     "Choose between Standard, Edge, Cloud Edition and Maker Edition for a scenario",
     "Use the trial and its two-hour timer without being surprised by it"
@@ -42,7 +42,7 @@ The consequence is behavioral. An integrator can say yes to "can we also show th
 
 ## What defines the platform
 
-**Java gateway.** The Gateway is a Java application running on its own embedded web server. It runs on Windows, Linux and macOS, on bare metal, in a VM, or in a Docker container. There is no dependency on a Windows-only stack, which was unusual for SCADA in 2010.
+**Java Gateway.** The Gateway is a Java application running on its own embedded web server. It runs on Windows, Linux and macOS, on bare metal, in a VM, or in a Docker container. There is no dependency on a Windows-only stack, which was unusual for SCADA in 2010.
 
 **Web-deployed clients.** Operators do not install a project. They open a URL or launch a client from the Gateway, which sends the current version of the project at launch. Update the project and the next launch gets the update. With Perspective, the client is just a browser session.
 

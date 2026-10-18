@@ -22,9 +22,9 @@ Ignition speaks {{term:sparkplug|Sparkplug B}} over {{term:mqtt|MQTT}} through t
 
 | Module | Role | Runs where |
 |---|---|---|
-| {{term:mqtt-transmission|MQTT Transmission}} | Publisher. Reads Ignition tags, turns them into Sparkplug messages, publishes to one or more brokers | Edge IIoT or a site gateway (check which MQTT capability your Edge edition includes, see {{lesson:arch-edge}}) |
-| {{term:mqtt-distributor|MQTT Distributor}} | Broker. Makes an Ignition Gateway an MQTT 3.1.1 server | A gateway that should host the broker |
-| {{term:mqtt-engine|MQTT Engine}} | Subscriber. Receives Sparkplug messages and creates and updates tags | Central or hub gateway |
+| {{term:mqtt-transmission|MQTT Transmission}} | Publisher. Reads Ignition tags, turns them into Sparkplug messages, publishes to one or more brokers | Edge IIoT or a site Gateway (check which MQTT capability your Edge edition includes, see {{lesson:arch-edge}}) |
+| {{term:mqtt-distributor|MQTT Distributor}} | Broker. Makes an Ignition Gateway an MQTT 3.1.1 server | A Gateway that should host the broker |
+| {{term:mqtt-engine|MQTT Engine}} | Subscriber. Receives Sparkplug messages and creates and updates tags | Central or hub Gateway |
 
 Distributor comes in a standard version and a Plus version with a higher client-connection limit (50 versus 250 in Cirrus Link's published figures; confirm against current documentation). A third option for the broker role is {{term:chariot-broker|Chariot}}, Cirrus Link's standalone MQTT server, which runs outside Ignition.
 
@@ -71,20 +71,20 @@ Engine can act as the Sparkplug {{term:primary-host|primary host}}. It publishes
 That is {{term:mqtt-store-forward|MQTT store-and-forward}}. Transmission can buffer time-stamped tag changes when the connection or the primary host is down, then backfill history and resume live data. Cirrus Link's documentation describes this as best effort (see the store-and-forward video and pages in the resources, and check the current docs for your module version). Edge cases around MQTT keep-alive timeouts can lose messages, so do not call it a guarantee in a compliance design. If you need the data in a historian for certain, test your outage scenarios and consider a second path.
 
 > [!warning] Two historians, one set of data
-> If Transmission backfills history, the receiving gateway must be set to accept and store the historical data. Check how Engine tags handle history so you do not store the same values twice, or lose them.
+> If Transmission backfills history, the receiving Gateway must be set to accept and store the historical data. Check how Engine tags handle history so you do not store the same values twice, or lose them.
 
 ## Choosing a broker
 
 | Option | Good for | Watch for |
 |---|---|---|
-| Distributor on a gateway | One plant, Ignition-centric, small client count | Broker shares CPU and memory with the gateway; client limits |
+| Distributor on a Gateway | One plant, Ignition-centric, small client count | Broker shares CPU and memory with the Gateway; client limits |
 | Chariot | Larger fleets, dedicated broker, cloud or VM | A separate product to patch, license and monitor |
 | Third-party broker | Corporate standard, cloud IoT services | Sparkplug-aware behaviors and retained messages must work |
 
 For redundancy, brokers can be clustered or fronted by a load balancer depending on the product. Check the vendor's current guidance, and see {{lesson:arch-redundancy}}.
 
 > [!example] Plant-wide rollout
-> 12 packaging lines each have a site gateway with Transmission. They publish to Chariot on a VM. The corporate Ignition has Engine pointed at that broker with the primary host ID \`CorpScada\`. Tag count at the center grows as lines are added with no central configuration. During a WAN outage, each line's Transmission stores changes. After the link returns, the hub gets a gap-filled history.
+> 12 packaging lines each have a site Gateway with Transmission. They publish to Chariot on a VM. The corporate Ignition has Engine pointed at that broker with the primary host ID \`CorpScada\`. Tag count at the center grows as lines are added with no central configuration. During a WAN outage, each line's Transmission stores changes. After the link returns, the hub gets a gap-filled history.
 
 ## Security
 
@@ -108,7 +108,7 @@ The note writer is Transmission. The mail room is Distributor or Chariot. The pr
 
 **Why the primary host STATE?** Without it, an edge node cannot tell whether the broker is up but nobody is listening. It would publish into a broker that discards the data. The STATE message makes "the consumer is online" an explicit fact, so edge nodes can buffer and later send a clean sequence.
 
-**What integrators argue about.** Whether MQTT replaces OPC UA or the Gateway Network. In practice: OPC UA for device-to-gateway, MQTT for site-to-enterprise and cloud, and the Gateway Network or Sync Services where everything is Ignition and you want remote tag providers, remote alarm pipelines and tight integration. Another argument is broker placement. A broker inside Ignition is simple, but a dedicated broker is easier to scale and to keep running when you patch the gateway.
+**What integrators argue about.** Whether MQTT replaces OPC UA or the Gateway Network. In practice: OPC UA for device-to-gateway, MQTT for site-to-enterprise and cloud, and the Gateway Network or Sync Services where everything is Ignition and you want remote tag providers, remote alarm pipelines and tight integration. Another argument is broker placement. A broker inside Ignition is simple, but a dedicated broker is easier to scale and to keep running when you patch the Gateway.
 `,
 
   history: `
@@ -118,7 +118,7 @@ MQTT was created by Andy Stanford-Clark and Arlen Nipper in 1999 for monitoring 
   examples: [
     {
       title: "Reading the tag path Engine creates",
-      body: `Transmission on the Plant 1 gateway with group ID \`Plant1\` and edge node ID \`Area10_Line1\` publishes a device named \`M101\` with a metric \`Sts/Running\`. At the hub, Engine creates a tag at \`Edge Nodes/Plant1/Area10_Line1/M101/Sts/Running\` in its provider. If the edge node dies, its tags go bad quality when the NDEATH arrives, so alarms and screens can show "stale" rather than a frozen number.`
+      body: `Transmission on the Plant 1 Gateway with group ID \`Plant1\` and edge node ID \`Area10_Line1\` publishes a device named \`M101\` with a metric \`Sts/Running\`. At the hub, Engine creates a tag at \`Edge Nodes/Plant1/Area10_Line1/M101/Sts/Running\` in its provider. If the edge node dies, its tags go bad quality when the NDEATH arrives, so alarms and screens can show "stale" rather than a frozen number.`
     },
     {
       title: "Testing store-and-forward",
@@ -155,7 +155,7 @@ MQTT was created by Andy Stanford-Clark and Arlen Nipper in 1999 for monitoring 
     "Treating store-and-forward as a guarantee. Test outages and know the edge cases.",
     "Mismatched group IDs, edge node IDs or primary host IDs between Transmission and Engine, which leaves tags empty or never buffering.",
     "Running a broker with no TLS or per-client credentials on a routable network.",
-    "Putting a busy broker and a busy SCADA gateway on one server, then patching them together.",
+    "Putting a busy broker and a busy SCADA Gateway on one server, then patching them together.",
     "Storing backfilled history twice by historizing on both the edge and the hub without a plan."
   ],
 
@@ -186,7 +186,7 @@ MQTT was created by Andy Stanford-Clark and Arlen Nipper in 1999 for monitoring 
     },
     {
       q: "A site is connected through a firewall that allows only outbound connections. Which architecture fits best?",
-      options: ["Central gateway polls each site by OPC UA", "Engine at each site, Transmission at center", "Distributor at every site", "Each site's Transmission publishes outbound to a broker, and the center runs Engine"],
+      options: ["Central Gateway polls each site by OPC UA", "Engine at each site, Transmission at center", "Distributor at every site", "Each site's Transmission publishes outbound to a broker, and the center runs Engine"],
       answer: 3,
       explain: [
         "Polling needs inbound access to every site.",
@@ -213,7 +213,7 @@ MQTT was created by Andy Stanford-Clark and Arlen Nipper in 1999 for monitoring 
       explain: [
         "Correct. Choose by consumer type and network constraints.",
         "They differ in transport, consumer and licensing.",
-        "Transmission also runs on standard gateways.",
+        "Transmission also runs on standard Gateways.",
         "Sync Services uses the Gateway Network, not a broker."
       ]
     }

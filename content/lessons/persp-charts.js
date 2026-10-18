@@ -37,7 +37,7 @@ The **XY Chart** plots value against value. Its data typically comes from a quer
 Chart data arrives in three ways.
 
 1. **Tag history binding.** A property binding of type *Tag History* where you list tags, a time range and an aggregation. This is the normal route for a Time Series Chart. The binding can return the data in different layouts: **wide** (one row per timestamp, one column per tag), **tall** (one row per tag per timestamp) or a **calculations** layout (one row per tag with the aggregate over the whole range).
-2. **Script.** A script transform or an event script calls the historian and writes the result to a property. In 8.3 the newer \`system.historian\` functions such as \`queryAggregatedPoints\` and \`queryRawPoints\` sit beside the older \`system.tag.queryTagHistory\`. Both read the same stored data.
+2. **Script.** A script transform or an event script calls the historian and writes the result to a property. In 8.3 use \`system.historian.queryAggregatedPoints\` (aggregated, for trends and reports) or \`system.historian.queryRawPoints\` (raw values). The older \`system.tag.queryTagHistory\` is deprecated in 8.3 but still runs, so you'll see it in 8.1 projects and forum posts.
 3. **Database query.** A named query that reads a table you maintain, for batch or lab data. See {{lesson:persp-bindings}}.
 
 ## The three knobs: range, aggregate, return size

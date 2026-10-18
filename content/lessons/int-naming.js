@@ -216,7 +216,7 @@ A factory has the same problem with machines. A pump shows up on the drawings, i
 
 **Why UDT member names are a public API.** Once a historian query, a report and a faceplate refer to \`Sts.Running\`, renaming is a project. Pick a shared vocabulary across types, as in {{lesson:plc-udt}}, and treat changes like interface changes.
 
-**Where integrators disagree.** Some prefer flat names with prefixes (\`CHI_MIX_P101\`) because they survive being copied into logs and filenames. Others prefer deep folder trees because they navigate well and map to ISA-95. A related argument is whether the Ignition tree should mirror the physical plant (area/line/cell) or the equipment type (all pumps in one folder). The usual answer is the plant hierarchy for tags, because operators think in places and the equipment type is already captured in the UDT definition. A third argument is whether to include the site in every path when each site has its own gateway. Include it. The day you merge sites into a central gateway or a UNS, you will be glad it is already there.
+**Where integrators disagree.** Some prefer flat names with prefixes (\`CHI_MIX_P101\`) because they survive being copied into logs and filenames. Others prefer deep folder trees because they navigate well and map to ISA-95. A related argument is whether the Ignition tree should mirror the physical plant (area/line/cell) or the equipment type (all pumps in one folder). The usual answer is the plant hierarchy for tags, because operators think in places and the equipment type is already captured in the UDT definition. A third argument is whether to include the site in every path when each site has its own Gateway. Include it. The day you merge sites into a central Gateway or a UNS, you will be glad it is already there.
 
 **The cost of a bad standard** is usually paid at integration time: the day a second site is added, the day MES is connected, the day a UNS is rolled out. A convention that cannot grow with the hierarchy has to be rewritten at that point, and every dependent system with it.
 `,
@@ -360,7 +360,7 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
     },
     {
       q: "Which choice puts the hierarchy in the right place?",
-      options: ["Site, area and line as folders; short stable equipment names as leaves", "All attributes in one long leaf name", "Equipment type as the top folder and nothing else", "No hierarchy, because folders slow the gateway"],
+      options: ["Site, area and line as folders; short stable equipment names as leaves", "All attributes in one long leaf name", "Equipment type as the top folder and nothing else", "No hierarchy, because folders slow the Gateway"],
       answer: 0,
       explain: [
         "Correct. Folders carry place, leaves carry identity, and a move changes the path but not the identity.",

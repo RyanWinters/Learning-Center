@@ -113,7 +113,7 @@ Operators think in equipment and actions, not in tag paths. Compare:
 | LVL | Level | Four letters are cheap |
 | TEMP. CTRL. DEV. ALM | Temperature deviation alarm | Say the thing |
 
-Use the plant's own vocabulary, the one on the P&ID and in the operator's mouth. Where equipment is numbered on the floor, show the number: "Mixer M101" or "Pump P101". Keep the hyphenated drawing form (LT-101) where operators read drawings and the unhyphenated form (LT101) only where the system requires it, as defined in the house standard. Never show a historian path, a UDT member path or a gateway name.
+Use the plant's own vocabulary, the one on the P&ID and in the operator's mouth. Where equipment is numbered on the floor, show the number: "Mixer M101" or "Pump P101". Keep the hyphenated drawing form (LT-101) where operators read drawings and the unhyphenated form (LT101) only where the system requires it, as defined in the house standard. Never show a historian path, a UDT member path or a Gateway name.
 
 Abbreviate only when it is universal on site (pH, psi, kg, °C) and the style guide lists it. Write each unit and abbreviation once in the guide and use exactly that form everywhere. Raw tag names are still valuable to maintainers, so put them in a tooltip, a diagnostics popup or a hidden-by-default field rather than on the main view.
 

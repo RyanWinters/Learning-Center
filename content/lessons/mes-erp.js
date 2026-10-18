@@ -110,7 +110,7 @@ For ERP traffic, the dominant concern is **not losing a confirmation**. An ERP t
 
 ## Where Ignition and Sepasoft fit
 
-Plain Ignition can do all of the above with its Python-based (Jython) scripting: \`system.net.httpClient\` for REST calls, file handling for drops, Named Queries for staging tables, and the gateway's web development tools for receiving calls (see {{lesson:arch-webdev}}). It's fully custom, so you own the mapping, retries and error screens. For inbound calls, authenticate the middleware as its own service account or with an API key issued for that one integration, sent over HTTPS, and never reuse a person's login. Check your Ignition version's web-development security options. The middleware sits in the DMZ and reaches the gateway only through the DMZ reverse proxy (see {{lesson:arch-remote-services}}).
+Plain Ignition can do all of the above with its Python-based (Jython) scripting: \`system.net.httpClient\` for REST calls, file handling for drops, Named Queries for staging tables, and the Gateway's web development tools for receiving calls (see {{lesson:arch-webdev}}). It's fully custom, so you own the mapping, retries and error screens. For inbound calls, authenticate the middleware as its own service account or with an API key issued for that one integration, sent over HTTPS, and never reuse a person's login. Check your Ignition version's web-development security options. The middleware sits in the DMZ and reaches the Gateway only through the DMZ reverse proxy (see {{lesson:arch-remote-services}}).
 
 Sepasoft provides products aimed at this job:
 
@@ -135,8 +135,8 @@ Do not promise "we can connect to SAP" without knowing the version, the object (
 
 A food plant. ERP releases production order 1001234 for 5,000 cases of MARINARA-12PK.
 
-1. Middleware delivers a ProductionSchedule message to the gateway's REST endpoint.
-2. The gateway validates it, writes a \`work_order\` row with status "Released", and raises it on the scheduler screen.
+1. Middleware delivers a ProductionSchedule message to the Gateway's REST endpoint.
+2. The Gateway validates it, writes a \`work_order\` row with status "Released", and raises it on the scheduler screen.
 3. The operator starts the order. Status changes to "Running" and the MES posts status back.
 4. The line runs. The MES accumulates good count, scrap and consumed tomato paste by lot.
 5. On completion, the MES builds a ProductionPerformance message: order 1001234, 4,980 good, 20 scrap, tomato paste lot T-4410 312 kg, with a unique confirmation ID.
@@ -176,7 +176,7 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
     },
     {
       title: "File drop with a safe handoff",
-      body: `ERP writes \`orders_20261017.xml.tmp\`, then renames it to \`orders_20261017.xml\` when complete. A gateway timer script only reads files that end in \`.xml\`, moves each to \`/processed\` after success or \`/error\` on failure. The rename trick avoids reading half-written files, the most common file-drop bug.`
+      body: `ERP writes \`orders_20261017.xml.tmp\`, then renames it to \`orders_20261017.xml\` when complete. A Gateway timer script only reads files that end in \`.xml\`, moves each to \`/processed\` after success or \`/error\` on failure. The rename trick avoids reading half-written files, the most common file-drop bug.`
     }
   ],
 

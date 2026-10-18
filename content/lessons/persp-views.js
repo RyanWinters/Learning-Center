@@ -271,7 +271,7 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
       q: "Where should the 'selected plant area' value live if it filters three different pages for one operator?",
       options: [
         "Component custom props on the dropdown",
-        "A gateway memory tag shared by all operators",
+        "A Gateway memory tag shared by all operators",
         "Session custom props",
         "An input param on every page's primary view, set by hand"
       ],

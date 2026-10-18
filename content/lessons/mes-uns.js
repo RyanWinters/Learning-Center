@@ -117,9 +117,9 @@ Ignition is usually a **node** in the UNS, not the UNS itself. The namespace is 
 
 A typical Ignition-based arrangement:
 
-- **Edge gateways** (or {{term:ignition-edge|Ignition Edge}}) connect to PLCs over OPC UA or native drivers and publish with {{term:mqtt-transmission|MQTT Transmission}} (a Cirrus Link module, which speaks Sparkplug B).
+- **Edge Gateways** (or {{term:ignition-edge|Ignition Edge}}) connect to PLCs over OPC UA or native drivers and publish with {{term:mqtt-transmission|MQTT Transmission}} (a Cirrus Link module, which speaks Sparkplug B).
 - **A broker** such as {{term:chariot-broker|Chariot}} (Cirrus Link's broker), or a third-party broker, receives and distributes.
-- **A central gateway** runs {{term:mqtt-engine|MQTT Engine}} (also Cirrus Link) to subscribe and create tags, then provides {{term:historian|historian}}, Perspective and alarming.
+- **A central Gateway** runs {{term:mqtt-engine|MQTT Engine}} (also Cirrus Link) to subscribe and create tags, then provides {{term:historian|historian}}, Perspective and alarming.
 - **UDTs** model assets, and the same structure can be reflected in topics.
 - **Sepasoft MES, ERP interfaces and cloud analytics** publish to or consume from the same namespace.
 

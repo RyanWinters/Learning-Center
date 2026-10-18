@@ -185,7 +185,7 @@ The trick is choosing the simplest thing that works. If the blinds can follow th
 `,
 
   history: `
-Ignition's older Vision client had a large set of component event handlers written in Jython. Perspective kept scripting but made the UI declarative first: bindings, built-in actions and style classes cover most needs, and scripting is the escape hatch. Message handlers carry on the idea of Ignition's gateway messaging, adapted to the view, page and session hierarchy of a browser app.
+Ignition's older Vision client had a large set of component event handlers written in Jython. Perspective kept scripting but made the UI declarative first: bindings, built-in actions and style classes cover most needs, and scripting is the escape hatch. Message handlers carry on the idea of Ignition's Gateway messaging, adapted to the view, page and session hierarchy of a browser app.
 `,
 
   examples: [

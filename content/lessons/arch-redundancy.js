@@ -6,21 +6,21 @@ LC.lesson({
   level: 3,
   prereqs: ["arch-gateway-network"],
   tags: ["redundancy", "failover", "high-availability", "master", "backup", "warm-standby"],
-  summary: "Pairing two gateways so one takes over when the other fails: what gets synced, how fast the switch happens, and what redundancy does not protect.",
+  summary: "Pairing two Gateways so one takes over when the other fails: what gets synced, how fast the switch happens, and what redundancy does not protect.",
   objectives: [
     "Describe the master and backup roles and the active versus standby states",
     "Compare cold and warm standby and explain the failover time tradeoff",
     "List what syncs between the pair and what does not",
     "Explain how history modes and client failover behave during a switch",
-    "Separate gateway redundancy from database high availability and design for both"
+    "Separate Gateway redundancy from database high availability and design for both"
   ],
 
   body: `
 ## What redundancy is
 
-An {{term:ignition|Ignition}} **redundant pair** is two gateways running the same project and configuration. One is **active** and does the work. The other watches it and takes over if it stops responding. The goal is to turn "the server died at 2 a.m." into "the system switched in a few seconds and someone looked at it in the morning."
+An {{term:ignition|Ignition}} **redundant pair** is two Gateways running the same project and configuration. One is **active** and does the work. The other watches it and takes over if it stops responding. The goal is to turn "the server died at 2 a.m." into "the system switched in a few seconds and someone looked at it in the morning."
 
-Redundancy covers the **gateway**. It does not cover the PLC, the network, the SQL database or the plant. A system is only as available as its weakest single point, so this lesson ends with where else you need to look.
+Redundancy covers the **Gateway**. It does not cover the PLC, the network, the SQL database or the plant. A system is only as available as its weakest single point, so this lesson ends with where else you need to look.
 
 {{diagram:pair}}
 
@@ -31,16 +31,16 @@ There are two things to keep apart.
 - **Role** is configured and permanent: **master** or **backup**. The master normally owns the configuration. The Designer connects to the master, you change things there, and the changes flow to the backup.
 - **State** changes at runtime: **active** (running the system) or **standby** (watching). Normally master is active and backup is standby. After a failover, the backup is active and the master is standby or offline.
 
-The two gateways are joined by a {{lesson:arch-gateway-network}} connection on the backup. The backup sends pings to the master. When the master stops answering, the backup decides the master is faulted and takes responsibility.
+The two Gateways are joined by a {{lesson:arch-gateway-network}} connection on the backup. The backup sends pings to the master. When the master stops answering, the backup decides the master is faulted and takes responsibility.
 
 ## Cold, warm, and what the backup is doing
 
-The **Standby Activity Level** setting determines how busy the standby gateway is.
+The **Standby Activity Level** setting determines how busy the standby Gateway is.
 
 | Level | Standby does | Failover speed | Cost |
 |---|---|---|---|
 | **Cold** | Connects to OPC servers but does not subscribe to tag values | Slower, since tags must subscribe and initialize at failover | Less load on devices and network |
-| **Warm** | Runs like the active gateway, subscribing and evaluating, except it does not write to devices or log data | Faster | Doubles the polling load on your PLCs and servers |
+| **Warm** | Runs like the active Gateway, subscribing and evaluating, except it does not write to devices or log data | Faster | Doubles the polling load on your PLCs and servers |
 
 Check the redundancy and upgrade guides for your version for IA's current advice on standby level when you patch a pair.
 
@@ -50,7 +50,7 @@ Make sure your PLCs and drivers can serve two clients at once before choosing wa
 
 {{diagram:sync}}
 
-| Synced from master to backup | Not synced (each gateway has its own) |
+| Synced from master to backup | Not synced (each Gateway has its own) |
 |---|---|
 | Gateway configuration: tag providers, device connections, database connections, security settings | Gateway local settings tied to the machine (network interfaces, IP addresses, host names) |
 | Projects and resources | Trust and approval for connections, which you verify on each machine |
@@ -75,11 +75,11 @@ Failover time is the sum of detection, takeover and recovery.
 
 Do not quote a single failover time to a customer. Measure on the real network, with real tag counts, and report a range.
 
-A switch also affects things that run on the gateway. Running SFC charts stop with the gateway and do not simply resume where they were (see {{lesson:arch-sfc}}). EAM scheduled tasks depend on where the controller runs (see {{lesson:arch-eam}}). Perspective sessions on the failed node are lost, and clients reconnect to the active node as new sessions.
+A switch also affects things that run on the Gateway. Running SFC charts stop with the Gateway and do not simply resume where they were (see {{lesson:arch-sfc}}). EAM scheduled tasks depend on where the controller runs (see {{lesson:arch-eam}}). Perspective sessions on the failed node are lost, and clients reconnect to the active node as new sessions.
 
 ## Clients and history
 
-**Clients.** Clients reconnect to whichever gateway is active, so plan the addressing (a shared name or both addresses) and test it. Client reconnect adds time on top of gateway failover. One forum report saw Perspective clients taking about a minute to switch even though the gateways had switched quickly, and the cause was the websocket idle timeout, not redundancy. Include the client in your test.
+**Clients.** Clients reconnect to whichever Gateway is active, so plan the addressing (a shared name or both addresses) and test it. Client reconnect adds time on top of Gateway failover. One forum report saw Perspective clients taking about a minute to switch even though the Gateways had switched quickly, and the cause was the websocket idle timeout, not redundancy. Include the client in your test.
 
 **History.** The **History Mode** on the backup decides how much it records.
 
@@ -90,7 +90,7 @@ For the gaps between failover and recovery, check what you need: a continuous tr
 
 ## Redundancy is not high availability for the database
 
-The pair of gateways shares one SQL database. If that database is down, history, alarm journals and anything that logs to SQL stops working, however well the gateways fail over. Ignition does not provide database redundancy. The historian database needs its own plan: a database cluster, an availability group, replication or a managed cloud service. Plan three layers: redundant gateways, a highly available database and redundant network paths (for example, ring topologies from {{lesson:net-topology}}).
+The pair of Gateways shares one SQL database. If that database is down, history, alarm journals and anything that logs to SQL stops working, however well the Gateways fail over. Ignition does not provide database redundancy. The historian database needs its own plan: a database cluster, an availability group, replication or a managed cloud service. Plan three layers: redundant Gateways, a highly available database and redundant network paths (for example, ring topologies from {{lesson:net-topology}}).
 
 > [!example] A failover test script
 > 1. Note a trend and an alarm that is active. 2. Stop the Ignition service on the master. 3. Time how long until the backup reports active, and until a Perspective session shows live data. 4. Acknowledge the alarm on the backup and confirm state. 5. Write a setpoint and confirm the PLC accepted it. 6. Restart the master and watch recovery in the mode you chose. 7. Check the trend for a gap.
@@ -109,11 +109,11 @@ What gets passed along is the rules, the map and what's going on right now. What
 
 **Why Manual recovery is common.** If the master's problem is intermittent (a flaky NIC, a failing disk), Automatic recovery can bounce control back and forth. Each switch risks a blip for operators. Manual recovery lets a person confirm the master is truly healthy and pick a quiet moment.
 
-**Why not run everything redundant?** Because redundancy has costs: a second license, a second server, doubled polling in warm mode and added complexity. Reserve it for systems where downtime is expensive, and where the gateway is the likely failure. Often the correct answer is to make the weakest link (power, network, database) more robust first.
+**Why not run everything redundant?** Because redundancy has costs: a second license, a second server, doubled polling in warm mode and added complexity. Reserve it for systems where downtime is expensive, and where the Gateway is the likely failure. Often the correct answer is to make the weakest link (power, network, database) more robust first.
 
-**The classic design mistake.** A redundant pair of gateways with a single database server and a single network switch gives the appearance of high availability and the reality of a single point of failure. Draw the full chain from sensor to screen and mark every single point.
+**The classic design mistake.** A redundant pair of Gateways with a single database server and a single network switch gives the appearance of high availability and the reality of a single point of failure. Draw the full chain from sensor to screen and mark every single point.
 
-**Redundancy versus scale-out.** They solve different problems. Redundancy protects against loss of a gateway. Scale-out adds capacity. Large systems use both: each back-end and front-end can be a pair. See {{lesson:arch-patterns}}.
+**Redundancy versus scale-out.** They solve different problems. Redundancy protects against loss of a Gateway. Scale-out adds capacity. Large systems use both: each back-end and front-end can be a pair. See {{lesson:arch-patterns}}.
 `,
 
   history: `
@@ -204,7 +204,7 @@ The ping-based detection is the current model: the old Failover Timeout setting 
     {
       q: "The master has a PLC connection at 10.20.10.10. Your backup must reach the PLC at a different address on its own network. How do you handle that?",
       options: [
-        "Edit the same device on both gateways by hand",
+        "Edit the same device on both Gateways by hand",
         "Disable synchronization",
         "Use cold standby",
         "Add a Backup version of that resource with the different address"
@@ -238,9 +238,9 @@ The ping-based detection is the current model: the old Failover Timeout setting 
       ],
       answer: 0,
       explain: [
-        "Correct. Both gateways share the database, so it is a separate single point of failure.",
-        "Standby level affects gateway failover speed, not database availability.",
-        "Ping settings affect gateway detection time and not database behavior.",
+        "Correct. Both Gateways share the database, so it is a separate single point of failure.",
+        "Standby level affects Gateway failover speed, not database availability.",
+        "Ping settings affect Gateway detection time and not database behavior.",
         "Client reconnect timing is unrelated to the database."
       ]
     },
@@ -270,8 +270,8 @@ The ping-based detection is the current model: the old Failover Timeout setting 
       ],
       answer: 3,
       explain: [
-        "Ping rate affects how fast the backup detects the master failure, and the gateway already switched in 5 seconds.",
-        "Query caching does not hold screens stale for a minute after a gateway switch.",
+        "Ping rate affects how fast the backup detects the master failure, and the Gateway already switched in 5 seconds.",
+        "Query caching does not hold screens stale for a minute after a Gateway switch.",
         "The Designer only connects to the master and is not involved with operator sessions.",
         "Correct. Client reconnect is a separate timer, and forum reports trace slow client switching to the websocket idle timeout."
       ]

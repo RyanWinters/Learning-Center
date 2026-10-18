@@ -53,8 +53,8 @@ Tables, charts and text boxes repeat across the page for each row of their data 
 
 A {{term:report-schedule|report schedule}} uses a cron-style expression and runs on the Gateway, so it uses the Gateway's local time. A schedule can have several actions at once:
 
-- **Email:** send to addresses or to users by role, with the subject, body and attachment name driven by expressions. Needs an SMTP profile on the gateway.
-- **Save:** write the file to a path on the gateway's file system (a network share is common).
+- **Email:** send to addresses or to users by role, with the subject, body and attachment name driven by expressions. Needs an SMTP profile on the Gateway.
+- **Save:** write the file to a path on the Gateway's file system (a network share is common).
 - **FTP:** upload to a server, with the filename built by an expression.
 - **Print:** send to a printer, with options such as copies, duplex and orientation.
 - **Run Script:** call a script with the finished report so you can post-process it, for example to upload it somewhere custom.
@@ -78,7 +78,7 @@ Perspective can show a report in a **Report Viewer** component, which displays t
 - **Cache heavy data.** If five reports use the same expensive query, compute it once into a summary table on a schedule.
 - **Avoid scripts for big loops.** Python over tens of thousands of rows is slower than the same logic in SQL.
 - **Stagger schedules.** Twenty reports at 6:00:00 each hit the database at once. Offset them by a few minutes.
-- **Mind the gateway.** Generating large PDFs uses memory. Heavy reporting at the end of a shift can slow screens if the gateway is small. Move reports to a separate gateway on large systems (see {{lesson:arch-patterns}} for splitting workloads).
+- **Mind the Gateway.** Generating large PDFs uses memory. Heavy reporting at the end of a shift can slow screens if the Gateway is small. Move reports to a separate Gateway on large systems (see {{lesson:arch-patterns}} for splitting workloads).
 `,
 
   eli5: `
@@ -94,7 +94,7 @@ The template is the design. The gradebook and the student list are the data sour
 
 **Why named queries?** A report that builds SQL by concatenating a parameter into a string is open to injection and breaks on odd characters. Named queries bind parameters properly, can be tested alone, and are shared by screens and reports, so the numbers agree everywhere. When two places report different totals for the same shift, the cause is usually two hand-written queries.
 
-**Why compute in SQL?** The database is built to aggregate. The gateway is not. Reports that look fast in testing with a day of data become the slowest thing on the system after a year of production data.
+**Why compute in SQL?** The database is built to aggregate. The Gateway is not. Reports that look fast in testing with a day of data become the slowest thing on the system after a year of production data.
 
 **Why schedule on the Gateway?** Reports then run with no client open, at a defined time and under a defined identity. The tradeoff is that the schedule uses the Gateway's clock and time zone. Plants with multiple time zones should note which clock a report follows and say so in the report header.
 

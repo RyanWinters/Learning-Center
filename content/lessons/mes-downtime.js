@@ -39,7 +39,7 @@ The cleanest signal is a machine state tag, not a guess from raw I/O. A state mo
 A downtime event begins when the state leaves "Running" during planned production time, and ends when it returns. A few practical rules:
 
 - **Debounce the state.** A state that flickers for 200 ms is not an event. Filter in the PLC if you can, in the MES if you cannot.
-- **Use a time source you trust.** Timestamp in the PLC or at the edge, not when the gateway happens to poll. See {{term:polling|polling}}.
+- **Use a time source you trust.** Timestamp in the PLC or at the edge, not when the Gateway happens to poll. See {{term:polling|polling}}.
 - **Record the state, not just running/not running.** Faulted, starved and blocked are different problems. Starved means upstream is late, blocked means downstream is full. Neither is this machine's fault, and OEE reports should be able to say so.
 
 ## Micro-stops
@@ -183,7 +183,7 @@ So you do two things. The bus itself tells you the first warning light that came
 
 **Why the PLC must supply the first-out fault.** Cascade faults make most of the alarm list noise. Without a first-out indicator, MES records a cascade as the cause, or a human guesses. Giving MES one integer that is usually correct is worth more than a thousand alarm tags.
 
-**Why timestamps from the source.** If events are stamped when the gateway polls, a stop that lasted 4 seconds can appear as 0 or 10 depending on poll alignment. At scale that bias moves Availability by points. Use PLC or edge timestamps and sort out clock sync (see {{lesson:net-data}}).
+**Why timestamps from the source.** If events are stamped when the Gateway polls, a stop that lasted 4 seconds can appear as 0 or 10 depending on poll alignment. At scale that bias moves Availability by points. Use PLC or edge timestamps and sort out clock sync (see {{lesson:net-data}}).
 
 **What integrators debate.** Whether to force a reason before the line can restart (some plants do; it frustrates operators and produces junk), how long a stop must be before prompting, and who may edit reasons after the fact. A common compromise is: no lockout, a prompt after a threshold, reasons editable by supervisors within the same day, and a visible "unassigned" bucket on the shift report.
 `,
@@ -231,7 +231,7 @@ Downtime logging began as paper forms and clipboard tallies on the line, and TPM
   pitfalls: [
     "Prompting for a reason on every micro-stop, which trains operators to pick the first code.",
     "A 200-code tree. Compliance drops and the Pareto fragments into small bars.",
-    "Stamping events when the gateway polls instead of at the PLC, so short stops become random.",
+    "Stamping events when the Gateway polls instead of at the PLC, so short stops become random.",
     "Letting 'Other' hold more than a few percent of downtime and never reviewing it.",
     "Renumbering PLC fault codes without updating the MES mapping.",
     "Not cutting events at shift boundaries or around scheduled breaks, so OEE is charged for planned time.",

@@ -262,7 +262,7 @@ A tag change script runs in Gateway scope, which has no calling project. Pass th
 > [!note] In 8.1
 > Use \`system.db.runNamedQuery\` for both calls. It is deprecated in 8.3 but still works.
 >
-> On SQL Server with \`DATETIME2\`, a Date passed through JDBC is written as the gateway's local clock time unless you convert it. To keep the UTC rule, let the query stamp the time itself (\`SYSUTCDATETIME()\`) or convert on the way in, and test one row against the clock.
+> On SQL Server with \`DATETIME2\`, a Date passed through JDBC is written as the Gateway's local clock time unless you convert it. To keep the UTC rule, let the query stamp the time itself (\`SYSUTCDATETIME()\`) or convert on the way in, and test one row against the clock.
 
 The stop opens with the "Unassigned" reason immediately, so no time is lost if the operator is busy. The Perspective screen then runs an \`UPDATE\` named query to set the real \`reason_id\`. Filtering on the Unassigned reason also gives supervisors a report of stops nobody explained.
 
@@ -278,7 +278,7 @@ A {{term:ign-sql-bridge|transaction group}} (SQL Bridge module) moves PLC tag va
 1. Insert the sample data and compare the OEE query to the hand calculation: 72.2.
 2. Open an event, then try to open a second on the same machine. The partial index must reject it.
 3. Load 10 million synthetic \`production_count\` rows and check that \`EXPLAIN\` shows an index scan for one run.
-4. Pull the network cable on the gateway for five minutes and confirm no counts are missing afterward.
+4. Pull the network cable on the Gateway for five minutes and confirm no counts are missing afterward.
 `,
 
   eli5: `
@@ -296,7 +296,7 @@ A database for a factory is those notebooks, with a rule that you must pick the 
 
 **Why compute OEE in SQL and not in the PLC or a tag expression?** The PLC knows counts and states but not the shift calendar, work orders or planned stops. SQL can join all of those. It also means the number is reproducible: anyone can rerun the query for last Tuesday and get the same answer, which matters when two shifts argue about who had the bad day. Some integrators prefer a nightly job that stores results in an \`oee_shift\` table and have dashboards read that. Both are reasonable. Keep the raw tables either way.
 
-**Why the handshake and store-and-forward?** Databases go down for patches, networks drop, and gateways restart. Without a handshake the PLC either clears its counters too early (lost counts) or never clears them (double counts). Pushing writes through a buffered connection and acknowledging only after success is what keeps production totals honest. Mistakes here are the usual reason operators stop trusting the screen.
+**Why the handshake and store-and-forward?** Databases go down for patches, networks drop, and Gateways restart. Without a handshake the PLC either clears its counters too early (lost counts) or never clears them (double counts). Pushing writes through a buffered connection and acknowledging only after success is what keeps production totals honest. Mistakes here are the usual reason operators stop trusting the screen.
 `,
 
   history: `

@@ -28,7 +28,7 @@ A competent integrator can deliver a lot with the platform alone:
 
 | Need | Plain Ignition approach |
 |---|---|
-| Machine state and downtime | PLC state tag, a gateway script or Transaction Group writing state changes to a table |
+| Machine state and downtime | PLC state tag, a Gateway script or Transaction Group writing state changes to a table |
 | Production counts | Counter tags sampled into a \`production_count\` table by shift or run |
 | Simple OEE | Availability, performance and quality computed in SQL or a Named Query |
 | Work order display | A \`work_order\` table and a Perspective view with start/stop buttons |
@@ -46,7 +46,7 @@ For one line, one product family and one customer who knows exactly what they wa
 The trouble is rarely the first screen. It is everything that arrives after.
 
 - **Scope creep.** The line adds changeovers, then material lots, then a hold-and-release workflow, then ERP orders. Each addition touches the schema, scripts and screens you already have.
-- **Hidden logic.** Business rules end up spread across Transaction Groups, gateway scripts, SQL triggers and Perspective bindings. After the original developer leaves, nobody holds the whole picture.
+- **Hidden logic.** Business rules end up spread across Transaction Groups, Gateway scripts, SQL triggers and Perspective bindings. After the original developer leaves, nobody holds the whole picture.
 - **No tested core.** You write the state machine, the OEE rules, the lot genealogy queries and the edge cases (what happens on a power cycle mid-run, when two operators scan the same lot). Each is a place for bugs, and you are the only tester.
 - **Documentation and training.** Packaged products come with manuals and community knowledge. Your custom system has whatever you wrote down.
 - **Upgrades.** Ignition 8.1 to 8.3 changes can touch scripting, Perspective components and the Gateway Network. Custom code is yours to retest and fix. See {{lesson:arch-webdev}} for how much surface a custom web layer adds.
@@ -56,7 +56,7 @@ A rough test is the "bus factor." If one person leaving would leave the customer
 
 ## What Sepasoft actually sells
 
-The modules are built on Ignition's module SDK, so they live inside the same gateway and use the same tags, databases and Perspective. See {{lesson:mes-sepasoft}} for the modules. The value breaks into three parts.
+The modules are built on Ignition's module SDK, so they live inside the same Gateway and use the same tags, databases and Perspective. See {{lesson:mes-sepasoft}} for the modules. The value breaks into three parts.
 
 1. **A production model.** Enterprise, site, area, line and cell are defined once, and every module (OEE, track and trace, batch) hangs its settings on that structure. Your equipment hierarchy is data, not hard-coded names.
 2. **A tested data model and logic.** The schema, the OEE calculation, material and lot tracking, work order handling and batch engine are written and exercised by the vendor across many customers. You configure instead of coding.
@@ -187,7 +187,7 @@ The question is not which one is better. It is how big the library will get, and
     },
     {
       q: "Which is the best summary of what Sepasoft sells beyond screens?",
-      options: ["Faster PLC communication", "A replacement for Ignition's gateway", "A production model, a tested data model and logic, and an upgrade path", "Free historian storage"],
+      options: ["Faster PLC communication", "A replacement for Ignition's Gateway", "A production model, a tested data model and logic, and an upgrade path", "Free historian storage"],
       answer: 2,
       explain: [
         "PLC communication is the job of Ignition's OPC UA drivers and is unrelated to MES modules.",

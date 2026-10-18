@@ -12,7 +12,7 @@ LC.lesson({
     "Wire a barcode scan or NFC read into a session event script",
     "Choose between Workstation kiosk mode, a browser and the mobile app for a given station",
     "Design a view that works with gloves, one hand and a bad signal",
-    "Describe how to expose a gateway to phones without opening it to the internet"
+    "Describe how to expose a Gateway to phones without opening it to the internet"
   ],
 
   body: `
@@ -94,7 +94,7 @@ The worst design is a Gateway port forwarded to the internet. The Gateway then c
 
 The default design, in order:
 
-1. **Reverse proxy in the DMZ with TLS and an identity provider.** The phone reaches the DMZ reverse proxy (\`10.20.250.10\`) over HTTPS (8043 in the examples). The proxy forwards to the front-end gateway or the site gateway over the Gateway Network, with the site side making the outgoing connection. Roles come from the IdP. See {{lesson:net-security}}.
+1. **Reverse proxy in the DMZ with TLS and an identity provider.** The phone reaches the DMZ reverse proxy (\`10.20.250.10\`) over HTTPS (8043 in the examples). The proxy forwards to the front-end Gateway or the site Gateway over the Gateway Network, with the site side making the outgoing connection. Roles come from the IdP. See {{lesson:net-security}}.
 2. **Remote (off-site) phones** first join a VPN that terminates in the DMZ, then use the same proxy. The VPN grants access to the proxy only.
 3. **Device hygiene.** Use per-user roles, require a screen lock, and revoke a lost phone in the VPN and in the IdP.
 

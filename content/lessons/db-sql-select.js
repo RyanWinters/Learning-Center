@@ -287,7 +287,7 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
     "Using BETWEEN with '23:59:59' as an end-of-day bound, which misses fractional seconds.",
     "Relying on row order without ORDER BY.",
     "Using TOP without ORDER BY (or LIMIT without ORDER BY) and getting arbitrary rows.",
-    "Comparing a UTC column to a local-time literal, or ignoring the gateway's time zone and daylight saving shifts.",
+    "Comparing a UTC column to a local-time literal, or ignoring the Gateway's time zone and daylight saving shifts.",
     "Copying a TOP query to PostgreSQL or a LIMIT query to SQL Server without changing the syntax."
   ],
 

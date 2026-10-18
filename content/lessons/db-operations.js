@@ -92,7 +92,7 @@ A backup nobody has restored is a hope. Restores fail for dull reasons: the back
 Also keep **offsite or offline copies**. A ransomware attack that encrypts the database server will encrypt backups mounted on the same network share.
 
 > [!note] Ignition's own backup
-> The Ignition Gateway backup (.gwbk) saves projects, tags and gateway configuration, including the database *connection settings*. It does not contain the data in your database. You need both.
+> The Ignition Gateway backup (.gwbk) saves projects, tags and Gateway configuration, including the database *connection settings*. It does not contain the data in your database. You need both.
 
 ## High availability in plain words
 
@@ -109,7 +109,7 @@ Backups protect against loss. {{term:high-availability|High availability}} (HA) 
 Words you'll hear: **synchronous** means a write is not confirmed until the second copy has it, so nothing is lost but writes are slower. **Asynchronous** confirms right away and may lose a moment of data. **Failover** is switching to the standby. **Split brain** is when both servers believe they are primary, which is why clusters use a witness or quorum to decide.
 
 > [!tip] Ignition helps you
-> Ignition's store-and-forward can buffer data on disk while the database is unreachable and flush it when it returns, for the features that use it (the Tag Historian is the main one; check the manual for which others in your version). A few minutes of database downtime costs you no history as long as the gateway's buffer has room. Many plants find that, plus a VM with HA, is enough, and skip clustering entirely. Size the buffer for the longest outage you accept.
+> Ignition's store-and-forward can buffer data on disk while the database is unreachable and flush it when it returns, for the features that use it (the Tag Historian is the main one; check the manual for which others in your version). A few minutes of database downtime costs you no history as long as the Gateway's buffer has room. Many plants find that, plus a VM with HA, is enough, and skip clustering entirely. Size the buffer for the longest outage you accept.
 
 HA is not a backup. A bad \`DELETE\` replicates to the standby in milliseconds.
 
@@ -129,7 +129,7 @@ Practical rules:
 - **Read-only where possible.** Analysts and report tools get SELECT on views, not on base tables.
 - **No schema changes at runtime.** The Ignition historian needs to create partition tables, so give it CREATE rights in its own database or schema, but keep it away from the business schema. Run migrations with a separate admin account.
 - **Strong, unique passwords stored once**, in the Ignition connection setup and a password manager, not in a script or a spreadsheet.
-- **Use encrypted connections** (TLS) between the gateway and the database wherever the driver supports it.
+- **Use encrypted connections** (TLS) between the Gateway and the database wherever the driver supports it.
 - **Disable or lock down default accounts**, and turn on auditing of failed logins.
 - **Patch.** Database servers are targets. Include them in the maintenance calendar.
 
@@ -175,7 +175,7 @@ Monitor, and alert on:
 4. **Backup job success** and the age of the last good backup.
 5. **Log backup age**, so a stuck log chain is caught the same day.
 
-Control growth on purpose. Set a retention policy in the Tag Historian, which prunes old partitions, and decide what to roll up (hourly averages) before deleting raw rows. Cover this in {{lesson:db-timeseries}}. For Ignition's own database connections, the gateway status pages show connection state and store-and-forward queue size, so alarm on those as well.
+Control growth on purpose. Set a retention policy in the Tag Historian, which prunes old partitions, and decide what to roll up (hourly averages) before deleting raw rows. Cover this in {{lesson:db-timeseries}}. For Ignition's own database connections, the Gateway status pages show connection state and store-and-forward queue size, so alarm on those as well.
 
 > [!warning] Don't let the log fill the disk
 > Put data files, log files and backups on separate volumes. A runaway log can then fill only its own disk, and backups don't compete with the database for space.
@@ -196,7 +196,7 @@ Security is about keys. The person who restocks the cabinet should have a key fo
 
 **Why not just buy HA?** Cost, complexity and a false sense of safety. Clusters add moving parts that fail in their own ways (split brain, a patch that breaks one node, a witness that goes missing). HA also copies mistakes instantly. Many plants do better with a VM on a hypervisor cluster, tested backups, and Ignition's store-and-forward to cover short outages. Match the spend to the RTO the plant actually needs, not the one that sounds good.
 
-**Why least privilege on the Ignition account?** The gateway holds that password, and the gateway is reachable from many places. If the account is \`sa\`, anyone who compromises a project script, a named query with injectable SQL or a stolen gateway backup owns the whole server and can encrypt the backups. A narrow account turns a catastrophe into a nuisance. The counterargument is convenience: the historian needs to create tables, and tight permissions break at 3 a.m. when a new partition is due. The usual compromise is broad rights in the historian's own schema and narrow rights everywhere else.
+**Why least privilege on the Ignition account?** The Gateway holds that password, and the Gateway is reachable from many places. If the account is \`sa\`, anyone who compromises a project script, a named query with injectable SQL or a stolen Gateway backup owns the whole server and can encrypt the backups. A narrow account turns a catastrophe into a nuisance. The counterargument is convenience: the historian needs to create tables, and tight permissions break at 3 a.m. when a new partition is due. The usual compromise is broad rights in the historian's own schema and narrow rights everywhere else.
 
 **Why does the Purdue placement matter?** Most industrial intrusions travel through allowed paths. A database reachable from the corporate network gives an attacker a route into OT through a trusted protocol. Keep the production database at Level 3, and move data outward through a controlled one-way path.
 
@@ -270,7 +270,7 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
     "Running Ignition as sa or db_owner, shared with every other tool.",
     "Opening a firewall rule from corporate IT straight into the Level 3 database.",
     "Treating HA or replication as a backup. A bad DELETE replicates instantly.",
-    "Forgetting that a gateway backup (.gwbk) does not contain database data."
+    "Forgetting that a Gateway backup (.gwbk) does not contain database data."
   ],
 
   keyTerms: ["recovery-model", "rpo", "recovery-time-objective", "high-availability", "always-on-ag", "least-privilege", "service-account", "full-backup", "differential-backup", "log-backup"],
@@ -311,7 +311,7 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
     },
     {
       q: "Where should the production database that Ignition and the MES use normally sit, and who may connect?",
-      options: ["On the corporate LAN, reachable by anyone for reporting", "At Level 3 behind a firewall, reachable by the gateway and named admin hosts", "On the PLC network, next to the controllers", "On the public cloud with inbound access from the plant"],
+      options: ["On the corporate LAN, reachable by anyone for reporting", "At Level 3 behind a firewall, reachable by the Gateway and named admin hosts", "On the PLC network, next to the controllers", "On the public cloud with inbound access from the plant"],
       answer: 1,
       explain: [
         "That exposes plant data and gives IT users a path to OT.",
@@ -326,7 +326,7 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
       answer: 0,
       explain: [
         "Correct. A dedicated read-only account on views limits the damage if its credentials leak.",
-        "Sharing the gateway's account hides whose queries are whose and gives write access.",
+        "Sharing the Gateway's account hides whose queries are whose and gives write access.",
         "db_owner allows destructive changes and is far more than a reader needs.",
         "sa is full control of the server."
       ]

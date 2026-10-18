@@ -50,7 +50,7 @@ The three that cause most trouble in the field:
 A **tag binding** asks the Gateway to subscribe once and push updates when a value changes. Many sessions on the same tag share one subscription. A **polling** binding asks again and again whether or not anything changed.
 
 > [!tip] Move data into tags, then bind
-> If forty views need "number of open work orders", do not query the database forty times. Run one Gateway script on a timer or a gateway event, write the count to a memory tag, and bind every view to that tag. The database sees one query. Sessions see a cheap push.
+> If forty views need "number of open work orders", do not query the database forty times. Run one Gateway script on a timer or a Gateway event, write the count to a memory tag, and bind every view to that tag. The database sees one query. Sessions see a cheap push.
 
 Rules of thumb that senior integrators repeat:
 

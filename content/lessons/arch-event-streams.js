@@ -12,15 +12,15 @@ LC.lesson({
     "Name the main sources and handlers and the module each depends on",
     "Explain why an event-driven pipeline beats polling for integration traffic",
     "Explain Kafka topics, partitions and consumer groups well enough to size a design",
-    "Choose between an event stream, a gateway script and a WebDev endpoint for a job"
+    "Choose between an event stream, a Gateway script and a WebDev endpoint for a job"
   ],
 
   body: `
 ## What an event stream is
 
-Plants generate events: a tag changes, a message arrives, a batch completes. Integration code that reacts to those events used to mean a pile of tag change scripts, each with its own error handling and its own bugs. **Event Streams**, new in Ignition 8.3, make that pipeline a first-class **project resource**. You describe where events come from, how they are cleaned up, and where they go. The gateway handles queueing, batching and failure.
+Plants generate events: a tag changes, a message arrives, a batch completes. Integration code that reacts to those events used to mean a pile of tag change scripts, each with its own error handling and its own bugs. **Event Streams**, new in Ignition 8.3, make that pipeline a first-class **project resource**. You describe where events come from, how they are cleaned up, and where they go. The Gateway handles queueing, batching and failure.
 
-An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) lists them as not supported on Ignition Edge (see {{lesson:arch-edge}}).
+An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full Gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) lists them as not supported on Ignition Edge (see {{lesson:arch-edge}}).
 
 ## The pipeline
 
@@ -45,7 +45,7 @@ The 8.3 manual lists these sources. Some need other modules.
 - **Tag Event**: reacts to a tag's value, quality or timestamp changing.
 - **HTTP Endpoint**: opens a URL that accepts POST and PUT. Needs the Web Dev module ({{lesson:arch-webdev}}).
 - **Kafka**: consumes a topic. Needs the Kafka module (one of the Cloud Connector modules).
-- **Event Listener**: receives events raised inside the gateway.
+- **Event Listener**: receives events raised inside the Gateway.
 - **MQTT**: Cirrus Link's MQTT Transmission and MQTT Engine modules add event stream sources and handlers for raw MQTT messages, and Engine also for Sparkplug ({{lesson:proto-sparkplug}}).
 
 ### Handlers
@@ -187,11 +187,11 @@ Kafka was created at LinkedIn to move activity data between systems and was open
   },
 
   pitfalls: [
-    "Trusting the in-memory buffer as durable storage. A gateway restart loses what it holds.",
+    "Trusting the in-memory buffer as durable storage. A Gateway restart loses what it holds.",
     "Assuming a batch timer of 0 means 'immediately'. Test what your version does.",
     "Setting the error strategy to ignore and then seeing a healthy stream that delivers nothing.",
     "Picking a Kafka key without thinking about ordering, then discovering related events landed on different partitions.",
-    "Planning an event stream for an Ignition Edge gateway. It is not supported there.",
+    "Planning an event stream for an Ignition Edge Gateway. It is not supported there.",
     "Forgetting the module dependencies: Kafka needs the Kafka module, HTTP source needs Web Dev, the database handler needs SQL Bridge."
   ],
 
@@ -233,7 +233,7 @@ Kafka was created at LinkedIn to move activity data between systems and was open
     },
     {
       q: "A site wants to deploy event streams on Ignition Edge panels at each machine. What is the problem?",
-      options: ["Edge has no Designer", "Event streams are not available on Ignition Edge, so a full gateway is needed", "Edge only supports Kafka sources", "Event streams require Vision"],
+      options: ["Edge has no Designer", "Event streams are not available on Ignition Edge, so a full Gateway is needed", "Edge only supports Kafka sources", "Event streams require Vision"],
       answer: 1,
       explain: [
         "The issue is the feature, not the Designer.",

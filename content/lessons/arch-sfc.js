@@ -6,7 +6,7 @@ LC.lesson({
   level: 3,
   prereqs: ["ign-scripting", "plc-state-machines"],
   tags: ["sfc", "sequencing", "batch", "state-machine", "safety"],
-  summary: "Graphical sequences that run on the Gateway, and the line you must not cross between gateway sequencing and PLC control.",
+  summary: "Graphical sequences that run on the Gateway, and the line you must not cross between Gateway sequencing and PLC control.",
   objectives: [
     "Describe steps, transitions, parallel branches and enclosing steps",
     "Explain chart scope and how a chart receives start parameters",

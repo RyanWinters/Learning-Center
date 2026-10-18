@@ -331,7 +331,7 @@ The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of 
       ]
     },
     {
-      q: "A colleague wants to use SQLite for the Tag Historian on a busy production gateway. What is the strongest objection?",
+      q: "A colleague wants to use SQLite for the Tag Historian on a busy production Gateway. What is the strongest objection?",
       options: ["SQLite cannot store numbers", "Ignition does not include a SQLite driver", "SQLite allows only one connection at a time and lacks server-grade features", "SQLite stores data in the cloud"],
       answer: 2,
       explain: [

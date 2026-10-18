@@ -98,7 +98,7 @@ Many platforms blur these into a "lakehouse." For a process engineer the main po
 
 {{diagram:path}}
 
-1. **MQTT / Sparkplug.** Edge gateways publish values to a broker. A cloud service or subscriber lands them in storage. This is the lightweight path and fits report-by-exception. See {{lesson:proto-sparkplug}} and {{lesson:arch-mqtt}}.
+1. **MQTT / Sparkplug.** Edge Gateways publish values to a broker. A cloud service or subscriber lands them in storage. This is the lightweight path and fits report-by-exception. See {{lesson:proto-sparkplug}} and {{lesson:arch-mqtt}}.
 2. **Kafka (or Event Hubs / Kinesis).** A durable, replayable event stream sits between sources and several consumers. Use it when many applications need the same feed. A connector or bridge usually moves MQTT messages onto a topic.
 3. **Vendor connectors.** PI, Canary and Ignition can push to cloud services through supported adapters. Examples are PI integrating with AVEVA's cloud and other platforms, Canary's cloud and API options, and Ignition's cloud-side modules.
 4. **Batch files or database replication.** Export daily Parquet or CSV files, or replicate tables. Simple and fine when hourly data is enough.

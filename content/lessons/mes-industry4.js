@@ -68,7 +68,7 @@ Each level needs more data and more engineering. A useful rule: ask what decisio
 5. **An owner for the alert.** A prediction that nobody acts on has no value.
 
 > [!example] A modest win
-> A packaging plant tracks gearbox temperature on 40 conveyors. A gateway script compares each to its own 30-day baseline at the same speed. When one runs 10 degrees C above its norm for four hours, it opens a CMMS ticket. No ML, no cloud, three weeks of work. It catches lubrication problems early, which is what the plant actually needed.
+> A packaging plant tracks gearbox temperature on 40 conveyors. A Gateway script compares each to its own 30-day baseline at the same speed. When one runs 10 degrees C above its norm for four hours, it opens a CMMS ticket. No ML, no cloud, three weeks of work. It catches lubrication problems early, which is what the plant actually needed.
 
 Inductive Automation's community material includes customer sessions where plants collect motor data and alert maintenance to likely failing assets. These are encouraging but are conference talks, and the outcomes are self-reported.
 

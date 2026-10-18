@@ -42,7 +42,7 @@ In the Gateway, create the device from the Config area under the device connecti
 - **Slot Number** is the zero-based chassis slot of the processor. Default zero.
 - **Connection Path**, when set, overrides slot number. It is a list of hops that must end with the backplane and slot. The first number is a 1, meaning "step onto the backplane of the first device."
 
-> [!example] Routing through a gateway module
+> [!example] Routing through a Gateway module
 > PLC2 sits in slot 3 of a chassis whose Ethernet module is at \`10.20.10.11\`. Hostname is \`10.20.10.11\`. Connection path is \`1, 3\`: backplane, then slot 3. If the processor is in slot 0 of the same chassis as the module, \`1, 0\` or the slot setting alone works. Cross-check against the {{term:backplane|backplane}} layout in the project's I/O tree.
 
 **Advanced settings.** From the 8.1 manual (check your 8.3 page for current values): Automatic Rebrowse defaults to true, Identity Request Frequency to 5,000 ms, CIP Connection Timeout to 16,000 ms. The two settings people tune most are in the next section.

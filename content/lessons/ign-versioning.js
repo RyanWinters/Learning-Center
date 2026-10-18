@@ -6,11 +6,11 @@ LC.lesson({
   level: 3,
   prereqs: ["ign-projects"],
   tags: ["backup", "gwbk", "git", "version-control", "deployment", "promotion"],
-  summary: "How to never lose a gateway, how to see who changed what, and how to move work from dev to production without hand-copying.",
+  summary: "How to never lose a Gateway, how to see who changed what, and how to move work from dev to production without hand-copying.",
   objectives: [
-    "Distinguish a gateway backup from a project export and a tag export",
+    "Distinguish a Gateway backup from a project export and a tag export",
     "Set up scheduled backups and say what a restore does and does not bring back",
-    "Describe how 8.3 stores projects and gateway config as files on disk",
+    "Describe how 8.3 stores projects and Gateway config as files on disk",
     "Choose what to commit to git and what to ignore",
     "Explain dev, test and prod promotion and how deployment modes handle per-environment settings"
   ],
@@ -18,33 +18,33 @@ LC.lesson({
   body: `
 ## Three things people call "a backup"
 
-A gateway can be saved in three different ways, and they serve different jobs.
+A Gateway can be saved in three different ways, and they serve different jobs.
 
 | Artifact | File | What it holds | Use it for |
 |---|---|---|---|
-| Gateway backup | \`.gwbk\` | Projects, tags, gateway settings (devices, databases, security), many module settings | Disaster recovery, cloning a gateway |
-| Project export | \`.zip\` (or \`.proj\` in older versions) | One project's resources | Moving one project between gateways |
+| Gateway backup | \`.gwbk\` | Projects, tags, Gateway settings (devices, databases, security), many module settings | Disaster recovery, cloning a Gateway |
+| Project export | \`.zip\` (or \`.proj\` in older versions) | One project's resources | Moving one project between Gateways |
 | Tag export | \`.json\` | Tag definitions, UDTs, folders | Moving or reviewing tags |
 
-A \`.gwbk\` is all-or-nothing. Restoring it replaces the gateway's state with the state at backup time. That is exactly what you want after a failed disk and exactly what you do not want when you only wanted to move last week's screen change to production.
+A \`.gwbk\` is all-or-nothing. Restoring it replaces the Gateway's state with the state at backup time. That is exactly what you want after a failed disk and exactly what you do not want when you only wanted to move last week's screen change to production.
 
 ## Gateway backups
 
-You make one manually from the Gateway web page (Config, then Backup/Restore in the System area) or let the gateway make them on a schedule. Scheduled backups are set under gateway settings: enable them, pick a folder (a local path or a network share), give a cron-style schedule and a retention count so old files get removed. The default file name includes the gateway name and a timestamp.
+You make one manually from the Gateway web page (Config, then Backup/Restore in the System area) or let the Gateway make them on a schedule. Scheduled backups are set under Gateway settings: enable them, pick a folder (a local path or a network share), give a cron-style schedule and a retention count so old files get removed. The default file name includes the Gateway name and a timestamp.
 
 > [!warning] A backup on the same disk is not a backup
-> If the scheduled backup writes to \`C:\\Backups\` on the gateway machine and the disk dies, you lose both. Send backups to a different machine, such as a network share or an object store, and test a restore. An untested backup is a hope.
+> If the scheduled backup writes to \`C:\\Backups\` on the Gateway machine and the disk dies, you lose both. Send backups to a different machine, such as a network share or an object store, and test a restore. An untested backup is a hope.
 
 ### What a restore does not bring back
 
 - **Historian data and audit rows** live in your database. Back that up separately.
 - **Licenses** may need re-activation on new hardware.
 - **Audit profiles and some other resources** can come back disabled and need attention after a restore.
-- **Module files and drivers** may need installing again if the new gateway lacks them.
+- **Module files and drivers** may need installing again if the new Gateway lacks them.
 - **The internal audit log** and transient data are not part of the file.
 
 > [!tip] Take a backup before every change window
-> A manual \`.gwbk\` takes seconds on most gateways and turns a bad change into a ten-minute rollback.
+> A manual \`.gwbk\` takes seconds on most Gateways and turns a bad change into a ten-minute rollback.
 
 ## Project and tag exports
 
@@ -54,7 +54,7 @@ Tags export as JSON from the Tag Browser. Because the format is text, a tag expo
 
 ## 8.3: configuration and projects are files
 
-Ignition 8.3 changed where things live. The gateway keeps projects and configuration as files and folders under its data directory, not hidden in an internal database. That makes standard source control practical.
+Ignition 8.3 changed where things live. The Gateway keeps projects and configuration as files and folders under its data directory, not hidden in an internal database. That makes standard source control practical.
 
 \`\`\`text
 data/
@@ -74,34 +74,34 @@ data/
         resource.json
 \`\`\`
 
-Each resource is a folder with its payload (\`view.json\`, \`code.py\`, \`config.json\` and so on) and a small \`resource.json\` that records metadata: scope, version, last modification, who changed it and file signatures. Gateway-scope resources such as database connections, device connections and tag provider configuration are under the config tree. This means you can version more than screens: the whole gateway setup can sit in a repository.
+Each resource is a folder with its payload (\`view.json\`, \`code.py\`, \`config.json\` and so on) and a small \`resource.json\` that records metadata: scope, version, last modification, who changed it and file signatures. Gateway-scope resources such as database connections, device connections and tag provider configuration are under the config tree. This means you can version more than screens: the whole Gateway setup can sit in a repository.
 
 > [!note] In 8.1
-> Projects and gateway settings are stored in the gateway's internal database. There are no per-resource folders to commit, so teams used project exports, tag exports and the community \`ignition-git\` style tooling, or the Git module-based workflows, to get files. 8.3 makes the file layout native.
+> Projects and Gateway settings are stored in the Gateway's internal database. There are no per-resource folders to commit, so teams used project exports, tag exports and the community \`ignition-git\` style tooling, or the Git module-based workflows, to get files. 8.3 makes the file layout native.
 
 ## Git for Ignition
 
 A working pattern:
 
-1. **Put \`data/projects\` and the gateway config you want to track under git.** A repository per gateway, or one per customer site, works well.
+1. **Put \`data/projects\` and the Gateway config you want to track under git.** A repository per Gateway, or one per customer site, works well.
 2. **Commit small.** One change to a view is one commit with a message like \`Motor faceplate: add run-hours\`.
-3. **Use branches for features.** Engineers work on a dev gateway on a branch and merge when it is tested.
+3. **Use branches for features.** Engineers work on a dev Gateway on a branch and merge when it is tested.
 4. **Review diffs.** Because views are JSON, a diff shows what changed, though large Perspective views are noisy. Review the intent, not every line.
 5. **Keep secrets out.** Database passwords and certificates do not belong in a public or widely shared repo. Treat them as environment-specific.
 
 ### What to ignore
 
-- Runtime and cache files that the gateway rewrites constantly.
+- Runtime and cache files that the Gateway rewrites constantly.
 - Memory-tag persistence data.
 - Any resources the vendor guide lists as binary. The official version-control guide suggests ignoring a few resource types that are stored as Java binary files and cannot be merged sensibly, including transaction groups, reports, alarm pipelines and client tags. Check the current guide for the list that matches your version.
 - Local scratch folders and a \`.resources\` helper folder some teams see. Forum advice is not to commit it.
 
-> [!warning] After switching branches, tell the gateway
-> If you check out another branch on a live gateway, the gateway does not always notice the files changed. Trigger a project scan (the gateway exposes a scan endpoint) or reload, or you will see stale projects. This is a reason to switch branches on dev only.
+> [!warning] After switching branches, tell the Gateway
+> If you check out another branch on a live Gateway, the Gateway does not always notice the files changed. Trigger a project scan (the Gateway exposes a scan endpoint) or reload, or you will see stale projects. This is a reason to switch branches on dev only.
 
 ## Dev, test and prod
 
-A mature plant has at least three gateways: **dev** (engineers break things), **test or QA** (a copy of prod's structure that you can validate against), and **prod** (operators run the plant). Changes flow one way:
+A mature plant has at least three Gateways: **dev** (engineers break things), **test or QA** (a copy of prod's structure that you can validate against), and **prod** (operators run the plant). Changes flow one way:
 
 {{diagram:promote}}
 
@@ -111,10 +111,10 @@ The key rule is that **prod is never edited by hand**. Work is done on dev, comm
 
 The same project must behave differently per environment. Dev points at a test PLC and a dev database. Prod points at the real ones. Copying files blindly would send dev devices to prod.
 
-8.3 addresses this with **deployment modes**: named modes (such as dev, test, prod) that let some configuration resources have a mode-specific version. A gateway is told which mode it is in, and mode-specific resources replace or add to the base ones. So the project and logic are identical everywhere, and only the endpoints change. In 8.1 you handled this with tag provider names, a startup script that sets values, or hand-editing after each import.
+8.3 addresses this with **deployment modes**: named modes (such as dev, test, prod) that let some configuration resources have a mode-specific version. A Gateway is told which mode it is in, and mode-specific resources replace or add to the base ones. So the project and logic are identical everywhere, and only the endpoints change. In 8.1 you handled this with tag provider names, a startup script that sets values, or hand-editing after each import.
 
 > [!example] Worked example: a safe release
-> Tuesday: an engineer branches \`feature/line3-oee\` on dev, builds the view, commits three times. Wednesday: the branch is merged to \`main\` after review, and test pulls \`main\`. QA verifies against the test PLC simulator. Thursday 02:00: the prod gateway takes a manual \`.gwbk\`, pulls \`main\`, scans projects, and the operator confirms the new view. If it breaks, prod restores the \`.gwbk\` taken minutes earlier, or checks out the previous commit and rescans.
+> Tuesday: an engineer branches \`feature/line3-oee\` on dev, builds the view, commits three times. Wednesday: the branch is merged to \`main\` after review, and test pulls \`main\`. QA verifies against the test PLC simulator. Thursday 02:00: the prod Gateway takes a manual \`.gwbk\`, pulls \`main\`, scans projects, and the operator confirms the new view. If it breaks, prod restores the \`.gwbk\` taken minutes earlier, or checks out the previous commit and rescans.
 `,
 
   eli5: `
@@ -126,11 +126,11 @@ Dev, test and prod are like practice, dress rehearsal and the real show. You try
 `,
 
   why: `
-**Why not just back up the gateway?** A gateway backup restores the past. It does not explain it. If a setpoint view started behaving oddly three weeks ago, a pile of backups cannot tell you which change did it. Version control gives intent and history. Backups give disaster recovery. A serious system has both, because they answer different questions.
+**Why not just back up the Gateway?** A Gateway backup restores the past. It does not explain it. If a setpoint view started behaving oddly three weeks ago, a pile of backups cannot tell you which change did it. Version control gives intent and history. Backups give disaster recovery. A serious system has both, because they answer different questions.
 
-**Why is "all or nothing" a problem for promotion?** Restoring a backup onto prod also restores dev's device addresses, test users and whatever else differs. Promoting by files or project export moves only the thing you changed. That is why the official guidance treats gateway backups as recovery tools, not as the usual migration path.
+**Why is "all or nothing" a problem for promotion?** Restoring a backup onto prod also restores dev's device addresses, test users and whatever else differs. Promoting by files or project export moves only the thing you changed. That is why the official guidance treats Gateway backups as recovery tools, not as the usual migration path.
 
-**Why argue about what to commit?** Some teams commit everything the gateway writes, to be able to rebuild a site from the repository alone. Others commit only projects and tag exports because binary and secret-bearing files cause merge pain and leak risk. The tradeoff is completeness against noise and safety. A sensible middle is to commit projects and the config you can read, ignore binary and secret files, and keep the rest in the backup.
+**Why argue about what to commit?** Some teams commit everything the Gateway writes, to be able to rebuild a site from the repository alone. Others commit only projects and tag exports because binary and secret-bearing files cause merge pain and leak risk. The tradeoff is completeness against noise and safety. A sensible middle is to commit projects and the config you can read, ignore binary and secret files, and keep the rest in the backup.
 
 **Why forbid editing prod?** The quick fix at 2 a.m. works once and then nobody remembers it. The next promotion overwrites it and the bug returns. If an emergency edit must happen, back-port it to dev the same day.
 
@@ -138,7 +138,7 @@ Dev, test and prod are like practice, dress rehearsal and the real show. You try
 `,
 
   history: `
-Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around that with exports and community tools that dumped projects into files for git. Inductive Automation later published a version control guide for 8.1 and made file-based storage native in 8.3, so a gateway's projects and configuration live as readable folders and files that standard tools can handle.
+Ignition 7 and 8.0 stored projects inside the Gateway, and teams worked around that with exports and community tools that dumped projects into files for git. Inductive Automation later published a version control guide for 8.1 and made file-based storage native in 8.3, so a Gateway's projects and configuration live as readable folders and files that standard tools can handle.
 `,
 
   examples: [
@@ -147,8 +147,8 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
       body: `A tag change script deployed Friday starts writing the wrong value. Version history shows one commit touched it. Rolling back on prod: take a \`.gwbk\` anyway, \`git revert\` that commit, scan projects, confirm the script is back. Total time about five minutes, and the fix is on record for the post-mortem.`
     },
     {
-      title: "Cloning a gateway for test",
-      body: `You need a test gateway that matches prod. Restore last night's \`.gwbk\` onto a new server, then switch it to the test deployment mode so devices point at the simulator, disable alarm notification pipelines so test alarms do not text real people, and re-activate the license.`
+      title: "Cloning a Gateway for test",
+      body: `You need a test Gateway that matches prod. Restore last night's \`.gwbk\` onto a new server, then switch it to the test deployment mode so devices point at the simulator, disable alarm notification pipelines so test alarms do not text real people, and re-activate the license.`
     }
   ],
 
@@ -180,12 +180,12 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
   },
 
   pitfalls: [
-    "Storing the only backup on the gateway's own disk.",
+    "Storing the only backup on the Gateway's own disk.",
     "Never testing a restore until the day you need it.",
     "Promoting by restoring a .gwbk and overwriting prod with dev settings.",
     "Hand-editing production and losing the change at the next deployment.",
     "Committing passwords, certificates or runtime cache files to a shared repository.",
-    "Switching git branches on a live gateway without a project scan."
+    "Switching git branches on a live Gateway without a project scan."
   ],
 
   keyTerms: ["gwbk", "gateway-backup", "project-export", "git", "resource-json", "deployment-mode", "dev-test-prod"],
@@ -215,7 +215,7 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
     },
     {
       q: "In an 8.3 project on disk, what is the job of resource.json?",
-      options: ["It stores the resource's payload such as a view's layout", "It stores the gateway password", "It holds historian data", "It stores metadata about the resource, like its scope, version and signatures"],
+      options: ["It stores the resource's payload such as a view's layout", "It stores the Gateway password", "It holds historian data", "It stores metadata about the resource, like its scope, version and signatures"],
       answer: 3,
       explain: [
         "The payload is in a separate file such as view.json.",
@@ -225,7 +225,7 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
       ]
     },
     {
-      q: "The dev and prod gateways must use different PLC addresses for the same project. What is the 8.3 way to handle that?",
+      q: "The dev and prod Gateways must use different PLC addresses for the same project. What is the 8.3 way to handle that?",
       options: ["Edit the project on prod after each deployment", "Keep two copies of every view", "Use deployment modes to give mode-specific configuration", "Disable the devices in test"],
       answer: 2,
       explain: [
@@ -236,8 +236,8 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
       ]
     },
     {
-      q: "A scheduled backup runs nightly, writing to a folder on the gateway's own C: drive. What is the main weakness?",
-      options: ["Backups cannot be scheduled", "A disk failure loses both the gateway and its backups", "The .gwbk file is unreadable", "Retention is not possible"],
+      q: "A scheduled backup runs nightly, writing to a folder on the Gateway's own C: drive. What is the main weakness?",
+      options: ["Backups cannot be scheduled", "A disk failure loses both the Gateway and its backups", "The .gwbk file is unreadable", "Retention is not possible"],
       answer: 1,
       explain: [
         "Scheduled backups are supported.",

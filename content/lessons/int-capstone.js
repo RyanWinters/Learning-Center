@@ -10,7 +10,7 @@ LC.lesson({
   objectives: [
     "Turn a business brief into measurable requirements and constraints",
     "Zone a multi-site network with the Purdue model and IEC 62443 zones and conduits",
-    "Choose Edge or full gateways per site and hub-and-spoke transport (Gateway Network, MQTT/UNS)",
+    "Choose Edge or full Gateways per site and hub-and-spoke transport (Gateway Network, MQTT/UNS)",
     "Place historians, databases and the EAM controller, and decide where redundancy pays",
     "Scope MES (Sepasoft or custom) and the ERP integration",
     "Write the architecture as a decision log that a customer can review and challenge"
@@ -43,7 +43,7 @@ Vague goals become testable numbers. This is where scope fights are won. See {{l
 | R1 | Plants operate through a WAN outage | Each plant runs 72 h with no WAN, with no data loss after reconnection |
 | R2 | Enterprise OEE view | Shift OEE per line visible at HQ within 1 minute of shift data |
 | R3 | Recall traceability | Lot genealogy query answers in under 4 hours, ideally minutes |
-| R4 | Availability | Chicago live HMI and history queries together 99.9 percent, which is the product of every component they need (gateway, database, network); others best effort |
+| R4 | Availability | Chicago live HMI and history queries together 99.9 percent, which is the product of every component they need (Gateway, database, network); others best effort |
 | R5 | Security | IEC 62443 zone model, no direct IT-to-PLC path |
 | R6 | Standardization | Same UDTs, views and naming at all sites ({{lesson:int-naming}}) |
 | R7 | ERP orders and confirmations | Orders arrive at the plant, completions return within 5 minutes |
@@ -64,41 +64,41 @@ The house IP plan is reused at every plant. Each plant gets its own /16 and the 
 | Plant 3 (Phoenix) | 10.22.0.0/16 | 10.22.10.0/24 | 10.22.30.0/24 | 10.22.250.0/24 |
 | Corporate IT (HQ) | 10.100.0.0/16 | n/a | n/a | n/a |
 
-Gateway is \`.1\` on each subnet. In Plant 1, PLC1 is \`10.20.10.10\`, the Ignition master \`10.20.30.10\` (backup \`.11\`), SQL \`10.20.30.20\`, and the DMZ holds the gateway and reverse proxy at \`10.20.250.10\`, a historian replica at \`.20\` and the jump host at \`.30\`. Plants 2 and 3 repeat the same host numbers in their own supernets. VLANs 20 (HMI), 40 (OEM skid uplinks, 1:1 NAT), 50 (engineering) and 99 (network management) complete the template.
+Gateway is \`.1\` on each subnet. In Plant 1, PLC1 is \`10.20.10.10\`, the Ignition master \`10.20.30.10\` (backup \`.11\`), SQL \`10.20.30.20\`, and the DMZ holds the Gateway and reverse proxy at \`10.20.250.10\`, a historian replica at \`.20\` and the jump host at \`.30\`. Plants 2 and 3 repeat the same host numbers in their own supernets. VLANs 20 (HMI), 40 (OEM skid uplinks, 1:1 NAT), 50 (engineering) and 99 (network management) complete the template.
 
 **Decision D1: zone per line cell, one site operations zone, a DMZ per site.**
 - *Context:* Lines are independent. A fault on one line should not flood another's network.
-- *Decision:* Each line gets its own cell firewall zone at Levels 0-2 (the first line's control subnet is VLAN 10; further lines take their own subnets from the site supernet). Site gateways, historian DB and MES server sit in the Level 3 zone (VLAN 30). A DMZ (Level 3.5, VLAN 250) holds the gateway or reverse proxy, a historian replica, the MQTT broker and the remote-access jump host. **No connection passes straight from Level 3 to Level 4 or back. Every connection ends in the DMZ.** Remote support is a VPN into the jump host, then RDP to an engineering workstation on VLAN 50; vendor VPNs never route straight into VLAN 10.
+- *Decision:* Each line gets its own cell firewall zone at Levels 0-2 (the first line's control subnet is VLAN 10; further lines take their own subnets from the site supernet). Site Gateways, historian DB and MES server sit in the Level 3 zone (VLAN 30). A DMZ (Level 3.5, VLAN 250) holds the Gateway or reverse proxy, a historian replica, the MQTT broker and the remote-access jump host. **No connection passes straight from Level 3 to Level 4 or back. Every connection ends in the DMZ.** Remote support is a VPN into the jump host, then RDP to an engineering workstation on VLAN 50; vendor VPNs never route straight into VLAN 10.
 - *Alternatives:* One flat plant VLAN (a broadcast storm or malware affects all lines).
-- *Consequences:* More firewall rules to document. Every conduit is listed with port, protocol and direction in the network design, for example 8060/TCP outgoing from the site gateway to the DMZ gateway and 8883/TCP (MQTT over TLS) outgoing to the DMZ broker.
+- *Consequences:* More firewall rules to document. Every conduit is listed with port, protocol and direction in the network design, for example 8060/TCP outgoing from the site Gateway to the DMZ Gateway and 8883/TCP (MQTT over TLS) outgoing to the DMZ broker.
 
 ## Step 3: PLC standards
 
 **Decision D2: one PLC standard with UDTs and AOIs for all Logix sites.**
 - *Decision:* A Logix template project with \`UDT_Motor\`, \`UDT_Valve\`, \`UDT_AnalogIn\` and matching Ignition UDTs. Names follow {{lesson:int-naming}}; project structure follows {{lesson:plc-best-practices}}. State models use PackML on the filling lines ({{lesson:plc-isa88-packml}}).
 - *Alternatives:* Each site keeps its own style (impossible to support centrally).
-- *Consequences:* Dallas's old PLC-5 lines get a gateway driver and an Ignition UDT instance that looks the same as the others. Replace the controllers later, at a planned outage.
+- *Consequences:* Dallas's old PLC-5 lines get a Gateway driver and an Ignition UDT instance that looks the same as the others. Replace the controllers later, at a planned outage.
 
-## Step 4: Edge versus full gateways
+## Step 4: Edge versus full Gateways
 
 Revisit {{lesson:arch-edge}} and {{lesson:ign-architecture}}.
 
-**Decision D3: a full Ignition Gateway at each plant; Edge gateways at selected machines.**
+**Decision D3: a full Ignition Gateway at each plant; Edge Gateways at selected machines.**
 - *Context:* Each plant must run alone for 72 hours (R1) and needs local history, alarming, notification and MES.
-- *Decision:* Chicago, Dallas and Phoenix each run a full gateway (Chicago redundant, see D7). Three packaged machines at Dallas and a wastewater skid at Phoenix get Edge gateways that publish to the site gateway through MQTT. Check the Edge licensing and feature list for your Ignition version before committing the machine list.
-- *Alternatives:* Edge as the only gateway at Phoenix (cheaper, but no room for the MES and local reporting the plant will ask for); everything on one central gateway (a WAN failure would blind the plants).
-- *Consequences:* Four gateway types to patch and back up, which is why the EAM decision matters (D6).
+- *Decision:* Chicago, Dallas and Phoenix each run a full Gateway (Chicago redundant, see D7). Three packaged machines at Dallas and a wastewater skid at Phoenix get Edge Gateways that publish to the site Gateway through MQTT. Check the Edge licensing and feature list for your Ignition version before committing the machine list.
+- *Alternatives:* Edge as the only Gateway at Phoenix (cheaper, but no room for the MES and local reporting the plant will ask for); everything on one central Gateway (a WAN failure would blind the plants).
+- *Consequences:* Four Gateway types to patch and back up, which is why the EAM decision matters (D6).
 
 ## Step 5: Hub-and-spoke and transport
 
 **Decision D4: Gateway Network for Ignition-to-Ignition, MQTT with Sparkplug and a UNS for everything else.**
 - *Context:* HQ wants a single view across plants. A data team wants plant data in an analytics platform that does not run Ignition.
-- *Decision:* Gateway Network ({{lesson:arch-gateway-network}}) carries remote tag access, EAM and drill-down views, using the DMZ pattern. The plant gateway makes an *outgoing* connection to the DMZ gateway (\`10.20.250.10\` in Plant 1). The corporate gateway also makes an *outgoing* connection to the DMZ gateway, and corporate reaches site services through it as proxy hops. A direct plant-to-HQ link is a documented exception, never the default. Office users of Perspective go browser, HTTPS 8043, DMZ reverse proxy, Gateway Network, site. In addition, each plant publishes selected tags and events to an MQTT broker in its DMZ with Sparkplug B ({{lesson:proto-sparkplug}}), bridged to a central broker, which forms the UNS ({{lesson:mes-uns}}, {{lesson:arch-mqtt}}).
+- *Decision:* Gateway Network ({{lesson:arch-gateway-network}}) carries remote tag access, EAM and drill-down views, using the DMZ pattern. The plant Gateway makes an *outgoing* connection to the DMZ Gateway (\`10.20.250.10\` in Plant 1). The corporate Gateway also makes an *outgoing* connection to the DMZ Gateway, and corporate reaches site services through it as proxy hops. A direct plant-to-HQ link is a documented exception, never the default. Office users of Perspective go browser, HTTPS 8043, DMZ reverse proxy, Gateway Network, site. In addition, each plant publishes selected tags and events to an MQTT broker in its DMZ with Sparkplug B ({{lesson:proto-sparkplug}}), bridged to a central broker, which forms the UNS ({{lesson:mes-uns}}, {{lesson:arch-mqtt}}).
 
 Two topic rules, which must not be mixed:
 
 1. **Sparkplug B** uses its fixed namespace \`spBv1.0/<group_id>/<msg_type>/<edge_node_id>/<device_id>\`. House map: group_id = \`Plant1\`, edge_node_id = \`Area10_Line1\`, device_id = \`M101\`, metric name = \`Sts/Running\`. A motor's data message is \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\`. Never put an ISA-95 path inside a Sparkplug topic.
-2. **Plain MQTT and UNS topics** for consumers that are not Sparkplug-aware carry the ISA-95 path in lowercase: \`meridian/plant1/area10/line1/m101/sts/running\`. A bridge or the central gateway republishes the same values there. {{lesson:int-naming}} explains the full mapping.
+2. **Plain MQTT and UNS topics** for consumers that are not Sparkplug-aware carry the ISA-95 path in lowercase: \`meridian/plant1/area10/line1/m101/sts/running\`. A bridge or the central Gateway republishes the same values there. {{lesson:int-naming}} explains the full mapping.
 - *Alternatives:* MQTT only (a good choice if there were no Ignition at HQ, but it loses remote tag browsing and EAM); Gateway Network only (simple, but the data team and any later non-Ignition consumers would need point integrations); OPC UA from HQ to each plant (pull-based, many connections, harder through firewalls).
 - *Consequences:* Two paths to maintain, so the plan states which data uses which. Operational control and screens use the Gateway Network. Analytics and cross-site KPIs use the UNS. Control commands never travel the UNS.
 
@@ -118,8 +118,8 @@ See {{lesson:db-historians}}, {{lesson:db-schema}} and {{lesson:db-timeseries}}.
 
 See {{lesson:arch-eam}}, {{lesson:ign-projects}} and {{lesson:ign-versioning}}.
 
-**Decision D6: central gateway as the EAM controller; templates deployed from source control.**
-- *Decision:* The HQ gateway runs the Enterprise Administration module as controller. Each plant gateway is an agent. EAM gives scheduled backups, status monitoring and a way to push shared project or configuration changes. A Git repository holds the project resources, tag exports and UDT definitions. Changes move dev, then test, then production gateways via pull request review. PLC projects are archived (ACD and L5X) with the same release tag. Dev and test gateways run in containers ({{lesson:arch-containers}}).
+**Decision D6: central Gateway as the EAM controller; templates deployed from source control.**
+- *Decision:* The HQ Gateway runs the Enterprise Administration module as controller. Each plant Gateway is an agent. EAM gives scheduled backups, status monitoring and a way to push shared project or configuration changes. A Git repository holds the project resources, tag exports and UDT definitions. Changes move dev, then test, then production Gateways via pull request review. PLC projects are archived (ACD and L5X) with the same release tag. Dev and test Gateways run in containers ({{lesson:arch-containers}}).
 - *Alternatives:* Manual exports (no history, no review); each site customizes locally (drift and unsupportable).
 - *Consequences:* A change process the plants must accept, and a rule that nobody edits production directly except during a declared emergency, with a back-port to Git afterwards.
 
@@ -127,8 +127,8 @@ See {{lesson:arch-eam}}, {{lesson:ign-projects}} and {{lesson:ign-versioning}}.
 
 See {{lesson:arch-redundancy}}.
 
-**Decision D7: redundant gateway pair and database HA at Chicago; virtualization high availability elsewhere.**
-- *Context:* R4 requires 99.9 percent at Chicago, where an hour costs 18,000 USD. 99.9 percent allows about 8.8 hours per year (0.001 x 8,760 h). Live screens and history queries need the gateway *and* the database, so their availabilities multiply (a series chain).
+**Decision D7: redundant Gateway pair and database HA at Chicago; virtualization high availability elsewhere.**
+- *Context:* R4 requires 99.9 percent at Chicago, where an hour costs 18,000 USD. 99.9 percent allows about 8.8 hours per year (0.001 x 8,760 h). Live screens and history queries need the Gateway *and* the database, so their availabilities multiply (a series chain).
 - *Chained math (assumed figures, replace them with your own measurements and vendor data):*
 
 | Design | Gateway | Database | Chain | Allowed downtime per year |
@@ -137,9 +137,9 @@ See {{lesson:arch-redundancy}}.
 | Gateway pair and database HA | 99.95 % | 99.95 % | 0.9995 x 0.9995 = 99.90 % | about 8.8 h, just meets R4 |
 | Same, with a tested failover and tighter targets | 99.98 % | 99.95 % | 0.9998 x 0.9995 = 99.93 % | about 6.1 h, with margin |
 
-The WAN does not count against R4, because the plant runs locally. Anything else in the series (switches, power, the host) multiplies in as well, which is why the pair sits on separate hosts and switches. The lesson of the table: a redundant gateway in front of a single database cannot reach the target, however good the gateway is.
-- *Decision:* Chicago runs a master and backup gateway on separate hosts and switches (Plant 1: \`10.20.30.10\` and \`.11\`) and a high-availability SQL database. The HA choice (failover cluster, availability group or replicated pair, with its RPO, RTO and cost) is covered in {{lesson:db-operations}}. Dallas and Phoenix run a single gateway and database on a virtualization cluster with restart-on-failure, plus tested backups. Store-and-forward keeps tag history buffered if the database is briefly unreachable, which helps but does not replace database HA for queries, the alarm journal and MES.
-- *Alternatives:* Redundancy everywhere (cost and upkeep, little value at Phoenix); a redundant gateway pair only (fails R4 by the table above); none (fails R4).
+The WAN does not count against R4, because the plant runs locally. Anything else in the series (switches, power, the host) multiplies in as well, which is why the pair sits on separate hosts and switches. The lesson of the table: a redundant Gateway in front of a single database cannot reach the target, however good the Gateway is.
+- *Decision:* Chicago runs a master and backup Gateway on separate hosts and switches (Plant 1: \`10.20.30.10\` and \`.11\`) and a high-availability SQL database. The HA choice (failover cluster, availability group or replicated pair, with its RPO, RTO and cost) is covered in {{lesson:db-operations}}. Dallas and Phoenix run a single Gateway and database on a virtualization cluster with restart-on-failure, plus tested backups. Store-and-forward keeps tag history buffered if the database is briefly unreachable, which helps but does not replace database HA for queries, the alarm journal and MES.
+- *Alternatives:* Redundancy everywhere (cost and upkeep, little value at Phoenix); a redundant Gateway pair only (fails R4 by the table above); none (fails R4).
 - *Consequences:* The PLC layer is not made redundant by this decision. If the customer wants controller redundancy, that is a separate, costed item. The database HA licence and the second host are part of the Chicago budget.
 
 ## Step 9: MES scope and build versus buy
@@ -157,7 +157,7 @@ See {{lesson:mes-what}}, {{lesson:mes-oee}}, {{lesson:mes-track-trace}}, {{lesso
 See {{lesson:mes-erp}}.
 
 **Decision D9: a central integration layer with staging tables, not direct site-to-ERP links.**
-- *Decision:* The ERP publishes production orders into a staging table (or REST endpoint) in the central integration database. The central gateway validates them and sends them to the right site. Plants post completions, scrap and material consumption back through the same layer. Failed messages go to an error table with alerts. Each message has an ID so retries do not duplicate.
+- *Decision:* The ERP publishes production orders into a staging table (or REST endpoint) in the central integration database. The central Gateway validates them and sends them to the right site. Plants post completions, scrap and material consumption back through the same layer. Failed messages go to an error table with alerts. Each message has an ID so retries do not duplicate.
 - *Alternatives:* Each plant integrates with ERP separately (three integrations to build and audit); ERP talks to PLCs (never).
 - *Consequences:* The central layer is a dependency, so plants queue outgoing confirmations locally and keep running if it is down (R1).
 
@@ -166,7 +166,7 @@ See {{lesson:mes-erp}}.
 See {{lesson:ign-security}}, {{lesson:net-security}} and {{lesson:int-standards}}.
 
 **Decision D10: central identity, least privilege, brokered remote access.**
-- *Decision:* Ignition authenticates through the corporate identity provider with role groups mapped to Ignition roles and security zones. Local emergency accounts are vaulted and audited. Remote access passes through the DMZ jump host with multi-factor authentication. Gateway Network connections use TLS and explicit approval. PLCs sit behind cell firewalls with only the gateway allowed on the controller ports.
+- *Decision:* Ignition authenticates through the corporate identity provider with role groups mapped to Ignition roles and security zones. Local emergency accounts are vaulted and audited. Remote access passes through the DMZ jump host with multi-factor authentication. Gateway Network connections use TLS and explicit approval. PLCs sit behind cell firewalls with only the Gateway allowed on the controller ports.
 - *Alternatives:* Local accounts only (does not scale or offboard); direct vendor VPN into plant networks (a common breach path).
 - *Consequences:* A WAN outage must not lock operators out, so each plant keeps a local fallback path for authentication.
 
@@ -184,7 +184,7 @@ Track the decisions in one table that leads the design document:
 |---|---|---|---|
 | D1 | Zones per line plus site DMZ, house IP plan | Flat plant network | Blast radius, 62443 |
 | D2 | One PLC standard | Per-site styles | Supportability |
-| D3 | Full gateway per site, Edge on machines | Central only | R1 WAN failure |
+| D3 | Full Gateway per site, Edge on machines | Central only | R1 WAN failure |
 | D4 | Gateway Network plus MQTT UNS | MQTT only | Loses remote tags and EAM |
 | D5 | Local raw history, central rollups | Central historian | Bandwidth, R1 |
 | D6 | EAM and Git deploy | Manual exports | Drift |
@@ -210,11 +210,11 @@ Architecting a multi-site system is doing that for control systems. You decide w
 
 **Why local autonomy first?** The plant exists to make product. A system that needs the WAN to run the line has made a bad trade, and the first long outage proves it. Autonomy also limits blast radius: an update or breach at HQ should not stop three plants. The cost is duplicated servers and more to patch, which is why standardization and EAM are part of the same design.
 
-**Central or per-site gateways?** Experienced integrators lean toward per-site gateways with a central one for visibility, because latency, WAN reliability and operational ownership point that way. Others argue for one large gateway on small footprints. For 24/7 production, per-site is the safer default.
+**Central or per-site Gateways?** Experienced integrators lean toward per-site Gateways with a central one for visibility, because latency, WAN reliability and operational ownership point that way. Others argue for one large Gateway on small footprints. For 24/7 production, per-site is the safer default.
 
 **Why two transport paths?** Gateway Network is excellent for Ignition-to-Ignition features. MQTT with a UNS is excellent for decoupling many consumers. People argue for one or the other. A written rule about which data uses which path avoids the worst outcome, where both carry everything and nobody knows which is authoritative.
 
-**Where to spend on redundancy.** Redundancy is a cost-benefit question measured in dollars per hour of downtime. Show the arithmetic to the customer. Count the whole chain, not just the gateway: a redundant pair in front of a single database multiplies down to the database's availability. If an hour costs 18,000 USD and the pair plus database HA cost less than one avoided outage per year, it passes. If a site loses 500 USD per hour, a tested backup is the better buy.
+**Where to spend on redundancy.** Redundancy is a cost-benefit question measured in dollars per hour of downtime. Show the arithmetic to the customer. Count the whole chain, not just the Gateway: a redundant pair in front of a single database multiplies down to the database's availability. If an hour costs 18,000 USD and the pair plus database HA cost less than one avoided outage per year, it passes. If a site loses 500 USD per hour, a tested backup is the better buy.
 
 **Why build the rollout order into the architecture?** The first site teaches you what the template got wrong. Starting with the lowest-risk site lets you fix the template before it touches the plant that cannot afford surprises.
 `,
@@ -339,13 +339,13 @@ Multi-site SCADA used to mean a central master station polling remote terminal u
   quiz: [
     {
       q: "Requirement R1 says each plant must run 72 hours without the WAN. Which design choice follows most directly?",
-      options: ["A single central gateway for all plants", "Edge gateways with no site database", "Direct ERP links to each PLC", "A full gateway, local history database and queued confirmations at each plant"],
+      options: ["A single central Gateway for all plants", "Edge Gateways with no site database", "Direct ERP links to each PLC", "A full Gateway, local history database and queued confirmations at each plant"],
       answer: 3,
       explain: [
-        "A central gateway would lose the plants when the WAN drops.",
-        "Edge can be right for machines, but a site with MES and 72 hours of history needs a site database and a full gateway.",
+        "A central Gateway would lose the plants when the WAN drops.",
+        "Edge can be right for machines, but a site with MES and 72 hours of history needs a site database and a full Gateway.",
         "ERP should never connect directly to controllers, and that does not help WAN autonomy.",
-        "Correct. Local gateway, history and queued messages keep operation and data safe through an outage and let queues drain afterwards."
+        "Correct. Local Gateway, history and queued messages keep operation and data safe through an outage and let queues drain afterwards."
       ]
     },
     {
@@ -361,7 +361,7 @@ Multi-site SCADA used to mean a central master station polling remote terminal u
     },
     {
       q: "Chicago loses 18,000 USD per hour of downtime; Phoenix loses about 500 USD. What does the redundancy decision imply?",
-      options: ["Redundant pairs everywhere", "No redundancy anywhere", "Redundant gateway pair and database HA at Chicago; tested backup and fast restore at Phoenix", "Redundant pair at Phoenix only"],
+      options: ["Redundant pairs everywhere", "No redundancy anywhere", "Redundant Gateway pair and database HA at Chicago; tested backup and fast restore at Phoenix", "Redundant pair at Phoenix only"],
       answer: 2,
       explain: [
         "Uniform redundancy costs more and adds maintenance with little return at Phoenix.",
@@ -382,14 +382,14 @@ Multi-site SCADA used to mean a central master station polling remote terminal u
       ]
     },
     {
-      q: "Chicago runs a redundant gateway pair (99.95 percent) in front of a single SQL database (99.90 percent). Live screens and history queries need both. What availability can the design promise?",
+      q: "Chicago runs a redundant Gateway pair (99.95 percent) in front of a single SQL database (99.90 percent). Live screens and history queries need both. What availability can the design promise?",
       options: ["About 99.85 percent, so it misses a 99.9 percent target", "99.95 percent, the better of the two", "99.99 percent, because redundancy adds nines", "99.90 percent, the database figure alone"],
       answer: 0,
       explain: [
         "Correct. Components in series multiply: 0.9995 x 0.9990 = 0.9985. Adding HA to the database is what brings the chain to 99.90 percent or better.",
         "The chain is never better than its weakest member, and here both count.",
         "Redundancy improves a single element, not the chain. A single database still limits the result.",
-        "The product is slightly lower than the weakest element alone, because the gateway pair also has some downtime."
+        "The product is slightly lower than the weakest element alone, because the Gateway pair also has some downtime."
       ]
     },
     {

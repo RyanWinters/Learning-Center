@@ -209,7 +209,7 @@ The trick that makes it work is handing the card only one clue, the machine's ad
 
 **Why templates beat copy-paste.** Copied views drift. After a year, "M101 screen" and "M102 screen" differ in five small ways nobody remembers. A template has a single definition, so a fix or a style change lands everywhere. For a plant with hundreds of assets this is the difference between a 10-view project and a 1,000-view project.
 
-**Why watch the instance count.** Each embedded instance is a view with bindings, subscriptions and a rendering cost. The architecture scales by reuse, not by being free. Seasoned integrators set a budget (bindings per tile times tiles per page) and test with the real gateway under real session load, then lazy-load content on tabs and use paging in repeaters for big lists.
+**Why watch the instance count.** Each embedded instance is a view with bindings, subscriptions and a rendering cost. The architecture scales by reuse, not by being free. Seasoned integrators set a budget (bindings per tile times tiles per page) and test with the real Gateway under real session load, then lazy-load content on tabs and use paging in repeaters for big lists.
 
 **Why input-only params for tile config.** Output and in/out params make a tile talk back, which is great for selection and validation, but each one is a coupling the parent must handle. Use outputs sparingly and name them as events ("selected"), not as mirrored state.
 `,
