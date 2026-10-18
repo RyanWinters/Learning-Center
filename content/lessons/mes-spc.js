@@ -62,7 +62,7 @@ With subgroup size n = 5 the constants are A2 = 0.577, D3 = 0 and D4 = 2.114, an
 
 ### Individuals and moving range
 
-When there is one measurement per check (a tank temperature every shift, a batch assay), use the {{term:individuals-chart|individuals and moving range chart}}. The moving range is the absolute difference between consecutive points. Limits are the average plus or minus 2.66 times the average moving range, and the moving-range chart's upper limit is 3.267 times the average moving range. Sigma is estimated as MR-bar / 1.128.
+When there is one measurement per check (a tank temperature every shift, a batch assay), use the {{term:individuals-chart|individuals and moving range chart}}. The moving range is the absolute difference between consecutive points. Limits are the average plus or minus 2.66 times the average moving range, and the moving-range chart's upper limit is 3.267 times the average moving range. Sigma is estimated as MR-bar / 1.128. The individuals chart assumes the data are roughly normal and not strongly autocorrelated. Check a histogram or run a normality test before you trust the limits on skewed data such as a vibration or particle count.
 
 If you have 20 readings averaging 50.0 with an average moving range of 1.5, the limits are 50.0 plus or minus 2.66 x 1.5 = 50.0 plus or minus 4.0, so **46.0 to 54.0**.
 
@@ -97,7 +97,7 @@ The {{term:nelson-rules|Nelson rules}} are a similar eight-rule set. They includ
 {{diagram:chart}}
 
 > [!warning] More rules, more false alarms
-> Each extra rule raises the chance of a false signal. Published figures show that adding the Western Electric rules to an X-bar chart cuts the average time to a false alarm from about 370 samples to about 95. Turn on a small set, and train operators on what each signal means and what to do.
+> Each extra rule raises the chance of a false signal. A single 3-sigma limit gives a false alarm about once in 370 samples on average (1 divided by 0.0027). Stacking several Western Electric rules shortens that interval a lot, to well under 100 samples for the full set, and the exact figure depends on which rules you combine. Turn on a small set, and train operators on what each signal means and what to do.
 
 ## Process capability: Cp and Cpk
 
@@ -116,7 +116,7 @@ A control chart tells you the process is stable. {{term:cp-cpk|Cp and Cpk}} tell
 >
 > The process could comfortably fit (Cp 1.67) but runs 0.08 mm high, so Cpk is only 1.22. Re-centering at 10.00 would give Cpk = 1.67 without reducing variation at all.
 
-Common targets are Cpk of 1.33 or better for existing processes and 1.67 for critical characteristics. A Cpk of 1.0 means the nearer spec limit is only 3 sigma away, which produces roughly 0.13 percent out of spec on that side. Ppk uses the same formula with the overall long-term standard deviation, so it also counts drift between subgroups.
+Common targets are Cpk of 1.33 or better for existing processes and 1.67 for critical characteristics. These are widely used conventions, not laws. Your customer's quality agreement or PPAP requirement sets the real number. A Cpk of 1.0 means the nearer spec limit is only 3 sigma away, which produces roughly 0.13 percent out of spec on that side. Ppk uses the same formula with the overall long-term standard deviation, so it also counts drift between subgroups.
 
 ## Sampling plans
 
@@ -125,7 +125,7 @@ The data you collect decides whether the chart is useful.
 - **Subgroup size.** 4 to 5 for X-bar charts is typical. Larger subgroups detect smaller shifts but cost more to measure.
 - **Rational subgroups.** Take the units from one short time window and one stream, so variation inside a subgroup is common cause only. Mixing two cavities or two shifts in a subgroup hides what you want to see.
 - **Frequency.** Often hourly, per shift or per lot. Sample more often when the process is new or being improved, and less when it has proven stable.
-- **Baseline.** Compute limits from at least 20 to 25 subgroups of in-control data. Recompute only when the process is deliberately changed.
+- **Baseline.** Compute limits from a reasonable run of in-control data. Textbooks commonly suggest about 20 to 25 subgroups, though your quality procedure may say otherwise. Recompute only when the process is deliberately changed.
 - **Capture the context.** Record product, line, shift, gauge and operator with every sample, so you can stratify later.
 
 ## Where the data comes from
@@ -160,7 +160,7 @@ Walter Shewhart developed the control chart at Bell Telephone Laboratories in th
   examples: [
     {
       title: "Filler weight individuals chart",
-      body: `Net weight is checked by a checkweigher every 15 minutes on one line. Target 500 g. Twenty readings give a mean of 501.2 g and an average moving range of 1.1 g. Limits: 501.2 plus or minus 2.66 x 1.1 = 498.3 to 504.1 g. At 10:30 the reading is 505.0, outside the upper limit. The chart signals a special cause. The line lead finds the fill head temperature had dropped. The chart did its job before anything went below the 495 g legal minimum.`
+      body: `Net weight is checked by a checkweigher every 15 minutes on one line. Target 500 g. Twenty readings give a mean of 501.2 g and an average moving range of 1.1 g. Limits: 501.2 plus or minus 2.66 x 1.1 = 498.3 to 504.1 g. At 10:30 the reading is 505.0, outside the upper limit. The chart signals a special cause. The line lead finds the fill head temperature had dropped. The chart did its job before anything went below the 495 g internal reject limit (an example value for this line).`
     },
     {
       title: "Reading a signal that is not an outlier",

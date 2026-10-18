@@ -59,16 +59,16 @@ If no operator action exists, it is not an alarm. It might be a log message, a t
 > [!example] Rationalization worksheet rows
 > | Tag | Condition | Consequence if ignored | Time to respond | Action | Priority | Limit / delay / deadband |
 > |---|---|---|---|---|---|---|
-> | LAHH-100 | T-100 level high-high | Tank overflow, environmental release | 5 min | Stop feed, open drain XV-102 | High | 95 percent / 2 s / 2 percent |
-> | LAH-100 | T-100 level high | Leads to LAHH-100 | 15 min | Check P-101 and valves | Medium | 85 percent / 5 s / 2 percent |
-> | P101-RUN | P-101 running | None | n/a | None | Remove (status, not an alarm) | n/a |
-> | PAL-1004 | LT-100 bad quality | Control blind, level unknown | 10 min | Check transmitter and wiring | High | quality not good / 3 s |
+> | LAHH-101 | T-101 level high-high | Tank overflow, environmental release | 5 min | Stop feed, open drain XV-102 | High | 95 percent / 2 s / 2 percent |
+> | LAH-101 | T-101 level high | Leads to LAHH-101 | 15 min | Check P-101 and valves | Medium | 85 percent / 5 s / 2 percent |
+> | P-101 run status | P-101 running | None | n/a | None | Remove (status, not an alarm) | n/a |
+> | LT-101 quality | LT-101 bad or uncertain quality (NE43 range, see {{lesson:int-commissioning}}) | Control blind, level unknown | 10 min | Check transmitter and wiring | High | quality not good / 3 s |
 
-Note the third row: rationalization is mostly about **removing** alarms.
+Note the third row: rationalization is mostly about **removing** alarms. The last row is a quality alarm. The philosophy defines one such alarm per transmitter, named after the instrument (here \`LT-101 quality\`, tag \`LT101\` in the PLC and Ignition), at one agreed priority. It is not a pressure or level alarm letter code, so it does not borrow one from ISA-5.1, and its loop number matches the transmitter it protects. {{lesson:int-fds}} uses the same name.
 
 ## Priority distribution
 
-A frequent target, taken from guidance such as the ISA-18.2 technical reports and many owners' philosophies, is a roughly 80/15/5 split: about 80 percent Low, 15 percent Medium and 5 percent High among configured alarms. If half your alarms are High, the priority scale has lost its meaning. A value for Critical may exist for the highest consequence.
+A frequent target, commonly seen in owners' philosophies and in the ISA-18.2 and EEMUA 191 literature, is a roughly 80/15/5 split: about 80 percent Low, 15 percent Medium and 5 percent High among configured alarms. Treat it as a starting point; check ISA-18.2 and EEMUA 191 for the wording and edition your owner follows. If half your alarms are High, the priority scale has lost its meaning. A value for Critical may exist for the highest consequence.
 
 ## Measuring the system: EEMUA 191 and ISA-18.2 KPIs
 
@@ -82,7 +82,7 @@ EEMUA Publication 191, from the Engineering Equipment and Materials Users Associ
 | Percent of time in flood | low single digits, with a goal near zero |
 | Standing (stale) alarms | stale means active longer than a set time, often 24 hours; aim for under about 5 at any moment |
 | Top 10 most frequent alarms | should not dominate the load, since a few bad actors often cause a large share |
-| Chattering alarm | one that repeats three or more times in one minute |
+| Chattering alarm | commonly defined as one that repeats three or more times in one minute (confirm against ISA-18.2 or EEMUA 191 for your edition) |
 
 Compute them from the alarm journal. A simple query counts alarm activations per hour per area. Run it monthly and plot it.
 
@@ -148,7 +148,7 @@ Alarm management is the job of tidying up. For every beep, we ask: is it really 
   why: `
 **Why the alarm count matters more than the alarm quality.** A single operator can handle a limited number of alarms per hour. Past that, they skim, and skimmers miss the one that counts. Studies of incidents repeatedly find operators facing a flood of alarms in the minutes before a major event. Reducing the rate is the cheapest safety improvement a control system can make.
 
-**Why rationalize instead of just tuning?** Tuning deadbands treats symptoms. Rationalization asks whether the alarm should exist at all, who responds and why. It is slower, but it removes 30 to 60 percent of alarms on many sites with no loss of protection (a commonly reported range, not a promise). Experienced integrators run a workshop because the knowledge of why an alarm exists is in operators' heads, not in the project files.
+**Why rationalize instead of just tuning?** Tuning deadbands treats symptoms. Rationalization asks whether the alarm should exist at all, who responds and why. It is slower, but vendor and industry case studies regularly report large cuts in alarm counts with no loss of protection (the size depends on how bad the starting point was; check the case studies you cite). Experienced integrators run a workshop because the knowledge of why an alarm exists is in operators' heads, not in the project files.
 
 **Why a philosophy document?** Without one, each engineer picks priorities by feel, and "High" means different things in different areas. The philosophy sets a shared definition so the operator learns that High always means respond now.
 
@@ -166,7 +166,7 @@ Alarm lists in early control rooms were annunciator panels with a lamp and a hor
   examples: [
     {
       title: "Fixing a chattering level alarm",
-      body: `LAH-100 chatters 40 times an hour because the level hovers near 85 percent with a sloshing signal. Set the alarm on-delay to 5 seconds, set the deadband to 2 percent (so it clears at 83 percent) and filter the level signal in the PLC. In the next week's journal the alarm triggers twice. The rationalization record shows the changes and the reason.`
+      body: `LAH-101 chatters 40 times an hour because the level hovers near 85 percent with a sloshing signal. Set the alarm on-delay to 5 seconds, set the deadband to 2 percent (so it clears at 83 percent) and filter the level signal in the PLC. In the next week's journal the alarm triggers twice. The rationalization record shows the changes and the reason.`
     },
     {
       title: "Cutting a flood with state-based suppression",
