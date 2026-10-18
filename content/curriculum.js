@@ -14,6 +14,7 @@ LC.tracks = [
   { id: "db", code: "T7", title: "Databases", blurb: "SQL from zero, schema design, indexing, time-series storage and historians." },
   { id: "mes", code: "T8", title: "MES, Level 3/4 & Industry 4.0", blurb: "OEE, track & trace, batch, SPC, Sepasoft, ERP integration and the Unified Namespace." },
   { id: "int", code: "T9", title: "The Integrator's Craft", blurb: "Specs, standards, commissioning, naming, and architecting a multi-site system." },
+  { id: "hmi", code: "HD", title: "HMI & Screen Design", blurb: "How operators see and decide, and how to lay out, color, label and test screens so the right thing is obvious at a glance." },
   { id: "build", code: "LB", title: "Ignition Build Labs", blurb: "Hands-on builds in the free Ignition Maker Edition: a motor from PLC UDT to faceplate, alarms, history and an OEE screen." }
 ];
 
@@ -166,6 +167,17 @@ LC.lessonIndex = [
   ["int-capstone", "Capstone: architect a multi-site system", ["arch-patterns", "mes-uns", "db-schema", "int-naming"], 45, 4],
   ["int-career", "Certifications and career path", ["int-lifecycle"], 10, 1],
 
+  // HMI & screen design
+  ["hmi-perception", "How operators see: perception and attention", ["found-purdue"], 25, 2],
+  ["hmi-layout", "Layout, grouping and where the eye lands", ["hmi-perception"], 30, 2],
+  ["hmi-color", "Color theory for control rooms", ["hmi-perception"], 30, 2],
+  ["hmi-type-numbers", "Typography, numbers and units", ["hmi-layout"], 20, 2],
+  ["hmi-dataviz", "Showing data: trends, bars, gauges and deviation", ["hmi-type-numbers", "hmi-color"], 30, 3],
+  ["hmi-abnormal", "Making abnormal obvious: alarms, states and attention", ["hmi-color", "ign-alarming"], 25, 3],
+  ["hmi-interaction", "Controls, faceplates and preventing operator error", ["hmi-layout"], 30, 3],
+  ["hmi-process", "Designing with operators: task analysis, style guides and testing", ["hmi-interaction", "persp-hphmi"], 30, 3],
+  ["hmi-redesign", "Workshop: redesigning a bad screen", ["hmi-process", "hmi-dataviz", "hmi-abnormal"], 40, 4],
+
   // Build labs (hands-on, Ignition Maker Edition)
   ["build-setup", "Lab 0: Set up your home lab", ["ign-install"], 45, 2],
   ["build-motor-udt", "Lab 1: A motor from PLC UDT to Ignition UDT", ["build-setup", "ign-udts", "plc-udt"], 60, 3],
@@ -219,5 +231,8 @@ window.LC_GLOSSARY_FILES = [
   "content/glossary/e8.js",
   "content/glossary/e9.js",
   "content/glossary/e10.js",
-  "content/glossary/e11.js"
+  "content/glossary/e11.js",
+  "content/glossary/f1.js",
+  "content/glossary/f2.js",
+  "content/glossary/f3.js"
 ];
