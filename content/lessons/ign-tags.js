@@ -54,7 +54,7 @@ The tag's **Value Source** property sets its type.
 
 A memory tag is the default type. It is also the right place for operator-entered values that no PLC needs to know about. A reference tag is the cheapest way to give one value a second name. A derived tag is a reference tag that also converts: its read expression uses \`{source}\` and its write expression uses \`{value}\`, so an operator who types a Celsius setpoint writes Fahrenheit to the source.
 
-Memory tags forget their value on a Gateway restart unless you give them an initial value or enable the retain behavior. If a screen setpoint must survive a restart, keep it in the PLC or in a database.
+A value written to a memory tag is saved with the tag's configuration, so it normally survives a Gateway restart (check the 8.3 manual's Memory Tags page for your version). That doesn't make memory tags the right home for process setpoints: the PLC can't see them, they live on one Gateway, and a tag import or project restore can overwrite them. Keep setpoints the process depends on in the PLC, or in a database when they need history or approval.
 
 ## Tag groups decide what everything costs
 

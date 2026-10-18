@@ -181,3 +181,9 @@ Status of the first sweep (2026-10): contradictions between lessons were fixed i
 | N01 | int-commissioning | tag diagnostics pages in 8.3 manual; browse with `system.tag.browse` | function | 8.3 | med | Status > Tags |
 | N02 | net-security | gateway ports 8088/8043/8060/62541 in firewall matrix | port | 8.x | high | Ports |
 | X01 | hmi-interaction | Numeric Entry Field input bounds (8.1) vs Form component min/max (8.3) | component | 8.1/8.3 | low | Perspective components |
+
+
+## Orchestrator notes
+- ign-tags: corrected "memory tags forget their value on restart". In Ignition 8, written memory tag values persist with the tag configuration. ★ Verify against the Memory Tags page.
+- ign-expressions: `^` is the power operator in the Ignition expression language (bitwise XOR is `xor`). ★ Verify against the Expression Language Syntax page.
+- persp-events: Perspective has session-scope message handlers (Session Events > Message), so `system.perspective.sendMessage(..., scope='session')` reaches them. ★ Verify.
