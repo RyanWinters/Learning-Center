@@ -50,32 +50,42 @@ Say a maintenance system wants to read a tank level and send a request to start 
 \`\`\`python
 # doGet for  /system/webdev/Plant/tank
 def doGet(request, session):
-    tank = request['params'].get('id', 'T101')
-    path = '[default]Plant/Tanks/%s/Level' % tank
+    tank = request['params'].get('id', 'LT101')
+    path = '[default]Plant1/Area10/Line1/%s/Level' % tank
     qv = system.tag.readBlocking([path])[0]
     if not qv.quality.isGood():
         return {'json': {'error': 'bad quality', 'tank': tank},
                 'response': {'status': 503}}
     return {'json': {'tank': tank, 'level': qv.value,
-                     'units': 'pct', 'ts': str(qv.timestamp)}}
+                     'units': 'm', 'ts': str(qv.timestamp)}}
 \`\`\`
 
-A client calls \`GET .../tank?id=T102\` and gets \`{"tank": "T102", "level": 63.4, "units": "pct", "ts": "..."}\`.
+A client calls \`GET .../tank?id=LT101\` and gets \`{"tank": "LT101", "level": 3.2, "units": "m", "ts": "..."}\`.
 
 \`\`\`python
 # doPost for  /system/webdev/Plant/transfer
 def doPost(request, session):
     body = request['postData']          # parsed JSON dict
     src, dst, qty = body.get('from'), body.get('to'), body.get('qty')
-    if not (src and dst and isinstance(qty, (int, float))) or qty <= 0:
+    # bool is a subclass of int in Python, so exclude it explicitly.
+    # Jython also has a separate long type, so accept it too.
+    isNumber = isinstance(qty, (int, long, float)) and not isinstance(qty, bool)
+    if not (src and dst and isNumber) or qty <= 0:
         return {'json': {'error': 'from, to and positive qty required'},
                 'response': {'status': 400}}
-    system.tag.writeBlocking(['[default]Plant/Transfer/Request'],
-                             [{'from': src, 'to': dst, 'qty': qty}])
+    q = system.tag.writeBlocking(['[default]Plant1/Area10/Line1/Transfer/Request'],
+                                 [{'from': src, 'to': dst, 'qty': qty}])
+    if not q[0].isGood():
+        # writeBlocking does not raise on a bad or read-only tag. Check the result.
+        system.util.getLogger('Transfer').warn('Request write failed: %s' % q[0])
+        return {'json': {'error': 'could not queue request'},
+                'response': {'status': 503}}
     return {'json': {'accepted': True}, 'response': {'status': 202}}
 \`\`\`
 
-Notice the shape: validate input first, return a clear status code, write one request tag and let the PLC sequence do the real work. Do not let a web call drive an output directly.
+Notice the shape: validate input first, return a clear status code, write one request tag, check that the write actually succeeded and let the PLC sequence do the real work. Do not let a web call drive an output directly.
+
+The target \`Transfer/Request\` must be a **Document-type tag** (a memory tag with data type Document), because that is the tag type that holds a dictionary. A PLC cannot read a Document tag. In practice a gateway tag-change script, or separate scalar request tags, copies the validated values into the PLC's request registers, and the PLC sequence validates them again against its own permissives. Use plain scalar tags in the first place if your request has only a few fields.
 
 > [!warning] Content-Type matters
 > The module fills \`postData\` only for certain content types, such as \`application/json\` or \`text/*\`. Clients that send \`application/json;charset=UTF-8\` have caused a \`KeyError\` for some users. If \`postData\` is missing, read the raw bytes from \`servletRequest\` and parse them yourself.
@@ -86,7 +96,7 @@ A WebDev endpoint is a network door into your control system. Treat it like one.
 
 - **Authentication**: a resource can require authentication so the gateway checks the caller against a user source before your script runs. Use it. An unauthenticated endpoint that writes a tag is an open write path to the plant.
 - **Authorization**: inside the script, check roles. A caller who may read levels should not be able to post transfers.
-- **TLS**: only expose it over HTTPS. Credentials in headers are plain text on HTTP.
+- **TLS**: only expose it over HTTPS (port 8043 in the house examples). Credentials in headers are plain text on HTTP.
 - **Input validation**: the body is untrusted. Check types and ranges. Never build SQL by joining strings from the request. Use named queries or prepared parameters ({{lesson:net-security}} covers the network side).
 - **Placement**: do not expose the control gateway to the internet. Put a reverse proxy or API gateway in the DMZ, or run a separate gateway for external access.
 - **CORS**: browsers block calls from another origin unless the response carries the right \`Access-Control-Allow-Origin\` header. Add it deliberately, to named origins, not \`*\` for everything.
@@ -97,10 +107,13 @@ The other direction is Ignition as a client. In 8.3, \`system.net.httpClient\` c
 
 \`\`\`python
 def getWeather():
+    # readSecretValue(providerName, secretName) returns a plaintext holder, not a str
+    with system.secrets.readSecretValue('WeatherProvider', 'token') as plaintext:
+        token = plaintext.getSecretAsString()
     resp = system.net.httpClient().get(
         'https://api.example.com/v1/forecast',
         params={'site': 'plant1'},
-        headers={'Authorization': 'Bearer ' + system.secrets.readSecretValue('Weather', 'token')}
+        headers={'Authorization': 'Bearer ' + token}
     )
     if resp.good:
         return resp.json
@@ -113,7 +126,7 @@ Rules that save grief:
 1. **Never call it on a GUI or UI-bound thread path that blocks.** Run it from a gateway timer, a message handler or a tag change script, with a timeout.
 2. **Reuse a client** when you make many calls. Creating one per call is expensive. Use a project library function and cache it.
 3. **Check the status code and handle failure.** Networks fail. Log, back off, and do not retry in a tight loop.
-4. **Keep secrets out of scripts.** Use the gateway's secrets management for tokens instead of hard-coding them.
+4. **Keep secrets out of scripts.** Use the gateway's secrets management for tokens instead of hard-coding them. \`system.secrets.readSecretValue\` is documented as new in 8.3.1, so check your exact 8.3 patch version. The \`good\`, \`json\` and \`statusCode\` attributes on the response are shortcuts for \`isGood()\`, \`getJson()\` and \`getStatusCode()\` on the [httpClient manual page](https://www.docs.inductiveautomation.com/docs/8.3/appendix/scripting-functions/system-net/system-net-httpClient). \`json\` raises an error if the body is not valid JSON, so wrap it in try/except when the endpoint might return something else.
 
 > [!note] In 8.1
 > In 8.1 you created a client with \`system.net.httpClient()\` and kept it in a variable, and the older \`system.net.httpGet\` / \`httpPost\` calls were the common approach. In 8.3 the httpClient function is also usable directly as an instance.
@@ -170,7 +183,7 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
     },
     {
       title: "Posting a quality alert to a team chat",
-      body: `A gateway tag change script fires when \`Line1/QualityFault\` goes true. It builds a small JSON payload and calls \`system.net.httpClient().post(url, data=json.dumps(payload), headers={'Content-Type':'application/json'})\`. A 200 means done. Anything else is logged with the status code, and the script does not retry more than three times, so a dead chat service cannot pile up threads.`
+      body: `A gateway tag change script fires when \`Plant1/Area20/Line1/QualityFault\` goes true. It builds a small JSON payload and calls \`system.net.httpClient().post(url, data=json.dumps(payload), headers={'Content-Type':'application/json'})\`. A 200 means done. Anything else is logged with the status code, and the script does not retry more than three times, so a dead chat service cannot pile up threads.`
     }
   ],
 

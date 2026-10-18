@@ -30,7 +30,7 @@ When a browser tab opens a Perspective project, the Gateway creates a **session*
 - The list of open pages and popups, and their view instances.
 - The session's event scripts (startup, shutdown, message handlers).
 
-Each browser tab or window is its own session. Two tabs open to the same URL are two independent sessions with independent state. A refresh creates a new session, which is why anything the operator needs to survive a refresh must come from a tag, a database or the URL, not from session or view state.
+Each browser tab or window is its own session. Two tabs open to the same URL are two independent sessions with independent state. A refresh normally starts a new session (check the behavior and the session timeout on your version), which is why anything the operator needs to survive a refresh must come from a tag, a database or the URL, not from session or view state.
 
 {{diagram:session}}
 
@@ -50,7 +50,7 @@ A **page** is a URL pattern mapped to a primary view. They are defined in {{term
 | Query string | \`?shift=B\` | Reachable on the page, not a view param by default |
 | Home page | \`/\` | What opens when no path is given |
 
-Path parameters are passed into the page's primary view when the names match the view's params, so \`/area/L3\` can open the same overview view with \`line = "L3"\`. Characters like \`/\` and \`?\` are not valid inside a parameter value. The URL is also the only thing a user can bookmark or send in a message, so a view that needs context to render should get it from the URL or a tag, not from state a refresh would erase.
+Path parameters are passed into the page's primary view when the names match the view's params, so \`/area/Area10\` can open the same overview view with \`line = "Area10"\`. Characters like \`/\` and \`?\` are not valid inside a parameter value. The URL is also the only thing a user can bookmark or send in a message, so a view that needs context to render should get it from the URL or a tag, not from state a refresh would erase.
 
 > [!note] In 8.1
 > The page and navigation model is the same in 8.1. The main differences you will notice are in the Designer UI layout and in how some settings are grouped. The scripting calls below work the same way.
@@ -63,24 +63,24 @@ There are three ways to move, in order of preference:
 2. **\`system.perspective.navigate(page=...)\`** from a script when the destination depends on logic.
 3. **\`navigate(url=...)\`** for full URLs, including query strings or leaving the session for another site.
 
-If you pass several arguments, \`page\` wins over \`view\`, which wins over \`url\`. The \`view\` form swaps the primary view without changing the URL; it works, but the address bar no longer describes what the user sees, which breaks bookmarks and the back button. Use it sparingly.
+Only one destination applies per call. If you pass several, the function reference gives \`page\` priority over \`view\`, and \`view\` over \`url\`. Pass one. \`params\` applies only with \`view\`, and query strings need \`url\`. The \`view\` form swaps the primary view without changing the URL; it works, but the address bar no longer describes what the user sees, which breaks bookmarks and the back button. Use it sparingly.
 
 \`\`\`python
 # Button script: jump to the overview for the clicked line
 line = self.view.params.line
-system.perspective.navigate(page="/area/" + line)
+system.perspective.navigate(page="/area/" + line)  # line = "Area10"
 \`\`\`
 
 ## Docked views
 
 A {{term:docked-view|docked view}} is a view attached to the north, south, east or west edge of a page. Each edge holds one. The classic uses are a north header with logo, alarm count and user, and a west navigation tree. Key settings:
 
-- **Display**: visible (always open), onDemand (collapsed with a handle), or auto (responds to screen size).
+- **Display**: whether the dock is always open, collapsed behind a handle, or responsive to screen size. The option names differ between versions, so read the docked-views page for yours.
 - **Content**: push (resizes the primary view) or cover (overlays it).
 - **Size** and handle visibility.
 - **Dock ID**: an optional string that lets \`openDock\`, \`closeDock\` and \`toggleDock\` find it from a script.
 
-Define docks in **Shared Settings** so they apply to every page. The dock view instance stays alive while the page content changes, which is the whole point. A header that keeps its alarm summary subscription and scroll state across navigations is cheaper and calmer than one reloaded on every click.
+Define docks in the shared page settings so they apply to every page (check where your version puts them). The dock view instance stays alive while the page content changes, which is the whole point. A header that keeps its alarm summary subscription and scroll state across navigations is cheaper and calmer than one reloaded on every click.
 
 > [!warning] Don't hide context in the dock
 > If the dock holds the nav tree, the selected node should be driven by the page URL (or \`session.custom\`), not by clicks inside the dock. Otherwise a bookmarked deep link opens a page with the wrong tree node highlighted.
@@ -92,15 +92,15 @@ A {{term:popup-view|popup}} floats over the current page. You can open it from a
 \`\`\`python
 system.perspective.openPopup(
     id="motor-" + self.view.params.tag,   # unique per instance
-    viewPath="Faceplates/Motor",
+    view="Faceplates/Motor",
     params={"tagPath": self.view.params.tagPath},
-    title="Pump 101",
+    title="M101",
     modal=False, draggable=True, resizable=True,
     position={"left": 120, "top": 80}
 )
 \`\`\`
 
-The **id** is what you need later to close or toggle the popup, so build one from the data (equipment tag) and the same equipment will not open twice. Useful options: \`modal\` (blocks the page behind it), \`backgroundDismissible\`, \`showCloseIcon\`, and \`viewportBound\` to keep it on screen. Params go in as view params, so a popup is a normal parameterized view and works with the same indirect-tag patterns as an embedded view.
+The **id** is what you need later to close or toggle the popup, so build one from the data (equipment tag) and the same equipment will not open twice. The signature is \`openPopup(id, view, params, title, position, showCloseIcon, draggable, resizable, modal, overlayDismiss, sessionId, pageId, viewportBound)\`, and only \`id\` and \`view\` are required. Useful options: \`modal\` (blocks the page behind it), \`overlayDismiss\`, \`showCloseIcon\`, and \`viewportBound\` to keep it on screen. Params go in as view params, so a popup is a normal parameterized view and works with the same indirect-tag patterns as an embedded view.
 
 Modal popups suit confirmations and setpoint entry. Modeless popups suit faceplates, which operators often want two or three of at once.
 
@@ -116,12 +116,50 @@ For kiosk-style stations, give each monitor its own URL (\`/console1/left\`, \`/
 ## Worked example: a plant nav
 
 - Shared north dock \`Chrome/Header\`: logo, user, alarm summary, with a Dock ID of \`header\`.
-- Shared west dock \`Chrome/NavTree\`, onDemand, push, bound to \`session.custom.area\`.
+- Shared west dock \`Chrome/NavTree\`, collapsible, push, bound to \`session.custom.area\`.
 - Pages: \`/\` (overview), \`/area/:area\` (Area view), \`/trend\`.
-- Equipment symbol click: \`openPopup(id=tagPath, viewPath="Faceplates/Motor", params={tagPath})\`.
+- Equipment symbol click: \`openPopup(id=tagPath, view="Faceplates/Motor", params={"tagPath": tagPath})\`.
 - Alarm banner click: navigate to \`/area/\` plus the alarm's area, then open the popup.
 
 Nothing in that design needs a script outside the two click handlers, and it still works from a bookmark, a refresh and a second screen.
+## If you already build Perspective
+
+Navigation gets hard once there are roles, several areas and wall displays. The decisions below are the ones a site audit asks about.
+
+### Role-gated navigation
+
+Hiding a nav button is not access control. A user can type a URL. Gate at three layers, and treat the first as cosmetic:
+
+1. **Visibility of nav items.** Bind each item's \`meta.visible\` to an expression over \`{session.props.auth.user.roles}\` so an operator never sees an engineering page.
+2. **Page entry.** The primary view of a restricted page checks the role on load and shows a "not authorised" view otherwise. This is what stops a bookmark or a typed URL. Test it by pasting the URL into a session for a low-privilege user.
+3. **Actions.** Every write is checked again where it happens (tag security, a role test in the event script before the write). A screen that is reachable by mistake must still be unable to harm anything.
+
+Define roles once in your identity provider, map them in the Perspective security zone, and document which pages need which role. Do not invent a second role list inside session props.
+
+### Deep links and popups
+
+A deep link such as \`/area/Area10?focus=M101\` is a promise that the receiving session can reconstruct the screen. Design for it: the page view reads its context from path parameters and the query string on load, and tolerates a missing or unknown value. Popup ids are scoped to the session. Build them from data (\`"fp-" + tagPath\`) and a repeat click reuses the same id instead of stacking. Do not reuse one id across different popup views, or one will replace the other.
+
+### Gateway-side navigation
+
+To push a screen to an operator from a Gateway script (an alarm pipeline, a message handler), you need \`sessionId\` and \`pageId\`. Keep a registry: each session writes \`{sessionId, pageId, user, station}\` on startup to a table or to a tag keyed by station, and removes it on shutdown. The Gateway script looks up the station and calls \`system.perspective.openPopup(id, view, params, sessionId=..., pageId=...)\`. Without the registry you end up broadcasting to everyone. Decide which events justify taking over a screen, because an unrequested popup is a safety issue in itself.
+
+### Kiosks and session lifetime
+
+A wall display is a session that never closes. Plan for the Gateway restarting, the network dropping, and the session timeout expiring. The kiosk needs a startup URL that rebuilds its full state from the URL and tags, not from session props. Test it by restarting the Gateway while the kiosk is open and seeing whether it returns on its own to a usable screen. Check the session timeout and reconnect settings for your version rather than assuming defaults.
+
+### Page and dock architecture for a multi-area plant
+
+| Piece | Choice | Reason |
+|---|---|---|
+| Header (north dock) | One shared view | Alarm count, user, clock persist across pages |
+| Navigation (west dock) | Tree built from a plant model tag or query | Adding Area20 needs no view edits |
+| Page URLs | \`/area/:area/unit/:unit\` | Every location has a bookmarkable address |
+| Selected context | URL first, \`session.custom\` as a cache | A refresh or a link must not lose location |
+| Faceplates | Popups keyed by tag path | Operators may open two at once |
+
+A dock stays alive for the whole session, so give it cheap bindings. Drive the highlighted nav node from the URL, not from clicks, so a deep link lands correctly.
+
 `,
 
   eli5: `
@@ -151,7 +189,7 @@ Ignition's older Vision client was a Java application that opened windows on the
   examples: [
     {
       title: "Deep link from an alarm",
-      body: `An alarm notification email contains \`https://gateway.example.com/data/perspective/client/Plant/area/L3?focus=P101\`. The page config \`/area/:area\` opens the overview with \`area = "L3"\`, and a startup script on the view reads the query value and calls \`openPopup\` for P101. The operator lands on the right screen with the right faceplate open, in one click.`
+      body: `An alarm notification email contains \`https://hmi.meridian.example:8043/data/perspective/client/Plant1/area/Area10?focus=M101\`. The page config \`/area/:area\` opens the overview with \`area = "Area10"\`, and a startup script on the view reads the query value and calls \`openPopup\` for M101. The operator lands on the right screen with the right faceplate open, in one click.`
     },
     {
       title: "Two-monitor console",
@@ -231,7 +269,7 @@ Ignition's older Vision client was a Java application that opened windows on the
       explain: [
         "It does not error. It resolves the conflict by a fixed priority.",
         "url has the lowest priority of the three navigation arguments.",
-        "Correct. Priority is page, then view, then url.",
+        "Correct. The function reference gives page priority, then view, then url. In real code, pass one destination.",
         "Only the newTab option opens another tab, and only for the one chosen destination."
       ]
     },

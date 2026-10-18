@@ -10,7 +10,7 @@ LC.lesson({
   objectives: [
     "Lay out a project by task, program and routine so each piece has one job",
     "Separate raw I/O mapping from logic and explain what that buys you",
-    "Design Cmd/Sts/Cfg interface tags that an Ignition screen can bind to without custom code",
+    "Design Cmd/Sts/Cfg/Alm interface tags that an Ignition screen can bind to without custom code",
     "Decide what belongs in PLC alarm logic and what belongs in SCADA",
     "Version UDTs and AOIs, and keep a project in source control using L5X exports",
     "Apply a code review checklist to someone else's project"
@@ -37,7 +37,7 @@ A Logix project is organized as **tasks** that schedule **programs**, which cont
 | Program | \`Plant_Common\` | Alarms summary, clocks, mode, HMI heartbeat, shared state |
 | Program | One per equipment area, e.g. \`Area10_Mixing\` | Everything for that area |
 | Routine | \`MainRoutine\` | Only calls other routines (JSR), in a readable order |
-| Routine | \`R10_Pumps\`, \`R20_Sequence\`, \`R30_Interlocks\` | One concern each |
+| Routine | \`R10_Motors\`, \`R20_Sequence\`, \`R30_Interlocks\` | One concern each |
 | Routine | \`Fault\` (program fault routine) | Handles faults per {{lesson:plc-faults}} |
 
 Two rules hold this together. Every program has a \`MainRoutine\` that does nothing except call routines. And a routine does one thing. If you cannot name a routine in three words, it is doing too much.
@@ -50,12 +50,12 @@ Some shops put everything in one continuous task. It is simple and works for sma
 
 Pick a convention, write it on one page, and apply it with no exceptions. The exact style matters less than the consistency. A solid default:
 
-- **Tags and members**: PascalCase with underscores only as area separators, e.g. \`P101_Pump\`, \`Area10_Mixing\`.
-- **Prefix by equipment tag**: use the same name as the P&ID, such as \`P101\`, \`LT101\`, \`XV201\`. A tech with a drawing can find the tag with no lookup.
-- **Booleans read as statements**: \`Running\`, \`Faulted\`, \`HighLevel\`, not \`Bit7\` or \`Flag3\`.
-- **Units in the name when ambiguous**: \`Flow_gpm\`, \`Temp_degC\`.
+- **Tags and members**: PascalCase. An underscore appears only after a prefix (\`UDT_\`, \`AOI_\`) or between an area and a name (\`Area10_Mixing\`). Members never carry underscores for units or grouping, so it is \`M101.Cfg.StartDelay\`, not \`M101_Cfg_StartDelay_ms\`.
+- **Equipment tags match the P&ID, minus the hyphen**: the drawing says \`M-101\`, \`LT-101\`, \`FV-101\`; the PLC tag is \`M101\`, \`LT101\`, \`FV101\`, because hyphens are not valid in Logix tag names. A tech with a drawing can find the tag with no lookup.
+- **Booleans read as statements**: \`Running\`, \`Fault\`, \`HighLevel\`, not \`Bit7\` or \`Flag3\`.
+- **Units go in the description**, not the name: \`LT101\` with the description "Mixer level, m", not \`Level_m\`. The same applies to engineering-unit properties in Ignition.
 - **Routines**: prefix with a number so they sort in execution order (\`R10_\`, \`R20_\`).
-- **UDTs and AOIs**: type prefix, \`UDT_Motor\`, \`AOI_Motor\`, so you never confuse a type with an instance.
+- **UDTs and AOIs**: type prefix, \`UDT_Motor\`, \`AOI_Motor\`, so you never confuse a type with an instance. The house motor type is the one from {{lesson:plc-udt}}: \`UDT_Motor\` with nested \`Cmd\`, \`Sts\`, \`Cfg\` and \`Alm\` groups, so \`M101.Cmd.Start\` and \`M101.Sts.Running\` mean the same thing in every lesson and every project.
 
 > [!tip] Descriptions are free
 > Every tag, UDT member and AOI parameter has a Description field. It costs nothing, it appears as a tooltip in the editor, and it is exported with the tag. Fill it in. Ignition can also pull descriptions into tag documentation.
@@ -64,9 +64,9 @@ Pick a convention, write it on one page, and apply it with no exceptions. The ex
 
 Every repeated device (motor, valve, PID loop, analog input) should be a {{term:udt|UDT}} for its data and an {{term:aoi|AOI}} for its logic. See {{lesson:plc-udt}} and {{lesson:plc-aoi}}. At project scale the question becomes **how you manage the library**.
 
-- Keep the master copy in a **library project** (or a folder of L5X files), not inside whichever job you last used it on.
+- Keep the master copy in a **library project** (or a folder of L5X files), not inside whichever job you last used it on. Rockwell's own version-control and change-management product for this is FactoryTalk AssetCentre, which can also track who changed which controller.
 - Give each type a **revision number**. Logix AOIs have built-in revision and change-history fields. Use them and write what changed.
-- **Never change a deployed UDT's member order or delete a member casually.** Changing a UDT reshapes memory, and every tag, produced/consumed connection and HMI mapping that uses it is affected. Add members at the end. Plan for spare members, such as a few reserved DINTs, so you rarely need to restructure.
+- **Never change a deployed UDT's member order or delete a member casually.** Changing a UDT reshapes memory, and every tag, produced/consumed connection and HMI mapping that uses it is affected. Add members at the end. Plan for spare members, such as a few reserved DINTs, so you rarely need to restructure. If it is genuinely needed, make the change in the library, bump the revision, and roll it out to each project on purpose.
 - Decide a policy on **sealed AOIs** (source protected). Sealing guards your IP, but a customer may refuse to buy a PLC program they cannot read. Many integrators ship sealed-off only if the contract says so.
 
 ### Where integrators disagree: AOI or plain routine
@@ -80,14 +80,14 @@ The most useful single habit: **raw I/O never appears in logic.** A dedicated ro
 {{diagram:iomap}}
 
 \`\`\`ladder
-XIC(Local:3:I.Data.4) OTE(P101_Pump.Sts.AuxRunning)
+XIC(Local:3:I.Data.4) OTE(P101_RunFbk)
 \`\`\`
 
 \`\`\`ladder
-XIC(P101_Pump.Out.Run) OTE(Local:5:O.Data.2)
+XIC(P101_RunOut) OTE(Local:5:O.Data.2)
 \`\`\`
 
-Logic then reads \`P101_Pump.Sts.AuxRunning\` and sets \`P101_Pump.Out.Run\`. The \`Local:3:I.Data.4\` address appears in exactly one place. For analog points, do the scaling here too, so the rest of the code sees engineering units.
+Logic then reads \`P101_RunFbk\` (the starter's auxiliary contact) and sets \`P101_RunOut\`. The \`Local:3:I.Data.4\` address appears in exactly one place. For analog points, do the scaling here too, so the rest of the code sees engineering units.
 
 This buys you three things:
 
@@ -98,23 +98,24 @@ This buys you three things:
 > [!warning] The cost
 > You add one scan of latency and a few routines. For a typical plant task at 20 ms this is nothing. For a fast loop that must react in under a scan, keep the I/O in the fast task and map inside it.
 
-## Interface tags for the HMI: Cmd, Sts, Cfg
+## Interface tags for the HMI: Cmd, Sts, Cfg, Alm
 
-Ignition and every other HMI read and write PLC tags. If those tags are scattered, every screen needs custom work. If every device exposes the **same three groups**, a screen template works for all of them. A pattern many integrators use inside the UDT:
+Ignition and every other HMI read and write PLC tags. If those tags are scattered, every screen needs custom work. If every device exposes the **same four groups**, a screen template works for all of them. A pattern many integrators use inside the UDT:
 
 | Group | Direction | Meaning | Example members |
 |---|---|---|---|
-| \`Cmd\` | HMI to PLC | Requests from the operator | \`Cmd.Start\`, \`Cmd.Stop\`, \`Cmd.Reset\`, \`Cmd.AutoReq\` |
-| \`Sts\` | PLC to HMI | What the device is doing | \`Sts.Running\`, \`Sts.Faulted\`, \`Sts.Auto\`, \`Sts.State\` |
-| \`Cfg\` | Engineer to PLC | Setpoints and limits, rarely changed | \`Cfg.HighLimit\`, \`Cfg.StartDelay_s\` |
+| \`Cmd\` | HMI to PLC | Requests from the operator | \`Cmd.Start\`, \`Cmd.Stop\`, \`Cmd.Reset\` |
+| \`Sts\` | PLC to HMI | What the device is doing | \`Sts.Running\`, \`Sts.Ready\`, \`Sts.Fault\`, \`Sts.Auto\` |
+| \`Cfg\` | Engineer to PLC | Setpoints and limits, rarely changed | \`Cfg.SpeedHigh\`, \`Cfg.StartDelay\` |
+| \`Alm\` | PLC to HMI | Alarm conditions the PLC detected | \`Alm.FailToStart\`, \`Alm.Overload\`, \`Alm.CommLoss\` |
 
 Design rules that make Ignition happy:
 
 - **Commands are requests, not outputs.** The HMI sets \`Cmd.Start\`; PLC logic decides whether to honor it and clears it. The operator never writes the physical output bit.
 - **Pulse commands are cleared by the PLC.** If Ignition writes 1 and the PLC resets it, there is no stuck-bit problem when a client disconnects.
 - **Status is one-way.** Never write to \`Sts\` from the HMI.
-- **Use a numeric state member** (an INT or DINT) with a documented list, plus a text lookup in Ignition. It travels as one tag instead of a dozen booleans.
-- **Match UDT to Ignition UDT.** Build the Ignition UDT definition from the Logix UDT once, with member names identical, and parameterize the device path. See {{lesson:ign-udts}}.
+- **Add a numeric state member** (an INT or DINT) where a device has more than a few states, with a documented list, plus a text lookup in Ignition. It travels as one tag instead of a dozen booleans.
+- **Match UDT to Ignition UDT.** Build the Ignition \`Motor\` UDT definition from \`UDT_Motor\` once, with identical folders and member names, and parameterize the device path (for example \`[default]Plant1/Area10/Line1/M101\`). See {{lesson:ign-udts}}.
 - **Add a heartbeat.** A counter or toggle bit from Ignition that the PLC watches lets the PLC detect a dead SCADA and move to a safe mode.
 
 ## Alarms: in the PLC or in SCADA
@@ -139,11 +140,11 @@ Where integrators disagree: some run **all alarm limits in Ignition** for flexib
 A bit is **destructive** when writing it changes the process: an OTE on an output, an OTL, a MOV into a setpoint. If two rungs can write the same bit, the last one scanned wins, and the result looks random.
 
 \`\`\`ladder
-XIC(Auto) XIC(StartReq) OTE(P101_Pump.Out.Run)
+XIC(Auto) XIC(StartReq) OTE(P101_RunOut)
 \`\`\`
 
 \`\`\`ladder
-XIC(Manual) XIC(Cmd.Start) OTE(P101_Pump.Out.Run)
+XIC(Manual) XIC(P101.Cmd.Start) OTE(P101_RunOut)
 \`\`\`
 
 The second rung overwrites the first every scan. When Auto is true and Manual is false, the second rung forces the output off. The fix is **one writer per bit**: combine the conditions into a single OTE in one place, or use an AOI that owns the output. Run the cross reference on every output tag during review. If an OTE appears twice, stop.
@@ -153,7 +154,10 @@ The second rung overwrites the first every scan. When Auto is true and Manual is
 Logix stores a project in a binary \`.ACD\` file, which Git cannot diff. Two common approaches:
 
 - **Export to L5X** (XML) or L5K (older text format) and commit that. An L5X shows rung-level changes in a text diff, and the Studio 5000 import/export tools can export a whole project, a program, a routine, a UDT or an AOI. Store the ACD as a release artifact next to it.
-- **Commercial tools** (version-control and change-management products for controllers) automate the compare and keep history for the whole plant.
+- **FactoryTalk AssetCentre** (Rockwell's change-management product) or similar tools automate the compare, schedule backups and keep history for the whole plant. A Git repository of L5X files is the low-cost version of the same idea.
+
+> [!warning] An L5X import can overwrite
+> Importing an L5X into a live or shared project can overwrite same-named items (tags, UDTs, AOIs, routines) without you noticing. Treat a restore from L5X as a change to production: import into an offline copy first, compare it with what is running, check the import options and the conflict report, and only then download. Importing a UDT or AOI with a different definition than the one in use is the way controllers get damaged by a well-meant restore.
 
 A workable manual routine: before each download, export the L5X, commit with a message ("Added P102 alternation, rev 1.4"), and tag releases. Always commit what is **currently running in the controller**, uploaded fresh, since field changes happen. Keep passwords and customer secrets out of the repo.
 
@@ -174,8 +178,10 @@ Before release, someone other than the author runs through:
 8. UDT and AOI revisions match the library, with change notes
 9. Online edits are rolled back into the offline project
 10. Scan time, with margins, is recorded, and a periodic task has no overruns
-11. Safety is in the safety task only (see {{lesson:plc-safety}})
+11. Safety is in the safety task only, and overloads and E-stops are hardwired, never PLC-only (see {{lesson:plc-safety}})
 12. A fresh L5X export is committed and tagged
+
+Try it as a lab: export one routine to L5X, delete it from an offline copy, re-import it, and read the import conflict report before you accept anything. Then change one \`TON\` preset online and find it with an L5X diff.
 `,
 
   eli5: `
@@ -189,7 +195,7 @@ A PLC project is that kitchen. These habits do not make the machine run faster. 
   why: `
 **Why separate I/O from logic?** Hardware always changes: a card fails and the replacement is a different model, a remote drop is added, a sensor moves to a new input. If logic references \`Local:3:I.Data.4\` in 80 places, each change risks missing one. One mapping routine means one edit. It also gives you the simulation hook that makes offline testing possible at all. The tradeoff is a small amount of extra code and a scan of latency.
 
-**Why Cmd/Sts/Cfg?** The operator interface is the second most common source of bad PLC bugs after double-written outputs. When the HMI writes directly to physical bits or to status flags, you lose the ability to say who commanded what. Commands as requests let the PLC enforce interlocks and modes once, for every client, including Ignition, a technician's laptop and a future MES.
+**Why Cmd/Sts/Cfg/Alm?** The operator interface is the second most common source of bad PLC bugs after double-written outputs. When the HMI writes directly to physical bits or to status flags, you lose the ability to say who commanded what. Commands as requests let the PLC enforce interlocks and modes once, for every client, including Ignition, a technician's laptop and a future MES.
 
 **Why one writer per bit?** Scan order decides who wins when two rungs disagree. Bugs of this type are intermittent, and they appear only under specific mode combinations, which is the worst thing to debug on a commissioning night.
 
@@ -205,11 +211,11 @@ Early PLC programs were a single ladder file with absolute addresses like \`N7:1
   examples: [
     {
       title: "Adding a spare pump without touching logic",
-      body: `The mixing area has pumps \`P101\` and \`P102\`. The customer adds \`P103\`. In the layout above you add a \`P103_Pump\` instance of \`UDT_Pump\`, one rung in the mapping routine for its aux contact and run output, one call to \`AOI_Pump\` in \`R10_Pumps\`, and the Ignition UDT instance with \`P103\` as the device parameter. The sequence in \`R20_Sequence\` already works from the pump's \`Sts\` and \`Cmd\` members, so it does not change.`
+      body: `The mixing area has pump motors \`P101\` and \`P102\`. The customer adds \`P103\`. In the layout above you add a \`P103\` tag of type \`UDT_Motor\`, one rung in the mapping routine for its aux contact and run output, one call to \`AOI_Motor\` in \`R10_Motors\`, and the Ignition \`Motor\` UDT instance with \`P103\` as the instance name. The sequence in \`R20_Sequence\` already works from the pump's \`Sts\` and \`Cmd\` members, so it does not change.`
     },
     {
       title: "Replacing a failed input card with a different model",
-      body: `A 1756-IB16 fails and the only stock is a 1734 POINT I/O module on a remote adapter. The new module has a different address path (\`Rack1:2:I.Data.4\`). You change the one mapping rung per point. Logic, HMI tags and alarms are untouched, and you verify by watching \`P101_Pump.Sts.AuxRunning\` follow the field contact.`
+      body: `A 1756-IB16 fails and the only stock is a 1734 POINT I/O module on a remote adapter. The new module has a different address path (\`Rack1:2:I.Data.4\`). You change the one mapping rung per point. Logic, HMI tags and alarms are untouched, and you verify by watching \`P101_RunFbk\` follow the field contact.`
     }
   ],
 
@@ -237,7 +243,7 @@ Early PLC programs were a single ladder file with absolute addresses like \`N7:1
   <rect class="dg-box-2" x="430" y="138" width="190" height="26" rx="4"/>
   <text class="dg-text-mono" x="440" y="156">MainRoutine (JSRs)</text>
   <rect class="dg-box-2" x="430" y="170" width="190" height="26" rx="4"/>
-  <text class="dg-text-mono" x="440" y="188">R10_Pumps</text>
+  <text class="dg-text-mono" x="440" y="188">R10_Motors</text>
   <rect class="dg-box-2" x="430" y="202" width="190" height="26" rx="4"/>
   <text class="dg-text-mono" x="440" y="220">R20_Sequence</text>
   <rect class="dg-box-2" x="430" y="234" width="190" height="20" rx="4"/>
@@ -289,7 +295,7 @@ Early PLC programs were a single ladder file with absolute addresses like \`N7:1
       ]
     },
     {
-      q: "Rung A: XIC(Auto) OTE(Pump.Out.Run). Rung B, later in the scan: XIC(Manual) XIC(Cmd.Start) OTE(Pump.Out.Run). Auto is true, Manual is false. What is the output state at the end of the scan?",
+      q: "Rung A: XIC(Auto) OTE(P101_RunOut). Rung B, later in the scan: XIC(Manual) XIC(P101.Cmd.Start) OTE(P101_RunOut). Auto is true, Manual is false. What is the output state at the end of the scan?",
       options: ["On, because Rung A is true", "Off, because Rung B is scanned last and writes false", "Undefined; the controller faults", "On, because OTE latches"],
       answer: 1,
       explain: [

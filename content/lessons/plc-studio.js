@@ -55,13 +55,13 @@ You move between them with three commands:
 | Command | Direction | What it does | Danger |
 |---|---|---|---|
 | {{term:plc-download|Download}} | Laptop to controller | Replaces the controller's program with the file's | Overwrites the running program; puts the controller in Program mode first |
-| {{term:plc-upload|Upload}} | Controller to laptop | Creates or replaces the file from the controller | May lack comments or full structure; overwrites unsaved file edits |
+| {{term:plc-upload|Upload}} | Controller to laptop | Creates or replaces the file from the controller | Overwrites unsaved file edits; check the result against your offline file, since not everything in an offline project is guaranteed to come back the same |
 | {{term:plc-go-online|Go Online}} | Live link | Connects when both copies match; lets you monitor and edit | Edits made online change the live program immediately |
 
 Logix Designer compares the two copies when you click *Go Online* and asks whether you want to download, upload, or connect anyway. **Read the dialog.** Choosing the wrong button means overwriting either the plant's running program or your afternoon of work.
 
 > [!warning] Online edits are live
-> In Logix, you can add a rung or change a value while the controller is running (online edit). The change takes effect when you *Accept* and *Finalize* it, often mid-scan. A misplaced instruction can start a motor. Treat online editing like touching a live panel: know what the rung drives, and tell the operator before you do it.
+> In Logix, you can add a rung or change a value while the controller is running (online edit). You make the edit, then use the online-edit commands (the labels are along the lines of *Test Edits* and *Accept Test Edits*, with *Cancel Edits* to back out; check the exact names in your version). Once accepted, the change is in the running program, even mid-scan. A misplaced instruction can start a motor. Treat online editing like touching a live panel: know what the rung drives, and tell the operator before you do it.
 
 ## Run, Program and Remote modes
 
@@ -72,18 +72,29 @@ The controller is always in one of a few modes.
 - **Remote Run, Remote Program, Remote Test.** Software (not the key) selects the mode. Remote Test runs logic but keeps outputs disabled, useful for checking logic without moving equipment.
 - **Fault.** A major fault has stopped the controller. See {{lesson:plc-faults}}.
 
-On most hardware controllers, the **{{term:keyswitch|keyswitch}}** has three positions: RUN, REM and PROG. In RUN the controller is locked into run mode, and software cannot change it. In PROG it is locked into program mode. In REM, software chooses. A plant that leaves the key in RUN is protecting itself from someone accidentally pausing the line. CompactLogix 5380 has a mode switch in the same style, and some models replace the physical key with a software setting.
+On most hardware controllers, the **{{term:keyswitch|keyswitch}}** has three positions: RUN, REM and PROG. In RUN the controller is locked into run mode, and software cannot change it. In PROG it is locked into program mode. In REM, software chooses. A plant that leaves the key in RUN is protecting itself from someone accidentally pausing the line. Not every controller has a physical key, and CompactLogix models differ here, so check the hardware manual for the model you are standing in front of.
+
+## Forces
+
+A **force** overrides a value. A forced input holds a value whatever the real field device is doing. A forced output holds its value whatever the logic says. Forces are the most common reason for the call "the logic is right but the output is wrong".
+
+- A force is installed on a specific I/O tag, and it stays after you go offline or close the software. Forces are enabled and disabled at the controller level, so installing one is not the same as enabling it.
+- The controller shows a **Forces** indicator in the online bar (installed, enabled, or none). Look at it every time you go online, and use the force filters in the tag window to list what is forced.
+- A forced output can start equipment with no logic condition true. Treat forcing as you would a jumper across a safety contact: announce it, tag the equipment, and write down what you forced.
+- **Remove every force before you hand the machine back.** Check the indicator before you leave, and again after the next controller power cycle.
+
+Forcing is a diagnostic tool. A force is never a fix.
 
 ## How the laptop reaches the controller
 
-Your laptop needs a **communication driver**. It is the program that turns "controller at 192.168.1.10" into network traffic.
+Your laptop needs a **communication driver**. It is the program that turns "controller PLC1 at 10.20.10.10" into network traffic.
 
 - {{term:rslinx|RSLinx Classic}} is the older driver and is still everywhere. You configure drivers (for instance *EtherNet/IP* driver or *Ethernet devices*), then browse in **RSWho** to find controllers.
 - **FactoryTalk Linx** is the current driver, used in FactoryTalk-based installs, and is the successor to RSLinx Enterprise.
 
 In Logix Designer, the **Who Active** button (or *Communications > Who Active*) opens a browser of drivers. You pick the controller, then choose *Download*, *Upload* or *Go Online*. Another way is to set the **path** in the project's Controller Properties, but Who Active is the best place to start.
 
-To connect over Ethernet, your laptop and controller must be on the same network or routable to each other, which brings us back to {{lesson:net-ip}}. A common first-day problem is a laptop on 192.168.0.x while the PLC is on 10.1.1.x.
+To connect over Ethernet, your laptop and controller must be on the same network or routable to each other, which brings us back to {{lesson:net-ip}}. A common first-day problem is a laptop on 192.168.0.x while PLC1 is on the control VLAN at 10.20.10.x.
 
 ## Firmware revisions
 
@@ -134,7 +145,7 @@ Logix Designer began as RSLogix 5000, introduced with ControlLogix in the late 1
   examples: [
     {
       title: "First connection to a CompactLogix",
-      body: `Your laptop is 192.168.1.50 / 255.255.255.0. The PLC is 192.168.1.10. In RSLinx Classic you add an *EtherNet/IP Driver*, point it at the right adapter, then open *RSWho*. The controller appears with its name. In Logix Designer you click *Who Active*, choose the controller, and click *Upload*. The dialog offers to create a new file. You save it as \`Site_PLC_2026-10-17_as_found.ACD\` before any editing.`
+      body: `Your engineering workstation is 10.20.50.25 on VLAN 50 and the controller PLC1 is 10.20.10.10 on the control VLAN, reached through the plant router (see {{lesson:net-ip}}). In RSLinx Classic you add an *EtherNet/IP Driver*, point it at the right adapter, then open *RSWho*. The controller appears with its name. In Logix Designer you click *Who Active*, choose the controller, and click *Upload*. The dialog offers to create a new file. You save it as \`Site_PLC_2026-10-17_as_found.ACD\` before any editing.`
     },
     {
       title: "A revision mismatch",
@@ -171,7 +182,7 @@ Logix Designer began as RSLogix 5000, introduced with ControlLogix in the late 1
     "Having only the newest Studio 5000 installed when the plant runs old firmware."
   ],
 
-  keyTerms: ["logix-designer", "controller-organizer", "io-configuration", "plc-go-online", "plc-download", "plc-upload", "run-program-mode", "keyswitch", "rslinx", "firmware-revision", "acd-file"],
+  keyTerms: ["logix-designer", "controller-organizer", "io-configuration", "plc-go-online", "plc-download", "plc-upload", "run-program-mode", "keyswitch", "rslinx", "firmware-revision", "acd-file", "io-force"],
 
   quiz: [
     {

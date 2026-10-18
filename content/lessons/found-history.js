@@ -17,13 +17,13 @@ LC.lesson({
   body: `
 ## Why a history lesson
 
-Every tool in this curriculum exists because something older broke down. Ladder logic looks like relay wiring because it replaced relay wiring. OPC exists because every HMI vendor wrote its own driver for every PLC. Ignition and MQTT exist because per-tag licensing and polling stopped scaling. If you know what pain produced each step, you can predict what the next argument on a project will be.
+Every tool in this curriculum exists because something older broke down. Ladder logic looks like relay wiring because it replaced relay wiring. OPC (OLE for Process Control, a data-exchange standard) exists because every HMI (human-machine interface, the operator screen) vendor wrote its own driver for every PLC (programmable logic controller). Ignition and MQTT (a lightweight messaging protocol, covered in Step 8) exist because per-tag licensing and polling stopped scaling. If you know what pain produced each step, you can predict what the next argument on a project will be.
 
 {{diagram:arc}}
 
 ## Step 1: Relay panels (before 1968)
 
-Before computers, machine logic was **{{term:relay-logic|relay logic}}**: electromechanical relays wired together in a cabinet. A transfer line at an auto plant might have hundreds or thousands of relays, with logic defined by physical wires. Pushbuttons, limit switches and solenoids connected to the panel, and the "program" was the wiring diagram.
+Before computers, machine logic was **{{term:relay-logic|relay logic}}**: electromechanical relays wired together in a cabinet. A transfer line at an auto plant might have hundreds or thousands of relays, with logic defined by physical wires. Pushbuttons, limit switches and solenoids (coil-operated valves) connected to the panel, and the "program" was the wiring diagram.
 
 This worked, but it had real costs:
 
@@ -34,7 +34,7 @@ This worked, but it had real costs:
 
 ## Step 2: The PLC (1968 to the 1970s)
 
-In 1968 the GM Hydra-Matic transmission division (part of General Motors) circulated a specification for a **standard machine controller** to replace hard-wired relay systems. The requirements were practical: solid-state, programmable by plant electricians and not only computer scientists, able to survive a factory floor, and reusable between models. Bedford Associates, a small engineering firm in Massachusetts co-founded by **Dick Morley**, answered it. The prototype was the firm's 84th project, which is why it became the **Modicon 084**. Bedford soon renamed itself Modicon (for MOdular DIgital CONtroller).
+In 1968 the GM Hydra-Matic transmission division (part of General Motors) circulated a specification for a **standard machine controller** to replace hard-wired relay systems. The requirements were practical: solid-state, programmable by plant electricians and not only computer scientists, able to survive a factory floor, and reusable between models. ("Solid-state" means electronics with no moving contacts.) Bedford Associates, a small engineering firm in Massachusetts co-founded by **Dick Morley**, answered it. The prototype was the firm's 84th project, which is why it became the **Modicon 084**. Bedford soon renamed itself Modicon (for MOdular DIgital CONtroller).
 
 > [!note] Dates differ by source
 > Trade-press accounts place a working Bedford prototype in 1968, while some encyclopedic accounts date the finished 084 to 1969. Both are consistent with a prototype in 1968 and a delivered unit shortly after.
@@ -42,25 +42,25 @@ In 1968 the GM Hydra-Matic transmission division (part of General Motors) circul
 Two design decisions shaped everything after:
 
 1. **The language looked like the drawing electricians already read.** {{lesson:plc-ladder-basics}} is the descendant of relay ladder diagrams. A technician could read a rung without learning to code.
-2. **The controller was built to be abused.** Hardened I/O, no moving parts, immunity to electrical noise. This is why PLCs are not just small PCs even today.
+2. **The controller was built to be abused.** Hardened I/O (the input and output connections to the machine), no moving parts, immunity to electrical noise. This is why PLCs are not just small PCs even today.
 
 Allen-Bradley (Rockwell today) introduced its own PLC in the early 1970s, and the market filled out through the decade. By the 1980s every plant had PLCs, and each vendor had its own proprietary programming software and network. See {{lesson:plc-intro}} for the family you will work with.
 
 ## Step 3: The DCS (1975 on)
 
-PLCs excelled at fast discrete logic: conveyors, presses, interlocks. Continuous process plants (refineries, chemicals, power) had a different problem: hundreds of analog loops, all needing PID control, operator displays, trending and alarms, all working together. Honeywell's **TDC 2000** (1975) is the usual milestone for the **{{term:dcs|distributed control system}}**: many small controllers spread around the plant, joined by a data highway to operator consoles, sold as one engineered, vendor-integrated package.
+PLCs excelled at fast discrete logic: conveyors, presses, interlocks. Continuous process plants (refineries, chemicals, power) had a different problem: hundreds of analog loops, all needing PID (proportional-integral-derivative) control, operator displays, trending and alarms, all working together. Honeywell's **TDC 2000** (1975) is the usual milestone for the **{{term:dcs|distributed control system}}**: many small controllers spread around the plant, joined by a data highway to operator consoles, sold as one engineered, vendor-integrated package.
 
 The tradeoff was lock-in. A DCS gave a unified database, built-in graphics and alarms, and very high reliability. In exchange you bought everything from one vendor, and expansion was expensive. Today the PLC and DCS worlds have largely converged, but the habits differ: DCS plants think in loops and faceplates, PLC plants think in machines and sequences.
 
 ## Step 4: PCs get a screen (1980s to 1990s)
 
-PLCs had no screens and no history. As PCs became affordable, vendors built Windows software to show process graphics and log data. **Wonderware InTouch** is the best-known example, with Rockwell's **RSView**, Intellution **FIX** and others competing. This is the origin of **{{term:scada|SCADA}}** and {{term:hmi|HMI}} software as a separate product from the controller.
+PLCs had no screens and no history. As PCs became affordable, vendors built Windows software to show process graphics and log data. **Wonderware InTouch** is the best-known example, with Rockwell's **RSView**, Intellution **FIX** and others competing. This is the origin of **{{term:scada|SCADA}}** (supervisory control and data acquisition) and {{term:hmi|HMI}} software as a separate product from the controller.
 
 It solved the visibility problem but created a new one: every package had to talk to every PLC. Each vendor wrote its own drivers, each in its own format. Add a new PLC brand and you might wait months for a driver.
 
 ## Step 5: OPC (1996)
 
-The answer was a standard interface. In 1996 the **OPC Foundation** released **{{term:opc-classic|OPC}}** (originally "OLE for Process Control"), built on Microsoft COM/DCOM. A device vendor wrote one OPC server. Any client could read from it. The driver problem went away.
+The answer was a standard interface. In 1996 the **OPC Foundation** released **{{term:opc-classic|OPC}}** (originally "OLE for Process Control"), built on Microsoft COM/DCOM (Component Object Model and its network version, Microsoft's way for programs to call each other). A device vendor wrote one OPC server. Any client could read from it. The driver problem went away.
 
 OPC Classic had its own costs: it ran only on Windows, and DCOM was famously painful to configure across machines and firewalls. Those pains led to **{{term:opc-ua|OPC UA}}** (2008), which is platform-independent and secure. See {{lesson:proto-opc}}.
 
@@ -70,13 +70,13 @@ Early plant networks were proprietary: Data Highway, Modbus Plus, DeviceNet, PRO
 
 ## Step 7: Ignition (2003 and 2010)
 
-**Inductive Automation** was founded in 2003 by Steve Hechtman, a controls integrator, in Folsom, California. Its first products were FactorySQL and FactoryPMI. In 2010 these were merged and rebuilt as **{{term:ignition|Ignition}}**: a web-launched, server-based platform with a modular architecture. The product bet was a licensing change. Instead of charging per tag, per client or per driver, Ignition licensed per server with unlimited tags and clients. It also put SQL databases at the center, so SCADA data sat in an ordinary relational database any engineer could query.
+**Inductive Automation** was founded in 2003 by Steve Hechtman, a controls integrator, in Folsom, California. Its first products were FactorySQL and FactoryPMI. In 2010 these were merged and rebuilt as **{{term:ignition|Ignition}}**: a web-launched, server-based platform with a modular architecture. The product bet was a licensing change. Instead of charging per tag, per client or per driver, Ignition licensed per server with unlimited tags and clients. It also put SQL (Structured Query Language) databases at the center, so SCADA data sat in an ordinary relational database any engineer could query.
 
 For an integrator the effect was big. A proposal no longer had to be sized around license counts. See {{lesson:ign-what}}.
 
 ## Step 8: IIoT and MQTT (2010s)
 
-As cloud and enterprise analytics grew, the old model (a central server **polling** each device) showed its limits. Every new consumer of data added more polling traffic, and every consumer needed to know every device's address. **{{term:mqtt|MQTT}}**, a lightweight publish/subscribe protocol designed in 1999 for oil pipeline telemetry over satellite links, found a second life. With the **Sparkplug** specification adding a defined topic structure and payload on top, devices publish only changes to a broker, and any number of subscribers consume them. This is the core of **{{term:iiot|IIoT}}** architectures and of the Unified Namespace in {{lesson:mes-uns}}.
+As cloud and enterprise analytics grew, the old model (a central server **polling** each device) showed its limits. Every new consumer of data added more polling traffic, and every consumer needed to know every device's address. **{{term:mqtt|MQTT}}**, a lightweight publish/subscribe protocol designed in 1999 for oil pipeline telemetry over satellite links, found a second life. With the **Sparkplug** specification adding a defined topic structure and payload on top, devices publish only changes to a broker, and any number of subscribers consume them. This is the core of **{{term:iiot|IIoT}}** (Industrial Internet of Things) architectures and of the Unified Namespace (UNS) in {{lesson:mes-uns}}.
 
 ## The arc in one table
 
@@ -114,7 +114,7 @@ Each new idea fixed the headache of the one before it.
 `,
 
   history: `
-Key dates, in order: GM Hydra-Matic's standard machine controller specification and the Bedford Associates prototype (1968); Modicon 084 (1969 as commonly dated); Modbus (1979); Honeywell TDC 2000 (1975); OPC Foundation and OPC Classic (1996); Inductive Automation founded (2003); Ignition released (2010); Ignition Community Conference begins (2013). Sources disagree slightly on the exact dates of the earliest PLC prototypes, so treat the year ranges as approximate.
+Key dates, in order: GM Hydra-Matic's standard machine controller specification and the Bedford Associates prototype (1968); Modicon 084 (1969 as commonly dated); Honeywell TDC 2000 (1975); Modbus (1979); OPC Foundation and OPC Classic (1996); Inductive Automation founded (2003); Ignition released (2010). Sources disagree slightly on the exact dates of the earliest PLC prototypes, so treat the year ranges as approximate.
 `,
 
   examples: [

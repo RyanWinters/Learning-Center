@@ -110,7 +110,7 @@ It is not all or nothing.
 - **Pre-packaged integrator products.** Some integrators sell their own template MES on Ignition. These can be good, but you inherit that integrator as a dependency, so ask what happens if they disappear.
 
 > [!tip] Test before you decide
-> You can install the Sepasoft modules in trial mode and configure one real line in a few days. That tells you more than any comparison article, including this one.
+> Sepasoft's modules can usually be evaluated before you commit (check current trial terms with Sepasoft or Inductive Automation), and a pilot on one real line can answer a lot in a short time. That tells you more than any comparison article, including this one.
 `,
 
   eli5: `
@@ -148,10 +148,10 @@ The question is not which one is better. It is how big the library will get, and
     cost: `<svg viewBox="0 0 640 220" role="img" aria-label="Cost over time: a custom build starts low and rises with change and maintenance; a packaged MES starts higher and rises more slowly">
   <line class="dg-line" x1="60" y1="190" x2="600" y2="190"/>
   <line class="dg-line" x1="60" y1="30" x2="60" y2="190"/>
-  <text class="dg-text-sm" x="300" y="212">Years after go-live</text>
+  <text class="dg-text-sm" x="260" y="212">Years after go-live (illustrative shape)</text>
   <text class="dg-text-sm" x="20" y="24">Cumulative cost</text>
   <text class="dg-text-muted" x="60" y="206">0</text>
-  <text class="dg-text-muted" x="330" y="206">3</text>
+  <text class="dg-text-muted" x="378" y="206">3</text>
   <text class="dg-text-muted" x="590" y="206">5</text>
   <polyline class="dg-line" fill="none" points="60,160 150,150 240,130 330,100 420,70 510,48 590,34"/>
   <polyline class="dg-line" fill="none" points="60,120 150,116 240,110 330,102 420,92 510,84 590,76"/>
@@ -168,7 +168,7 @@ The question is not which one is better. It is how big the library will get, and
     "Assuming a packaged MES removes all engineering. You still model the plant, write scripts and build screens.",
     "Believing vendor TCO claims, Sepasoft's or anyone's, without rebuilding the numbers with the customer's labor rates.",
     "Designing a custom schema with no plant hierarchy, then needing a second site.",
-    "Skipping a trial of the packaged option when a few days would answer the question."
+    "Skipping a trial of the packaged option when a short pilot would answer the question."
   ],
 
   keyTerms: ["mes", "mes-production-model", "tco", "oee", "isa-95", "isa-88", "erp"],
@@ -226,7 +226,7 @@ The question is not which one is better. It is how big the library will get, and
         "Correct. Use their numbers: build hours, test effort, upgrades, licenses and the risk of key-person loss.",
         "The vendor has an interest in the result, and your customer's scope may differ from their example.",
         "License price alone ignores the largest cost, labor.",
-        "Custom is cheaper for small stable scopes only. As a rule it is not true in general."
+        "Custom is cheaper only for small, stable scopes, so it is not a general rule."
       ]
     },
     {

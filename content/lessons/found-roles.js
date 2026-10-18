@@ -34,11 +34,11 @@ Two additional names show up on large projects. An {{term:epc|EPC}} (engineering
 
 ### OEM versus integrator
 
-An OEM builds the **same machine** many times and keeps the PLC code as its intellectual property. An integrator builds a **different system** each time, tying together machines from several OEMs into a plant: a line controller that ties the filler, capper and labeler together, a SCADA that spans all of them, a batch system, an MES interface. A frequent source of friction: the end user wants the OEM's machine to talk to the plant system, and the OEM's controls were never designed to share data. The integrator's job is often to bridge it, using protocols covered in the {{lesson:proto-modbus}} lesson and its neighbors.
+An OEM builds the **same machine** many times and keeps the PLC (programmable logic controller) code as its intellectual property. An integrator builds a **different system** each time, tying together machines from several OEMs into a plant: a line controller that ties the filler, capper and labeler together, a SCADA (supervisory control and data acquisition) system that spans all of them, a batch system, an MES (manufacturing execution system) interface. A frequent source of friction: the end user wants the OEM's machine to talk to the plant system, and the OEM's controls were never designed to share data. The integrator's job is often to bridge it, using protocols covered in the {{lesson:proto-modbus}} lesson and its neighbors.
 
 ## How projects get bid
 
-1. The end user (or an EPC) issues a **request for quote** ({{term:rfq|RFQ}}) or request for proposal. It usually includes a specification, a P&ID set and an {{term:io-list|I/O list}} if they have one.
+1. The end user (or an EPC) issues a **request for quote** ({{term:rfq|RFQ}}) or request for proposal. It usually includes a specification, a P&ID (piping and instrumentation diagram) set and an {{term:io-list|I/O list}} if they have one.
 2. Integrators walk the site, ask questions and price the work. Pricing is usually built from hours by role (controls engineer, panel designer, technician) plus materials, travel and a margin.
 3. The proposal states the scope in a {{term:sow|statement of work}} ({{term:sow|SOW}}), lists exclusions and assumptions, and picks a **pricing model**: fixed price (the integrator carries the risk), time and materials (the end user carries the risk) or a hybrid with a not-to-exceed cap.
 4. After award, work follows the lifecycle in {{lesson:int-lifecycle}}: design, build, factory test, install, commission, hand over.
@@ -49,19 +49,19 @@ An OEM builds the **same machine** many times and keeps the PLC code as its inte
 
 ## Associations and programs
 
-**{{term:csia|CSIA}}** (Control System Integrators Association) is a not-for-profit trade association of integrators, founded in 1994. It publishes a Best Practices and Benchmarks manual and runs a certification program: an independent audit of an integrator's business and project-management practices. For an end user, a CSIA-certified integrator means the firm has been checked for how it runs projects, not that any one engineer is technically strong.
+**{{term:csia|CSIA}}** (Control System Integrators Association) is a not-for-profit trade association of integrators. It publishes a Best Practices and Benchmarks manual and runs a certification program: an independent audit of an integrator's business and project-management practices. For an end user, a CSIA-certified integrator means the firm has been checked for how it runs projects, not that any one engineer is technically strong.
 
-**Vendor integrator programs** work differently. Inductive Automation's program for Ignition is free to join and has five tiers: Registered, Credentialed, Certified, Gold and Premier. The higher tiers require staff holding Ignition certifications (Core, then Gold) and, at Gold, a minimum amount of product sold or contributed to. Benefits include software discounts, sales-engineer access and co-marketing. Rockwell, Siemens and others run partner programs of their own. Check the vendor's current program page for the rules, as tier requirements change.
+**Vendor integrator programs** work differently. Inductive Automation's program for Ignition has tiers named Registered, Credentialed, Certified, Gold and Premier. In general terms (the details are in {{lesson:int-career}}), Credentialed needs staff with an Inductive University credential, which is course-based and not a certification. Certified needs staff who passed the Core certification. Gold needs a Gold-certified employee plus a sales threshold, and Premier asks for more Gold-certified staff and higher thresholds. Benefits scale with the tier. Rockwell, Siemens and others run partner programs of their own. Check the vendor's current program page for the rules, fees and tier names, because requirements change.
 
 ## A day in two seats
 
 | | In-house controls engineer (end user) | Integrator controls engineer |
 |---|---|---|
-| Typical morning | Troubleshoot last night's line stop; check historian | Stand-up on three active projects; update the FDS |
+| Typical morning | Troubleshoot last night's line stop; check historian | Stand-up on three active projects; update the FDS (functional design specification) |
 | Systems | One plant, a few platforms, for years | A new site, platform and customer every few months |
 | Pressure | Downtime and safety | Budget, schedule, customer expectations |
 | Documentation | Often thin; knowledge lives in heads | Required deliverable; reviewed by the customer |
-| Travel | Rare | Frequent: site surveys, FAT, SAT, start-up |
+| Travel | Rare | Frequent: site surveys, FAT (factory acceptance test), SAT (site acceptance test), start-up |
 | Billing | Salary | Billable hours against a project budget |
 
 ## Why your move to integration changes what you need to know
@@ -96,7 +96,7 @@ Moving from making one nice screen to being the integrator is like moving from p
 `,
 
   history: `
-Control system integration as a business grew out of the 1970s and 80s, as PLCs and then personal-computer-based HMI software made it possible for small firms to build custom automation for plants that had once bought it from large vendors or built it in-house. CSIA formed in 1994 to give those firms a common body of practice. The Ignition integrator program, like other vendor channel programs, followed as platforms adopted a partner-led sales model.
+Control system integration as a business grew out of the 1970s and 80s, as PLCs and then personal-computer-based HMI software made it possible for small firms to build custom automation for plants that had once bought it from large vendors or built it in-house. CSIA formed in the 1990s to give those firms a common body of practice. The Ignition integrator program, like other vendor channel programs, followed as platforms adopted a partner-led sales model.
 `,
 
   examples: [

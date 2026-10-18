@@ -30,7 +30,7 @@ The rule experienced integrators repeat: if the result is a property value, use 
 
 ## Component events
 
-A {{term:component-event|component event}} is something Perspective raises for you, such as \`onActionPerformed\` on a button or \`onChange\` on a dropdown. It is not the raw browser (DOM) event. Perspective components are React components rendered in the browser, and the DOM events (mouse move, key down, focus) are handled in the client. Perspective forwards a few deliberately, as component events, over the websocket to the Gateway. That round trip is why events are not free: each one costs a network hop and a Gateway thread. Do not hang logic off high-frequency interactions such as mouse movement.
+A {{term:component-event|component event}} is something Perspective raises for you, such as \`onActionPerformed\` on a button or \`onChange\` on a dropdown. It is not the raw browser (DOM) event. Perspective components are React components rendered in the browser, and the DOM events (mouse move, key down, focus) are handled in the client. Scripts and Gateway-side actions you attach to a component event run on the Gateway, so the client sends the event over the websocket and waits for the result. Purely visual interaction stays in the browser. The cost is therefore in what you attach: an event with a script costs a network hop and a Gateway thread each time it fires. Do not attach scripts to high-frequency interactions such as mouse movement or a slider's continuous change.
 
 Many components offer DOM-like events too, for example \`onClick\`, \`onDoubleClick\`, \`onMouseDown\` and \`onMouseUp\` on any component through its **Events** configuration. Each event carries a list of actions that run in order.
 
@@ -52,7 +52,7 @@ Built-in actions are checked by the Designer, show up in search, and are readabl
 
 ## Property change scripts
 
-A {{term:property-change-script|property change script}} lives on a property (custom, params, props of a component) and fires when the value changes. The script receives \`previousValue\`, \`currentValue\`, \`origin\` and \`missedEvents\`. It also fires on **startup** if you enable that option, which is how you do first-load initialization.
+A {{term:property-change-script|property change script}} lives on a property (custom, params, props of a component) and fires when the value changes. The script receives \`previousValue\`, \`currentValue\`, \`origin\` and \`missedEvents\`. (Do not confuse it with a tag change script on a tag, whose signature is \`valueChanged(tag, tagPath, previousValue, currentValue, initialChange, missedEvents)\`. They are different events with different arguments.) It also fires on **startup** if you enable that option, which is how you do first-load initialization.
 
 \`\`\`python
 def valueChanged(self, previousValue, currentValue, origin, missedEvents):
@@ -87,7 +87,7 @@ The {{term:message-scope|scope}} controls how far a message travels:
 
 A handler also declares its **Listen Scopes**, so it can ignore messages from outside its own view even if someone sends at page scope. Two copies of the same faceplate on a page would otherwise both react to a message meant for one. Send at \`view\` scope, or include the target in the payload and filter in the handler.
 
-Handlers run asynchronously from the sender, so do not expect the sender to see the effect right away. Session-level handlers (defined in the project's Session Events) are separate from component handlers. They are reached with \`system.util.sendMessage\`, not with the Perspective call.
+Handlers run asynchronously from the sender, so do not expect the sender to see the effect right away. Session-level handlers (defined in the project's Session Events) are separate from component handlers. The function reference says \`system.perspective.sendMessage\` cannot reach them even with session scope. They are reached with \`system.util.sendMessage\`.
 
 > [!note] In 8.1
 > Message handlers and scopes work the same way in 8.1. The component handler configuration screens look slightly different, but \`system.perspective.sendMessage\` and its scope argument are unchanged.
@@ -110,9 +110,56 @@ Nothing in the recipe view knows the toast exists. You can restyle or replace th
 | Script setting a style color from a value | Expression binding or a property binding with a map transform |
 | Script showing/hiding a component | Binding on \`meta.visible\` |
 | Timer script refreshing a label | Tag binding (subscribed, no polling) |
-| Script concatenating text | Expression with \`concat\` or \`format\` |
+| Script concatenating text | Expression with \`concat\`, \`numberFormat\` or \`dateFormat\` |
 
 Bindings are evaluated and cached by the platform, show where the data comes from, and run only when an input changes. Scripts hide dependencies and run on every trigger. See {{lesson:persp-bindings}} for the options and {{lesson:ign-scripting}} for scope details.
+## If you already build Perspective
+
+The mechanics are simple. What goes wrong in production is volume, repetition and silence.
+
+### Throttle high-rate events
+
+A slider's \`onChange\` or a text field's change event can fire many times during one gesture. If each runs a script that writes a tag, you send a stream of setpoint writes to a PLC. Options, best first:
+
+1. **Do not write on change.** Edit a local custom prop and write on a button or on release. This also gives you a confirmation and audit point.
+2. **Coalesce.** Where the binding offers a coalescing or delay option, use it so only the last value is written.
+3. **Debounce in the script.** Store a timestamp in a view custom prop and ignore calls within a window you choose from the process, not from a table.
+
+### Make writes idempotent and guarded
+
+Double clicks happen, and so do two operators on one screen. A write action should be safe to repeat and should check state first:
+
+\`\`\`python
+def runAction(self, event):
+    path = self.view.params.tagPath + "/Cmd/Start"
+    ready = system.tag.readBlocking([self.view.params.tagPath + "/Sts/Ready"])[0]
+    if not ready.quality.isGood() or not ready.value:
+        system.perspective.sendMessage("toast", {"text": "M101 not ready"}, scope="page")
+        return
+    system.tag.writeBlocking([path], [True])
+\`\`\`
+
+This is a convenience check. The interlock still lives in PLC logic, and the PLC clears the command bit (house rule for \`Cmd\`). Disable the button with a binding (\`enabled\` from the same tag) so a second click is not possible while the command is pending, and re-enable it from the status tag, not from a timer.
+
+### Async work needs a result path
+
+\`system.util.invokeAsynchronous\` runs on another thread, so an exception there goes to the Gateway log and the operator sees nothing. Wrap the work, catch errors, and report through a message or a custom prop that a binding shows. Use try/except/finally inside the worker so the UI state (spinner, button disabled) always resets, whatever happens. Do not touch \`self\` properties from the worker without checking the view still exists.
+
+### Loop breakers for change scripts
+
+The loop cases the table warns about, concretely: script A writes \`custom.b\`, \`custom.b\` has a change script that writes \`custom.a\`. Break the cycle with \`origin\`: ignore changes where the origin shows the property was written by a script rather than by a binding or the user. Print \`origin\` in a log once to see the values your version produces. Better, remove one of the two scripts and replace it with a binding.
+
+### Message handler patterns
+
+- **Name by event, not by action.** \`recipe.saved\`, \`alarm.acknowledged\`. Handlers decide what to do.
+- **Payload as a contract.** Document keys. Include a \`target\` key (a tag path) when several instances share a page, and have each handler compare it to its own \`tagPath\` and return if it differs. This gives per-instance targeting at page scope and is easier to debug than relying on listen scopes.
+- **State, not events, for latecomers.** A message delivered while a view was not loaded is lost. Persist anything a late view must know in a tag or session prop, and use the message only as a nudge.
+- **Session handlers for cross-cutting work.** Logout cleanup, audit logging and idle handling belong in session events, reached with \`system.util.sendMessage\`, so no view has to be loaded.
+
+### Audit checklist
+
+For each write event: who may click it, what it checks first, what it does when the tag is bad quality, and where it records the action.
+
 `,
 
   eli5: `
@@ -144,7 +191,7 @@ Ignition's older Vision client had a large set of component event handlers writt
   examples: [
     {
       title: "Replace a script with a binding",
-      body: `A label's text is set by a property change script on \`tag.value\` that formats \`"Level: " + str(round(value, 1)) + " %"\`. Replace it with an expression binding: \`"Level: " + toStr(round({[default]Tank1/Level}, 1)) + " %"\`. Same display, no script, no startup flicker, and the tag path is visible in the property editor.`
+      body: `A label's text is set by a property change script on a tag value that formats \`"Level: " + str(round(value, 1)) + " m"\`. Replace it with an expression binding: \`"Level: " + toStr(round({[default]Plant1/Area10/Line1/LT101}, 1)) + " m"\`. (Ignition expressions accept single or double quotes. Pick one style for the project.) Same display, no script, no startup flicker, and the tag path is visible in the property editor.`
     },
     {
       title: "Targeted message to one faceplate",

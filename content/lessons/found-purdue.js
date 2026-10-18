@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## What the model is
 
-The **{{term:purdue-model|Purdue model}}** (formally the Purdue Enterprise Reference Architecture, PERA) is a layered picture of an industrial company's information systems. It was developed at Purdue University in the 1990s. The **{{term:isa-95|ISA-95}}** standard (IEC 62264) adopted its functional levels and defines what information moves between them. Security people later used it as a network zoning guide.
+The **{{term:purdue-model|Purdue model}}** (formally the Purdue Enterprise Reference Architecture, PERA) is a layered picture of an industrial company's information systems. It was developed at Purdue University in the 1990s. The **{{term:isa-95|ISA-95}}** standard (from ISA, the International Society of Automation; also IEC 62264, from the International Electrotechnical Commission) adopted its functional levels and defines what information moves between them. Security people later used it as a network zoning guide. Two more terms you will hear constantly: **IT** (information technology, the office and business networks) and **OT** (operational technology, the plant-floor systems).
 
 You will use it daily, mostly as shared vocabulary: "that's a Level 2 problem", "ERP wants that from Level 3", "put it in the DMZ". It anchors the rest of this curriculum, so learn it well.
 
@@ -29,11 +29,11 @@ You will use it daily, mostly as shared vocabulary: "that's a Level 2 problem", 
 | Level | Name | Typical systems | Typical time scale | Question it answers |
 |---|---|---|---|---|
 | 5 | Enterprise / external | Corporate network, cloud, vendor and partner access | days to years | What is the business doing? |
-| 4 | Business planning | {{term:erp|ERP}} (SAP, Oracle), supply chain, corporate BI | shifts to months | What should we make and sell? |
+| 4 | Business planning | {{term:erp|ERP}} (SAP, Oracle), supply chain, corporate BI (business intelligence reporting) | shifts to months | What should we make and sell? |
 | 3.5 | Industrial DMZ | Firewalls, jump hosts, replicated historians, brokers | n/a | What may cross between IT and OT? |
-| 3 | Site operations | {{term:mes|MES}}, site historian, Ignition gateway (site), batch, LIMS | minutes to shifts | How did production go? What is next? |
-| 2 | Supervisory control | SCADA/{{term:hmi|HMI}}, operator stations, alarm servers, Ignition | seconds to minutes | What is the process doing? |
-| 1 | Basic control | {{term:plc|PLCs}}, DCS controllers, drive controllers, safety PLCs | milliseconds to seconds | What should the outputs be right now? |
+| 3 | Site operations | {{term:mes|MES}} (manufacturing execution system), site historian, Ignition gateway (site), batch, LIMS (laboratory information management system) | minutes to shifts | How did production go? What is next? |
+| 2 | Supervisory control | SCADA (supervisory control and data acquisition) and {{term:hmi|HMI}} (human-machine interface), operator stations, alarm servers, Ignition | seconds to minutes | What is the process doing? |
+| 1 | Basic control | {{term:plc|PLCs}} (programmable logic controllers), DCS (distributed control system) controllers, drive controllers, safety PLCs | milliseconds to seconds | What should the outputs be right now? |
 | 0 | Process | Sensors, valves, motors, instruments | real time (continuous) | What is physically happening? |
 
 Notes that matter in practice:
@@ -41,7 +41,7 @@ Notes that matter in practice:
 - **Level 0** is the physical equipment. See {{lesson:found-devices}}.
 - **Level 1** executes control logic every scan, typically 5 to 50 ms for a machine. See {{lesson:plc-scan}}.
 - **Level 2** shows operators the process, sets setpoints, and raises alarms. This is where most Perspective work happens.
-- **Level 3** is the manufacturing operations layer: work orders, recipes, genealogy, OEE, quality. See {{lesson:mes-what}}.
+- **Level 3** is the manufacturing operations layer: work orders, recipes, genealogy, OEE (overall equipment effectiveness), quality. See {{lesson:mes-what}}.
 - **Level 4** is the realm of IT: ERP, procurement, finance, planning. Time is measured in days and months.
 - **Level 5** is sometimes drawn as the wider enterprise or internet. Sources vary on whether it is its own level, so ask what your customer's diagram means.
 
@@ -56,11 +56,11 @@ The rule is simple: **no traffic crosses directly.** IT connects to services in 
 
 ## A worked example: one number's journey
 
-A tank level transmitter sends 12.4 mA on a 4-20 mA loop.
+Meridian Foods' tank level transmitter LT101 (0 to 5.0 m) sends 14 mA on a 4-20 mA loop (see {{lesson:found-signals}}).
 
 1. **Level 0:** the {{term:transmitter|transmitter}} measures pressure and sets the loop current.
-2. **Level 1:** the PLC's analog input card converts it to a count, the program scales it to 62.5 percent, and the pump logic uses it every scan.
-3. **Level 2:** an Ignition gateway reads \`Tank1/Level\` from the PLC every second and shows it on a Perspective screen. It raises a high alarm at 90 percent.
+2. **Level 1:** the PLC's analog input card converts it to a count, the program scales it to 62.5 percent of range (3.125 m), and the pump logic uses it every scan.
+3. **Level 2:** an Ignition gateway reads the LT101 tag from the PLC (PLC1, 10.20.10.10) every second and shows it on a Perspective screen. It raises a high alarm at 90 percent.
 4. **Level 3:** the site historian stores a sample each minute. The MES uses it to compute that batch 4412 used 8,300 L.
 5. **Level 3.5:** a replicated historian in the DMZ copies the batch summary out.
 6. **Level 4:** the ERP posts the material consumption to inventory and finance.

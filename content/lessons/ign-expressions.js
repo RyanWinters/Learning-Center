@@ -27,7 +27,7 @@ You write expressions constantly even if you do not call them that. Every Perspe
 **References** go in braces. What goes inside depends on where the expression lives:
 
 \`\`\`text
-{[default]Plant1/Tank1/Level}          a tag, in an expression tag or binding
+{[default]Plant1/Area10/Line1/LT101}  a tag, in an expression tag or binding
 {[.]Level}                             a tag relative to this tag (in a UDT)
 {view.params.tankPath}                 a Perspective view parameter
 {this.props.text}                      a property on the same component
@@ -37,11 +37,11 @@ You write expressions constantly even if you do not call them that. Every Perspe
 
 | Kind | Operators |
 |---|---|
-| Arithmetic | \`+ - * / %\` and \`**\` for power |
+| Arithmetic | \`+ - * / %\`, and \`^\` for power (not \`**\`, which is Python) |
 | Comparison | \`=\` or \`==\`, \`!=\` or \`<>\`, \`< <= > >=\` |
 | Logic | \`&&\`, \`||\`, \`!\` |
-| Bitwise | \`& | ^ ~ << >>\`, used to unpack status words |
-| Strings | \`+\` joins, double quotes for text: \`"Pump " + {[.]Name}\` |
+| Bitwise | \`&\` (AND), \`xor\`, \`~\` (NOT), \`<<\` and \`>>\` shifts, plus a single pipe for OR. Used to unpack status words. Check the operator table for your version. |
+| Strings | \`+\` joins, double quotes for text: \`"Motor " + {[.]Name}\` |
 
 Division with integers can surprise you the way it does in any typed language, so cast with \`toFloat()\` when the fraction matters.
 
@@ -50,7 +50,7 @@ Division with integers can surprise you the way it does in any typed language, s
 **if(condition, whenTrue, whenFalse)** is the workhorse.
 
 \`\`\`text
-if({[.]Sts_Fault}, "FAULT", if({[.]Sts_Running}, "RUNNING", "STOPPED"))
+if({[.]Sts/Fault}, "FAULT", if({[.]Sts/Running}, "RUNNING", "STOPPED"))
 \`\`\`
 
 **switch(value, case1, result1, case2, result2, ..., default)** replaces nested ifs when one value selects among many outcomes. Use it to turn a state number into text:
@@ -61,7 +61,7 @@ switch({[.]State}, 0, "Idle", 1, "Starting", 2, "Running", 3, "Stopping", "Unkno
 
 **dateFormat(date, "pattern")** formats a timestamp: \`dateFormat(now(1000), "HH:mm:ss")\`.
 
-**now(rate)** returns the current time and re-evaluates every \`rate\` milliseconds. \`now(0)\` evaluates once. \`now(1000)\` makes a clock. Without a rate it uses a default of about a second, which is why an expression containing \`now()\` is never quiet.
+**now(rate)** returns the current time and re-evaluates every \`rate\` milliseconds. \`now(0)\` evaluates once. \`now(1000)\` makes a clock. Without a rate it uses a default rate (see the function page for your version), which is why an expression containing \`now()\` is never quiet.
 
 **lookup** searches a dataset for a value in one column and returns the matching value from another. Use it to translate codes using a small table (a dataset or a query result) instead of a giant switch. Check the manual for the exact argument order before you use it.
 
@@ -73,8 +73,8 @@ Others worth knowing: \`isNull\`, \`coalesce\`, \`round\`, \`abs\`, \`min\`/\`ma
 
 > [!example] Combined status text with a bad-quality guard
 > \`\`\`text
-> if(!isGood({[.]Sts_Running}), "NO COMM",
->    if({[.]Sts_Fault}, "FAULT", if({[.]Sts_Running}, "RUNNING", "STOPPED")))
+> if(!isGood({[.]Sts/Running}), "NO COMM",
+>    if({[.]Sts/Fault}, "FAULT", if({[.]Sts/Running}, "RUNNING", "STOPPED")))
 > \`\`\`
 > \`isGood()\` checks the tag's quality, not its value. Checking it first stops the screen from claiming a motor is "STOPPED" when the PLC link is down. Avoid comparing raw quality numbers: Ignition 7.x used 192 for Good, but 8.x uses a different set of quality codes, so old forum snippets that test for 192 no longer work.
 
@@ -150,7 +150,7 @@ runScript is when your spreadsheet cell secretly phones a cook to read a recipe 
   examples: [
     {
       title: "Fahrenheit to Celsius for display",
-      body: `A tag holds temperature in F. A label binding: \`numberFormat(({[default]Oven1/Temp} - 32) * 5 / 9, "0.0") + " C"\`. A reading of 212 shows 100.0 C. The tag is unchanged and the PLC never knows.`
+      body: `A tag \`[default]Plant1/Area10/Line1/Mixer1/Temp\` holds temperature in F. A label binding: \`numberFormat(({[default]Plant1/Area10/Line1/Mixer1/Temp} - 32) * 5.0 / 9, "0.0") + " C"\`. A reading of 212 shows 100.0 C. Writing 5.0 (or wrapping the tag in \`toFloat()\`) keeps the arithmetic in floating point, so a whole-number tag cannot truncate the fraction. The tag is unchanged and the PLC never knows.`
     },
     {
       title: "Wrong poll rate on runScript",

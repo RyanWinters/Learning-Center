@@ -217,13 +217,13 @@ Walter Shewhart developed the control chart at Bell Telephone Laboratories in th
   quiz: [
     {
       q: "A process has been stable for months, and every X-bar point is inside the control limits. Parts are still frequently rejected for being over the upper spec. What does this tell you?",
-      options: ["The control limits are calculated wrongly", "The process is in control but off-center or too wide for the spec, so Cpk is low", "A special cause is present in every point", "The chart should use spec limits instead"],
-      answer: 1,
+      options: ["The control limits are calculated wrongly", "The chart should use spec limits instead", "A special cause is present in every point", "The process is in control but off-center or too wide for the spec, so Cpk is low"],
+      answer: 3,
       explain: [
         "The limits come from the process's own data and can be perfectly correct while the process fails the spec.",
-        "Correct. Being in control means stable, not capable. You need to re-center or reduce variation.",
+        "Spec limits are for judging parts. Using them on the chart would hide drift.",
         "Special cause shows up as signals on the chart, which are absent here.",
-        "Spec limits are for judging parts. Using them on the chart would hide drift."
+        "Correct. Being in control means stable, not capable. You need to re-center or reduce variation."
       ]
     },
     {
@@ -250,12 +250,12 @@ Walter Shewhart developed the control chart at Bell Telephone Laboratories in th
     },
     {
       q: "On an X-bar chart nine consecutive averages sit above the center line but inside the limits. What is the right reaction?",
-      options: ["Nothing, all points are inside the limits", "Treat it as a signal and investigate what changed", "Widen the control limits", "Switch to spec limits"],
-      answer: 1,
+      options: ["Nothing, all points are inside the limits", "Widen the control limits", "Treat it as a signal and investigate what changed", "Switch to spec limits"],
+      answer: 2,
       explain: [
         "Staying inside the limits does not make a run of this length random.",
-        "Correct. A long run on one side is a run-rule violation, which indicates a shift of the mean.",
         "Widening limits to fit the data hides the shift.",
+        "Correct. A long run on one side is a run-rule violation, which indicates a shift of the mean.",
         "Spec limits are unrelated to detecting a change in the process."
       ]
     },

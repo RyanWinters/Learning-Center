@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## Why recipes are their own topic
 
-A {{term:recipe|recipe}} is a named set of values that tells a machine how to make one product: line speed, oven setpoints, fill weight, label format, cure time. A plant with 40 products and 12 settings each has 480 numbers that someone must get right every time the product changes. Wrong settings are one of the most common causes of scrap after a changeover, and they are easy to prevent with a bit of design.
+A {{term:recipe|recipe}} is a named set of values that tells a machine how to make one product: line speed, oven setpoints, fill weight, label format, cure time. A plant with 40 products and 12 settings each has 480 numbers that someone must get right every time the product changes. Wrong settings are a familiar cause of scrap after a changeover, and they are easy to prevent with a bit of design.
 
 The last lesson, {{lesson:mes-batch}}, covered ISA-88 batch recipes that include a procedure. This lesson is about the more general case: parameter sets for machines and lines, including discrete ones, and the work of switching between them.
 
@@ -63,14 +63,16 @@ Writing 12 tags one at a time is unsafe. The PLC might read half old values and 
 5. SCADA **reads back** the active values and compares them to what it meant to send (the verify step), then clears \`Download.Request\`. The PLC clears Done.
 6. The result is logged: recipe, version, who, when, and pass or fail.
 
+**Add a timeout.** SCADA starts a timer when it sets \`Download.Request\`. If neither \`Done\` nor \`Error\` appears in time (choose a value that suits your scan time and network, and write it down), SCADA treats the download as failed: it clears the request, logs the failure, alerts the operator and does not start production on the old or the new recipe until someone resolves it. Without this, a PLC that faults after the request leaves SCADA waiting forever.
+
 > [!example] Example tags
 > \`\`\`text
-> Line1.Recipe.Staging.OvenZone2_C    REAL   <- SCADA writes
-> Line1.Recipe.Staging.RecipeID       DINT
-> Line1.Recipe.Download.Request       BOOL   <- SCADA sets
-> Line1.Recipe.Download.Done          BOOL   -> PLC sets after COP
-> Line1.Recipe.Download.Error         DINT   -> 0 = OK, 2 = limit, 3 = running
-> Line1.Recipe.Active.OvenZone2_C     REAL   -> machine uses this
+> Area20_Line1.Recipe.Staging.OvenZone2Setpoint  REAL   <- SCADA writes
+> Area20_Line1.Recipe.Staging.RecipeID       DINT
+> Area20_Line1.Recipe.Download.Request       BOOL   <- SCADA sets
+> Area20_Line1.Recipe.Download.Done          BOOL   -> PLC sets after COP
+> Area20_Line1.Recipe.Download.Error         DINT   -> 0 = OK, 2 = limit, 3 = running
+> Area20_Line1.Recipe.Active.OvenZone2Setpoint   REAL   -> machine uses this
 > \`\`\`
 > If the operator selects recipe 14 and the oven setpoint 185 is within the PLC's own 150 to 220 limit, Done goes high. If someone typed 1850, the PLC returns Error = 2 and the active recipe does not change.
 
@@ -191,34 +193,34 @@ Shigeo Shingo developed SMED at Toyota-related plants in the 1950s and 1960s, fa
   quiz: [
     {
       q: "Why does the handshake write to a staging area instead of straight to the active recipe tags?",
-      options: ["To make the download faster", "So the PLC can validate the full set and switch it in one scan, avoiding a mixed old and new recipe", "Because active tags are read-only", "To save PLC memory"],
-      answer: 1,
+      options: ["To make the download faster", "To save PLC memory", "Because active tags are read-only", "So the PLC can validate the full set and switch it in one scan, avoiding a mixed old and new recipe"],
+      answer: 3,
       explain: [
         "Staging adds a step, it does not speed anything up.",
-        "Correct. Validation then a single-scan copy means the machine never sees a half-updated recipe.",
+        "Staging uses extra memory, not less.",
         "Active tags are normal read and write tags. The issue is consistency, not permission.",
-        "Staging uses extra memory, not less."
+        "Correct. Validation then a single-scan copy means the machine never sees a half-updated recipe."
       ]
     },
     {
       q: "SCADA checks every value against limits before download. Why should the PLC check again?",
-      options: ["PLC checks are required by the standard", "Other clients, scripts or imports can write to the staging tags without going through the SCADA screen", "SCADA limit checks are unreliable", "To use up the scan time"],
-      answer: 1,
+      options: ["Other clients, scripts or imports can write to the staging tags without going through the SCADA screen", "PLC checks are required by the standard", "SCADA limit checks are unreliable", "To use up the scan time"],
+      answer: 0,
       explain: [
-        "No standard requires it, it is a design practice.",
         "Correct. The PLC is the last line of defense, so it should not rely on any upstream check.",
+        "No standard requires it, it is a design practice.",
         "The SCADA check works, but it only applies to writes that go through it.",
         "Scan time is a cost to minimize, not a goal."
       ]
     },
     {
       q: "Version 3 of a recipe is approved and in use. An engineer needs to change one setpoint. What is the right approach?",
-      options: ["Edit version 3 in place so nothing else changes", "Create version 4 as a draft, get it approved, then use it for new runs", "Delete version 3 and recreate it", "Change the value at the HMI during the run"],
-      answer: 1,
+      options: ["Edit version 3 in place so nothing else changes", "Delete version 3 and recreate it", "Create version 4 as a draft, get it approved, then use it for new runs", "Change the value at the HMI during the run"],
+      answer: 2,
       explain: [
         "In-place edits destroy the record of what earlier lots were made with.",
-        "Correct. Versions are immutable, and only approved ones can be downloaded.",
         "Deleting also erases history that production records still point to.",
+        "Correct. Versions are immutable, and only approved ones can be downloaded.",
         "An unlogged HMI change bypasses approval and leaves no trace in the recipe."
       ]
     },
@@ -235,13 +237,13 @@ Shigeo Shingo developed SMED at Toyota-related plants in the 1950s and 1960s, fa
     },
     {
       q: "Where is the best home for the master copy of recipes in a plant with 60 products, versioning and audits?",
-      options: ["Hardcoded in the PLC program", "A central database or MES, with the active recipe cached in the PLC", "On a spreadsheet on the operator's desktop", "In HMI memory only"],
-      answer: 1,
+      options: ["Hardcoded in the PLC program", "In HMI memory only", "On a spreadsheet on the operator's desktop", "A central database or MES, with the active recipe cached in the PLC"],
+      answer: 3,
       explain: [
         "Hardcoding makes every change a PLC project and keeps no history.",
-        "Correct. Central control gives versions and approval, and the local active copy keeps the line independent of the server.",
+        "HMI memory is lost on replacement or failure and has no audit trail.",
         "Spreadsheets have no approval flow or integrity, and cannot be tied to production records reliably.",
-        "HMI memory is lost on replacement or failure and has no audit trail."
+        "Correct. Central control gives versions and approval, and the local active copy keeps the line independent of the server."
       ]
     }
   ],

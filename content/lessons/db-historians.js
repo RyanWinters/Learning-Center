@@ -32,7 +32,7 @@ Most process values sit still or drift. Storing a reading every second for a tan
 
 {{diagram:swing}}
 
-Settings in PI are exception deviation, compression deviation and minimum and maximum times. PI Square forum guidance, quoted from OSIsoft practice, suggests setting exception deviation slightly below the instrument's precision, and often about half of the compression deviation. Treat that as a starting point and look at the current vendor documents before changing a production system.
+Settings in PI are exception deviation, compression deviation and minimum and maximum times. The PI Square discussion of compression settings listed in Resources is a good starting point for how the two deviations relate: exception filtering is the coarse first screen near the instrument's real precision, and compression is the archive-side tolerance. Specific ratios vary by tag type and by vendor guidance, so check the current AVEVA documents before changing a production system.
 
 | Approach | What is stored | What you can recover |
 |---|---|---|
@@ -50,18 +50,20 @@ When you ask for a value at 10:00:00 and the stored points are at 09:58 and 10:0
 
 ## Asset models
 
-A raw tag name like \`L2_M14_TT_203\` is only useful if you know what it means. An **asset model** organises tags into a hierarchy of equipment with meaningful attributes:
+A legacy tag name like \`LINE1_M101_SPD_PV\` is only useful if you know what it means. An **asset model** organises tags into a hierarchy of equipment with meaningful attributes:
 
 \`\`\`text
-Plant A
-  Line 2
-    Filler 14
-      Temperature   -> L2_M14_TT_203
-      Speed         -> L2_M14_SC_101
-      State         -> L2_M14_ST
+Plant1
+  Area10
+    Line1
+      M101 (motor)
+        Speed       -> M101.Sts.Speed
+        Running     -> M101.Sts.Running
+      LT101 (level transmitter)
+        Level       -> LT101
 \`\`\`
 
-AVEVA PI's Asset Framework (AF) provides this, with templates so that you define "Filler" once and create fourteen of them, plus calculations (analyses) and event frames that mark things like batches or downtime periods. Ignition does the same job with UDTs and tag folders, and the plant schema in this track (\`line\`, \`machine\`, \`production_run\`, \`downtime_event\`) is its relational counterpart. The question to ask a vendor is not "do you store tags?" but "how do I add machine 15 without rebuilding everything?"
+AVEVA PI's Asset Framework (AF) provides this, with templates so that you define "Motor" once and create as many of them as you need, plus calculations (analyses) and event frames that mark things like batches or downtime periods. Ignition does the same job with UDTs and tag folders, and the plant schema in this track (\`line\`, \`machine\`, \`production_run\`, \`downtime_event\`) is its relational counterpart. The question to ask a vendor is not "do you store tags?" but "how do I add motor M102 without rebuilding everything?"
 
 ## The products at a glance
 
@@ -69,12 +71,12 @@ AVEVA PI's Asset Framework (AF) provides this, with templates so that you define
 |---|---|---|---|
 | **AVEVA PI** (formerly OSIsoft) | Proprietary process historian | Huge installed base, mature AF asset model, swinging-door compression, many interfaces, enterprise-scale reliability | License cost, a dedicated skill set, Windows-centric |
 | **Canary** | Process historian | Simple to deploy, lossless compression, built-in store and forward, a time-series-friendly web and API layer, priced for mid-sized sites | A smaller ecosystem than PI |
-| **Ignition Tag Historian** | SQL-based historian on your own database | No extra license beyond Ignition, tag config is part of your project, trends in Perspective work out of the box | Scales with your database design; partitioning and retention are your job. See {{lesson:db-timeseries}} |
+| **Ignition Tag Historian** | SQL-based historian on your own database | Uses Ignition's Tag Historian module rather than a separate product, tag config is part of your project, trends in Perspective work out of the box | Scales with your database design; partitioning and retention are your job. See {{lesson:db-timeseries}} |
 | **InfluxDB** | Open-source time-series database | Data model built on measurements, tags (indexed) and fields (values); fast writes; common in IT and IoT stacks | High tag-cardinality hurts; query language and version differences |
 | **TimescaleDB** | PostgreSQL extension | Full SQL, hypertables that auto-partition by time, optional columnar compression; joins to your relational tables | You still run and tune PostgreSQL |
 | **QuestDB** | Open-source time-series database | Very fast ingest and SQL-like queries | Younger ecosystem; fewer industrial interfaces |
 
-Timescale describes its compression as converting older chunks into a columnar form, with figures in the 90 to 98 percent range quoted by the vendor for suitable data. Treat vendor ratios as best case.
+Timescale describes its compression as converting older chunks into a columnar form, with high ratios quoted by the vendor for suitable data (see the vendor's compression page, and measure on your own data). Treat vendor ratios as best case.
 
 > [!note] An Ignition-friendly pattern
 > TimescaleDB is PostgreSQL, so Ignition connects to it with the regular PostgreSQL driver and keeps writing through its usual historian path. Teams pair Ignition with it to get partitioning and compression while keeping SQL for reports. Test your Ignition version and the Postgres settings first, since the historian creates its own partitioned tables and the interaction with hypertables needs checking.
@@ -133,7 +135,7 @@ Imagine you track how tall a plant grows by taking a photo every minute. Most ph
 
 A **historian** does exactly that for factory numbers. It keeps just the interesting moments, and when you ask "how tall was it at lunchtime?" it works out the answer from the nearest two photos. That is compression and interpolation.
 
-An **asset model** is the label on each photo: "Filler 14, temperature", instead of just "sensor 203."
+An **asset model** is the label on each photo: "M101, speed", instead of just "sensor 203."
 
 A **data lake** is a giant storage shed in the cloud where you pour photos from every factory, and a **warehouse** is a tidy library where only the sorted and labelled ones go. Getting photos from the factory to the shed is done with delivery trucks called MQTT and Kafka.
 `,
@@ -161,7 +163,7 @@ Dedicated process historians appeared in the early 1980s, when plants needed to 
     },
     {
       title: "Landing plant data in the cloud",
-      body: `Line 2's Ignition gateway publishes Sparkplug B to a local broker. A bridge forwards \`Plant A/Line 2/Filler 14/Temperature\` and its siblings to an Event Hubs topic. A stream job writes Parquet files to a lake, partitioned by day, and an hourly job loads averages into a Snowflake table keyed by \`machine_id\`. Engineers query the warehouse for cross-plant OEE, while the plant keeps its own Ignition and PI history for operations.`
+      body: `The Plant 1 Area10 edge node publishes Sparkplug B to a local broker (topic \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\`, metric \`Sts/Speed\`). A bridge maps each metric to the plant's UNS form, \`meridian/plant1/area10/line1/m101/sts/speed\`, and forwards it to an Event Hubs topic. A stream job writes Parquet files to a lake, partitioned by day, and an hourly job loads averages into a Snowflake table keyed by \`machine_id\`. Engineers query the warehouse for cross-plant OEE, while the plant keeps its own Ignition and PI history for operations.`
     }
   ],
 

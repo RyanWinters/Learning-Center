@@ -66,20 +66,20 @@ A {{term:control-narrative|control narrative}} describes how a piece of the proc
 - Say what happens on **failure**: bad instrument quality, loss of communication, power restoration.
 - Put one behavior in one place. If level control is described in three sections, they will drift apart.
 
-> [!example] Control narrative excerpt: Transfer Pump P-101 (Tank T-100 level)
+> [!example] Control narrative excerpt: Transfer Pump P-101 (Tank T-101 level)
 > **4.2.1 Modes.** P-101 shall have modes Auto, Manual and Out of Service, selectable from the pump faceplate by users with role Operator or higher. Out of Service requires Supervisor.
 >
-> **4.2.2 Auto operation.** In Auto, P-101 shall start when T-100 level (LT-100) rises above 70 percent for 5 seconds and shall stop when level falls below 30 percent for 5 seconds. A restart shall not be allowed for 120 seconds after a stop.
+> **4.2.2 Auto operation.** In Auto, P-101 shall start when T-101 level (LT-101) rises above 70 percent for 5 seconds and shall stop when level falls below 30 percent for 5 seconds. A restart shall not be allowed for 120 seconds after a stop.
 >
-> **4.2.3 Permissives.** P-101 shall start only if (a) discharge valve XV-101 is confirmed open, (b) suction pressure PT-100 is above 0.5 bar, and (c) no P-101 fault is active.
+> **4.2.3 Permissives.** P-101 shall start only if (a) discharge valve XV-101 is confirmed open, (b) suction pressure PT-101 is above 0.5 bar, and (c) no P-101 fault is active.
 >
-> **4.2.4 Trips.** P-101 shall stop immediately if LT-100 falls below 10 percent (LSLL-100), or if XV-101 leaves its open position while running. A trip shall latch until reset by the operator after the cause clears.
+> **4.2.4 Trips.** P-101 shall stop immediately if LT-101 falls below 10 percent (LSLL-101), or if XV-101 leaves its open position while running. A trip shall latch until reset by the operator after the cause clears.
 >
-> **4.2.5 Failure behavior.** If LT-100 has bad quality, P-101 shall stop, alarm PAL-1004 shall annunciate at Priority High, and Auto shall be prevented until quality is good for 10 seconds.
+> **4.2.5 Failure behavior.** (a) If LT-101 has bad quality (including a 4-20 mA signal outside the NE43 limits defined in the I/O specification), P-101 shall stop, alarm "LT-101 quality" shall annunciate at Priority High, and Auto shall be prevented until quality is good for 10 seconds. (b) On loss of communication between the PLC and the HMI, P-101 shall keep its current state and the PLC shall continue to run Auto and the trips. On loss of communication to the discharge valve I/O, P-101 shall stop. (c) On power loss, the motor starter drops out and P-101 shall remain stopped on restoration until an operator starts it. XV-101 shall fail closed (spring return), so a power loss stops the flow. Fail positions are shown on the P&ID.
 >
 > **4.2.6 Manual.** In Manual, the operator may start and stop P-101 from the HMI. The trips in 4.2.4 remain active in Manual.
 
-Notice what it does: every statement is checkable. A test engineer can force LT-100 to 69, 71, 29 and 9 percent and see what happens. A programmer can write the logic. The line about trips in Manual stops a debate that would otherwise surface at SAT.
+Notice what it does: every statement is checkable. A test engineer can force LT-101 to 69, 71, 29 and 9 percent and see what happens. A programmer can write the logic. The line about trips in Manual stops a debate that would otherwise surface at SAT.
 
 ## Sequence descriptions with states
 
@@ -91,11 +91,15 @@ A sequence (fill, heat, hold, drain, CIP, a startup) should be described as a st
 | 10 Fill | Open XV-201, run P-201 | LT-200 above 80 percent | 20 |
 | 10 Fill | (timeout) | Fill step longer than 600 s | 90 Fault |
 | 20 Heat | Open steam valve per TIC-200 | TT-200 at or above 60 C for 30 s | 30 |
+| 20 Heat | (timeout or over-temperature) | Heat step longer than 1200 s, or TT-200 above 70 C | 90 Fault |
 | 30 Hold | Maintain 60 C | Hold timer 1800 s | 40 |
+| 30 Hold | (deviation) | TT-200 outside 55 to 65 C for 60 s | 90 Fault |
 | 40 Drain | Close steam, open XV-202 | LT-200 below 5 percent | 0 Idle |
+| 40 Drain | (timeout) | Drain step longer than 900 s | 90 Fault |
+| 0 to 40 | (Stop or Abort command, any state) | Operator Stop | 90 Fault, outputs safe |
 | 90 Fault | All outputs safe, alarm | Operator reset and causes clear | 0 Idle |
 
-Every state needs an exit for the unhappy path: timeouts, aborts, holds. State what happens on Stop, Hold and power loss, and say whether the sequence resumes or restarts. Where the plant is batch oriented, align the vocabulary with {{lesson:plc-isa88-packml}} and {{lesson:mes-batch}}.
+Every state needs an exit for the unhappy path: timeouts, aborts, holds. The table above gives each running state a timeout or deviation exit to 90 Fault, and one row for an operator Stop. State what happens on Hold and power loss as well, and say whether the sequence resumes or restarts (here, on power restoration the sequence shall go to 90 Fault, outputs safe, and restart from Idle). The times and temperatures are examples; your process data sets them. Where the plant is batch oriented, align the vocabulary with {{lesson:plc-isa88-packml}} and {{lesson:mes-batch}}.
 
 {{diagram:trace}}
 
@@ -107,11 +111,11 @@ Do not write "alarm on high level." Use a table with a row for each alarm.
 
 | Tag | Description | Condition | Delay | Priority | Operator action |
 |---|---|---|---|---|---|
-| LAH-100 | T-100 level high | LT-100 above 85 percent | 5 s | Medium | Check P-101 and downstream valves |
-| LAHH-100 | T-100 level high-high | LT-100 above 95 percent | 2 s | High | Stop feed, investigate |
-| PAL-1004 | LT-100 bad quality | Quality not good | 3 s | High | Check transmitter and wiring |
+| LAH-101 | T-101 level high | LT-101 above 85 percent | 5 s | Medium | Check P-101 and downstream valves |
+| LAHH-101 | T-101 level high-high | LT-101 above 95 percent | 2 s | High | Stop feed, investigate |
+| LT-101 quality | LT-101 bad or uncertain quality | Quality not good (NE43 limits) | 3 s | High | Check transmitter and wiring |
 
-The operator action column forces the author to justify the alarm. An alarm with no action is a candidate for deletion. See {{lesson:int-alarm-mgmt}} for the full rationalization process.
+The last row is the quality alarm the alarm philosophy defines for every transmitter (same name as in {{lesson:int-alarm-mgmt}}). The operator action column forces the author to justify the alarm. An alarm with no action is a candidate for deletion. See {{lesson:int-alarm-mgmt}} for the full rationalization process.
 
 ### Interlocks
 
@@ -131,9 +135,9 @@ Give each requirement an ID and build a matrix that maps ID to design item and t
 
 | Req | Text (short) | Design | FAT step | SAT step |
 |---|---|---|---|---|
-| 4.2.2 | Auto start at 70 percent for 5 s | P101_Ctl AOI | FAT-14 | SAT-09 |
-| 4.2.3 | Start permissives | P101_Ctl AOI | FAT-15 | SAT-10 |
-| 4.2.4 | Latched trip at 10 percent | P101_Ctl AOI | FAT-16 | SAT-11 |
+| 4.2.2 | Auto start at 70 percent for 5 s | AOI_Pump | FAT-14 | SAT-09 |
+| 4.2.3 | Start permissives | AOI_Pump | FAT-15 | SAT-10 |
+| 4.2.4 | Latched trip at 10 percent | AOI_Pump | FAT-16 | SAT-11 |
 
 A requirement with no test is a promise you cannot prove. A test with no requirement is an opinion. Both create disputes.
 
@@ -177,11 +181,11 @@ Specification documents for control systems grew out of large process and pharma
   examples: [
     {
       title: "Rewriting a vague requirement",
-      body: `Draft: *"Tank level shall be controlled and alarmed."* Rewrite: *"4.1.1 The system shall hold T-100 level between 30 and 70 percent in Auto by starting and stopping P-101 (see 4.2). 4.1.2 LAH-100 shall alarm at 85 percent after a 5 second delay at Priority Medium. 4.1.3 LAHH-100 shall alarm at 95 percent after 2 seconds at Priority High and shall inhibit the T-100 inlet valve XV-100."* Each statement now has a number, a tag, a threshold and a test.`
+      body: `Draft: *"Tank level shall be controlled and alarmed."* Rewrite: *"4.1.1 The system shall hold T-101 level between 30 and 70 percent in Auto by starting and stopping P-101 (see 4.2). 4.1.2 LAH-101 shall alarm at 85 percent after a 5 second delay at Priority Medium. 4.1.3 LAHH-101 shall alarm at 95 percent after 2 seconds at Priority High and shall inhibit the T-101 inlet valve XV-100."* Each statement now has a number, a tag, a threshold and a test.`
     },
     {
       title: "Catching a missing failure case in review",
-      body: `The operator reviewing a sequence table asks: "What if the steam valve sticks open?" The table had no over-temperature exit. The team adds a transition from Heat to Fault at 75 C, an alarm TAHH-200, and a FAT step that forces the temperature. Cost: one hour of editing before build instead of a trip during commissioning.`
+      body: `The operator reviewing a sequence table asks: "What if the steam valve sticks open?" The draft table had no over-temperature exit. The team adds a transition from Heat to Fault at 70 C, an alarm TAHH-200, and a FAT step that forces the temperature. Cost: one hour of editing before build instead of a trip during commissioning.`
     }
   ],
 
@@ -225,7 +229,7 @@ Specification documents for control systems grew out of large process and pharma
   quiz: [
     {
       q: "Which sentence is best suited to an FDS?",
-      options: ["The pump will start when the tank is high.", "Use a Compact Logix 5380 with an AOI for the pump.", "The pump should be reliable and respond quickly.", "P-101 shall start when LT-100 is above 70 percent for 5 seconds, if XV-101 is confirmed open."],
+      options: ["The pump will start when the tank is high.", "Use a Compact Logix 5380 with an AOI for the pump.", "The pump should be reliable and respond quickly.", "P-101 shall start when LT-101 is above 70 percent for 5 seconds, if XV-101 is confirmed open."],
       answer: 3,
       explain: [
         "It has no threshold, tag, delay or permissive, so a tester cannot pass or fail it.",

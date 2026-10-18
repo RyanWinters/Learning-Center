@@ -26,17 +26,17 @@ The {{term:erp|ERP}} knows what the business wants made, bought and shipped. The
 
 | Object model | What it describes | Example |
 |---|---|---|
-| Material | Material definitions, classes, lots and sublots | Part 4471 "Widget Blue", lot L-20481 |
-| Equipment | Equipment, classes and capabilities | Filler 3, capacity 400 per minute |
+| Material | Material definitions, classes, lots and sublots | Part 4471 "Marinara 12-pack", lot L-20481 |
+| Equipment | Equipment, classes and capabilities | Plant1 Line1 filler, capacity 400 per minute |
 | Personnel | People, classes and qualifications | Operator class "Forklift certified" |
 | Process segment | A reusable step: what resources it needs | "Fill and cap" needs Filler class, Operator class |
-| Production schedule | What to make, how much, by when | Order 1001234, 5,000 units, due Friday |
-| Production performance | What was made, consumed and when | 4,980 good, 20 scrap, 312 kg resin used |
-| Production capability | What the plant could make | Filler 3 available next shift |
+| Production schedule | What to make, how much, by when | Order 1001234, 5,000 cases, due Friday |
+| Production performance | What was made, consumed and when | 4,980 good cases, 20 scrap cases, 312 kg tomato paste used |
+| Production capability | What the plant could make | Plant1 Line1 filler available next shift |
 
 In practice the integrations that matter first are **production schedule** (down) and **production performance** (up), with **material** data shared in both directions.
 
-Part 4 of the standard goes deeper into operations management models for scheduling, performance and work records. Most plant projects use only Part 2 vocabulary and a subset of its fields.
+Part 4 defines object models for the operations-management activities themselves, such as schedules, performance and work records (see {{lesson:mes-what}}). Editions differ, so check the one your partners cite. Most plant projects use only Part 2 vocabulary and a subset of its fields.
 
 ## Typical flows
 
@@ -73,10 +73,10 @@ A deliberately small production schedule fragment:
     <SegmentRequirement>
       <ProcessSegmentID>FILL-CAP</ProcessSegmentID>
       <MaterialProducedRequirement>
-        <MaterialDefinitionID>WIDGET-BLUE</MaterialDefinitionID>
+        <MaterialDefinitionID>MARINARA-12PK</MaterialDefinitionID>
         <Quantity>
           <QuantityString>5000</QuantityString>
-          <UnitOfMeasure>EA</UnitOfMeasure>
+          <UnitOfMeasure>CS</UnitOfMeasure> <!-- CS = case, a code your profile defines -->
         </Quantity>
       </MaterialProducedRequirement>
     </SegmentRequirement>
@@ -84,7 +84,7 @@ A deliberately small production schedule fragment:
 </ProductionSchedule>
 \`\`\`
 
-The element names above follow the B2MML style, but real schema versions differ in detail (element names, namespaces, required fields). Always validate against the schema version your partners agree on, not a blog post.
+The order quantity here is 5,000 cases, and the unit code says so. If the ERP counts cases and the line counts eaches (packs), one side must convert using a conversion factor from master data, and the confirmation must use the unit the ERP expects. The element names above follow the B2MML style, but real schema versions differ in detail (element names, namespaces, required fields). Always validate against the schema version your partners agree on, not a blog post.
 
 A few things to know:
 
@@ -110,7 +110,7 @@ For ERP traffic, the dominant concern is **not losing a confirmation**. An ERP t
 
 ## Where Ignition and Sepasoft fit
 
-Plain Ignition can do all of the above with Python scripting: \`system.net.httpClient\` for REST calls, file handling for drops, Named Queries for staging tables, and the gateway's web development tools for receiving calls (see {{lesson:arch-webdev}}). It's fully custom, so you own the mapping, retries and error screens.
+Plain Ignition can do all of the above with its Python-based (Jython) scripting: \`system.net.httpClient\` for REST calls, file handling for drops, Named Queries for staging tables, and the gateway's web development tools for receiving calls (see {{lesson:arch-webdev}}). It's fully custom, so you own the mapping, retries and error screens. For inbound calls, authenticate the middleware as its own service account or with an API key issued for that one integration, sent over HTTPS, and never reuse a person's login. Check your Ignition version's web-development security options. The middleware sits in the DMZ and reaches the gateway only through the DMZ reverse proxy (see {{lesson:arch-remote-services}}).
 
 Sepasoft provides products aimed at this job:
 
@@ -133,13 +133,13 @@ Do not promise "we can connect to SAP" without knowing the version, the object (
 
 ## A worked slice
 
-A food plant. ERP releases production order 1001234 for 5,000 cases of WIDGET-BLUE.
+A food plant. ERP releases production order 1001234 for 5,000 cases of MARINARA-12PK.
 
 1. Middleware delivers a ProductionSchedule message to the gateway's REST endpoint.
 2. The gateway validates it, writes a \`work_order\` row with status "Released", and raises it on the scheduler screen.
 3. The operator starts the order. Status changes to "Running" and the MES posts status back.
-4. The line runs. The MES accumulates good count, scrap and consumed resin by lot.
-5. On completion, the MES builds a ProductionPerformance message: order 1001234, 4,980 good, 20 scrap, resin lot R-5521 312 kg, with a unique confirmation ID.
+4. The line runs. The MES accumulates good count, scrap and consumed tomato paste by lot.
+5. On completion, the MES builds a ProductionPerformance message: order 1001234, 4,980 good, 20 scrap, tomato paste lot T-4410 312 kg, with a unique confirmation ID.
 6. The middleware forwards it to ERP. If ERP is down, the message waits in a queue and a screen shows "1 confirmation pending."
 `,
 

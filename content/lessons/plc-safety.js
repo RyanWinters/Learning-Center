@@ -69,6 +69,18 @@ The cost is double the wiring and I/O. The gain is that **a single failure canno
 > [!example] A stuck contact
 > An e-stop has two normally closed contacts. One contact welds closed. When the operator hits the button, channel B opens and channel A does not. After the discrepancy time the safety module faults and de-energizes the output. A single-channel input would have kept running.
 
+## Stop categories and the motor starter
+
+Machine standards (IEC 60204-1, which uses the same vocabulary as ISO 13850 for emergency stop) describe three **stop categories**:
+
+| Category | What happens | Typical use |
+|---|---|---|
+| **0** | Power to the actuator is removed at once (an uncontrolled stop) | Most e-stops: the safety output drops the starter coil, and the motor coasts |
+| **1** | A controlled stop with power kept available to stop the machine, then power removed | A heavy conveyor or drive that must ramp down before the contactor opens |
+| **2** | A controlled stop with power left on the actuator | Normal functional stops, such as the operator Stop button in a seal-in rung |
+
+Check the standard for the exact wording in your edition. The point for a PLC programmer is where each one lives. The operator's **Stop** button in the PLC program is a functional stop in the process logic, not a safety function. The **e-stop** (category 0 or 1) and the motor **overload** are hardwired into the starter coil circuit, so even a dead or faulted PLC cannot keep the motor running. For motor M101 in Plant 1 the PLC reads an auxiliary contact (run feedback) and the overload status, and it uses them for alarms and interlocks. It never provides the only means of stopping the motor. That is why the seal-in rung in {{lesson:plc-sealin}} stops on a command bit but the hardware cuts the coil independently, and {{lesson:found-motor-control}} shows the starter circuit that makes this true.
+
 ## SIL and PL: two scales for the same idea
 
 Both measure how much you can trust a safety function to work when needed. They come from different standards families, and you will hear both.

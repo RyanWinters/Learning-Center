@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## Why events matter
 
-Screens run only while someone is looking at them. A plant runs all night. Anything that must happen without an operator, like logging a batch when a PLC bit goes high, sending an email when a pump trips or resetting a counter at midnight, has to be triggered on the Gateway. Ignition gives you four families of Gateway-side triggers: **tag events**, **gateway events** (startup, shutdown, timer, tag change, scheduled, message handlers), and, covered elsewhere, alarm pipelines. This lesson is about the first two and the shared machinery under them.
+Screens run only while someone is looking at them. A plant runs all night. Anything that must happen without an operator, like logging a batch when a PLC bit goes high, sending an email when a pump trips or resetting a counter at midnight, has to be triggered on the Gateway. Ignition gives you three families of Gateway-side triggers: **tag events**, **gateway events** (startup, shutdown, timer, tag change, scheduled, message handlers), and, covered elsewhere, alarm pipelines. This lesson is about the first two and the shared machinery under them.
 
 All of them run Python (Jython) in the Gateway scope you met in {{lesson:ign-scripting}}. That means no \`self\`, no component and no client. You get \`system.*\` functions, the Gateway's resources and nothing else.
 
@@ -39,7 +39,15 @@ Tag events also exist for quality changes and for alarm active/clear/acknowledge
 - **\`initialChange\`** is true on the first evaluation after the tag is loaded. Without that guard, a Gateway restart looks like every batch just started.
 - **\`missedEvents\`** is true when the tag's event queue overflowed and some changes were dropped. You are being told the script could not keep up.
 - Values arrive as **qualified values**: use \`.value\`, \`.quality\` and \`.timestamp\`.
-- Tag event scripts run in a shared thread pool owned by the tag system. Events for a single tag are delivered in order.
+- An exception in a tag event, timer or message script is written to the Gateway log and does not stop the event source, so the first debugging step is to read the log (Status, Logs). Wrap risky code so the log says what failed (the try/except below).
+- Tag event scripts run in a shared thread pool owned by the tag system. Events for a single tag are generally delivered in order, but confirm the guarantee in the scripting documentation for your version before building logic that depends on strict ordering.
+
+\`\`\`python
+try:
+    doWork(currentValue.value)
+except Exception, e:
+    system.util.getLogger("events.m101").error("doWork failed", e)
+\`\`\`
 
 ## Gateway tag change scripts
 
@@ -100,7 +108,7 @@ Because tag event workers are **shared across all tags**, one slow script does n
 > \`time.sleep(5)\` in a tag event script occupies a pool thread for five seconds. Ten tags changing at once can consume the entire pool. Use a timestamp tag and a timer, or a state machine, to wait.
 
 > [!example] Replacing a delay with a state pattern
-> Requirement: when \`Line1/Jam\` goes true, wait 10 s and then send an alert if it is still true. Bad: sleep 10 in valueChanged. Good: on the rising edge, write \`system.date.now()\` to a memory tag \`Line1/JamSince\`. A 1-second fixed-delay timer checks \`JamSince\` and \`Jam\`, sends the alert once when 10 s have passed and clears \`JamSince\`. Nothing ever blocks.
+> Requirement: when \`Plant1/Area10/Line1/Jam\` goes true, wait 10 s and then send an alert if it is still true. Bad: sleep 10 in valueChanged. Good: on the rising edge, write \`system.date.now()\` to a memory tag \`Plant1/Area10/Line1/JamSince\`. A 1-second fixed-delay timer checks \`JamSince\` and \`Jam\`, sends the alert once when 10 s have passed and clears \`JamSince\`. Nothing ever blocks.
 
 ## A decision guide
 
@@ -124,7 +132,7 @@ The smart way is for the cook to put the pot on a timer, write "check pot at 7:1
 `,
 
   why: `
-**Why are there two kinds of tag change script?** History. Tag event scripts are part of the tag system and travel with the tag, which makes them ideal for UDTs. Gateway tag change scripts were the project-level feature, and they have access to the project's script library and sit with other application logic. Integrators argue about which to use as the default. A common compromise is to put only tiny, generic behavior in the tag (setting a timestamp, calling one library function) and keep real logic in project script libraries that both call.
+**Why are there two kinds of tag change script?** History. Tag event scripts are part of the tag system and travel with the tag, which makes them ideal for UDTs. Gateway tag change scripts were the project-level feature, and they have access to the project's script library and sit with other application logic. Integrators argue about which to use as the default. A common compromise is to put only tiny, generic behavior in the tag (setting a timestamp, calling one library function) and keep real logic in project script libraries that both call. A tag event script can reach a project library only after that project is designated as the gateway scripting project (see {{lesson:ign-projects}}), so set that up first.
 
 **Why shared queues?** A Gateway can carry hundreds of thousands of tags. Giving each its own thread would exhaust memory, so Ignition uses a bounded pool. That is efficient until one script abuses it. The failure is hard to diagnose because the symptom (tags updating late, alarms delayed, screens stale) appears far from the cause (one script blocking on a database).
 
@@ -142,11 +150,11 @@ Early Ignition (7.x) had separate "client event scripts" and "gateway event scri
   examples: [
     {
       title: "Shift counter reset at 06:00",
-      body: `A scheduled script at 06:00 calls \`system.tag.writeBlocking(["[default]Line1/ShiftCount"], [0])\`. Using a timer with a 24 h delay would drift by the run time each day and restart from zero after a Gateway reboot. Scheduled scripts follow the clock.`
+      body: `A scheduled script at 06:00 calls \`system.tag.writeBlocking(["[default]Plant1/Area10/Line1/ShiftCount"], [0])\`. Using a timer with a 24 h delay would drift by the run time each day and restart from zero after a Gateway reboot. Scheduled scripts follow the clock.`
     },
     {
       title: "Slow report triggered by a PLC bit",
-      body: `A tag event script on \`Batch/Done\` checks \`currentValue.value\` is true and not \`initialChange\`, then calls \`system.util.sendMessage("Plant", "buildBatchReport", {"batch": batchId}, "G")\`. The \`buildBatchReport\` handler is set to dedicated threading, runs three queries and emails a PDF. The tag event returns in a millisecond, so other tags are unaffected.`
+      body: `A tag event script on \`[default]Plant1/Area10/Line1/Mixer1/BatchDone\` checks \`currentValue.value\` is true and not \`initialChange\`, then calls \`system.util.sendMessage("Plant", "buildBatchReport", {"batch": batchId}, "G")\`. The \`buildBatchReport\` handler is set to dedicated threading, runs three queries and emails a PDF. The tag event returns in a millisecond, so other tags are unaffected.`
     }
   ],
 

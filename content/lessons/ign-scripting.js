@@ -55,13 +55,13 @@ Ignition predefines the \`system\` package. These are the ones you will use dail
 ### system.tag
 
 \`\`\`python
-paths = ["[default]Plant1/Pump3/Speed", "[default]Plant1/Pump3/Sts_Running"]
+paths = ["[default]Plant1/Area10/Line1/M101/Sts/Speed", "[default]Plant1/Area10/Line1/M101/Sts/Running"]
 vals = system.tag.readBlocking(paths)     # one call, one list back
 speed, running = vals[0], vals[1]
 if speed.quality.isGood():
     print speed.value, speed.timestamp
 
-system.tag.writeBlocking(["[default]Plant1/Pump3/SpeedSP"], [1450.0])
+system.tag.writeBlocking(["[default]Plant1/Area10/Line1/M101/Cmd/Start"], [True])   # the PLC clears the pulse
 \`\`\`
 
 \`readBlocking\` returns a list of qualified values in the same order as the paths. It blocks until the read finishes or the timeout (default 45 seconds) passes. \`writeBlocking\` returns a list of quality codes: look at them, because a write to a read-only or bad tag fails *without raising an exception*.
@@ -72,12 +72,12 @@ Other tag functions: \`configure\` and \`getConfiguration\` for creating and exp
 
 \`\`\`python
 rows = system.db.runPrepQuery(
-    "SELECT id, name FROM pumps WHERE area = ? AND active = ?", ["North", 1], "plantdb")
+    "SELECT id, name FROM motors WHERE area = ? AND active = ?", ["Area10", 1], "plantdb")
 for r in rows:
     print r["name"]
 \`\`\`
 
-Always use the prepared forms (\`runPrepQuery\`, \`runPrepUpdate\`) with \`?\` placeholders. String-building SQL invites injection and quoting bugs. For anything reused, call a **named query** with \`system.db.execQuery\` (SELECT) or \`system.db.execUpdate\` (INSERT/UPDATE/DELETE). In 8.1 the single call was \`system.db.runNamedQuery\`, deprecated in 8.3 but still working. See {{lesson:ign-databases}}.
+Always bind values through \`?\` placeholders (the prepared forms \`runPrepQuery\` and \`runPrepUpdate\` shown here). String-building SQL invites injection and quoting bugs. The \`system.db.run*\` family is on the 8.3 deprecated list but still works, so check the 8.3 manual for the \`exec*\` equivalent before writing new code. For anything reused, call a **named query** with \`system.db.execQuery\` (SELECT) or \`system.db.execUpdate\` (INSERT/UPDATE/DELETE). In 8.1 the single call was \`system.db.runNamedQuery\`, deprecated in 8.3 but still working. See {{lesson:ign-databases}}.
 
 ### system.util
 
@@ -89,17 +89,18 @@ Perspective-only helpers: \`navigate\`, \`openPopup\`/\`closePopup\`, \`sendMess
 
 ## Where code lives: the project script library
 
-Do not paste the same 30 lines into 40 button scripts. In the Designer, the **Project Library** (Scripting section) holds Python modules. Create a package such as \`shared\` with a module \`pumps\`, then call it from anywhere in the project:
+Do not paste the same 30 lines into 40 button scripts. In the Designer, the **Project Library** (Scripting section) holds Python modules. Create a package such as \`shared\` with a module \`motors\`, then call it from anywhere in the project:
 
 \`\`\`python
-# project library: shared/pumps.py
-def startPump(path):
-    """Pulse the start command, return True when the write was good."""
-    q = system.tag.writeBlocking([path + "/Cmd_Start"], [True])
+# project library: shared/motors.py
+def startMotor(path):
+    """Pulse the start command, return True when the write was good.
+    Stops, overloads and E-stops are hardwired, so this only requests a start."""
+    q = system.tag.writeBlocking([path + "/Cmd/Start"], [True])
     return q[0].isGood()
 
 # in a Perspective button's onActionPerformed
-if shared.pumps.startPump(self.view.params.instancePath):
+if shared.motors.startMotor(self.view.params.tagPath):   # [default]Plant1/Area10/Line1/M101
     system.perspective.print("Start sent")
 \`\`\`
 
@@ -110,7 +111,7 @@ Libraries are inherited between projects, so a "global" parent project can carry
 \`print\` goes to the Designer's output console or to the Gateway's wrapper log, depending on scope, and nobody can filter it. Use a logger:
 
 \`\`\`python
-log = system.util.getLogger("shared.pumps")   # name follows the code location
+log = system.util.getLogger("shared.motors")   # name follows the code location
 log.info("Start requested for %s" % path)
 log.warn("Write rejected: %s" % q[0])
 log.error("Unexpected failure", exception)    # passes the exception for a stack trace

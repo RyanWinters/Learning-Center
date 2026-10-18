@@ -43,13 +43,16 @@ On a normal install, a new gateway opens a commissioning wizard in the browser. 
 
 Any variable can be supplied as a file by adding \`_FILE\`, such as \`GATEWAY_ADMIN_PASSWORD_FILE\`. That suits Docker secrets and Kubernetes secrets, which mount values as files. Never put production passwords in a compose file you commit to git.
 
+A \`docker run\` version supplies the password file with a read-only bind mount. The file must exist on the host first (create it with restrictive permissions, outside git). HTTPS is published on 8043. Open 8088 only if you need plain HTTP on a trusted bench.
+
 \`\`\`bash
 docker run -d --name ignition \\
-  -p 8088:8088 \\
+  -p 8043:8043 \\
   -e ACCEPT_IGNITION_EULA=Y \\
   -e GATEWAY_ADMIN_USERNAME=admin \\
   -e GATEWAY_ADMIN_PASSWORD_FILE=/run/secrets/admin_pw \\
   -e IGNITION_EDITION=standard \\
+  -v "$PWD/secrets/gw_admin.txt:/run/secrets/admin_pw:ro" \\
   -v ignition-data:/usr/local/bin/ignition/data \\
   inductiveautomation/ignition:8.3.0 \\
   -n PlantGateway
@@ -76,9 +79,12 @@ A real system is several containers. Docker Compose describes them in one YAML f
 services:
   db:
     image: mariadb:11
+    restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root
       MARIADB_DATABASE: ignition
+    secrets:
+      - db_root
     volumes:
       - db-data:/var/lib/mysql
     healthcheck:
@@ -88,23 +94,41 @@ services:
 
   gateway:
     image: inductiveautomation/ignition:8.3.0
+    restart: unless-stopped
     ports:
-      - "8088:8088"
+      - "8043:8043"          # HTTPS for the web UI, Designer and Perspective
+      # - "8060:8060"        # Gateway Network, only if another gateway dials in
     environment:
       ACCEPT_IGNITION_EULA: "Y"
       GATEWAY_ADMIN_USERNAME: admin
       GATEWAY_ADMIN_PASSWORD_FILE: /run/secrets/gw_admin
       IGNITION_EDITION: standard
+    secrets:
+      - gw_admin
     volumes:
       - gw-data:/usr/local/bin/ignition/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8088/StatusPing"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
     depends_on:
       db:
         condition: service_healthy
+
+secrets:
+  db_root:
+    file: ./secrets/db_root.txt
+  gw_admin:
+    file: ./secrets/gw_admin.txt
 
 volumes:
   db-data:
   gw-data:
 \`\`\`
+
+The top-level \`secrets:\` block maps each secret to a file on the host (keep \`./secrets/\` out of git). Compose mounts each one inside the container at \`/run/secrets/<name>\`, which is where the \`_FILE\` variables point. Only 8043 is published, so the admin pages are reachable over HTTPS only. The gateway also listens on 8088 inside the container, and the healthcheck uses that internal port without publishing it. The \`/StatusPing\` URL and the availability of \`curl\` in the image are worth confirming on the Docker image page for your tag. \`restart: unless-stopped\` brings both containers back after a host reboot. Terminate TLS with a certificate you control before exposing the gateway beyond a lab (see the gateway's SSL/TLS settings in the manual).
 
 Inside the Compose network, containers reach each other by service name. The Ignition database connection URL points at \`db\`, not \`localhost\`. That one mistake accounts for many "connection refused" questions: \`localhost\` inside the gateway container is the gateway container.
 
@@ -183,7 +207,7 @@ Docker appeared in 2013 and made Linux container packaging mainstream. Inductive
   ],
 
   diagrams: {
-    compose: `<svg viewBox="0 0 640 230" role="img" aria-label="Docker Compose network with an Ignition gateway container and a database container, each with its own volume, and port 8088 published to the host">
+    compose: `<svg viewBox="0 0 640 230" role="img" aria-label="Docker Compose network with an Ignition gateway container and a database container, each with its own volume, and HTTPS port 8043 published to the host">
   <defs>
     <marker id="arch-containers-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="dg-fill-line" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
@@ -203,7 +227,7 @@ Docker appeared in 2013 and made Linux container packaging mainstream. Inductive
   <text class="dg-text-sm dg-mid" x="490" y="190">volume: db-data</text>
   <line class="dg-line" x1="150" y1="135" x2="150" y2="163"/>
   <line class="dg-line" x1="490" y1="135" x2="490" y2="163"/>
-  <text class="dg-text-sm" x="280" y="160">host:8088 to gateway:8088</text>
+  <text class="dg-text-sm" x="280" y="160">host:8043 to gateway:8043</text>
 </svg>`
   },
 

@@ -79,6 +79,9 @@ Motor runs only if the guard is closed **and** Start is pressed.
 
 A **branch** puts two paths side by side. Power flows if **either** path is true.
 
+> [!note] How branches are written in text
+> This course writes a rung as plain text so it fits on a line. Instructions in a row are in series, left to right. A **branch** is written in square brackets with a **comma between the parallel legs**: \`[XIC(A) ,XIC(B)]\` means "A in one leg, B in a second leg underneath it". Anything after the closing bracket is in series with the whole branch. Drawn out, \`[XIC(A) ,XIC(B)] OTE(C)\` is two contacts stacked one above the other, joined on both ends, then a coil.
+
 \`\`\`ladder
 [XIC(Start_Local) ,XIC(Start_Remote)] OTE(Motor)
 \`\`\`
@@ -166,23 +169,27 @@ The fix is to combine the conditions into one rung with a parallel branch:
 
 ## Worked example: a guarded pump
 
-Requirements: the pump runs when the operator holds Run, but only if the E-stop is healthy (NC, 1 = healthy), the tank is not empty (low-level switch is 1 when there is liquid), and there is no overload trip (overload contact is NC, 1 = healthy).
+Requirements: pump motor P101 runs while the operator holds Run, but only if the local stop is healthy (NC, 1 = healthy), the tank is not empty (low-level switch is 1 when there is liquid) and the overload relay has not tripped (a status contact, NC, 1 = healthy).
 
 \`\`\`ladder
-XIC(Run_PB) XIC(Estop_OK) XIC(Level_NotLow) XIC(Overload_OK) OTE(Pump)
+XIC(Run_PB) XIC(Stop_OK) XIC(Level_NotLow) XIC(P101_OL_OK) OTE(P101_Run)
 \`\`\`
 
-Everything is XIC because every device is wired so that a 1 means "ok to go". Check the truth: any one condition at 0 stops the pump. If a wire breaks on any of the three safety inputs, the bit goes to 0 and the pump stops. A good test is to ask of each contact: "if this wire fell off, would the machine stop?"
+Everything is XIC because every device is wired so that a 1 means "ok to go". Any one condition at 0 stops the pump, and a broken wire reads as 0. A good test is to ask of each contact: "if this wire fell off, would the machine stop?"
+
+The level switch is a process permissive and belongs in the logic. The overload and the E-stop are different: in a real panel they are **hardwired in the starter coil circuit**, so they cut the contactor whatever the program does. The PLC only reads the overload status (as above) and an E-stop status to show alarms and avoid commanding a start into a tripped starter. {{lesson:plc-sealin}} shows the wiring.
 `,
 
   eli5: `
-Imagine a row of doors in a hallway, with a lamp at the end. If every door is open, light travels down the hall and the lamp goes on. If any door is shut, the light is blocked. That is "and": all conditions together.
+Imagine a hallway with a lamp at the end, and the hallway has doors across it. Each door is a bit in the PLC.
 
-Now imagine two hallways side by side, both leading to the same lamp. If either hallway is clear, the lamp goes on. That is "or".
+An **XIC** door is a door that is open only when its bit is 1. A door that is shut blocks the light, so "is the bit a 1?" is the question XIC asks. An **XIO** door is the opposite: it is open only when its bit is 0, so it asks "is the bit a 0?" The lamp at the end of the hall is the **OTE**. It lights if light reaches it, and goes out the moment light stops reaching it.
 
-One kind of door opens when you push a button. Another kind is always open, and closes when you push the button. A sensible alarm system uses the second kind for its emergency stop, so that if the door's hinge breaks, the alarm triggers rather than the system pretending all is well.
+If every door in a row is open, light travels down the hall and the lamp goes on. That is "and". Now imagine two hallways side by side leading to the same lamp. If either one is clear, the lamp goes on. That is "or".
 
-The PLC doesn't see doors, only a one or a zero. Your job is to decide whether you want to ask "is it a one?" or "is it a zero?" at each door.
+The stop button is the clever one. We wire it so its door is open all the time and only shuts when someone presses stop. If the wire to the button breaks, the door shuts too, exactly as if someone pressed stop, so the machine stops and you find the problem. That "open until pressed" door is an XIC on a bit that reads 1 when everything is healthy.
+
+The PLC never sees real doors, only ones and zeros. Your job at each door is to decide whether to ask "is it a one?" or "is it a zero?"
 `,
 
   why: `
@@ -204,7 +211,7 @@ Ladder logic comes straight from relay control diagrams, which were drawn with p
   examples: [
     {
       title: "Reading a rung aloud",
-      body: `\`[XIC(Hand) ,XIC(Auto_Req)] XIO(Fault) XIC(Estop_OK) OTE(Fan)\` reads: "The fan runs if (Hand OR Auto_Req) AND there is no Fault AND the E-stop circuit is healthy." Reading rungs aloud like this is the fastest way to find a mistake.`
+      body: `\`[XIC(Hand) ,XIC(Auto_Req)] XIO(Fault) XIC(Guard_Closed) OTE(Fan)\` reads: "The fan runs if (Hand OR Auto_Req) AND there is no Fault AND the guard is closed." Reading rungs aloud like this is the fastest way to find a mistake.`
     },
     {
       title: "Debugging a motor that will not start",
@@ -261,7 +268,7 @@ Ladder logic comes straight from relay control diagrams, which were drawn with p
       ]
     },
     {
-      q: "Which rung runs the Motor when Start OR Jog is on?",
+      q: "Which rung runs the Motor when Start OR Jog is on? (Reminder: \`[A ,B]\` means A and B are in parallel legs of a branch, and anything written in a row is in series.)",
       options: ["XIC(Start) XIC(Jog) OTE(Motor)", "[XIC(Start) ,XIC(Jog)] OTE(Motor)", "XIO(Start) XIO(Jog) OTE(Motor)", "XIC(Start) OTE(Motor) XIC(Jog)"],
       answer: 1,
       explain: [
@@ -272,7 +279,7 @@ Ladder logic comes straight from relay control diagrams, which were drawn with p
       ]
     },
     {
-      q: "A stop button is wired normally closed, and 24 V reaches the input when it is not pressed. Which instruction lets the motor run when the button is released?",
+      q: "A stop button is wired normally closed (its contact is closed until pressed), so the 24 V supply reaches the input when the button is not pressed. Which instruction lets the motor run when the button is released?",
       options: ["XIC(Stop_PB)", "XIO(Stop_PB)", "OTE(Stop_PB)", "Either one works"],
       answer: 0,
       explain: [

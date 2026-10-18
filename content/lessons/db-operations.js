@@ -40,7 +40,7 @@ Microsoft's [backup overview](https://learn.microsoft.com/en-us/sql/relational-d
 A common schedule for a plant database:
 
 - Full backup Sunday at 02:00.
-- Differential every night at 02:00.
+- Differential Monday to Saturday at 02:00 (the Sunday full replaces it that night).
 - Log backup every 15 minutes.
 
 ### Recovery models
@@ -78,7 +78,7 @@ Ask the plant manager both questions and write the answers down. They are busine
 Backups on their own can't give you a near-zero RPO. That needs high availability, below.
 
 > [!example] Worked example
-> The plant database holds production and downtime data. The plant says losing a shift is acceptable but losing a day is not (RPO 8 h) and can run on paper for half a day (RTO 12 h). A nightly full backup meets RPO only if nothing is lost before 02:00 the next night, which is a 24-hour exposure. So add log backups every hour. Worst-case loss is now about an hour, comfortably inside 8 hours, and a restore of the weekend full, the latest differential and a day of logs fits inside 12 hours if you rehearsed it.
+> The plant database holds production and downtime data. The plant says losing a shift is acceptable but losing a day is not (RPO 8 h) and can run on paper for half a day (RTO 12 h). A Sunday full with a nightly differential alone leaves a 24-hour exposure, because everything since the last 02:00 differential is lost if the server dies, and that misses the 8-hour RPO. So add log backups every hour. Worst-case loss is now about an hour, comfortably inside 8 hours, and a restore of the Sunday full, the latest nightly differential and the hours of logs since fits inside 12 hours if you rehearsed it.
 
 ### Test the restore
 
@@ -109,7 +109,7 @@ Backups protect against loss. {{term:high-availability|High availability}} (HA) 
 Words you'll hear: **synchronous** means a write is not confirmed until the second copy has it, so nothing is lost but writes are slower. **Asynchronous** confirms right away and may lose a moment of data. **Failover** is switching to the standby. **Split brain** is when both servers believe they are primary, which is why clusters use a witness or quorum to decide.
 
 > [!tip] Ignition helps you
-> Ignition's store-and-forward on database connections and the Tag Historian buffers data on disk while the database is unreachable and flushes it when it returns. A few minutes of database downtime costs you no history as long as the gateway's buffer has room. Many plants find that, plus a VM with HA, is enough, and skip clustering entirely. Size the buffer for the longest outage you accept.
+> Ignition's store and forward can buffer data on disk while the database is unreachable and flush it when it returns, for the features that use it (the Tag Historian is the main one; check the manual for which others in your version). A few minutes of database downtime costs you no history as long as the gateway's buffer has room. Many plants find that, plus a VM with HA, is enough, and skip clustering entirely. Size the buffer for the longest outage you accept.
 
 HA is not a backup. A bad \`DELETE\` replicates to the standby in milliseconds.
 
@@ -121,7 +121,7 @@ Ignition connects to the database as a single account. What that account may do 
 |---|---|
 | Wrong | \`sa\`, \`postgres\`, or \`db_owner\` on every database, shared with the DBA |
 | Better | A dedicated login per Ignition connection, owner of one database only |
-| Best | Separate accounts by job: one read-write for the historian and groups, one read-only for reporting and Perspective queries, one with EXECUTE on specific procedures |
+| Best | Separate accounts by job: one read-write for the historian and groups, one read-only for reporting, and one application login with EXECUTE on only the write procedures it needs |
 
 Practical rules:
 
@@ -133,18 +133,23 @@ Practical rules:
 - **Disable or lock down default accounts**, and turn on auditing of failed logins.
 - **Patch.** Database servers are targets. Include them in the maintenance calendar.
 
-A minimal SQL Server example for a reporting account:
+A minimal SQL Server example with two separate logins. The reporting login can only read a view. The application login can run the write procedure and cannot touch the tables directly:
 
 \`\`\`sql
-CREATE LOGIN ignition_reports WITH PASSWORD = '********';
 USE PlantDB;
-CREATE USER ignition_reports FOR LOGIN ignition_reports;
-GRANT SELECT  ON v_downtime_report TO ignition_reports;
-GRANT SELECT  ON v_production_summary TO ignition_reports;
-GRANT EXECUTE ON sp_close_downtime TO ignition_reports;
+
+-- Reporting: read-only. No EXECUTE on anything that writes.
+CREATE LOGIN ignition_reports WITH PASSWORD = '********';
+CREATE USER  ignition_reports FOR LOGIN ignition_reports;
+GRANT SELECT ON v_downtime_report TO ignition_reports;
+
+-- Application: may close downtime, only through the procedure.
+CREATE LOGIN ignition_app WITH PASSWORD = '********';
+CREATE USER  ignition_app FOR LOGIN ignition_app;
+GRANT EXECUTE ON usp_close_downtime TO ignition_app;
 \`\`\`
 
-See {{lesson:db-procs}} for why views and procedures make this easier.
+Granting EXECUTE on a write procedure to the reporting login would let a dashboard (or anyone who steals its password) close or change downtime records, which defeats the point of a read-only account. Check the grants by listing each login's permissions, not by trusting the script. See {{lesson:db-procs}} for why views and procedures make this easier.
 
 ## Where the database goes on the Purdue model
 
@@ -152,7 +157,7 @@ The {{term:purdue-model|Purdue model}} puts plant control at Levels 0 to 2, site
 
 {{diagram:placement}}
 
-- A database used only by Ignition and the plant's MES normally sits at **Level 3**, on the OT side, in a server VLAN behind a firewall.
+- A database used only by Ignition and the plant's MES normally sits at **Level 3**, on the OT side, in a server VLAN behind a firewall. In the reference plant that is the SQL server at \`10.20.30.20\` in VLAN 30, with a read-only replica for the enterprise in the DMZ (VLAN 250).
 - Allow only the Ignition gateway(s) and named admin hosts to reach the database port (1433 for SQL Server, 5432 for PostgreSQL, 3306 for MySQL).
 - If the enterprise needs the data, **do not open a hole from IT into Level 3**. Replicate or push a copy into the DMZ or the IT side, or have the Level 3 system push outward. Direct inbound connections from corporate to a production database are a classic audit finding.
 - If the database lives in the cloud, the connection should be outbound from OT, via a controlled path, not inbound.
@@ -164,7 +169,7 @@ Historian data grows quietly. Ten thousand tags at one stored value per second i
 
 Monitor, and alert on:
 
-1. **Free space** on the data, log and backup volumes (warn at 20 percent, page at 10 percent).
+1. **Free space** on the data, log and backup volumes (many shops warn at about 20 percent free and page at about 10; these are house practice, not a vendor figure, so set your own).
 2. **Database and log file size** growth per week. Plot it, and project the date you run out.
 3. **Largest tables**, which are almost always the historian partitions (named like \`sqlt_data_1_2026_10\`) and any raw event tables.
 4. **Backup job success** and the age of the last good backup.
@@ -209,7 +214,7 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
     },
     {
       title: "A reporting account for Power BI",
-      body: `The enterprise wants dashboards of downtime. Rather than hand over the Ignition login, the integrator creates \`powerbi_ro\` with SELECT on \`v_downtime_report\` and \`v_production_summary\` only. The firewall rule allows TCP 1433 from the DMZ reporting server alone. If the credentials leak, the attacker can read two views and can't touch \`production_run\`.`
+      body: `The enterprise wants dashboards of downtime. Rather than hand over the Ignition login, the integrator creates \`powerbi_ro\` with SELECT on \`v_downtime_report\` only, and no EXECUTE on any procedure. The firewall rule allows TCP 1433 from the DMZ reporting server alone, and the reporting server reads the DMZ replica rather than the Level 3 database. If the credentials leak, the attacker can read one view and can't touch \`production_run\` or change anything.`
     }
   ],
 

@@ -73,7 +73,7 @@ The case fills at 24, the tape station finishes, and the counter clears for the 
 XIC(Item_Picked) CTD(Bin_Stock,0,0)
 \`\`\`
 
-CTD subtracts 1 from ACC on each false-to-true edge of its rung. Like CTU, it holds its value and needs a RES or a preload. CTD sets DN when ACC is greater than or equal to PRE, the same test as CTU, so a stock counter that counts down toward zero is usually tested with a compare against ACC rather than with DN:
+CTD subtracts 1 from ACC on each false-to-true edge of its rung. Like CTU, it holds its value and needs a RES or a preload. The Logix instruction reference gives the same done-bit test for both counters, \`.DN\` set while ACC is greater than or equal to PRE, so with a preset of 0 the DN of a stock counter is on from the first scan and tells you nothing about empty. Because DN semantics for a down counter are a classic source of confusion across PLC families and versions (check the CTD page of the instruction reference for your version), a stock counter that counts down toward zero is best tested with a compare against ACC rather than with DN:
 
 \`\`\`ladder
 LEQ(Bin_Stock.ACC,0) OTE(Bin_Empty)
@@ -89,12 +89,12 @@ An up/down counter is a CTU and a CTD on the **same tag**. Entries add, exits su
 XIC(Entry_Eye) CTU(Cars,100,0)
 XIC(Exit_Eye) XIC(Cars_Not_Empty) CTD(Cars,100,0)
 GRT(Cars.ACC,0) OTE(Cars_Not_Empty)
-XIC(Cars.DN) OTE(Lot_Full_Sign)
+GEQ(Cars.ACC,100) OTE(Lot_Full_Sign)
 \`\`\`
 
 {{diagram:updown}}
 
-With PRE = 100, \`Cars.DN\` is true whenever ACC is 100 or more, so it works directly as the "FULL" sign, and it clears itself when a car leaves and ACC drops to 99. This is a pleasing use of the shared structure. The third rung stops the CTD from driving ACC negative if a sensor glitches, though note that the rung order matters: the permissive is computed after the counter that uses it, so it reflects the previous scan. That is fine for this purpose.
+The sign is driven by a compare on \`Cars.ACC\`, not by \`Cars.DN\`. Two instructions share one tag, and a compare says exactly what you mean ("100 or more cars inside") whichever way each instruction treats DN. The sign clears itself when a car leaves and ACC drops to 99. This is a pleasing use of the shared structure. The third rung stops the CTD from driving ACC negative if a sensor glitches, though note that the rung order matters: the permissive is computed after the counter that uses it, so it reflects the previous scan. That is fine for this purpose.
 
 {{sim:sim-ctd}}
 
@@ -110,7 +110,7 @@ CTU and CTD detect an edge **only when they are scanned**. That sets three limit
 
 ## .OV and .UN, and why DINT
 
-ACC and PRE are DINTs: 32-bit signed integers from −2,147,483,648 to 2,147,483,647. If CTU passes the upper limit, it wraps to −2,147,483,648 and sets \`.OV\`. If CTD passes the lower limit, it wraps to the top and sets \`.UN\`. You will hardly ever see either from parts counting, but an event counting at high rate can. At 1,000 counts per second a DINT overflows in about 24.8 days.
+ACC and PRE are DINTs: 32-bit signed integers from −2,147,483,648 to 2,147,483,647. If CTU passes the upper limit, it wraps around to the negative end and sets \`.OV\`. If CTD passes the lower limit, it wraps to the top and sets \`.UN\`. Confirm the exact wrap behavior in the instruction reference or the emulator before you rely on it. You will hardly ever see either from parts counting, but an event counting at high rate can. At 1,000 counts per second a DINT overflows in about 24.8 days.
 
 The data type matters for a reason beyond range. Compare the options for a running total:
 
@@ -128,7 +128,7 @@ Logix registers and I/O are 32-bit native, so DINT is the default for every whol
 | Event | ACC after |
 |---|---|
 | Rung goes false | Held |
-| Power cycle, Run/Program switch | Held (retentive) |
+| Power cycle, Run/Program switch | Normally held, but depends on the controller's nonvolatile memory and load settings, so test it |
 | RES | 0 |
 | Download | Depends on whether the project's tag values are kept, so check |
 
@@ -154,7 +154,7 @@ If you ask the clicker "have we hit the number we wanted?", it says yes as soon 
 
   examples: [
     { title: "A pallet of 48 cartons", body: `\`XIC(Carton_Eye) CTU(Pallet_Count,48,0)\` then \`XIC(Pallet_Count.DN) OTE(Pallet_Full)\`. The full lamp stays on until the forklift driver presses \`Pallet_Removed\`, wired to \`XIC(Pallet_Removed) RES(Pallet_Count)\`. If the driver forgets, the next carton makes ACC 49 with DN still on, and the lamp stays lit.` },
-    { title: "Missed-pulse diagnosis", body: `A line counts 1,000 bottles an hour on the PLC, but the downstream scale says 1,012. The sensor's output pulses at 8 ms, the task runs at 10 ms. Some pulses fall between scans. Moving the count to an interrupt task or a fast input solves it. Adding a TON 'stretcher' in the sensor wiring or an input filter change does not, because the pulse is too short to begin with.` }
+    { title: "Missed-pulse diagnosis", body: `A line counts 1,000 bottles an hour on the PLC, but the downstream scale says 1,012. The sensor's output pulses at 8 ms, the task runs at 10 ms. Some pulses fall between scans. Two fixes work: a hardware pulse stretcher in the sensor wiring, or moving the count to a faster periodic task (for example 5 ms) or a high-speed input. A timer in the PLC does not help, because the scan still has to see the pulse before any timer could stretch it, and an input filter change cannot create a pulse the sensor never delivered.` }
   ],
 
   diagrams: {
@@ -204,7 +204,7 @@ If you ask the clicker "have we hit the number we wanted?", it says yes as soon 
   <text class="dg-text-muted dg-mid" x="427.1" y="216">out</text>
   <line class="dg-line-thin dg-dash" x1="523.6" y1="44" x2="523.6" y2="200"/>
   <text class="dg-text-muted dg-mid" x="523.6" y="216">out</text>
-  <text class="dg-text-sm" x="20" y="238">PRE = 3 here, so Cars.DN is on only while ACC is 3 or more (the lot is full).</text>
+  <text class="dg-text-sm" x="20" y="238">PRE = 3 here, so the lot is full while ACC is 3 or more.</text>
 </svg>`
   },
 
