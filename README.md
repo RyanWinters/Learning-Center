@@ -36,17 +36,18 @@ Only devices on your tailnet can reach it, and the connection uses HTTPS. Nothin
 If you really want plain LAN access instead, use `python server.py --host 0.0.0.0`. The progress API has no login, so
 anyone on that network could change your progress.
 
-## Start it automatically on Windows
+## Start it automatically on Windows, and keep it up to date
 
-1. Make `start-learning-center.bat` next to `server.py`:
-   ```
-   @echo off
-   cd /d "%~dp0"
-   pythonw server.py
-   ```
-2. Press Win+R, type `shell:startup`, and put a shortcut to that .bat file in the folder that opens.
+`autoupdate.pyw` runs the server with no console window and checks GitHub every 5 minutes. When `main` has new
+commits it fast-forwards the checkout, so merged lessons show up on the next page load. It restarts the server only
+when `server.py` changed. It skips the update if the checkout isn't on `main` or has edits to tracked files.
+It logs to `data/autoupdate.log`. Git must be on the PATH.
 
-`pythonw` runs it without a console window. To stop it, end "pythonw.exe" in Task Manager.
+1. Press Win+R, type `shell:startup`, and put a shortcut to `autoupdate.pyw` in the folder that opens.
+   Python opens `.pyw` files with `pythonw`, so no window appears.
+2. Double-click it once to start it now.
+
+To stop it, end both "pythonw.exe" processes in Task Manager.
 
 ## What's inside
 
@@ -58,6 +59,7 @@ anyone on that network could change your progress.
 | `content/glossary/*.js` | About 800 industry terms. They are linked automatically wherever they appear |
 | `content/sim/*.js` | Ladder simulator challenges (`index.js` lists them) |
 | `content/files/` | Downloads linked from lessons: FDS outline, HMI checklist, I/O list template, naming sheet |
+| `autoupdate.pyw` | Runs the server and pulls new commits from `main` every 5 minutes |
 | `server.py` | Static file server plus the progress API (`/api/progress`, which needs an `X-LC: 1` header) |
 | `tools/validate.js` | Checks every lesson, quiz, diagram and glossary reference |
 | `tools/sim-test.js` | Runs every simulator challenge's solution against its tests |
