@@ -29,7 +29,18 @@ ul, ol { margin: 0; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font-size: inherit; min-height: 24px; }
 
 /* ---------- Boot ---------- */
-.boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 12px; font: 600 1.25rem var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); grid-column: 1 / -1; }
+/* Boot screen: pinned to the viewport so it can't be scrolled or zoomed while the app loads. */
+.boot { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-wrap: wrap; align-content: center; align-items: center; justify-content: center; gap: 12px; font: 600 1.25rem var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); touch-action: none; overscroll-behavior: none; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+.boot-fail { flex-basis: 100%; display: grid; justify-items: center; gap: 12px; text-transform: none; letter-spacing: 0; font: 400 var(--text-sm) var(--font-body); text-align: center; max-width: 34ch; margin: 8px auto 0; }
+.boot-fail button { font: 600 var(--text-sm) var(--font-body); min-height: 44px; padding: 0 20px; border-radius: var(--radius); border: 0; background: var(--accent); color: var(--accent-fg); }
+/* App feel on phones: no double-tap zoom, no rubber-band bounce of the whole page. */
+html, body { overscroll-behavior-y: none; }
+body { touch-action: manipulation; }
+/* Tap a diagram to enlarge it (pinch-zoom is off). */
+figure.dg svg { cursor: zoom-in; }
+.dg-zoom { position: fixed; inset: 0; z-index: 90; background: var(--bg); overflow: auto; overscroll-behavior: contain; padding: calc(env(safe-area-inset-top, 0px) + 56px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px)); }
+.dg-zoom svg { display: block; width: max(100%, 900px); max-width: none; height: auto; font-family: var(--font-body); }
+.dg-zoom-close { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); right: max(12px, env(safe-area-inset-right, 0px)); min-height: 44px; padding: 0 16px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font: 600 var(--text-sm) var(--font-body); z-index: 91; }
 .boot-mark { width: 14px; height: 14px; background: var(--accent); animation: pulse 1s ease-in-out infinite; }
 
 /* ---------- Shell ---------- */

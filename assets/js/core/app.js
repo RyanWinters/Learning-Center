@@ -176,6 +176,22 @@
     }
   });
 
+  // Tap a diagram to view it full screen and scrollable (the viewport disables pinch-zoom).
+  document.addEventListener('click', e => {
+    const svg = e.target.closest && e.target.closest('figure.dg svg');
+    if (!svg || e.target.closest('a, button')) return;
+    const box = document.createElement('div');
+    box.className = 'dg-zoom'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Enlarged diagram');
+    box.appendChild(svg.cloneNode(true));
+    const close = document.createElement('button');
+    close.type = 'button'; close.className = 'dg-zoom-close'; close.textContent = 'Close';
+    const done = () => { box.remove(); close.remove(); document.removeEventListener('keydown', esc); };
+    const esc = ev => { if (ev.key === 'Escape') done(); };
+    close.addEventListener('click', done);
+    document.addEventListener('keydown', esc);
+    document.body.appendChild(box); document.body.appendChild(close); close.focus();
+  });
+
   async function boot() {
     try {
       await LC.store.init();

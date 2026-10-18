@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Learning Center">
 <title>Learning Center</title>
 <meta name="theme-color" content="#ecede9">
 <meta name="color-scheme" content="light dark">
@@ -21,6 +24,24 @@
     var t = s && s.settings && s.settings.theme;
     if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
+  // Boot watchdog: if a script fails to load or startup stalls, say so and offer a reload
+  // instead of pulsing forever.
+  (function () {
+    function stuck(msg) {
+      var b = document.querySelector('.boot');
+      if (!b || b.querySelector('.boot-fail')) return;
+      var d = document.createElement('div');
+      d.className = 'boot-fail';
+      d.innerHTML = '<p>' + msg + '</p><button type="button">Reload</button>';
+      d.querySelector('button').onclick = function () { location.reload(); };
+      b.appendChild(d);
+    }
+    window.addEventListener('error', function (e) {
+      var t = e.target;
+      if (t && t.tagName === 'SCRIPT') stuck('A file didn\'t load (' + (t.getAttribute('src') || 'script') + '). Check the connection and reload.');
+    }, true);
+    setTimeout(function () { stuck('This is taking longer than it should. The connection to your PC may be slow.'); }, 10000);
+  })();
 </script>
 </head>
 <body>

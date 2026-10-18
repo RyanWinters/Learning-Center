@@ -127,8 +127,16 @@ def public_path(raw):
     return None
 
 
+class Server(ThreadingHTTPServer):
+    # The default listen queue is 5. A phone's first load (through `tailscale serve`) opens dozens of
+    # connections at once; on Windows the overflow is refused outright and a script never loads.
+    request_queue_size = 128
+    daemon_threads = True
+
+
 class Handler(SimpleHTTPRequestHandler):
     timeout = 30  # seconds; a stalled client can't hold a thread forever
+    protocol_version = "HTTP/1.1"  # keep-alive: reuse connections instead of opening one per file
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
@@ -202,7 +210,7 @@ def main():
     ap.add_argument("--host", default="127.0.0.1", help="127.0.0.1 (default) or 0.0.0.0 for the whole LAN")
     ap.add_argument("--port", type=int, default=8080)
     a = ap.parse_args()
-    srv = ThreadingHTTPServer((a.host, a.port), Handler)
+    srv = Server((a.host, a.port), Handler)
     print(f"Learning Center on http://localhost:{a.port}  (Ctrl+C to stop)")
     if a.host == "127.0.0.1":
         print(f"Phone access: run `tailscale serve --bg {a.port}` once, then open the URL it prints.")
