@@ -171,7 +171,7 @@ When a cook says "make the kitchen brighter", you do not just buy bigger lights.
   why: `
 **Why not just apply the rules from a book?** Rules like grey backgrounds and sparing color come from research on operators in general. They do not know that your night crew reads a paper log, or that the discharge valve on Mixer 1 sticks. The rules tell you the shape of a good answer. The operators tell you what the question is. Skipping the second half is how teams deliver technically compliant screens that crews work around.
 
-**Why task analysis before pictures?** Because layout follows tasks. If you do not know which decisions an operator makes, how often and under what pressure, you end up putting everything on screen because everything might matter. That is the screen full of numbers that ISA-101 guidance warns about. A task analysis also gives you a defensible reason to leave things off.
+**Why task analysis before pictures?** Because layout follows tasks. If you do not know which decisions an operator makes, how often and under what pressure, you end up putting everything on screen because everything might matter. That is how you end up with a screen full of numbers. A task analysis also gives you a defensible reason to leave things off.
 
 **Why test with five and measure time to detect?** Qualitative testing finds the most common problems quickly, and NN/g's guidance of around five users for a single group reflects that diminishing returns set in. The measure matters because the point of a high-performance HMI is early detection of abnormal conditions. If a redesign looks great but operators do not notice the stuck valve any sooner, it has not done its job. Measuring forces the claim to be tested. Be honest about the limits: five people do not give statistics, and a simulator is not a night shift under stress.
 
@@ -305,7 +305,7 @@ Human-centered methods such as contextual inquiry and task analysis come from hu
       ]
     },
     {
-      q: "A operator says, \"Make the screen brighter.\" What is the best next step?",
+      q: "An operator says, \"Make the screen brighter.\" What is the best next step?",
       options: [
         "Raise the background brightness for everyone",
         "Say the grey is part of the standard and decline",
