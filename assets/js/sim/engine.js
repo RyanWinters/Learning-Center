@@ -9,7 +9,14 @@
 
   var STRUCTS = {
     TIMER: { PRE: "DINT", ACC: "DINT", EN: "BOOL", TT: "BOOL", DN: "BOOL" },
-    COUNTER: { PRE: "DINT", ACC: "DINT", CU: "BOOL", CD: "BOOL", DN: "BOOL", OV: "BOOL", UN: "BOOL" }
+    COUNTER: { PRE: "DINT", ACC: "DINT", CU: "BOOL", CD: "BOOL", DN: "BOOL", OV: "BOOL", UN: "BOOL" },
+    // Logix-style module-defined I/O (use as e.g. tag "Local:1:I" of type MOD_DI16, then Local:1:I.Data.0).
+    MOD_BITS16: { "0": "BOOL", "1": "BOOL", "2": "BOOL", "3": "BOOL", "4": "BOOL", "5": "BOOL", "6": "BOOL", "7": "BOOL",
+      "8": "BOOL", "9": "BOOL", "10": "BOOL", "11": "BOOL", "12": "BOOL", "13": "BOOL", "14": "BOOL", "15": "BOOL" },
+    MOD_DI16: { Data: "MOD_BITS16", Fault: "DINT" },
+    MOD_DO16: { Data: "MOD_BITS16", Fault: "DINT" },
+    MOD_AI4: { Ch0Data: "REAL", Ch1Data: "REAL", Ch2Data: "REAL", Ch3Data: "REAL", Ch0Fault: "BOOL", Ch1Fault: "BOOL", Ch2Fault: "BOOL", Ch3Fault: "BOOL" },
+    MOD_AO2: { Ch0Data: "REAL", Ch1Data: "REAL" }
   };
   var BASE = { BOOL: 1, DINT: 1, REAL: 1 };
   var NUM_RE = /^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/;
@@ -50,7 +57,11 @@
       });
     }
     e.declare = function (name, type, meta) {
-      if (!/^[A-Za-z_][A-Za-z0-9_]*(:[A-Za-z0-9_]+)?$/.test(name)) throw EngineError("'" + name + "' is not a valid tag name. Use letters, digits and underscores, starting with a letter.");
+      if (!/^[A-Za-z_][A-Za-z0-9_]*(:[A-Za-z0-9_]+)*$/.test(name)) {
+        // Allow re-declaring a member of a module tag (e.g. "Local:1:I.Data.0") as a no-op when it already exists.
+        if (name in e.types && e.types[name] === type) return;
+        throw EngineError("'" + name + "' is not a valid tag name. Use letters, digits and underscores, starting with a letter.");
+      }
       var had = e.info[name];
       if (had) { if (had.type === type) return; dropTag(name); } else e.decl.push(name);
       expand(name, type);
@@ -203,11 +214,13 @@
       });
       refs.forEach(function (p) {
         var r = rootOf(p); if (r in e.info || want[r]) return;
+        var mod = /^(Local:\d+:([IO]))\.(Data\.\d+|Ch\dData|Ch\dFault)/.exec(p);
+        if (mod) { want[mod[1]] = /^Data/.test(mod[3]) ? (mod[2] === "I" ? "MOD_DI16" : "MOD_DO16") : (mod[2] === "I" ? "MOD_AI4" : "MOD_AO2"); return; }
         var mm = /^[A-Za-z_]\w*\.(\w+)/.exec(p);
         if (mm) want[r] = /^(CU|CD|OV|UN)$/.test(mm[1]) ? "COUNTER" : "TIMER";
       });
       Object.keys(want).forEach(function (r) {
-        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(r)) e.declare(r, want[r], { auto: true });
+        if (/^[A-Za-z_][A-Za-z0-9_]*(:[A-Za-z0-9_]+)*$/.test(r)) e.declare(r, want[r], { auto: true });
       });
     }
 
@@ -254,7 +267,8 @@
             });
           }
           if (n.op === "TON" || n.op === "TOF" || n.op === "RTO" || n.op === "CTU" || n.op === "CTD") {
-            if (!isNum(n.args[1]) || !isNum(n.args[2] || "0")) throw EngineError(n.op + " Preset and Accum must be plain numbers (set PRE with MOV if it must change).");
+            if (!isNum(n.args[2] || "0")) throw EngineError(n.op + " Accum must be a plain number.");
+            n.c.pre = n.c.o[1].lit !== undefined ? null : n.c.o[1]; // tag preset, read every scan
           }
         } catch (er) {
           if (!er.engine) throw er;
@@ -288,7 +302,7 @@
         P.walk(r.nodes, function (n) {
           if (/^(TON|TOF|RTO|CTU|CTD)$/.test(n.op)) {
             var p = n.args[0]; if (seen[p] || !(p + ".PRE" in e.values)) return; seen[p] = 1;
-            e.values[p + ".PRE"] = wrap32(Number(n.args[1])); e.values[p + ".ACC"] = wrap32(Number(n.args[2] || 0));
+            e.values[p + ".PRE"] = isNum(n.args[1]) ? wrap32(Number(n.args[1])) : (typeof e.values[n.args[1]] === "number" ? wrap32(e.values[n.args[1]]) : 0); e.values[p + ".ACC"] = wrap32(Number(n.args[2] || 0));
           }
         });
       });
@@ -323,12 +337,14 @@
         case "OSR": { var s2 = rdBit(o[0]); out = inp && !s2; wr(o[0], inp); wr(o[1], out); v = out; break; }
         case "OSF": { var s3 = rdBit(o[0]); out = !inp && s3; wr(o[0], inp); wr(o[1], out); v = out; break; }
         case "TON": case "TOF": case "RTO": {
-          var t = resolve(o[0]), V = e.values, PRE = V[t + ".PRE"], ACC = V[t + ".ACC"];
+          var t = resolve(o[0]), V = e.values;
+          if (n.c.pre) V[t + ".PRE"] = wrap32(rd(n.c.pre));
+          var PRE = V[t + ".PRE"], ACC = V[t + ".ACC"];
           if (n.op === "TON") {
-            if (inp) { ACC = Math.min(ACC + d, MAXI); V[t + ".EN"] = true; V[t + ".DN"] = ACC >= PRE; V[t + ".TT"] = !V[t + ".DN"]; }
+            if (inp) { if (ACC < PRE) ACC = Math.min(ACC + d, PRE); V[t + ".EN"] = true; V[t + ".DN"] = ACC >= PRE; V[t + ".TT"] = !V[t + ".DN"]; }
             else { ACC = 0; V[t + ".EN"] = V[t + ".TT"] = V[t + ".DN"] = false; }
           } else if (n.op === "RTO") {
-            if (inp) { ACC = Math.min(ACC + d, MAXI); V[t + ".EN"] = true; V[t + ".DN"] = ACC >= PRE; V[t + ".TT"] = !V[t + ".DN"]; }
+            if (inp) { if (ACC < PRE) ACC = Math.min(ACC + d, PRE); V[t + ".EN"] = true; V[t + ".DN"] = ACC >= PRE; V[t + ".TT"] = !V[t + ".DN"]; }
             else { V[t + ".EN"] = false; V[t + ".TT"] = false; }
           } else { // TOF
             if (inp) { ACC = 0; V[t + ".EN"] = true; V[t + ".DN"] = true; V[t + ".TT"] = false; }
@@ -342,6 +358,7 @@
         }
         case "CTU": case "CTD": {
           var c = resolve(o[0]), W = e.values, up = n.op === "CTU", edge = up ? ".CU" : ".CD";
+          if (n.c.pre) W[c + ".PRE"] = wrap32(rd(n.c.pre));
           if (inp && !W[c + edge]) {
             var a = W[c + ".ACC"] + (up ? 1 : -1);
             if (a > MAXI) { a = MINI; W[c + ".OV"] = true; } else if (a < MINI) { a = MAXI; W[c + ".UN"] = true; }
@@ -355,7 +372,7 @@
           if (inp) {
             var r = resolve(o[0]), X = e.values;
             X[r + ".ACC"] = 0; X[r + ".DN"] = false;
-            if (e.types[r] === "TIMER") { X[r + ".EN"] = false; X[r + ".TT"] = false; } else { X[r + ".OV"] = false; X[r + ".UN"] = false; }
+            if (e.types[r] === "TIMER") { X[r + ".TT"] = false; } else { X[r + ".OV"] = false; X[r + ".UN"] = false; }
           }
           v = inp; break;
         }

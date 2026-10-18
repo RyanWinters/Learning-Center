@@ -24,5 +24,6 @@ window.LC_SIM_INDEX = [
   { id: "sim-traffic", title: "Traffic light state machine", level: 4, lesson: "plc-state-machines", summary: "Cycle red, green and amber with a step number and timers." },
   { id: "sim-tank-fill", title: "Fill/drain sequence", level: 4, lesson: "plc-state-machines", summary: "Run a tank through fill, hold and drain against a live process model." },
   { id: "sim-pump-alternation", title: "Lead/lag pump alternation", level: 4, lesson: "plc-state-machines", summary: "Alternate the lead pump each call so wear is shared." },
-  { id: "sim-mixer-batch", title: "Mixer batch sequence", level: 4, lesson: "plc-isa88-packml", summary: "Charge, mix and discharge a batch in order with interlocks." }
+  { id: "sim-mixer-batch", title: "Mixer batch sequence", level: 4, lesson: "plc-isa88-packml", summary: "Charge, mix and discharge a batch in order with interlocks." },
+  { id: "sim-step-fault", title: "Sequence with step timeout and fault state", level: 3, lesson: "plc-state-machines", summary: "Fill, heat and drain with a timeout on every step, a fault step with a reason code, and an operator reset." }
 ];

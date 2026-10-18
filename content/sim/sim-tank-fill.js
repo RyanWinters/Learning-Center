@@ -69,7 +69,7 @@ EQU(Step,10)TON(FillTmr,15000,0);
 
 The process model closes the loop. The level rises *because* your logic opened the valve, and your logic reads that level to decide when to move on. Each step that **waits on the real world** (here, Fill waiting for the level) needs a timeout, because devices fail quietly: a closed manual valve, a tripped supply pump, a dead transmitter. The \`FillTmr\` turns a silent stall into a named state, Step 900, that the HMI can display and a technician can act on. Note that Fault leaves **all valves closed**, and a reset returns to Idle, not to the step that failed.
 
-Two more habits from the lesson: all transitions are at the bottom of the program so only one fires per scan, and the abort (\`XIO(Stop)MOV(0,Step)\`) is last so it wins over any other transition in the same scan.
+Two more habits from the lesson: all transitions are at the bottom so the outputs above always match the step that was active for this scan (a \`MOV\` changes \`Step\` for every rung below it, and transitions only avoid chaining because each step's timer is gated by \`EQU(Step,n)\` and starts from zero), and the abort (\`XIO(Stop)MOV(0,Step)\`) is last so it wins over any other transition in the same scan.
 
 In a Logix project the state would be a member of a sequence UDT (\`Fill.Seq.Step\`) with \`FaultStep\` and \`FaultCode\` recorded on the way into Fault. The level hard limit (90%) should also have an independent high-high level switch wired to the fill valve, because a software timeout is not a safety function.`,
   tips: [

@@ -9,9 +9,7 @@ Build one rung:
 
 Use the two instructions every ladder program is built from. **XIC** (examine if closed) is true while its bit is 1. **OTE** (output energize) sets its bit to match the rung every scan.
 
-\`\`\`ladder
-XIC(Sensor)OTE(Light);
-\`\`\`
+The shape of the rung is \`XIC(input tag)OTE(output tag);\`. On this panel your two tags are **\`LampTest\`** (the input) and **\`PilotLamp\`** (the output), so those are the names you type into the instructions.
 
 Press the button on the panel to try your rung while it runs. Then press **Check**.`,
   tags: { LampTest: { type: "BOOL", desc: "Lamp test pushbutton (input)" }, PilotLamp: { type: "BOOL", desc: "Panel pilot lamp (output)" } },

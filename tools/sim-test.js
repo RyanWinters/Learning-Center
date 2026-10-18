@@ -65,6 +65,32 @@ for (const id of Object.keys(sims)) {
   if (P.print(P.parse(s.solution)).replace(/\s+/g, "") !== s.solution.replace(/\s+/g, "").replace(/;?(\/\/.*)?$/gm, ";").replace(/;;/g, ";")) { /* formatting differences are fine */ }
   if (ok) console.log("  ok   " + id + " (" + s.tests.length + " tests)");
 }
+
+// ---- engine self-tests (Logix semantics) ----
+{
+  const st = (name, fn) => { try { const m = fn(); if (m) fail("engine", name + ": " + m); else console.log("  ok   engine: " + name); } catch (e) { fail("engine", name + ": " + e.message); } };
+  const mk = (prog, cfg) => { const e = E.create(Object.assign({ scanMs: 50 }, cfg || {})); const er = e.load(prog); if (er.length) throw new Error(er[0].message); return e; };
+  const run = (e, ms) => e.advanceTime(ms);
+  st("TON ACC holds at PRE after DN", () => { const e = mk("XIC(Go)TON(T1,1000,0);"); e.setInput("Go", true); run(e, 5000); return e.values["T1.ACC"] === 1000 && e.values["T1.DN"] && !e.values["T1.TT"] ? "" : "ACC=" + e.values["T1.ACC"]; });
+  st("RTO ACC holds at PRE after DN", () => { const e = mk("XIC(Go)RTO(T1,1000,0);"); e.setInput("Go", true); run(e, 5000); return e.values["T1.ACC"] === 1000 ? "" : "ACC=" + e.values["T1.ACC"]; });
+  st("RES clears ACC/DN/TT but EN follows the rung", () => { const e = mk("XIC(Go)TON(T1,1000,0);\nXIC(Go)RES(T1);"); e.setInput("Go", true); run(e, 500);
+    return e.values["T1.EN"] === true && e.values["T1.ACC"] === 0 && !e.values["T1.DN"] && !e.values["T1.TT"] ? "" : JSON.stringify([e.values["T1.EN"], e.values["T1.ACC"]]); });
+  st("TON accepts a DINT tag as PRE, resolved each scan", () => { const e = mk("XIC(Go)TON(T1,Delay_PRE,0);", { tags: { Delay_PRE: "DINT" }, init: { Delay_PRE: 500 } });
+    e.setInput("Go", true); run(e, 400); if (e.values["T1.DN"]) return "DN too early"; run(e, 200); if (!e.values["T1.DN"]) return "DN not set at 500";
+    e.values.Delay_PRE = 2000; run(e, 100); return e.values["T1.PRE"] === 2000 && !e.values["T1.DN"] ? "" : "PRE did not follow tag"; });
+  st("CTU accepts a DINT tag as PRE", () => { const e = mk("XIC(P)CTU(C1,Cnt_PRE,0);", { tags: { Cnt_PRE: "DINT" }, init: { Cnt_PRE: 2 } });
+    for (let i = 0; i < 2; i++) { e.setInput("P", true); e.scan(); e.setInput("P", false); e.scan(); } return e.values["C1.DN"] && e.values["C1.PRE"] === 2 ? "" : "DN not set"; });
+  st("Logix module I/O tags (Local:1:I.Data.0 / Local:2:O.Data.3 / Local:3:I.Ch0Data)", () => {
+    const e = mk("XIC(Local:1:I.Data.0)OTE(Local:2:O.Data.3);\nMOV(Local:3:I.Ch0Data,Raw);");
+    if (e.types["Local:1:I.Data.0"] !== "BOOL" || e.types["Local:3:I.Ch0Data"] !== "REAL") return "types " + e.types["Local:1:I.Data.0"] + "/" + e.types["Local:3:I.Ch0Data"];
+    e.setInput("Local:1:I.Data.0", true); e.scan(); return e.values["Local:2:O.Data.3"] === true ? "" : "output not set"; });
+  st("Declared module I/O with an io list", () => {
+    const e = E.create({ tags: { "Local:1:I": "MOD_DI16", "Local:2:O": "MOD_DO16" }, io: [{ tag: "Local:1:I.Data.0", widget: "pb" }, { tag: "Local:2:O.Data.3", widget: "lamp" }] });
+    e.load("XIC(Local:1:I.Data.0)OTE(Local:2:O.Data.3);"); e.setInput("Local:1:I.Data.0", true); e.scan(); return e.values["Local:2:O.Data.3"] ? "" : "no output"; });
+  st("Nested UDT members (M1.Cmd.Start)", () => {
+    const e = E.create({ udts: { C: { Start: "BOOL" }, S: { Running: "BOOL" }, M: { Cmd: "C", Sts: "S" } }, tags: { M1: "M" } });
+    e.load("XIC(M1.Cmd.Start)OTE(M1.Sts.Running);"); e.setInput("M1.Cmd.Start", true); e.scan(); return e.values["M1.Sts.Running"] ? "" : "no output"; });
+}
 if (pending.length) console.log("  pending (not written yet): " + pending.length + " (" + pending.join(", ") + ")");
 console.log(fails ? "\nsim-test: " + fails + " problem(s)" : "\nsim-test: all written challenges pass");
 process.exit(fails ? 1 : 0);

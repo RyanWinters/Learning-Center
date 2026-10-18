@@ -53,7 +53,7 @@ Why the layout matters:
 
 - **Outputs use OTE, not OTL/OTU.** When the step changes, the old lamp's rung goes false and the lamp drops by itself. Nothing is left latched.
 - **One timer per step.** Each timer's rung is gated by its step, so it resets automatically on exit (a TON with a false rung clears). The next visit starts from zero.
-- **Transitions at the bottom.** A \`MOV\` changes \`Step\` for every rung below it in the same scan. With all transitions at the end, only one transition can fire per scan. If you put a transition above the outputs, you can fall through two steps in one scan.
+- **Timers gated by \`EQU(Step,n)\`.** A \`MOV\` changes \`Step\` immediately for every rung below it in the same scan, so transitions can chain. They do not here because each step's timer only runs while its own step is active: the next step's timer starts from zero, its \`.DN\` is false, and it cannot fire in the same scan. A transition whose condition is *already true* (for example a compare with no timer) can fall through two steps in one scan. Keeping transitions at the bottom also means the outputs above always show the step that was active for this whole scan.
 - **The gaps (10, 20, 30)** leave room to insert 'All red clearance' as step 15 later without renumbering.
 
 Real signal controllers are far more demanding (minimum greens, conflict monitors, hardware malfunction monitors that are independent of the controller), but the sequencing skeleton looks exactly like this. In Studio 5000 the same sequence is often written as a structured text CASE; the ladder with EQU per step is the equivalent.`,
