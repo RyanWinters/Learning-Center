@@ -221,16 +221,16 @@ Perspective launched with Ignition 8.0 as a browser-native alternative to Vision
     {
       q: "A header row has a title and an Acknowledge button. You want the button to stay 96 px wide and the title to take the rest. Which position values do this?",
       options: [
+        "Button basis 96px grow 0 shrink 0; title grow 1",
         "Title basis 96px, button grow 1",
         "Both grow 1, both shrink 1",
-        "Button basis 96px grow 0 shrink 0; title grow 1",
         "Switch to percent mode and set title to 80%"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. The button holds a fixed size and the title absorbs all leftover space.",
         "That reverses the roles and fixes the wrong item.",
         "Equal grow splits the free space evenly, so the button would grow to match the title.",
-        "Correct. The button holds a fixed size and the title absorbs all leftover space.",
         "Percent mode is for coordinate containers, and a fixed percentage does not adapt to content or screen."
       ]
     },
@@ -238,46 +238,46 @@ Perspective launched with Ignition 8.0 as a browser-native alternative to Vision
       q: "Why does a child's position object change shape when you drag it from a coordinate container into a flex container?",
       options: [
         "The Designer is buggy",
-        "The parent container defines what position means",
         "Flex containers ignore position entirely",
-        "Position is copied from style classes"
+        "Position is copied from style classes",
+        "The parent container defines what position means"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "It is by design.",
-        "Correct. Each container type interprets position its own way: x/y/width/height vs basis/grow/shrink.",
         "Flex uses position for basis, grow, shrink and similar values.",
-        "Style classes control appearance, not placement."
+        "Style classes control appearance, not placement.",
+        "Correct. Each container type interprets position its own way: x/y/width/height vs basis/grow/shrink."
       ]
     },
     {
       q: "You need a tile grid that shows about six tiles per row on a monitor, fewer on a tablet and one on a phone, using the least configuration. What do you build?",
       options: [
         "Three views, one per device",
-        "A flex container with wrap on and tiles at basis 300px grow 1",
         "A coordinate container in fixed mode with 12 tiles pinned",
+        "A flex container with wrap on and tiles at basis 300px grow 1",
         "A tab container with a tab per device"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "That triples the maintenance and is unnecessary here.",
-        "Correct. The browser wraps tiles as room allows, with no breakpoints needed.",
         "Fixed pixel positions cannot adapt to different screen widths.",
+        "Correct. The browser wraps tiles as room allows, with no breakpoints needed.",
         "Tabs switch content, not density."
       ]
     },
     {
       q: "When is a breakpoint container the better choice than wrapping flex?",
       options: [
-        "When phone and desktop need substantially different sets of components",
         "When you want to avoid writing bindings",
+        "When phone and desktop need substantially different sets of components",
         "When you need children to overlap",
         "Whenever the screen has more than ten components"
       ],
-      answer: 0,
+      answer: 1,
       explain: [
-        "Correct. Breakpoint swaps child sets, which is right when the layouts differ in substance.",
         "It adds binding duplication risk, not less.",
+        "Correct. Breakpoint swaps child sets, which is right when the layouts differ in substance.",
         "Overlap is a coordinate container feature.",
         "Component count does not decide it. Layout difference does."
       ]

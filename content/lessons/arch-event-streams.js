@@ -200,35 +200,35 @@ Kafka was created at LinkedIn to move activity data between systems and was open
   quiz: [
     {
       q: "A PLC reboot makes 8,000 tags change at once and your stream inserts each change into a database one by one. Which stage is the right fix?",
-      options: ["Filter, by dropping all events", "Buffer, by batching events with debounce and max wait before the database handler", "Source, by switching to polling", "Encoder, by changing the format"],
-      answer: 1,
+      options: ["Buffer, by batching events with debounce and max wait before the database handler", "Filter, by dropping all events", "Source, by switching to polling", "Encoder, by changing the format"],
+      answer: 0,
       explain: [
-        "Dropping everything loses real data. A filter should remove only unwanted events.",
         "Correct. The buffer groups events so a burst becomes a few database writes, at the cost of a little latency.",
+        "Dropping everything loses real data. A filter should remove only unwanted events.",
         "Polling does more work, not less, and loses the event-driven benefits.",
         "The encoder decodes incoming data. It does not control write frequency."
       ]
     },
     {
       q: "Four consumers in the same consumer group read a topic that has two partitions. What happens?",
-      options: ["All four share the load equally", "Two are active, two sit idle, because each partition is read by one consumer in a group", "Kafka rejects the extra consumers permanently", "Each consumer gets all records twice"],
-      answer: 1,
+      options: ["All four share the load equally", "Kafka rejects the extra consumers permanently", "Two are active, two sit idle, because each partition is read by one consumer in a group", "Each consumer gets all records twice"],
+      answer: 2,
       explain: [
         "A partition is assigned to one consumer in the group, so parallelism is capped at the partition count.",
-        "Correct. Throughput scales with consumers only up to the number of partitions.",
         "They are allowed. They simply wait and take over if another fails.",
+        "Correct. Throughput scales with consumers only up to the number of partitions.",
         "Within one group each record is delivered to one consumer. A different group would see its own copy."
       ]
     },
     {
       q: "You need ordered processing of all events for each production line. What should you do in Kafka?",
-      options: ["Use one consumer per record", "Use the line ID as the record key so a line's events share a partition", "Randomize the key for even spread", "Turn off partitions"],
-      answer: 1,
+      options: ["Use one consumer per record", "Randomize the key for even spread", "Turn off partitions", "Use the line ID as the record key so a line's events share a partition"],
+      answer: 3,
       explain: [
         "Order is guaranteed per partition, so this does not help and would be extremely slow.",
-        "Correct. Records with the same key go to the same partition, where order is preserved.",
         "Random keys spread one line's events across partitions and lose ordering.",
-        "Every topic has at least one partition, and a single partition limits throughput."
+        "Every topic has at least one partition, and a single partition limits throughput.",
+        "Correct. Records with the same key go to the same partition, where order is preserved."
       ]
     },
     {
@@ -244,11 +244,11 @@ Kafka was created at LinkedIn to move activity data between systems and was open
     },
     {
       q: "An outside system asks 'what is the current level of tank 4?' on demand. Which Ignition feature fits best?",
-      options: ["An event stream with a tag event source", "A WebDev doGet resource", "A Kafka consumer group", "A database handler"],
-      answer: 1,
+      options: ["A WebDev doGet resource", "An event stream with a tag event source", "A Kafka consumer group", "A database handler"],
+      answer: 0,
       explain: [
-        "Event streams push events when things change. They are not built to answer ad hoc questions.",
         "Correct. On-demand request/response is exactly what a WebDev endpoint is for.",
+        "Event streams push events when things change. They are not built to answer ad hoc questions.",
         "Kafka is a durable log for streams of records, not an on-demand query tool.",
         "A database handler writes events into a table. It does not serve requests."
       ]

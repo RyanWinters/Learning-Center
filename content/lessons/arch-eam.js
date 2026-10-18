@@ -97,7 +97,7 @@ The district office is the **controller**. The schools are the **agents**. The t
   examples: [
     {
       title: "Recovering a failed plant server",
-      body: `Plant 9's server dies. You build a fresh machine with the same Ignition version, connect it as an agent, and use Restore Backup with the last archived backup. The restored agent keeps its previous name, the modules come back (they were archived with the backup), and the license restores with it. Check the backup and restore pages of the manual before restoring a backup made on a much older Ignition version onto an 8.3 gateway, as cross-version restores have limits.`
+      body: `Plant 3's server dies. You build a fresh machine with the same Ignition version, connect it as an agent, and use Restore Backup with the last archived backup. The restored agent keeps its previous name, the modules come back (they were archived with the backup), and the license restores with it. Check the backup and restore pages of the manual before restoring a backup made on a much older Ignition version onto an 8.3 gateway, as cross-version restores have limits.`
     },
     {
       title: "A staged project rollout",
@@ -170,31 +170,31 @@ The district office is the **controller**. The schools are the **agents**. The t
       q: "Which statement about the controller and agents is correct?",
       options: [
         "Agents stop running if the controller goes offline",
-        "The controller assigns tasks and monitors agents, and agents keep running normally if it is down",
         "Agents assign tasks to each other",
-        "The controller must run on the same machine as an agent"
+        "The controller must run on the same machine as an agent",
+        "The controller assigns tasks and monitors agents, and agents keep running normally if it is down"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Agents are full gateways and keep doing their jobs without the controller. Only management stops.",
-        "Correct. EAM is a management layer, not a runtime dependency.",
         "Tasks flow from the controller to agents.",
-        "The controller is a separate gateway in the fleet."
+        "The controller is a separate gateway in the fleet.",
+        "Correct. EAM is a management layer, not a runtime dependency."
       ]
     },
     {
       q: "You have 24 plant gateways to update with a new screen. What is the safest use of EAM?",
       options: [
         "Send Project to all 24 immediately",
-        "Send Project Resources to a pilot group, check the results, then send to the rest",
         "Restart all agents first",
+        "Send Project Resources to a pilot group, check the results, then send to the rest",
         "Run Restore Backup on every agent"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "A bad change would hit every site at once.",
-        "Correct. A staged rollout limits the blast radius and EAM reports task success per agent.",
         "Restarting does not deliver a screen and causes needless downtime.",
+        "Correct. A staged rollout limits the blast radius and EAM reports task success per agent.",
         "Restoring overwrites gateway configuration, which is far more than a screen update."
       ]
     },

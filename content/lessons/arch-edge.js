@@ -10,7 +10,7 @@ LC.lesson({
   objectives: [
     "Name the two current Ignition Edge editions and what each includes",
     "Explain what Sync Services does and what happens during a network outage",
-    "Choose between Edge and a full Ignition gateway for a given site",
+    "Choose between Edge and a full Ignition Gateway for a given site",
     "Describe an OEM panel design and a remote-site design using Edge",
     "List the restrictions that make Edge unsuitable as a central server"
   ],
@@ -96,7 +96,7 @@ Edge started as a way to put Ignition on small machine-side and remote hardware.
   examples: [
     {
       title: "OEM packaging machine",
-      body: `A packaging machine builder ships every machine with a CompactLogix PLC and a panel PC running Edge Panel with a Perspective HMI. The operator screen works with no network. Sync Services forwards counts and alarms to the customer's central Ignition gateway when the machine is connected, so the builder can offer the same screens remotely without reprogramming for each customer.`
+      body: `A packaging machine builder ships every machine with a CompactLogix PLC and a panel PC running Edge Panel with a Perspective HMI. The operator screen works with no network. Sync Services forwards counts and alarms to the customer's central Ignition Gateway when the machine is connected, so the builder can offer the same screens remotely without reprogramming for each customer.`
     },
     {
       title: "Sizing the outage buffer",
@@ -105,7 +105,7 @@ Edge started as a way to put Ignition on small machine-side and remote hardware.
   ],
 
   diagrams: {
-    spoke: `<svg viewBox="0 0 640 260" role="img" aria-label="Three sites each with a PLC and an Edge gateway forward data over Sync Services to a central Ignition gateway">
+    spoke: `<svg viewBox="0 0 640 260" role="img" aria-label="Three sites each with a PLC and an Edge gateway forward data over Sync Services to a central Ignition Gateway">
   <defs><marker id="arch-edge-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker></defs>
   <rect class="dg-box-accent" x="220" y="20" width="200" height="56" rx="6"/>
   <text class="dg-title dg-mid" x="320" y="46">Central gateway</text>
@@ -139,33 +139,33 @@ Edge started as a way to put Ignition on small machine-side and remote hardware.
   quiz: [
     {
       q: "A water utility wants 50 unattended pump stations to log locally and forward history to the control room. No local screens are needed. Which fits best?",
-      options: ["A standard gateway with SQL at every station", "An Edge IIoT gateway at every station using Sync Services", "A Vision client at each station", "Edge Panel with Vision at each station"],
-      answer: 1,
+      options: ["A standard gateway with SQL at every station", "A Vision client at each station", "An Edge IIoT gateway at every station using Sync Services", "Edge Panel with Vision at each station"],
+      answer: 2,
       explain: [
         "That works but multiplies cost and maintenance for needs Edge already covers.",
-        "Correct. Headless data collection with store-and-forward is exactly the Edge IIoT use case.",
         "Vision clients are screens, and there are no operators at these sites.",
+        "Correct. Headless data collection with store-and-forward is exactly the Edge IIoT use case.",
         "Panel adds visualization the sites don't need, so it costs more for nothing."
       ]
     },
     {
       q: "What does Sync Services do when the link to the central gateway drops?",
-      options: ["Stops the Edge gateway until the link returns", "Keeps storing history and alarms locally, then backfills when the link returns", "Moves the data to a SQL database on the Edge gateway", "Sends everything again in real time at the old timestamps"],
-      answer: 1,
+      options: ["Stops the Edge gateway until the link returns", "Moves the data to a SQL database on the Edge gateway", "Sends everything again in real time at the old timestamps", "Keeps storing history and alarms locally, then backfills when the link returns"],
+      answer: 3,
       explain: [
         "The Edge gateway keeps running locally.",
-        "Correct. Data is buffered locally and backfilled, within the local retention limit.",
         "Edge has no database connectivity.",
-        "Timestamps are kept, but data is backfilled from the buffer, not replayed as live."
+        "Timestamps are kept, but data is backfilled from the buffer, not replayed as live.",
+        "Correct. Data is buffered locally and backfilled, within the local retention limit."
       ]
     },
     {
       q: "A customer at a remote site later asks for scheduled PDF reports from a SQL database on site. What's the problem with Edge?",
-      options: ["Edge can't poll PLCs", "Edge has no database connectivity and doesn't run modules like Reporting", "Edge only supports Vision", "Reports require four Edge licenses"],
-      answer: 1,
+      options: ["Edge has no database connectivity and doesn't run modules like Reporting", "Edge can't poll PLCs", "Edge only supports Vision", "Reports require four Edge licenses"],
+      answer: 0,
       explain: [
-        "Edge polls devices fine.",
         "Correct. A standard gateway is needed at that site, or the reports should run on the central gateway.",
+        "Edge polls devices fine.",
         "Panel supports Perspective or Vision.",
         "Licensing doesn't work that way."
       ]
@@ -183,13 +183,13 @@ Edge started as a way to put Ignition on small machine-side and remote hardware.
     },
     {
       q: "Why poll the PLC from an Edge gateway on site instead of from the central gateway over a cellular link?",
-      options: ["PLCs refuse remote connections", "It keeps fast polling on the local LAN, makes timestamps accurate, and lets the link carry only results", "Edge is faster than OPC UA", "The central gateway can't use drivers"],
-      answer: 1,
+      options: ["PLCs refuse remote connections", "Edge is faster than OPC UA", "The central gateway can't use drivers", "It keeps fast polling on the local LAN, makes timestamps accurate, and lets the link carry only results"],
+      answer: 3,
       explain: [
         "They accept connections; the problem is link quality and cost.",
-        "Correct. Local polling survives outages and gives correct timestamps.",
         "Edge uses the same drivers and protocols.",
-        "A central gateway has the same drivers."
+        "A central gateway has the same drivers.",
+        "Correct. Local polling survives outages and gives correct timestamps."
       ]
     }
   ],

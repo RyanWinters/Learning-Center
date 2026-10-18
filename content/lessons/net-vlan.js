@@ -234,33 +234,33 @@ IEEE 802.1Q, published in 1998, standardized VLAN tagging and replaced vendor-sp
     },
     {
       q: "IGMP snooping is on and I/O works after commissioning. Ten minutes after a power cycle, connections time out. What is the most likely cause?",
-      options: ["The DSCP values were reset", "No IGMP querier in the VLAN, so group entries aged out", "The trunk native VLAN changed", "The switch ran out of MAC table space"],
-      answer: 1,
+      options: ["The DSCP values were reset", "The trunk native VLAN changed", "No IGMP querier in the VLAN, so group entries aged out", "The switch ran out of MAC table space"],
+      answer: 2,
       explain: [
         "DSCP mismatches affect priority under congestion, not whether connections time out on a quiet network.",
-        "Correct. Snooping depends on periodic queries to refresh membership. Without a querier, entries expire.",
         "A native VLAN mismatch causes leaks or no connectivity from the start, not delayed failure.",
+        "Correct. Snooping depends on periodic queries to refresh membership. Without a querier, entries expire.",
         "MAC table exhaustion needs thousands of devices and shows as flooding of unicast, not group timeouts."
       ]
     },
     {
       q: "What does a trunk port do that an access port does not?",
-      options: ["Routes between VLANs", "Carries frames for several VLANs with 802.1Q tags", "Encrypts traffic", "Blocks multicast"],
-      answer: 1,
+      options: ["Routes between VLANs", "Encrypts traffic", "Blocks multicast", "Carries frames for several VLANs with 802.1Q tags"],
+      answer: 3,
       explain: [
         "Routing needs a layer 3 device. A trunk is only a tagged link.",
-        "Correct. The tag tells the far end which VLAN each frame belongs to.",
         "VLAN tags give no encryption and no confidentiality.",
-        "Trunks forward multicast like any other port, subject to snooping."
+        "Trunks forward multicast like any other port, subject to snooping.",
+        "Correct. The tag tells the far end which VLAN each frame belongs to."
       ]
     },
     {
       q: "Why does a multicast stream reach every port of an unmanaged switch?",
-      options: ["The switch broadcasts all frames by design", "It never sees a multicast address as a source, so it never learns where listeners are", "Multicast uses a different Ethernet standard", "Unmanaged switches have no MAC table"],
-      answer: 1,
+      options: ["It never sees a multicast address as a source, so it never learns where listeners are", "The switch broadcasts all frames by design", "Multicast uses a different Ethernet standard", "Unmanaged switches have no MAC table"],
+      answer: 0,
       explain: [
-        "Unicast is filtered after learning. Only unknown destinations flood.",
         "Correct. Learning is based on source MACs, and a multicast address is never a source, so it is flooded.",
+        "Unicast is filtered after learning. Only unknown destinations flood.",
         "Multicast is ordinary Ethernet with a special destination address.",
         "Unmanaged switches do learn unicast MAC addresses."
       ]
@@ -278,12 +278,12 @@ IEEE 802.1Q, published in 1998, standardized VLAN tagging and replaced vendor-sp
     },
     {
       q: "Two switches both act as IGMP querier in one VLAN. What happens?",
-      options: ["Both send queries forever", "Multicast stops entirely", "An election runs and the lowest IP address becomes the querier", "The higher IP wins automatically"],
-      answer: 2,
+      options: ["An election runs and the lowest IP address becomes the querier", "Both send queries forever", "Multicast stops entirely", "The higher IP wins automatically"],
+      answer: 0,
       explain: [
+        "Correct. The device with the lowest IP address wins, so check that it is the one you intended.",
         "The standard has them elect one so the other goes quiet.",
         "Streams keep flowing. The risk is the wrong switch winning, not an outage.",
-        "Correct. The device with the lowest IP address wins, so check that it is the one you intended.",
         "It is the lowest address, not the highest, that wins."
       ]
     }

@@ -215,23 +215,23 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
   quiz: [
     {
       q: "Which two ISA-95 Part 2 object models carry the main daily traffic between ERP and MES?",
-      options: ["Personnel and equipment capability", "Production schedule (down) and production performance (up)", "Process segment and capability", "Material class and personnel class"],
-      answer: 1,
+      options: ["Personnel and equipment capability", "Process segment and capability", "Material class and personnel class", "Production schedule (down) and production performance (up)"],
+      answer: 3,
       explain: [
         "These are real models but they change slowly and are not the daily flow.",
-        "Correct. Orders go down as a production schedule and results come back as production performance.",
         "These describe reusable steps and what the plant could do, not what is happening today.",
-        "Classes describe definitions and change rarely."]
+        "Classes describe definitions and change rarely.",
+        "Correct. Orders go down as a production schedule and results come back as production performance."]
     },
     {
       q: "What is B2MML?",
-      options: ["A network protocol like MQTT", "A Sepasoft database", "A SAP message format", "An XML implementation of the ISA-95 object models"],
-      answer: 3,
+      options: ["A network protocol like MQTT", "A Sepasoft database", "An XML implementation of the ISA-95 object models", "A SAP message format"],
+      answer: 2,
       explain: [
         "B2MML is a message format, not a transport protocol.",
         "It's a standard schema, not a product-specific database.",
-        "It's maintained by MESA and isn't specific to SAP, though SAP integrations may use or map to it.",
-        "Correct. It defines the XML shapes for ISA-95 data, and you choose how to transport it."]
+        "Correct. It defines the XML shapes for ISA-95 data, and you choose how to transport it.",
+        "It's maintained by MESA and isn't specific to SAP, though SAP integrations may use or map to it."]
     },
     {
       q: "The MES sends a production confirmation, the network drops the reply, and the MES retries. How do you avoid double inventory?",
@@ -245,33 +245,33 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
     },
     {
       q: "A plant wants to keep running during ERP maintenance windows. Which design fits best?",
-      options: ["Each start button waits for a live ERP response", "Disable order tracking during the window", "Buffer released orders locally and queue confirmations until ERP is reachable", "Run ERP on the plant network"],
-      answer: 2,
+      options: ["Each start button waits for a live ERP response", "Buffer released orders locally and queue confirmations until ERP is reachable", "Disable order tracking during the window", "Run ERP on the plant network"],
+      answer: 1,
       explain: [
         "That makes an ERP outage a production outage.",
-        "Losing tracking leaves gaps in the records.",
         "Correct. Local buffering decouples the line from the back office.",
+        "Losing tracking leaves gaps in the records.",
         "ERP location doesn't remove the dependency, and it is not usually possible."]
     },
     {
       q: "A customer says, 'Just connect us to SAP.' What should you do first?",
-      options: ["Quote a fixed price", "Install the Business Connector and test", "Write the B2MML schema from scratch", "Find out the SAP product and version, which objects are needed, and who owns the SAP configuration"],
-      answer: 3,
+      options: ["Quote a fixed price", "Install the Business Connector and test", "Find out the SAP product and version, which objects are needed, and who owns the SAP configuration", "Write the B2MML schema from scratch"],
+      answer: 2,
       explain: [
         "Pricing before scoping is how integrations go over budget.",
         "Tools come after you know the interface and the objects.",
-        "B2MML is published. You don't write the schema, you agree on a profile.",
-        "Correct. SAP ERP, S/4HANA and other products expose different interfaces, and SAP-side work needs SAP staff."]
+        "Correct. SAP ERP, S/4HANA and other products expose different interfaces, and SAP-side work needs SAP staff.",
+        "B2MML is published. You don't write the schema, you agree on a profile."]
     },
     {
       q: "Which integration pattern most easily produces half-read data if you are careless?",
-      options: ["REST call", "File drop in a shared folder", "Message queue", "Middleware hub"],
-      answer: 1,
+      options: ["REST call", "Message queue", "Middleware hub", "File drop in a shared folder"],
+      answer: 3,
       explain: [
         "A REST call delivers a complete request or fails.",
-        "Correct. A poller can pick up a file the writer hasn't finished. Write to a temporary name and rename when complete.",
         "Queues deliver whole messages.",
-        "Middleware normally deals in whole messages."]
+        "Middleware normally deals in whole messages.",
+        "Correct. A poller can pick up a file the writer hasn't finished. Write to a temporary name and rename when complete."]
     }
   ],
 

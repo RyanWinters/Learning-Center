@@ -381,15 +381,15 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
     {
       "q": "A client's old screens show green for running and red for stopped. You are doing an ISA-101 style redesign. What is the best approach for pump state?",
       "options": [
-        "Keep green and red, since operators know them",
         "Show run versus stop with fill, label text and position, and keep red for alarms only",
+        "Keep green and red, since operators know them",
         "Use blue for running and yellow for stopped",
         "Hide the state unless it is abnormal"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "That uses alarm red for a normal state, collides with the common red-green deficiency and spends the color budget.",
         "Correct. Redundant, non-hue cues carry normal state, and the alarm hues stay reserved.",
+        "That uses alarm red for a normal state, collides with the common red-green deficiency and spends the color budget.",
         "Yellow is an alarm hue in the reserved set and blue would still be color-only.",
         "Operators need to see whether a pump is running at all times, so hiding the state removes information."
       ]
@@ -413,15 +413,15 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
     {
       "q": "Your dark theme reuses the day theme's red, #c8102e, on a #262626 background (about 2.6:1). What should you do?",
       "options": [
-        "Lighten the Critical token in the dark theme until the ratio passes (for example near #ff4d5e at about 4.7:1)",
         "Nothing, since red is always visible",
+        "Lighten the Critical token in the dark theme until the ratio passes (for example near #ff4d5e at about 4.7:1)",
         "Make Critical blue in the dark theme",
         "Replace the alarm color with white"
       ],
-      "answer": 0,
+      "answer": 1,
       "explain": [
-        "Correct. Override the semantic token for the theme and recheck, keeping meaning and shape the same.",
         "Contrast depends on the pair, and a dark red on dark grey is weak.",
+        "Correct. Override the semantic token for the theme and recheck, keeping meaning and shape the same.",
         "Changing the hue between themes breaks the rule of one meaning per color.",
         "White loses the hue, and white is commonly used for text and ordinary values."
       ]
@@ -429,16 +429,16 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
     {
       "q": "A breaker single-line on your process screen shows closed breakers in green, but the electrical engineer expects red for closed and energized. What is the sound design response?",
       "options": [
+        "Find the site's or client's documented convention, apply it to the breaker symbols only, and add OPEN / CLOSED text",
         "Argue that green is correct because it is the traffic-light convention",
         "Use random colors for each breaker",
-        "Find the site's or client's documented convention, apply it to the breaker symbols only, and add OPEN / CLOSED text",
         "Remove the breaker display"
       ],
-      "answer": 2,
+      "answer": 0,
       "explain": [
+        "Correct. Follow the local standard, label the state with text so color is not the only cue, and record it in the style guide.",
         "Neither convention is a formal IEC or ISA standard according to the sources, so arguing from tradition is weak.",
         "Random colors confuse everybody.",
-        "Correct. Follow the local standard, label the state with text so color is not the only cue, and record it in the style guide.",
         "Operators need the breaker state."
       ]
     },

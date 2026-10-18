@@ -256,67 +256,67 @@ In ladder this needs eight or more rungs plus careful handling of the divide-by-
   quiz: [
     {
       q: "Which language best fits a cascade temperature control loop with feedforward?",
-      options: ["Ladder", "Instruction List", "Function Block Diagram", "SFC"],
-      answer: 2,
+      options: ["Function Block Diagram", "Ladder", "Instruction List", "SFC"],
+      answer: 0,
       explain: [
+        "Correct. FBD wires process blocks like the strategy drawing, and PIDE is built for it.",
         "Ladder can do it, but the signal flow is hard to follow.",
         "Logix does not support Instruction List.",
-        "Correct. FBD wires process blocks like the strategy drawing, and PIDE is built for it.",
         "SFC models sequences, not continuous control."
       ]
     },
     {
       q: "Which ST statement correctly assigns a value?",
-      options: ["Motor = 1;", "Motor := 1;", "Motor <- 1;", "SET Motor;"],
-      answer: 1,
+      options: ["Motor = 1;", "Motor <- 1;", "Motor := 1;", "SET Motor;"],
+      answer: 2,
       explain: [
         "A single = is a comparison in ST.",
-        "Correct. Assignment uses :=.",
         "That syntax is not ST.",
+        "Correct. Assignment uses :=.",
         "This is not a Logix ST statement."
       ]
     },
     {
       q: "A routine contains WHILE NOT Done DO ... END_WHILE; where Done is set by a rung later in the same routine or by a lower-priority task. What happens?",
-      options: ["It waits politely until Done is set", "The loop never ends within the scan, the watchdog expires and the controller faults", "The compiler rejects it", "The scan skips the loop"],
-      answer: 1,
+      options: ["It waits politely until Done is set", "The compiler rejects it", "The scan skips the loop", "The loop never ends within the scan, the watchdog expires and the controller faults"],
+      answer: 3,
       explain: [
         "No. The setter cannot run while this task is stuck in the loop. Only a higher-priority task could preempt the loop and set Done, and designing around that is a bug, not a wait. A lower-priority or same-task setter never runs while the loop spins.",
-        "Correct. Loops run to completion inside one scan. Never wait in ST.",
         "It compiles. The failure is at run time.",
-        "There is no such skipping."
+        "There is no such skipping.",
+        "Correct. Loops run to completion inside one scan. Never wait in ST."
       ]
     },
     {
       q: "You must write a batch startup sequence that process engineers and operators will review step by step. Which language fits best?",
-      options: ["SFC", "FBD", "Ladder with a single long rung", "ST with no state variable"],
-      answer: 0,
+      options: ["FBD", "SFC", "Ladder with a single long rung", "ST with no state variable"],
+      answer: 1,
       explain: [
-        "Correct. Steps and transitions mirror the procedure, and the active step is visible.",
         "FBD suits continuous signal flow.",
+        "Correct. Steps and transitions mirror the procedure, and the active step is visible.",
         "A single long rung hides the sequence.",
         "Without a state variable the sequence has no memory."
       ]
     },
     {
       q: "Which is the strongest reason to keep interlocks in ladder?",
-      options: ["Ladder runs faster", "Maintenance staff can trace the logic online", "ST cannot do boolean logic", "The standard requires it"],
-      answer: 1,
+      options: ["Ladder runs faster", "ST cannot do boolean logic", "The standard requires it", "Maintenance staff can trace the logic online"],
+      answer: 3,
       explain: [
         "Execution speed is similar for simple logic.",
-        "Correct. Ladder shows the power path and its live state in a form technicians know.",
         "ST handles boolean logic with AND, OR and NOT.",
-        "No standard requires ladder for interlocks."
+        "No standard requires ladder for interlocks.",
+        "Correct. Ladder shows the power path and its live state in a form technicians know."
       ]
     },
     {
       q: "Can a ladder routine call an AOI written in ST?",
-      options: ["No, languages cannot be mixed in a program", "Yes, the AOI's internal language is independent of the caller", "Only if the whole project is ST", "Only through a MSG instruction"],
-      answer: 1,
+      options: ["No, languages cannot be mixed in a program", "Only if the whole project is ST", "Yes, the AOI's internal language is independent of the caller", "Only through a MSG instruction"],
+      answer: 2,
       explain: [
         "Logix programs can hold routines in different languages.",
-        "Correct. The caller sees the AOI's parameters and nothing about how it is written.",
         "No such restriction exists.",
+        "Correct. The caller sees the AOI's parameters and nothing about how it is written.",
         "MSG is for communication between controllers."
       ]
     }

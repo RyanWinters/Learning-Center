@@ -257,6 +257,8 @@ def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, misse
             {"machine_id": machineId, "end_time": system.date.now()})
 \`\`\`
 
+A tag change script runs in Gateway scope, which has no calling project. Pass the project name explicitly in both calls (check the 8.3 manual for the argument name and position); the short form above shows only the query path and parameters.
+
 > [!note] In 8.1
 > Use \`system.db.runNamedQuery\` for both calls. It is deprecated in 8.3 but still works.
 >
@@ -266,7 +268,7 @@ The stop opens with the "Unassigned" reason immediately, so no time is lost if t
 
 ### Counts: a transaction group
 
-A {{term:ign-sql-bridge|transaction group}} (SQL Bridge module) moves PLC tag values into table columns on a trigger. A Standard group inserts a row into \`production_count\` when the PLC raises a "interval complete" bit, and the group writes back a handshake to tell the PLC it can clear the interval counters. Items map to columns: \`run_id\` from an expression or a tag set when the run starts, \`good_count\` and \`reject_count\` from the PLC's interval registers, \`count_time\` from the current time. If the database is unreachable, Ignition's store and forward can buffer some writes and replay them later. Check the manual for exactly which features use it in your version and do not assume a transaction group is covered. That is why the PLC-side handshake matters: the group acknowledges only after a successful write, so no interval is lost or doubled.
+A {{term:ign-sql-bridge|transaction group}} (SQL Bridge module) moves PLC tag values into table columns on a trigger. A Standard group inserts a row into \`production_count\` when the PLC raises a "interval complete" bit, and the group writes back a handshake to tell the PLC it can clear the interval counters. Items map to columns: \`run_id\` from an expression or a tag set when the run starts, \`good_count\` and \`reject_count\` from the PLC's interval registers, \`count_time\` from the current time. If the database is unreachable, Ignition's store-and-forward can buffer some writes and replay them later. Check the manual for exactly which features use it in your version and do not assume a transaction group is covered. That is why the PLC-side handshake matters: the group acknowledges only after a successful write, so no interval is lost or doubled.
 
 > [!tip] Named query or transaction group?
 > Use a transaction group for repeating, trigger-based logging of a known set of tags. Use named queries for event-driven or user-driven writes from scripts and screens, where you need to choose the SQL and parameters yourself.
@@ -383,33 +385,33 @@ OEE (Overall Equipment Effectiveness) came out of Seiichi Nakajima's Total Produ
     },
     {
       q: "A scheduled lunch break is logged as downtime. How should the schema keep it from hurting availability?",
-      options: ["Delete the event before running reports", "Give the reason the Planned category and subtract planned stops from scheduled time", "Store it in a different database", "Give it a NULL start_time"],
-      answer: 1,
+      options: ["Give the reason the Planned category and subtract planned stops from scheduled time", "Delete the event before running reports", "Store it in a different database", "Give it a NULL start_time"],
+      answer: 0,
       explain: [
-        "Deleting data loses the record that the break happened.",
         "Correct. The Planned category on the reason lets one query separate planned from unplanned stops.",
+        "Deleting data loses the record that the break happened.",
         "A separate database breaks joins and adds work for no benefit.",
         "start_time is required for the event to be placed on the timeline."
       ]
     },
     {
       q: "The PLC raises 'interval complete' every two hours and the transaction group inserts a count row. Why include a handshake back to the PLC?",
-      options: ["To make the PLC scan faster", "So the PLC clears its interval counters only after the insert succeeded, avoiding lost or double counts", "To encrypt the data", "To create the table automatically"],
-      answer: 1,
+      options: ["To make the PLC scan faster", "To encrypt the data", "To create the table automatically", "So the PLC clears its interval counters only after the insert succeeded, avoiding lost or double counts"],
+      answer: 3,
       explain: [
         "The handshake has nothing to do with scan speed.",
-        "Correct. Without it, a database outage or restart could drop an interval or write it twice.",
         "Handshakes confirm delivery. They don't provide encryption.",
-        "The group writes to existing tables and doesn't create them."
+        "The group writes to existing tables and doesn't create them.",
+        "Correct. Without it, a database outage or restart could drop an interval or write it twice."
       ]
     },
     {
       q: "An operator screen needs to insert a stop with user-chosen reason and times. Which Ignition tool fits best?",
-      options: ["A named query called from a script or binding with parameters", "A historian tag on the reason", "A transaction group with no trigger", "A raw SQL string built with + from user input"],
-      answer: 0,
+      options: ["A historian tag on the reason", "A named query called from a script or binding with parameters", "A transaction group with no trigger", "A raw SQL string built with + from user input"],
+      answer: 1,
       explain: [
-        "Correct. Named queries are parameterized and event-driven, which is ideal for user-driven writes.",
         "The historian stores tag values over time and doesn't write to your schema.",
+        "Correct. Named queries are parameterized and event-driven, which is ideal for user-driven writes.",
         "Groups suit repeating, trigger-based logging of a fixed set of tags.",
         "String concatenation invites SQL injection and quoting bugs."
       ]
@@ -427,12 +429,12 @@ OEE (Overall Equipment Effectiveness) came out of Seiichi Nakajima's Total Produ
     },
     {
       q: "Which index best supports 'all counts for run 1, in time order'?",
-      options: ["(count_time, run_id)", "(run_id, count_time)", "(good_count)", "No index; the primary key is enough"],
-      answer: 1,
+      options: ["(count_time, run_id)", "(good_count)", "(run_id, count_time)", "No index; the primary key is enough"],
+      answer: 2,
       explain: [
         "With count_time leading, a filter on run_id alone can't seek into the index.",
-        "Correct. Equality column first, then the time column, matching the leftmost-prefix rule and giving sorted output.",
         "good_count is not used in the filter.",
+        "Correct. Equality column first, then the time column, matching the leftmost-prefix rule and giving sorted output.",
         "The primary key is count_id, which doesn't help find a run's rows."
       ]
     }

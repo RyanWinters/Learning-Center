@@ -175,23 +175,23 @@ Early PLCs had one processor that could do one thing at a time, so the loop (rea
   quiz: [
     {
       q: "In the basic scan model, in what order does the PLC work?",
-      options: ["Output scan, program scan, input scan", "Input scan, program scan, output scan", "Program scan, input scan, output scan", "All three at once"],
-      answer: 1,
+      options: ["Input scan, program scan, output scan", "Output scan, program scan, input scan", "Program scan, input scan, output scan", "All three at once"],
+      answer: 0,
       explain: [
-        "That would write outputs from stale data.",
         "Correct. Read inputs into memory, solve the logic, then write outputs.",
+        "That would write outputs from stale data.",
         "The program would then be solving with old inputs.",
         "The stages are sequential in the model."
       ]
     },
     {
       q: "Rung 10 writes bit Ready. Rung 3 uses XIC(Ready) to drive a lamp. When does the lamp respond to a change in Ready?",
-      options: ["In the same scan", "One scan later", "Two scans later", "Immediately, outside the scan"],
-      answer: 1,
+      options: ["In the same scan", "Two scans later", "One scan later", "Immediately, outside the scan"],
+      answer: 2,
       explain: [
         "Rung 3 ran before rung 10 in this scan, so it saw the old value.",
-        "Correct. The lamp rung reads the value written on the previous pass.",
         "One scan is enough for the lag.",
+        "Correct. The lamp rung reads the value written on the previous pass.",
         "Logic does not run outside the scan."
       ]
     },
@@ -219,13 +219,13 @@ Early PLCs had one processor that could do one thing at a time, so the loop (rea
     },
     {
       q: "Why does a controller have a watchdog on each task?",
-      options: ["To log operators' actions", "To fault the controller if a task runs far longer than expected", "To speed up the scan", "To keep the clock accurate"],
-      answer: 1,
+      options: ["To log operators' actions", "To speed up the scan", "To keep the clock accurate", "To fault the controller if a task runs far longer than expected"],
+      answer: 3,
       explain: [
         "Audit trails are a different feature.",
-        "Correct. It catches runaway logic such as an endless loop.",
         "It has no effect on speed.",
-        "Clock accuracy is unrelated."
+        "Clock accuracy is unrelated.",
+        "Correct. It catches runaway logic such as an endless loop."
       ]
     }
   ],

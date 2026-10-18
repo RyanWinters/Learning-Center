@@ -193,13 +193,13 @@ Shigeo Shingo developed SMED at Toyota-related plants in the 1950s and 1960s, fa
   quiz: [
     {
       q: "Why does the handshake write to a staging area instead of straight to the active recipe tags?",
-      options: ["To make the download faster", "To save PLC memory", "Because active tags are read-only", "So the PLC can validate the full set and switch it in one scan, avoiding a mixed old and new recipe"],
-      answer: 3,
+      options: ["To make the download faster", "To save PLC memory", "So the PLC can validate the full set and switch it in one scan, avoiding a mixed old and new recipe", "Because active tags are read-only"],
+      answer: 2,
       explain: [
         "Staging adds a step, it does not speed anything up.",
         "Staging uses extra memory, not less.",
-        "Active tags are normal read and write tags. The issue is consistency, not permission.",
-        "Correct. Validation then a single-scan copy means the machine never sees a half-updated recipe."
+        "Correct. Validation then a single-scan copy means the machine never sees a half-updated recipe.",
+        "Active tags are normal read and write tags. The issue is consistency, not permission."
       ]
     },
     {
@@ -215,35 +215,35 @@ Shigeo Shingo developed SMED at Toyota-related plants in the 1950s and 1960s, fa
     },
     {
       q: "Version 3 of a recipe is approved and in use. An engineer needs to change one setpoint. What is the right approach?",
-      options: ["Edit version 3 in place so nothing else changes", "Delete version 3 and recreate it", "Create version 4 as a draft, get it approved, then use it for new runs", "Change the value at the HMI during the run"],
-      answer: 2,
+      options: ["Edit version 3 in place so nothing else changes", "Create version 4 as a draft, get it approved, then use it for new runs", "Delete version 3 and recreate it", "Change the value at the HMI during the run"],
+      answer: 1,
       explain: [
         "In-place edits destroy the record of what earlier lots were made with.",
-        "Deleting also erases history that production records still point to.",
         "Correct. Versions are immutable, and only approved ones can be downloaded.",
+        "Deleting also erases history that production records still point to.",
         "An unlogged HMI change bypasses approval and leaves no trace in the recipe."
       ]
     },
     {
       q: "Which task is best converted from internal to external setup in a SMED effort?",
-      options: ["Removing the old die while the machine is stopped", "Pre-staging the next product's tooling and loading its recipe into staging while the current product still runs", "Cleaning the product contact surfaces", "Running the first test piece"],
-      answer: 1,
+      options: ["Removing the old die while the machine is stopped", "Cleaning the product contact surfaces", "Running the first test piece", "Pre-staging the next product's tooling and loading its recipe into staging while the current product still runs"],
+      answer: 3,
       explain: [
         "Removing the die needs the machine stopped, so it stays internal.",
-        "Correct. Preparation that doesn't touch the running machine can happen early and shortens stopped time.",
         "Cleaning of contact surfaces usually requires the machine to be stopped.",
-        "The first piece is by definition made after the machine is running again."
+        "The first piece is by definition made after the machine is running again.",
+        "Correct. Preparation that doesn't touch the running machine can happen early and shortens stopped time."
       ]
     },
     {
       q: "Where is the best home for the master copy of recipes in a plant with 60 products, versioning and audits?",
-      options: ["Hardcoded in the PLC program", "In HMI memory only", "On a spreadsheet on the operator's desktop", "A central database or MES, with the active recipe cached in the PLC"],
-      answer: 3,
+      options: ["A central database or MES, with the active recipe cached in the PLC", "Hardcoded in the PLC program", "In HMI memory only", "On a spreadsheet on the operator's desktop"],
+      answer: 0,
       explain: [
+        "Correct. Central control gives versions and approval, and the local active copy keeps the line independent of the server.",
         "Hardcoding makes every change a PLC project and keeps no history.",
         "HMI memory is lost on replacement or failure and has no audit trail.",
-        "Spreadsheets have no approval flow or integrity, and cannot be tied to production records reliably.",
-        "Correct. Central control gives versions and approval, and the local active copy keeps the line independent of the server."
+        "Spreadsheets have no approval flow or integrity, and cannot be tied to production records reliably."
       ]
     }
   ],

@@ -97,7 +97,7 @@ Inline `<svg viewBox="…" role="img" aria-label="…">` strings. Diagrams must:
 - Be specific: real numbers, real defaults, real failure stories.
 - Don't use emoji.
 
-## Simulator challenge IDs (for `{{sim:…}}`)
+## Simulator challenge IDs (for `{{sim:…}}`) (26)
 | id | Topic |
 |---|---|
 | sim-tour | Using the simulator |
@@ -125,6 +125,7 @@ Inline `<svg viewBox="…" role="img" aria-label="…">` strings. Diagrams must:
 | sim-tank-fill | Fill/drain sequence |
 | sim-pump-alternation | Lead/lag pump alternation |
 | sim-mixer-batch | Mixer batch sequence |
+| sim-step-fault | Sequence with step timeout and fault state |
 
 ## Done means
 1. `node tools/validate.js <your ids…>` prints OK, with no errors. Warnings about missing sim files are fine. Fix other warnings where reasonable.

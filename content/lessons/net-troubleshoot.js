@@ -42,7 +42,7 @@ Ethernet adapter Plant:
    DNS Servers . . . . . : 10.20.30.2
 \`\`\`
 
-Check your own address and mask first. A laptop at 192.168.1.50 cannot reach a PLC at 10.20.10.10 without a router, and a 169.254.x.x address means DHCP failed. Computers with two network cards often use the wrong one. Check which adapter is on the plant network.
+Check your own address and mask first. A laptop still set to a home-network address such as 192.168.1.50 cannot reach a PLC at 10.20.10.10 without a router, and a 169.254.x.x address means DHCP failed. Computers with two network cards often use the wrong one. Check which adapter is on the plant network.
 
 ### ping: is anything there?
 
@@ -68,7 +68,7 @@ A MAC address that belongs to a different device than expected is the signature 
 
 ### netstat: who is connected?
 
-\`netstat -ano | findstr 44818\` lists TCP connections on port 44818 with the owning process ID. On the Ignition gateway machine, it shows if there is an established connection to the PLC. \`netstat -an | findstr LISTENING\` shows which ports a server is listening on.
+\`netstat -ano | findstr 44818\` lists TCP connections on port 44818 with the owning process ID. On the Ignition Gateway machine, it shows if there is an established connection to the PLC. \`netstat -an | findstr LISTENING\` shows which ports a server is listening on.
 
 ## Testing a port: Test-NetConnection
 
@@ -90,7 +90,7 @@ TcpTestSucceeded : True
 | TCP 44818 | EtherNet/IP explicit messaging |
 | UDP 2222 | EtherNet/IP implicit I/O (cannot be tested with TCP tools) |
 | TCP 4840 | OPC UA |
-| TCP 8088 / 8043 | Ignition gateway HTTP / HTTPS |
+| TCP 8088 / 8043 | Ignition Gateway HTTP / HTTPS |
 | TCP 1433, 3306, 5432 | SQL Server, MySQL, PostgreSQL |
 
 ## Wireshark
@@ -147,7 +147,7 @@ So the HMI reaches the PLC, yet tags show comm-fail. The network is fine and the
 
 The fix is a one-character address change in the driver, confirmed by a filter of \`enip\` showing the session register request and reply. The lesson: ping success only excludes layers 1 to 3. Each test removed a whole category of causes, and the capture proved the cause without guessing.
 
-The gateway-side version of the same problem (the Ignition gateway cannot reach the PLC) runs the same steps from the gateway machine, and you also read the device's status page in the gateway configuration, which reports connection state and errors.
+The gateway-side version of the same problem (the Ignition Gateway cannot reach the PLC) runs the same steps from the gateway machine, and you also read the device's status page in the gateway configuration, which reports connection state and errors.
 `,
 
   eli5: `
@@ -220,35 +220,35 @@ Ping was written by Mike Muuss in 1983 and named after the sound of sonar. The t
   quiz: [
     {
       q: "Ping to a PLC succeeds, but Ignition shows the device as faulted. Which test best narrows it down next?",
-      options: ["Replace the cable", "Test-NetConnection to the PLC on port 44818", "Reboot the switch", "tracert to the PLC"],
-      answer: 1,
+      options: ["Replace the cable", "Reboot the switch", "Test-NetConnection to the PLC on port 44818", "tracert to the PLC"],
+      answer: 2,
       explain: [
         "A cable that carries ping replies is rarely the problem.",
-        "Correct. Ping only proves ICMP. Testing the actual TCP port shows if the listener is reachable.",
         "Rebooting hides evidence and rarely fixes an application-layer fault.",
+        "Correct. Ping only proves ICMP. Testing the actual TCP port shows if the listener is reachable.",
         "Tracert shows router hops, and a same-subnet device has none."
       ]
     },
     {
       q: "You plug a laptop into a switch and run Wireshark. You see only broadcasts and your own traffic. What do you need?",
-      options: ["A faster laptop", "A port mirror (SPAN) or tap copying the PLC's traffic to your port", "A different Wireshark version", "To disable the firewall"],
-      answer: 1,
+      options: ["A port mirror (SPAN) or tap copying the PLC's traffic to your port", "A faster laptop", "A different Wireshark version", "To disable the firewall"],
+      answer: 0,
       explain: [
-        "Speed does not change which frames the switch sends you.",
         "Correct. A switch forwards unicast only to the destination port, so you need a copy.",
+        "Speed does not change which frames the switch sends you.",
         "All versions have the same limit.",
         "A host firewall does not change what the switch delivers."
       ]
     },
     {
       q: "In Wireshark, which is a display filter that shows only Modbus TCP traffic?",
-      options: ["tcp port 502", "tcp.port == 502", "port=502", "modbus.port"],
-      answer: 1,
+      options: ["tcp port 502", "port=502", "modbus.port", "tcp.port == 502"],
+      answer: 3,
       explain: [
         "That is capture filter (BPF) syntax and is used before capture starts.",
-        "Correct. Display filters use field names with == for comparison.",
         "This is not valid in either filter language.",
-        "No such field exists."
+        "No such field exists.",
+        "Correct. Display filters use field names with == for comparison."
       ]
     },
     {
@@ -264,11 +264,11 @@ Ping was written by Mike Muuss in 1983 and named after the sound of sonar. The t
     },
     {
       q: "Test-NetConnection to the PLC on 44818 shows PingSucceeded True and TcpTestSucceeded False. What does this suggest?",
-      options: ["The cable is bad", "The host is alive but the port is blocked or the service isn't listening", "DNS is wrong", "The PLC has no IP address"],
-      answer: 1,
+      options: ["The host is alive but the port is blocked or the service isn't listening", "The cable is bad", "DNS is wrong", "The PLC has no IP address"],
+      answer: 0,
       explain: [
-        "Ping replies show the physical path works.",
         "Correct. A firewall rule, ACL, or disabled service blocks the handshake.",
+        "Ping replies show the physical path works.",
         "You tested by IP address, so DNS plays no part.",
         "The ping shows it has an address."
       ]

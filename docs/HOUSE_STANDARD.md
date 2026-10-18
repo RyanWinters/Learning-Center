@@ -98,3 +98,26 @@ Site supernet `10.20.0.0/16` (Plant 2 = `10.21.0.0/16`, Plant 3 = `10.22.0.0/16`
 
 - Target Ignition 8.3, with "In 8.1" notes. Target Studio 5000 v33+ and ControlLogix/CompactLogix 5380/5580.
 - No uncited specific numbers (limits, defaults, queue sizes). Cite the source at the point of use, or say "check the manual for your version".
+
+## 8. Vocabulary
+
+One form per concept in visible text (code blocks keep real identifiers; titles of cited sources keep their own spelling).
+
+| Concept | Canonical form | Notes |
+|---|---|---|
+| Ignition server | **Gateway** (capital G); "Ignition Gateway" | Lowercase "gateway" is for generic devices (protocol, Ethernet or MQTT gateway). |
+| Gateway-to-Gateway link | **Gateway Network** | Always capitalised. |
+| Tag evaluation rate | **tag group** | "Scan class" is the Ignition 7.9 name. Say so once (ign-tags); `sqlth_scinfo` is described as "tag group (scan class) info". "Scan rate" is the rate, not the group. |
+| Equipment view / window | **faceplate** (the view); **popup** (the Perspective window that hosts it) | Not interchangeable. |
+| Perspective runtime | **session** (Gateway-side instance); **client** only for the browser or app that displays it | |
+| Store and forward | **store-and-forward** (lowercase, hyphenated) | "Store and Forward" only for the Ignition UI or system name. |
+| Sparkplug | **Sparkplug** in general; **Sparkplug B** for the payload or topic namespace specifics | |
+| Standards | **ISA-95, ISA-88, ISA-18.2, ISA-101, ISA-5.1** (hyphen); committee **ISA99**; series **ISA/IEC 62443** | |
+| Current loop | **4-20 mA** (hyphen, space before mA) | |
+| Emergency stop | **E-stop** | |
+| Protocol names | **EtherNet/IP**, **PROFINET**, **Modbus TCP / Modbus RTU**, **OPC UA** | |
+| Rockwell software | **Studio 5000 Logix Designer** on first mention, **Studio 5000** after; **RSLogix 5000** only as history | |
+| Purdue levels | **Level 3**, **Level 3.5** (DMZ) in prose; "L3" only inside diagrams | Lesson difficulty (1-4) is "lesson level" and never uses the L prefix. |
+| Plant name | **Meridian Foods Plant 1** (not "Meridian Plant 1") | |
+| Drawing vs code tags | `LT-101` on P&IDs, I/O lists, FDS and alarm worksheets; `LT101` in PLC, Ignition, database, MQTT, HMI screens | |
+| Private ranges | `192.168.x.x` only where a lesson teaches private ranges, home networks or machine-internal OEM networks, and says so | |

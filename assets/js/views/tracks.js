@@ -6,7 +6,7 @@
   /* Shared header for the Tracks list and the skill map: a List | Map toggle. */
   LC.tracksHead = function (active) {
     const tab = (v, href, label, ic) => '<a class="seg-btn" href="' + href + '"' + (active === v ? ' aria-current="page"' : '') + '>' + icon(ic, 16) + label + '</a>';
-    return '<header class="page-head"><p class="eyebrow">Curriculum</p><h1>Tracks</h1><p class="lede">Ten tracks and a set of build labs, from what a transmitter does to architecting a multi-site system. Work in order, or jump to what you need. Locks are only suggestions.</p>' +
+    return '<header class="page-head"><p class="eyebrow">Curriculum</p><h1>Tracks</h1><p class="lede">Eleven tracks and five build labs, from what a transmitter does to architecting a multi-site system. Work in order, or jump to what you need. Locks are only suggestions.</p>' +
       '<div class="seg view-toggle" role="group" aria-label="Tracks view">' + tab('list', '#/tracks', 'List', 'list') + tab('map', '#/map', 'Map', 'map') + '</div></header>';
   };
 
@@ -40,8 +40,8 @@
     const btn = root.querySelector('[data-know]');
     if (btn) btn.addEventListener('click', () => {
       const todo = ids.filter(id => ['complete', 'tested-out', 'skipped'].indexOf(LC.graph.status(id)) < 0);
-      const sh = U.sheet('<h2 class="sheet-title">Mark ' + esc(t.code) + ' as known?</h2><p class="muted">This marks ' + U.plural(todo.length, 'lesson') + ' as skipped. No XP is awarded, prerequisites in other tracks unlock, and you can undo any lesson from its own page.</p>' +
-        '<div class="sheet-actions"><button type="button" class="btn btn-primary" data-yes>Skip ' + todo.length + ' lessons</button><button type="button" class="btn" data-close>Cancel</button></div>', { label: 'Confirm skip track' });
+      const sh = U.sheet('<h2 class="sheet-title">Mark ' + esc(t.code) + ' as known?</h2><p class="muted">This marks ' + U.plural(todo.length, 'lesson') + ' as known. No XP is awarded, prerequisites in other tracks unlock, and you can undo any lesson from its own page.</p>' +
+        '<div class="sheet-actions"><button type="button" class="btn btn-primary" data-yes>Mark ' + todo.length + ' lessons as known</button><button type="button" class="btn" data-close>Cancel</button></div>', { label: 'Confirm mark track as known' });
       sh.el.querySelector('[data-yes]').addEventListener('click', () => { LC.graph.skip(todo); sh.close(); LC.rerender(); U.toast('<span class="toast-xp">' + esc(t.code) + ' marked as known</span>', 'info'); });
     });
   };

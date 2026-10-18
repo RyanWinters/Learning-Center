@@ -402,27 +402,27 @@ Joins come straight from Codd's relational model (1970), where combining relatio
   quiz: [
     {
       q: "You INNER JOIN machine to line on line_id. Which machine row is missing from the result?",
-      options: ["Filler 1", "Case Packer 3", "Spare Palletizer, because its line_id is NULL", "Capper 2"],
-      answer: 2,
+      options: ["Filler 1", "Case Packer 3", "Capper 2", "Spare Palletizer, because its line_id is NULL"],
+      answer: 3,
       explain: [
         "Filler 1 has line_id 1, which matches Line 1.",
         "Case Packer 3 has line_id 3 and matches Line 3.",
-        "Correct. NULL matches nothing, so an inner join drops the row. A LEFT JOIN from machine would keep it.",
-        "Capper 2 has line_id 2 and matches Line 2."
+        "Capper 2 has line_id 2 and matches Line 2.",
+        "Correct. NULL matches nothing, so an inner join drops the row. A LEFT JOIN from machine would keep it."
       ]
     },
     {
       q: "A report joins line, machine and production_run, then sums good_count. Line 1 shows 73,650 but the PLC says 24,550. What happened?",
       options: [
-        "A missing WHERE clause",
         "Each run row was repeated once per machine (3x), because both child tables fan out from line",
+        "A missing WHERE clause",
         "AVG was used instead of SUM",
         "The PLC counter is wrong"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "A missing WHERE would include extra data, but not an exact triple.",
         "Correct. 24,550 x 3 = 73,650, and Line 1 has 3 machines. Remove the unneeded machine join or aggregate separately.",
+        "A missing WHERE would include extra data, but not an exact triple.",
         "The query uses SUM. AVG would produce much smaller numbers.",
         "An exact factor equal to a row count is the signature of a join multiplying rows, not a counter error."
       ]
@@ -440,40 +440,40 @@ Joins come straight from Codd's relational model (1970), where combining relatio
     },
     {
       q: "You LEFT JOIN downtime_reason to downtime_event to list every reason, even unused ones. For unused reasons, COUNT(*) returns 1. What should you count instead?",
-      options: ["COUNT(r.reason_id)", "COUNT(e.event_id)", "COUNT(DISTINCT *)", "SUM(1)"],
-      answer: 1,
+      options: ["COUNT(r.reason_id)", "COUNT(DISTINCT *)", "COUNT(e.event_id)", "SUM(1)"],
+      answer: 2,
       explain: [
         "r.reason_id exists on every row (it is the left table), so this also counts 1 for unused reasons.",
-        "Correct. e.event_id is NULL on unmatched rows, and COUNT of a column skips NULLs, giving 0.",
         "COUNT(DISTINCT *) is not valid SQL.",
+        "Correct. e.event_id is NULL on unmatched rows, and COUNT of a column skips NULLs, giving 0.",
         "SUM(1) adds 1 for every row, the same as COUNT(*)."
       ]
     },
     {
       q: "LEFT JOIN line l ON m.line_id = l.line_id WHERE l.area = 'Bottling' returns no spare palletizer. Why, and what is the fix?",
       options: [
-        "LEFT JOIN cannot return NULLs; use RIGHT JOIN",
         "The WHERE rejects the NULL-padded row; move the area test into the ON clause",
+        "LEFT JOIN cannot return NULLs; use RIGHT JOIN",
         "The spare palletizer is deleted by DISTINCT",
         "GROUP BY is missing"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "LEFT JOIN returns NULLs for unmatched right-hand columns by design.",
         "Correct. NULL = 'Bottling' is not true, so WHERE removes the row. Putting the test in ON filters the lines but keeps every machine.",
+        "LEFT JOIN returns NULLs for unmatched right-hand columns by design.",
         "No DISTINCT is involved.",
         "GROUP BY is not needed for a join and would not restore the row."
       ]
     },
     {
       q: "On SQL Server, AVG(duration_min) on an INT column returns 14 for data whose true mean is 14.3. What fixes it?",
-      options: ["Switch to SUM / COUNT(*) only", "Use AVG(duration_min * 1.0) to force decimal arithmetic", "Add DISTINCT", "Add HAVING AVG(duration_min) > 0"],
-      answer: 1,
+      options: ["Switch to SUM / COUNT(*) only", "Add DISTINCT", "Add HAVING AVG(duration_min) > 0", "Use AVG(duration_min * 1.0) to force decimal arithmetic"],
+      answer: 3,
       explain: [
         "SUM / COUNT(*) on integers has the same truncation problem unless one side is decimal.",
-        "Correct. Multiplying by 1.0 turns the values into decimals, so the average keeps its fraction.",
         "DISTINCT changes which rows are averaged and would give the wrong mean.",
-        "HAVING filters groups. It does not change the arithmetic type."
+        "HAVING filters groups. It does not change the arithmetic type.",
+        "Correct. Multiplying by 1.0 turns the values into decimals, so the average keeps its fraction."
       ]
     }
   ],

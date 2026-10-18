@@ -241,46 +241,46 @@ Edward Tufte introduced the data-ink ratio in his early work on displaying quant
   quiz: [
     {
       q: "The operator's question is 'Is the mixer level okay right now?' Which visual answers it fastest?",
-      options: ["A table of the last ten samples","A bare number with a unit","A linear indicator with the normal band shaded and alarm limits as ticks","A 24-hour trend"],
-      answer: 2,
+      options: ["A linear indicator with the normal band shaded and alarm limits as ticks","A table of the last ten samples","A bare number with a unit","A 24-hour trend"],
+      answer: 0,
       explain: [
+        "Correct. Position against a shaded band answers 'OK?' at a glance, and the limits show the margin.",
         "A table forces reading and mental comparison for each row.",
         "A bare number makes the operator recall the range and compare.",
-        "Correct. Position against a shaded band answers 'OK?' at a glance, and the limits show the margin.",
         "A trend answers direction and history, not the instantaneous OK-or-not question as quickly."
       ]
     },
     {
       q: "A tank-level trend is auto-ranged. In quiet operation the line jitters over the full height of the plot. What is the best fix?",
-      options: ["Set a fixed axis range that puts the normal band mid-plot and draw the limit lines","Add a second y-axis","Make the line thicker","Hide the axis labels"],
-      answer: 0,
+      options: ["Add a second y-axis","Make the line thicker","Set a fixed axis range that puts the normal band mid-plot and draw the limit lines","Hide the axis labels"],
+      answer: 2,
       explain: [
-        "Correct. A fixed range keeps scale meaning stable so noise looks small and approach to a limit is visible.",
         "A second axis makes comparisons less meaningful and does not stop auto-ranging from magnifying noise.",
         "Thickness does not change how the scale magnifies noise.",
+        "Correct. A fixed range keeps scale meaning stable so noise looks small and approach to a limit is visible.",
         "Hiding labels removes information and leaves the misleading scale."
       ]
     },
     {
       q: "You must show tank level (m) and valve position (%) on one trend. What is the best design?",
-      options: ["One plot with two y-axes","One plot, valve position rescaled to 0–5 to share the level axis","Two separate pages","Two stacked lanes sharing the time axis, each with its own scale"],
-      answer: 3,
+      options: ["One plot with two y-axes","Two stacked lanes sharing the time axis, each with its own scale","One plot, valve position rescaled to 0–5 to share the level axis","Two separate pages"],
+      answer: 1,
       explain: [
         "Few advises against dual-scaled axes because line crossings imply meaningless relationships.",
+        "Correct. Stacked lanes keep each scale honest and still let the operator compare timing.",
         "Rescaling a percentage onto meters is a false equivalence and confusing to read.",
-        "Operators need to see cause and effect together, so separate pages lose that.",
-        "Correct. Stacked lanes keep each scale honest and still let the operator compare timing."
+        "Operators need to see cause and effect together, so separate pages lose that."
       ]
     },
     {
       q: "A designer proposes a row of eight round dial gauges for eight tank levels. What is the stronger alternative?",
-      options: ["Eight larger dials","Eight horizontal indicators on a shared scale, stacked, each with a normal band","A single pie chart","Eight bare numbers"],
-      answer: 1,
+      options: ["Eight larger dials","A single pie chart","Eight bare numbers","Eight horizontal indicators on a shared scale, stacked, each with a normal band"],
+      answer: 3,
       explain: [
         "Larger dials use even more space and remain hard to compare.",
-        "Correct. Linear indicators align and use less area, so out-of-band items stand out.",
         "A pie chart shows parts of a whole, which is not the question here.",
-        "Bare numbers drop the context that shows which tank is abnormal."
+        "Bare numbers drop the context that shows which tank is abnormal.",
+        "Correct. Linear indicators align and use less area, so out-of-band items stand out."
       ]
     },
     {
@@ -296,11 +296,11 @@ Edward Tufte introduced the data-ink ratio in his early work on displaying quant
     },
     {
       q: "You add a sparkline to each of 40 rows on an overview page, each with its own history query on a 5-second refresh, across 20 sessions. What is the likely result?",
-      options: ["Heavy history query load that slows sessions. Fetch once per screen, share the data, and refresh slowly","Faster pages because charts are small","Sparklines cannot refresh","No impact because history is cached"],
-      answer: 0,
+      options: ["Faster pages because charts are small","Heavy history query load that slows sessions. Fetch once per screen, share the data, and refresh slowly","Sparklines cannot refresh","No impact because history is cached"],
+      answer: 1,
       explain: [
-        "Correct. 40 rows x 20 sessions every 5 seconds is a large query stream. Query once per screen, share the results and use a slower refresh.",
         "Small charts still run the same queries.",
+        "Correct. 40 rows x 20 sessions every 5 seconds is a large query stream. Query once per screen, share the results and use a slower refresh.",
         "They can refresh, which is the problem.",
         "Do not assume caching saves you. Design to avoid the load."
       ]

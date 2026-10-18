@@ -230,57 +230,57 @@ Pneumatic controllers with proportional, reset and rate action were common in pr
     },
     {
       q: "A P-only level controller settles at 53% with a 60% setpoint and never closes the gap. What term removes it?",
-      options: ["Derivative", "A higher scan rate", "Integral", "A wider hysteresis band"],
-      answer: 2,
+      options: ["Integral", "Derivative", "A higher scan rate", "A wider hysteresis band"],
+      answer: 0,
       explain: [
+        "Correct. Integral keeps adding output while any error remains, which removes offset.",
         "Derivative reacts to rate of change. At steady state that rate is zero, so it does nothing for offset.",
         "Scan rate does not change the steady-state offset of a P controller.",
-        "Correct. Integral keeps adding output while any error remains, which removes offset.",
         "Hysteresis belongs to on/off control and is not a PID parameter."
       ]
     },
     {
       q: "A steam valve sat at 100% for ten minutes while the header was isolated. After reopening, the temperature overshoots badly. What is this?",
-      options: ["Derivative kick", "Integral windup", "Cascade interaction", "Transmitter drift"],
-      answer: 1,
+      options: ["Derivative kick", "Cascade interaction", "Integral windup", "Transmitter drift"],
+      answer: 2,
       explain: [
         "Derivative kick happens on a setpoint step, not after a long saturated period.",
-        "Correct. The integral term accumulated during saturation and has to unwind through an overshoot.",
         "No cascade is described, and cascade would not explain a saturated output.",
+        "Correct. The integral term accumulated during saturation and has to unwind through an overshoot.",
         "Drift would give a steady error, not a long overshoot after a saturation period."
       ]
     },
     {
       q: "Why should a PID loop that protects a process normally run in the PLC rather than as a script in Ignition?",
-      options: ["Ignition cannot do arithmetic", "PLCs are required by ISA", "The loop must keep running with deterministic timing if the gateway or network fails", "Gateway scripts cannot read tags"],
-      answer: 2,
+      options: ["Ignition cannot do arithmetic", "PLCs are required by ISA", "Gateway scripts cannot read tags", "The loop must keep running with deterministic timing if the gateway or network fails"],
+      answer: 3,
       explain: [
         "Ignition can calculate anything. Capability is not the issue.",
         "There is no such requirement. It is a design practice with reasons behind it.",
-        "Correct. The controller scans deterministically and survives a gateway restart or network loss.",
-        "Scripts read tags fine. The problem is latency and availability."
+        "Scripts read tags fine. The problem is latency and availability.",
+        "Correct. The controller scans deterministically and survives a gateway restart or network loss."
       ]
     },
     {
       q: "A master temperature controller sets the setpoint of a fast jacket-temperature controller that drives a steam valve. What is this arrangement called?",
-      options: ["Feedforward", "Ratio control", "Split range", "Cascade"],
-      answer: 3,
+      options: ["Feedforward", "Ratio control", "Cascade", "Split range"],
+      answer: 2,
       explain: [
         "Feedforward uses a measured disturbance, not another controller's output, as the correcting input.",
         "Ratio control holds one flow proportional to another.",
-        "Split range uses one output to drive two valves.",
-        "Correct. A slow outer loop writes the setpoint for a fast inner loop."
+        "Correct. A slow outer loop writes the setpoint for a fast inner loop.",
+        "Split range uses one output to drive two valves."
       ]
     },
     {
       q: "What is the key difference in philosophy between Ziegler-Nichols and lambda tuning?",
-      options: ["Z-N picks the response from the process; lambda lets you choose the closed-loop speed", "Lambda requires derivative; Z-N does not", "Z-N is for level only", "They give identical settings"],
-      answer: 0,
+      options: ["Lambda requires derivative; Z-N does not", "Z-N is for level only", "They give identical settings", "Z-N picks the response from the process; lambda lets you choose the closed-loop speed"],
+      answer: 3,
       explain: [
-        "Correct. Z-N derives settings from ultimate gain or a step test and gives a lively response; lambda sets Ti to the process time constant and picks a target speed.",
         "Lambda is usually applied as PI, and Z-N tables include PID. Neither statement holds.",
         "Z-N was developed for general process loops, not just level.",
-        "Z-N is aggressive and lambda is chosen by the engineer, so they usually differ greatly."
+        "Z-N is aggressive and lambda is chosen by the engineer, so they usually differ greatly.",
+        "Correct. Z-N derives settings from ultimate gain or a step test and gives a lively response; lambda sets Ti to the process time constant and picks a target speed."
       ]
     }
   ],

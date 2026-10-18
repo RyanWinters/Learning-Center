@@ -12,7 +12,7 @@ LC.lesson({
     "Describe what lives in the Level 3.5 industrial DMZ and why",
     "Explain why a direct IT-to-PLC path is a design failure and show the alternative",
     "Lay out a safe remote access pattern for vendors and engineers",
-    "Place Ignition gateways in a zone model and name the ports that cross each conduit"
+    "Place Ignition Gateways in a zone model and name the ports that cross each conduit"
   ],
 
   body: `
@@ -43,7 +43,7 @@ A {{term:zone-conduit|zone}} is a group of assets that share the same security r
 |---|---|---|
 | Cell/Area control | PLCs, drives, I/O, local HMI | Most protected |
 | Safety | Safety PLCs, safety I/O | Own zone, tighter rules |
-| Site operations | Ignition gateway, historian, engineering workstations | Level 3 |
+| Site operations | Ignition Gateway, historian, engineering workstations | Level 3 |
 | Industrial DMZ | Jump hosts, patch servers, data replicas | Level 3.5 |
 | Enterprise | ERP, email, business users | IT network |
 
@@ -104,7 +104,7 @@ Each row names source, destination, port and reason. Every row you cannot justif
 
 ## Where Ignition sits
 
-An Ignition gateway that talks to PLCs lives in the **site operations zone (Level 3)**: it has a leg toward the control network and a leg toward clients. The Gateway's ports are well known: 8088 (HTTP) and 8043 (HTTPS) for web and Perspective sessions, 62541 for the built-in OPC UA server, and 8060 for the Gateway Network (verify the port on your gateway). Database connections go to the DB port (1433, 3306 or 5432), and tag data goes to PLCs on 44818 or 502. MQTT uses 1883, or 8883 with TLS.
+An Ignition Gateway that talks to PLCs lives in the **site operations zone (Level 3)**: it has a leg toward the control network and a leg toward clients. The Gateway's ports are well known: 8088 (HTTP) and 8043 (HTTPS) for web and Perspective sessions, 62541 for the built-in OPC UA server, and 8060 for the Gateway Network (verify the port on your gateway). Database connections go to the DB port (1433, 3306 or 5432), and tag data goes to PLCs on 44818 or 502. MQTT uses 1883, or 8883 with TLS.
 
 A common layout is:
 
@@ -178,7 +178,7 @@ The Purdue Enterprise Reference Architecture came out of Purdue University in th
   <text class="dg-text-sm dg-mid" x="320" y="144">Perspective proxy</text>
   <text class="dg-title" x="470" y="24">Plant (L0-3)</text>
   <rect class="dg-box" x="470" y="36" width="150" height="130" rx="6"/>
-  <text class="dg-text-sm dg-mid" x="545" y="70">Ignition gateway</text>
+  <text class="dg-text-sm dg-mid" x="545" y="70">Ignition Gateway</text>
   <text class="dg-text-sm dg-mid" x="545" y="100">PLCs, drives</text>
   <text class="dg-text-sm dg-mid" x="545" y="130">Safety zone</text>
   <line class="dg-line" x1="170" y1="100" x2="240" y2="100"/>
@@ -193,7 +193,7 @@ The Purdue Enterprise Reference Architecture came out of Purdue University in th
     "Allowing a direct rule from enterprise addresses to PLCs 'just for one report'.",
     "Believing an air gap protects you while USB drives and laptops move freely.",
     "Leaving a cellular router with port forwarding on a PLC after a vendor visit.",
-    "Putting the Ignition gateway in the DMZ and the PLCs on the same flat network as IT.",
+    "Putting the Ignition Gateway in the DMZ and the PLCs on the same flat network as IT.",
     "Setting security level targets without a risk assessment.",
     "Controllers left in PROG or REM mode with the key out of the RUN position."
   ],
@@ -203,13 +203,13 @@ The Purdue Enterprise Reference Architecture came out of Purdue University in th
   quiz: [
     {
       q: "Finance needs line counts in a BI tool. Which design follows zone and conduit practice?",
-      options: ["Allow the BI server to read PLC tags on port 44818", "Replicate the data into a database in the DMZ and let the BI server read that", "Put the BI server on the control VLAN", "Open the BI server's firewall to the plant"],
-      answer: 1,
+      options: ["Allow the BI server to read PLC tags on port 44818", "Put the BI server on the control VLAN", "Open the BI server's firewall to the plant", "Replicate the data into a database in the DMZ and let the BI server read that"],
+      answer: 3,
       explain: [
         "That is a direct IT-to-PLC path, even though it is one port.",
-        "Correct. Each side talks to the DMZ, and no session crosses from IT to the plant.",
         "This moves an IT system into the control zone and enlarges the attack surface.",
-        "This weakens the conduit for everyone."
+        "This weakens the conduit for everyone.",
+        "Correct. Each side talks to the DMZ, and no session crosses from IT to the plant."
       ]
     },
     {
@@ -225,45 +225,45 @@ The Purdue Enterprise Reference Architecture came out of Purdue University in th
     },
     {
       q: "A zone is rated SL 2. What does that describe?",
-      options: ["The zone has 2 firewalls", "The zone resists intentional attacks using simple means by low-skill attackers", "The zone is at Purdue level 2", "The zone can be patched within 2 days"],
-      answer: 1,
+      options: ["The zone has 2 firewalls", "The zone is at Purdue level 2", "The zone resists intentional attacks using simple means by low-skill attackers", "The zone can be patched within 2 days"],
+      answer: 2,
       explain: [
         "Security levels describe the attacker, not the number of devices.",
-        "Correct. SL 2 is protection against intentional violation with simple means and low motivation.",
         "Security levels are not Purdue levels.",
+        "Correct. SL 2 is protection against intentional violation with simple means and low motivation.",
         "Patching is separate from the security level."
       ]
     },
     {
       q: "A vendor needs after-hours access to a line. Which pattern is best?",
-      options: ["A shared VPN account with a permanent port forward", "A cellular router the vendor keeps on the machine", "Individual MFA login to a DMZ jump host with a time-limited, recorded session to one machine", "Leaving TeamViewer on the HMI"],
-      answer: 2,
+      options: ["Individual MFA login to a DMZ jump host with a time-limited, recorded session to one machine", "A shared VPN account with a permanent port forward", "A cellular router the vendor keeps on the machine", "Leaving TeamViewer on the HMI"],
+      answer: 0,
       explain: [
+        "Correct. It ends in the DMZ, uses individual identity and limits scope and time.",
         "Shared accounts cannot be attributed or revoked, and a permanent forward is always open.",
         "Unmanaged cellular routers bypass the firewall completely.",
-        "Correct. It ends in the DMZ, uses individual identity and limits scope and time.",
         "Always-on remote tools are a common entry point."
       ]
     },
     {
-      q: "Where does the site Ignition gateway that talks to PLCs normally sit?",
-      options: ["In the enterprise network", "In the plant site operations zone, with office users reaching Perspective through a proxy or front-end gateway", "Directly on the Internet", "Inside the safety zone"],
-      answer: 1,
+      q: "Where does the site Ignition Gateway that talks to PLCs normally sit?",
+      options: ["In the enterprise network", "Directly on the Internet", "Inside the safety zone", "In the plant site operations zone, with office users reaching Perspective through a proxy or front-end gateway"],
+      answer: 3,
       explain: [
         "That would require IT-to-PLC paths.",
-        "Correct. It is a Level 3 system, reachable through controlled conduits.",
         "Exposing it to the Internet invites attacks against the system that runs the plant.",
-        "Safety systems are isolated and are not polled for general SCADA purposes."
+        "Safety systems are isolated and are not polled for general SCADA purposes.",
+        "Correct. It is a Level 3 system, reachable through controlled conduits."
       ]
     },
     {
       q: "What lesson does the Colonial Pipeline shutdown teach about IT and OT?",
-      options: ["PLCs were hacked directly", "Without provable separation, an IT incident can force an operational shutdown", "Firewalls cause outages", "Ransomware cannot affect operations"],
-      answer: 1,
+      options: ["PLCs were hacked directly", "Firewalls cause outages", "Without provable separation, an IT incident can force an operational shutdown", "Ransomware cannot affect operations"],
+      answer: 2,
       explain: [
         "The ransomware hit IT systems. The pipeline was shut down as a precaution.",
-        "Correct. Not being sure that OT was isolated was enough to stop operations.",
         "The point is that segmentation prevents spread and uncertainty.",
+        "Correct. Not being sure that OT was isolated was enough to stop operations.",
         "It can, as this incident showed, through decisions made out of caution."
       ]
     }

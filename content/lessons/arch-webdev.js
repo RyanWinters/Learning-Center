@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## What WebDev is
 
-Most systems you integrate with, such as an ERP, a WMS, a quality app or a customer portal, speak {{term:rest-api|REST}} over HTTP and trade JSON. The **Web Dev module** lets an Ignition gateway be one of those systems. You write small scripts, mount them at URLs, and anything that can send an HTTP request can read tags, query the historian or push a work order into your project.
+Most systems you integrate with, such as an ERP, a WMS, a quality app or a customer portal, speak {{term:rest-api|REST}} over HTTP and trade JSON. The **Web Dev module** lets an Ignition Gateway be one of those systems. You write small scripts, mount them at URLs, and anything that can send an HTTP request can read tags, query the historian or push a work order into your project.
 
 Without it, your only front door is Perspective or Vision. With it, the gateway also becomes a data service. This is the usual way a Level 3 or Level 4 system reaches Ignition, as you will see in {{lesson:mes-erp}}.
 
@@ -167,7 +167,7 @@ The shop also has a staff-only door, with its own key, for the people who run th
 
 **Why write requests, not outputs?** A POST that flips a valve directly puts an internet-shaped failure mode, like a retry storm or a malformed body, next to physical equipment. Writing a request tag that the PLC validates and sequences keeps the interlocks where they belong. Integrators argue about how much logic belongs in the endpoint. The safe rule is that the endpoint validates and records, and the controller decides.
 
-**Why a separate gateway for outside callers?** Putting WebDev on the control gateway is fast to build and simple to run. It also means a flood of external requests competes for the same threads as your tag engine and screens. Many sites run a front-end gateway in the DMZ that holds the WebDev endpoints and reaches the control gateway over the gateway network or a narrow API. It costs a license and some complexity. It buys isolation.
+**Why a separate gateway for outside callers?** Putting WebDev on the control gateway is fast to build and simple to run. It also means a flood of external requests competes for the same threads as your tag engine and screens. Many sites run a front-end gateway in the DMZ that holds the WebDev endpoints and reaches the control gateway over the Gateway Network or a narrow API. It costs a license and some complexity. It buys isolation.
 
 **Why API keys for deployment, not for apps?** The built-in API's keys are broad. That suits a pipeline that must create connections and projects. It is wrong for a mobile app that only needs to read three values.
 `,
@@ -196,7 +196,7 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
   <text class="dg-text dg-mid" x="90" y="60">Client</text>
   <text class="dg-text-sm dg-mid" x="90" y="82">ERP / app / script</text>
   <rect class="dg-box-accent" x="250" y="20" width="200" height="110" rx="6"/>
-  <text class="dg-title dg-mid" x="350" y="44">Ignition gateway</text>
+  <text class="dg-title dg-mid" x="350" y="44">Ignition Gateway</text>
   <text class="dg-text-sm dg-mid" x="350" y="68">WebDev resource</text>
   <text class="dg-text-mono dg-mid" x="350" y="90">doGet / doPost</text>
   <text class="dg-text-sm dg-mid" x="350" y="114">auth, validate, respond</text>
@@ -231,56 +231,56 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
   quiz: [
     {
       q: "An ERP system must read yesterday's production totals from Ignition. Which approach is the best fit?",
-      options: ["A WebDev doGet resource that queries the database and returns JSON", "Give the ERP an admin API key for the built-in gateway API", "Have the ERP poll the Perspective session for the numbers", "Write a doPost that the ERP calls with no authentication"],
-      answer: 0,
+      options: ["Give the ERP an admin API key for the built-in gateway API", "A WebDev doGet resource that queries the database and returns JSON", "Have the ERP poll the Perspective session for the numbers", "Write a doPost that the ERP calls with no authentication"],
+      answer: 1,
       explain: [
-        "Correct. You define a narrow, read-only contract in your own vocabulary and can secure it per resource.",
         "The built-in API is for administering the gateway. Its keys are broad and would give far more access than the ERP needs.",
+        "Correct. You define a narrow, read-only contract in your own vocabulary and can secure it per resource.",
         "Perspective sessions are a user interface, not a data service.",
         "A POST is the wrong verb for reading, and no authentication leaves the endpoint open to anyone who can reach it."
       ]
     },
     {
       q: "A client sends a POST with Content-Type 'application/json;charset=UTF-8' and your doPost throws a KeyError on request['postData']. What is the most likely cause and fix?",
-      options: ["The tag path is wrong; correct it", "postData was not populated for that content type; read and parse the raw body from servletRequest", "doPost cannot receive JSON; switch to doGet", "The gateway needs a restart after each script edit"],
-      answer: 1,
+      options: ["The tag path is wrong; correct it", "doPost cannot receive JSON; switch to doGet", "postData was not populated for that content type; read and parse the raw body from servletRequest", "The gateway needs a restart after each script edit"],
+      answer: 2,
       explain: [
         "A bad tag path would give bad quality on a read, not a missing key in the request dictionary.",
-        "Correct. The module fills postData only for certain content types, so reading the raw bytes is the fallback.",
         "doPost is the normal handler for JSON bodies. GET has no body.",
+        "Correct. The module fills postData only for certain content types, so reading the raw bytes is the fallback.",
         "Project resources are saved and live without a gateway restart."
       ]
     },
     {
       q: "Your doPost receives 'open valve V12' from a partner app. What is the safest design?",
-      options: ["Write directly to the valve output tag so it responds instantly", "Validate the request, check the caller's role, then write a request tag that the PLC sequence validates and acts on", "Skip validation because the partner is trusted", "Return 200 and ignore the request until an operator approves it"],
-      answer: 1,
+      options: ["Write directly to the valve output tag so it responds instantly", "Skip validation because the partner is trusted", "Return 200 and ignore the request until an operator approves it", "Validate the request, check the caller's role, then write a request tag that the PLC sequence validates and acts on"],
+      answer: 3,
       explain: [
         "That puts network failure modes, such as retries and malformed bodies, directly on physical equipment and bypasses interlocks.",
-        "Correct. The endpoint validates and records. The controller owns permissives and interlocks.",
         "Trusted partners still send bad data, and their credentials can be stolen.",
-        "Returning success while doing nothing misleads the caller. A clear status code is better."
+        "Returning success while doing nothing misleads the caller. A clear status code is better.",
+        "Correct. The endpoint validates and records. The controller owns permissives and interlocks."
       ]
     },
     {
       q: "A deployment pipeline must create a database connection on a new gateway automatically. Which tool fits?",
-      options: ["A WebDev doPost resource written for the job", "system.net.httpClient on the gateway being configured", "The built-in gateway REST API with an API key sent in X-Ignition-API-Token", "A Perspective button an engineer clicks"],
-      answer: 2,
+      options: ["The built-in gateway REST API with an API key sent in X-Ignition-API-Token", "A WebDev doPost resource written for the job", "system.net.httpClient on the gateway being configured", "A Perspective button an engineer clicks"],
+      answer: 0,
       explain: [
+        "Correct. The built-in API exists for configuration and provisioning, and API keys suit unattended callers.",
         "You would have to write and secure custom code for something the platform already exposes.",
         "httpClient makes outbound calls from a gateway. It does not configure another one by itself.",
-        "Correct. The built-in API exists for configuration and provisioning, and API keys suit unattended callers.",
         "That is manual and not repeatable."
       ]
     },
     {
       q: "A downstream system needs to know within a second whenever a machine faults. Why is a WebDev doGet that it polls a weak choice?",
-      options: ["WebDev cannot return JSON", "Polling wastes requests and still adds up to a poll interval of delay; a push mechanism such as event streams or MQTT fits better", "doGet is limited to one call per hour", "HTTP is not allowed on gateways"],
-      answer: 1,
+      options: ["WebDev cannot return JSON", "doGet is limited to one call per hour", "Polling wastes requests and still adds up to a poll interval of delay; a push mechanism such as event streams or MQTT fits better", "HTTP is not allowed on gateways"],
+      answer: 2,
       explain: [
         "WebDev returns JSON easily. That is its main use.",
-        "Correct. REST is request/response. For event notification, push the event when it happens.",
         "There is no such limit. The issue is design, not a cap.",
+        "Correct. REST is request/response. For event notification, push the event when it happens.",
         "Gateways serve and call HTTP routinely."
       ]
     }

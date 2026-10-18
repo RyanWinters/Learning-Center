@@ -217,13 +217,13 @@ Trending is older than SCADA. Strip-chart recorders drew pen lines on paper, and
   quiz: [
     {
       q: "Engineers want to pick any tag at runtime and trend it for the last month. Which component fits?",
-      options: ["XY Chart", "Power Chart", "Time Series Chart with a fixed pen list", "Table component"],
-      answer: 1,
+      options: ["XY Chart", "Time Series Chart with a fixed pen list", "Table component", "Power Chart"],
+      answer: 3,
       explain: [
         "The XY Chart plots one variable against another, not tags over time.",
-        "Correct. The Power Chart has a runtime tag browser and user-added pens.",
         "A fixed Time Series Chart shows only the pens you designed in.",
-        "A table is not a trend."
+        "A table is not a trend.",
+        "Correct. The Power Chart has a runtime tag browser and user-added pens."
       ]
     },
     {
@@ -239,44 +239,44 @@ Trending is older than SCADA. Strip-chart recorders drew pen lines on paper, and
     },
     {
       q: "You trend a pump run bit over 8 hours in 480 buckets using Average. The line sits at 0.5 for hours. What does it mean and what is the fix?",
-      options: ["The pump runs at half speed; no fix needed", "The pump cycled within each bucket; use LastValue or a duration aggregate", "The historian is broken", "The chart range is wrong"],
-      answer: 1,
+      options: ["The pump cycled within each bucket; use LastValue or a duration aggregate", "The pump runs at half speed; no fix needed", "The historian is broken", "The chart range is wrong"],
+      answer: 0,
       explain: [
-        "Average of a bit is the fraction of time it was 1, not a speed.",
         "Correct. Averaging a discrete signal blurs state. Use LastValue or a time-in-state aggregate.",
+        "Average of a bit is the fraction of time it was 1, not a speed.",
         "The historian is storing correctly. The aggregate is the wrong choice.",
         "The range does not change what Average does to a bit."
       ]
     },
     {
       q: "You zoom out to a month and want to be sure a 2-second pressure spike still appears. Which aggregate?",
-      options: ["Average", "MinMax", "Sum", "Count"],
-      answer: 1,
+      options: ["Average", "Sum", "MinMax", "Count"],
+      answer: 2,
       explain: [
         "Average smooths the spike away across a long slice.",
-        "Correct. MinMax returns the minimum and maximum of each slice, so peaks survive.",
         "Sum adds values and changes the unit of meaning.",
+        "Correct. MinMax returns the minimum and maximum of each slice, so peaks survive.",
         "Count tells you how many samples, not their extremes."
       ]
     },
     {
       q: "A trend has a cliff at its right edge on every refresh. A likely cause is:",
-      options: ["The tag has bad quality", "The query's end is 'now' and the last window includes future time that is filled by interpolation", "The pen color is wrong", "The chart is in a flex container"],
-      answer: 1,
+      options: ["The tag has bad quality", "The pen color is wrong", "The chart is in a flex container", "The query's end is 'now' and the last window includes future time that is filled by interpolation"],
+      answer: 3,
       explain: [
         "Bad quality shows differently, usually as gaps or flagged data.",
-        "Correct. A final window past the last real sample can be filled with a held or interpolated value. Check the binding's range settings in the manual.",
         "Color has no effect on data.",
-        "Layout does not change the query result."
+        "Layout does not change the query result.",
+        "Correct. A final window past the last real sample can be filled with a held or interpolated value. Check the binding's range settings in the manual."
       ]
     },
     {
       q: "Which design is closest to high-performance HMI practice for an operator trend?",
-      options: ["Twelve bright pens with independent auto-scales", "Three to five pens on shared axes, setpoint as a dashed line and alarm limits as faint bands", "Black background with red pens only", "Animated pens that flash on change"],
-      answer: 1,
+      options: ["Three to five pens on shared axes, setpoint as a dashed line and alarm limits as faint bands", "Twelve bright pens with independent auto-scales", "Black background with red pens only", "Animated pens that flash on change"],
+      answer: 0,
       explain: [
-        "Too many pens and independent scales make noise look like signal.",
         "Correct. Context plus restraint lets an operator judge drift quickly.",
+        "Too many pens and independent scales make noise look like signal.",
         "Red should signal alarm state, not just identify a pen.",
         "Flashing distracts and conveys nothing new."
       ]

@@ -56,7 +56,7 @@ Steel, tanks and wet product reflect and absorb radio. A **site survey** with re
 3. Dead spots behind machinery, in coolers and inside cabinets.
 4. Capacity: how many clients per AP, and how many tablets, scanners and phones at shift change.
 
-Use 5 GHz for tablets where possible, with channels planned so that adjacent APs do not overlap. Use WPA2 or WPA3 Enterprise with per-user or per-device credentials. Shared passwords on plant Wi-Fi are a common finding in audits. Put the wireless on its own VLAN and enforce who can reach the Ignition gateway with the firewall rules from {{lesson:net-security}}.
+Use 5 GHz for tablets where possible, with channels planned so that adjacent APs do not overlap. Use WPA2 or WPA3 Enterprise with per-user or per-device credentials. Shared passwords on plant Wi-Fi are a common finding in audits. Put the wireless on its own VLAN and enforce who can reach the Ignition Gateway with the firewall rules from {{lesson:net-security}}.
 
 ## Why not run control over Wi-Fi
 
@@ -75,7 +75,7 @@ A private cellular network is a base-station system you own or lease, using lice
 
 ## Cellular routers for remote sites
 
-Water towers, lift stations and wellheads have no wire. A cellular router (modem plus router) connects the site's PLC or RTU to the central Ignition gateway over a carrier network.
+Water towers, lift stations and wellheads have no wire. A cellular router (modem plus router) connects the site's PLC or RTU to the central Ignition Gateway over a carrier network.
 
 Things to know:
 
@@ -120,7 +120,7 @@ Wi-Fi (IEEE 802.11) became common in plants in the 2000s, mostly for laptops and
     },
     {
       title: "Choosing for a remote well",
-      body: `A wellhead 12 km away has a CompactLogix and a cellular router. The router has a private APN, a static address inside the company's range, and a VPN to the central site. Ignition polls with the Allen-Bradley driver across the VPN, with scan classes of 30 seconds for non-critical tags. Data use is about 1 GB a month. A second SIM on a different carrier takes over if the first loses signal.`
+      body: `A wellhead 12 km away has a CompactLogix and a cellular router. The router has a private APN, a static address inside the company's range, and a VPN to the central site. Ignition polls with the Allen-Bradley driver across the VPN, with tag groups of 30 seconds for non-critical tags. Data use is about 1 GB a month. A second SIM on a different carrier takes over if the first loses signal.`
     }
   ],
 
@@ -159,12 +159,12 @@ Wi-Fi (IEEE 802.11) became common in plants in the 2000s, mostly for laptops and
   quiz: [
     {
       q: "Tablets drop their Perspective session at the doorway between two areas. Each area's access points are in a different subnet. What is the likely fix?",
-      options: ["Increase the Perspective session timeout only", "Put the APs on the same VLAN or tunnel clients to one point, and enable fast roaming", "Switch the tablets to 2.4 GHz", "Add more gateways"],
-      answer: 1,
+      options: ["Increase the Perspective session timeout only", "Switch the tablets to 2.4 GHz", "Put the APs on the same VLAN or tunnel clients to one point, and enable fast roaming", "Add more gateways"],
+      answer: 2,
       explain: [
         "A timeout won't help when the tablet's IP address changes and the connection is broken.",
-        "Correct. Keeping the IP stable and speeding up key exchange makes the handover invisible.",
         "2.4 GHz is more crowded and has fewer channels. It rarely improves roaming.",
+        "Correct. Keeping the IP stable and speeding up key exchange makes the handover invisible.",
         "The gateway is not the cause. The client's network path is."
       ]
     },
@@ -192,24 +192,24 @@ Wi-Fi (IEEE 802.11) became common in plants in the 2000s, mostly for laptops and
     },
     {
       q: "What suits a battery-powered tank-level sensor in a remote tank farm?",
-      options: ["Wi-Fi 6", "WirelessHART or ISA100.11a mesh", "Private 5G with URLLC", "Bluetooth to a phone"],
-      answer: 1,
+      options: ["WirelessHART or ISA100.11a mesh", "Wi-Fi 6", "Private 5G with URLLC", "Bluetooth to a phone"],
+      answer: 0,
       explain: [
-        "Wi-Fi radios use too much power for years-long battery life.",
         "Correct. Low-power mesh is designed for slow, periodic measurements on a battery.",
+        "Wi-Fi radios use too much power for years-long battery life.",
         "That is overkill and costly for a level reading every few seconds.",
         "A phone is not a reliable data path into SCADA."
       ]
     },
     {
       q: "Which design reduces both the data bill and the attack surface for a remote pump station?",
-      options: ["Port forward 502 and poll each second", "Site connects outward over VPN or MQTT and sends changes only", "Open the router's web UI to the internet for convenience", "Use a public IP with no firewall"],
-      answer: 1,
+      options: ["Port forward 502 and poll each second", "Open the router's web UI to the internet for convenience", "Use a public IP with no firewall", "Site connects outward over VPN or MQTT and sends changes only"],
+      answer: 3,
       explain: [
         "This exposes Modbus, which has no authentication, to the internet and uses lots of data.",
-        "Correct. Outbound connections have no listening port, and report by exception sends far less.",
         "Exposed admin interfaces are a common way in.",
-        "A public IP with no firewall is the worst choice."
+        "A public IP with no firewall is the worst choice.",
+        "Correct. Outbound connections have no listening port, and report by exception sends far less."
       ]
     }
   ],

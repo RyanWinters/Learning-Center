@@ -156,23 +156,23 @@ The Reporting module has been part of Ignition since the 7.x line (the 7.9 manua
   quiz: [
     {
       q: "A monthly report takes minutes because a script data source sums 2 million rows in Python. Best fix?",
-      options: ["Add more report components", "Aggregate in the SQL query so the report receives a few hundred rows", "Print it instead of emailing", "Schedule it at midnight"],
-      answer: 1,
+      options: ["Aggregate in the SQL query so the report receives a few hundred rows", "Add more report components", "Print it instead of emailing", "Schedule it at midnight"],
+      answer: 0,
       explain: [
-        "More components don't speed anything up.",
         "Correct. Databases aggregate efficiently, and the report only formats the result.",
+        "More components don't speed anything up.",
         "Delivery isn't the bottleneck.",
         "Midnight hides the problem but doesn't fix it."
       ]
     },
     {
       q: "Which actions can a report schedule run after generating a report?",
-      options: ["Only email", "Print, FTP, Save, Email and Run Script", "Only save to a file", "Only open it in Perspective"],
-      answer: 1,
+      options: ["Only email", "Only save to a file", "Print, FTP, Save, Email and Run Script", "Only open it in Perspective"],
+      answer: 2,
       explain: [
         "Several actions can be attached to one schedule.",
-        "Correct. You can combine them, for example email and save.",
         "Save is only one of the actions.",
+        "Correct. You can combine them, for example email and save.",
         "On-demand viewing is separate from scheduled delivery."
       ]
     },
@@ -189,24 +189,24 @@ The Reporting module has been part of Ignition since the 7.x line (the 7.9 manua
     },
     {
       q: "A report scheduled for 06:00 arrives at 07:00 for the east-coast plant, but the Gateway is in the central time zone. Why?",
-      options: ["Reports always run an hour late", "Schedules use the Gateway's local time", "The email server is slow", "PDFs take an hour to generate"],
-      answer: 1,
+      options: ["Reports always run an hour late", "The email server is slow", "PDFs take an hour to generate", "Schedules use the Gateway's local time"],
+      answer: 3,
       explain: [
         "There is no built-in delay.",
-        "Correct. Schedule against the Gateway's clock or adjust the cron expression.",
         "A slow mail server rarely shifts delivery by exactly an hour.",
-        "Generation time is seconds to minutes, not a fixed hour."
+        "Generation time is seconds to minutes, not a fixed hour.",
+        "Correct. Schedule against the Gateway's clock or adjust the cron expression."
       ]
     },
     {
       q: "Operators need a PDF of the current shift on a Perspective screen, chosen with a date picker. What do you use?",
-      options: ["A schedule that emails the report", "A Report Viewer bound to the report path and parameters", "A Vision-only print button", "An external BI tool only"],
-      answer: 1,
+      options: ["A schedule that emails the report", "A Vision-only print button", "An external BI tool only", "A Report Viewer bound to the report path and parameters"],
+      answer: 3,
       explain: [
         "Scheduling is for unattended delivery, not interactive choice.",
-        "Correct. Bind the parameters to screen inputs and display the PDF.",
         "Perspective has its own viewer; no Vision is needed.",
-        "The module can do this natively."
+        "The module can do this natively.",
+        "Correct. Bind the parameters to screen inputs and display the PDF."
       ]
     }
   ],

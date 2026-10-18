@@ -67,15 +67,15 @@ LC.lesson({
     {
       "q": "Three instances all read M101's values. What is the most likely cause?",
       "options": [
-        "The simulator only has one motor",
         "The OPC item path in the definition is a fixed string, not bound to the InstanceName parameter",
+        "The simulator only has one motor",
         "The tag provider is wrong",
         "Quality codes are cached"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "The simulator holds whatever rows you wrote. This would show missing items, not duplicated values.",
         "Correct. If the path text says M101, each instance resolves to M101 no matter what its parameter says.",
+        "The simulator holds whatever rows you wrote. This would show missing items, not duplicated values.",
         "A wrong provider would break paths, not make three instances share data.",
         "Quality does not change which item a tag reads."
       ]
@@ -84,15 +84,15 @@ LC.lesson({
       "q": "Why keep PLC as a parameter and not hardcode PLC1?",
       "options": [
         "Ignition requires at least two parameters",
-        "The same definition can serve a motor on another controller by changing one field",
         "It speeds up OPC reads",
+        "The same definition can serve a motor on another controller by changing one field",
         "It lets operators change the device at runtime"
       ],
-      "answer": 1,
+      "answer": 2,
       "explain": [
         "There is no such requirement.",
-        "Correct. The definition stays generic and the instance supplies the controller.",
         "Parameters are resolved at configuration time and do not affect read speed.",
+        "Correct. The definition stays generic and the instance supplies the controller.",
         "Operators do not edit tag parameters at runtime."
       ]
     },
@@ -116,16 +116,16 @@ LC.lesson({
       "q": "Why check quality with isGood() and not a numeric comparison?",
       "options": [
         "isGood() is shorter to type",
-        "Ignition 8 quality codes differ from 7.x, and isGood() works regardless of the underlying number",
         "Numeric comparison throws an error",
-        "Good is always zero in Ignition"
+        "Good is always zero in Ignition",
+        "Ignition 8 quality codes differ from 7.x, and isGood() works regardless of the underlying number"
       ],
-      "answer": 1,
+      "answer": 3,
       "explain": [
         "Length is not the point.",
-        "Correct. The code numbers changed between versions. The function expresses intent and is version safe.",
         "It would run but give the wrong answer if you used an old constant.",
-        "Good is not defined as zero."
+        "Good is not defined as zero.",
+        "Correct. The code numbers changed between versions. The function expresses intent and is version safe."
       ]
     },
     {

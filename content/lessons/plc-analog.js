@@ -257,23 +257,23 @@ The 4-20 mA current loop became the dominant analog signal in process plants in 
     },
     {
       q: "What is the main argument for scaling in logic into a UDT instead of at the module?",
-      options: ["It is faster to execute", "The ranges are visible, editable from a faceplate and survive a module swap", "Modules cannot scale", "SCP is required by the standard"],
-      answer: 1,
+      options: ["The ranges are visible, editable from a faceplate and survive a module swap", "It is faster to execute", "Modules cannot scale", "SCP is required by the standard"],
+      answer: 0,
       explain: [
-        "Execution time is negligible either way.",
         "Correct. Auditability and maintainability are the real reason.",
+        "Execution time is negligible either way.",
         "Modern Logix analog modules can scale.",
         "Nothing requires SCP. It is a convenience."
       ]
     },
     {
       q: "Where should alarm limits, deadband and delay live?",
-      options: ["In constants inside compare instructions", "In tags, grouped in the equipment's Cfg structure", "In the HMI only", "In the module configuration"],
-      answer: 1,
+      options: ["In constants inside compare instructions", "In the HMI only", "In tags, grouped in the equipment's Cfg structure", "In the module configuration"],
+      answer: 2,
       explain: [
         "Constants require an online edit or download to retune.",
-        "Correct. Tags can be tuned from a faceplate and reused across instances.",
         "The PLC logic needs the values, and the HMI would be a single point of truth the PLC cannot see.",
+        "Correct. Tags can be tuned from a faceplate and reused across instances.",
         "Module configuration has its own alarm limits, but they are not the place for process alarm tuning."
       ]
     }

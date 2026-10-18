@@ -202,35 +202,35 @@ Early Ignition versions used simple user sources with roles, which carried throu
     },
     {
       q: "What is the main benefit of SAML or OIDC for Perspective logins?",
-      options: ["Faster page loads", "The gateway never handles the password, and the company can enforce MFA and disable accounts centrally", "It removes the need for roles", "It encrypts the PLC connection"],
-      answer: 1,
+      options: ["Faster page loads", "It removes the need for roles", "The gateway never handles the password, and the company can enforce MFA and disable accounts centrally", "It encrypts the PLC connection"],
+      answer: 2,
       explain: [
         "Login method has little to do with page speed.",
-        "Correct. The user authenticates at the corporate provider and the gateway receives a token and attributes.",
         "You still map IdP groups or attributes to roles and security levels.",
+        "Correct. The user authenticates at the corporate provider and the gateway receives a token and attributes.",
         "PLC traffic is separate and is not affected by the IdP."
       ]
     },
     {
       q: "A contractor needs two weeks of access to tune one loop. What follows least privilege?",
-      options: ["Share the engineer login", "Give them the admin account and ask them to be careful", "A named, expiring account limited to the one project", "Disable security for the project during the tuning"],
-      answer: 2,
+      options: ["Share the engineer login", "Give them the admin account and ask them to be careful", "Disable security for the project during the tuning", "A named, expiring account limited to the one project"],
+      answer: 3,
       explain: [
         "Shared logins destroy accountability.",
         "Admin access is far more than the job needs.",
-        "Correct. Named, scoped and expiring access gives the least access that still lets the work happen.",
-        "Turning security off is the opposite of least privilege."
+        "Turning security off is the opposite of least privilege.",
+        "Correct. Named, scoped and expiring access gives the least access that still lets the work happen."
       ]
     },
     {
       q: "You restore a gateway backup onto a new server. After the restore, auditing is not recording. What is the likely cause?",
-      options: ["Audit profiles come back disabled and need to be re-enabled", "Backups cannot contain security settings", "The audit database must be MySQL", "Auditing only works on the original hardware"],
-      answer: 0,
+      options: ["Backups cannot contain security settings", "The audit database must be MySQL", "Auditing only works on the original hardware", "Audit profiles come back disabled and need to be re-enabled"],
+      answer: 3,
       explain: [
-        "Correct. Restored audit profiles are among the resources that come back disabled, so you turn them on again.",
         "Security settings are part of a backup.",
         "Audit profiles write to a database table, but not only MySQL is supported.",
-        "Auditing has no hardware tie."
+        "Auditing has no hardware tie.",
+        "Correct. Restored audit profiles are among the resources that come back disabled, so you turn them on again."
       ]
     },
     {

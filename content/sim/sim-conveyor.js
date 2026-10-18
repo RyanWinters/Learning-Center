@@ -65,7 +65,7 @@ Three details separate a working jam alarm from a bad one:
 - **Latch the alarm.** If the alarm followed the eye, the belt would stop, the beam would clear (or not), and the alarm would drop out. Worse, the belt could restart on its own and drive straight back into the jam.
 - **The alarm blocks the run rung.** Notice the circular dependency is safe: Conveyor turns off, which resets the timer, which does not matter because the alarm is already latched.
 
-In a real project this is the pattern behind most 'run feedback' and 'travel time' faults: command, expected result, timer, latched fault, deliberate reset. A guard-door or e-stop would be hardwired through a safety relay or safety PLC, not just this logic.`,
+In a real project this is the pattern behind most 'run feedback' and 'travel time' faults: command, expected result, timer, latched fault, deliberate reset. A guard-door or E-stop would be hardwired through a safety relay or safety PLC, not just this logic.`,
   tips: [
     "Set the jam time from the real part spacing and belt speed, with margin. Slow, loaded belts need longer times than empty ones.",
     "Photo-eyes on dusty lines fail by staying blocked. A dirty lens looks exactly like a jam, so show the operator the eye state on the HMI to speed up diagnosis.",

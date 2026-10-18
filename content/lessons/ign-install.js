@@ -120,7 +120,7 @@ Before you hand the Gateway to anyone:
 1. **Name the Gateway** (system name). It appears in Designer, the Gateway Network and logs.
 2. **Enable HTTPS** with a real certificate and decide whether to redirect HTTP. Passwords on port 8088 over plain HTTP cross the network in the clear.
 3. **Replace the default admin approach.** Avoid shared admin logins. Connect an identity provider (see {{lesson:ign-security}}) and keep one local break-glass account.
-4. **Configure the database connection** and test it. Set up store and forward expectations for outages.
+4. **Configure the database connection** and test it. Set up store-and-forward expectations for outages.
 5. **Set the timezone and clock source** correctly. History and alarms are meaningless with a wrong clock. Use NTP on the host.
 6. **Review log and diagnostics retention** so a chatty script does not fill a disk.
 7. **Set a backup schedule** and prove a restore.
@@ -207,34 +207,34 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
   quiz: [
     {
       q: "Why does 8.3's file-based configuration make Git practical where 8.1 did not?",
-      options: ["Configuration is plain files you can diff, review and sync", "Gateways no longer need backups", "Git runs inside the Gateway", "Configuration is now encrypted"],
-      answer: 0,
+      options: ["Gateways no longer need backups", "Git runs inside the Gateway", "Configuration is now encrypted", "Configuration is plain files you can diff, review and sync"],
+      answer: 3,
       explain: [
-        "Correct. Files give you diffs, history, review and promotion between environments.",
         "Backups remain valuable for state Git does not hold.",
         "Git is external. The Gateway just reads the files.",
-        "The change is about file storage, not encryption."
+        "The change is about file storage, not encryption.",
+        "Correct. Files give you diffs, history, review and promotion between environments."
       ]
     },
     {
       q: "You edit a device JSON file on disk while the Gateway runs. Nothing changes in the UI. What is the most likely reason?",
-      options: ["The Gateway has not scanned the file system", "JSON files are ignored", "The device is offline", "The Gateway needs a license reset"],
-      answer: 0,
+      options: ["JSON files are ignored", "The Gateway has not scanned the file system", "The device is offline", "The Gateway needs a license reset"],
+      answer: 1,
       explain: [
-        "Correct. A scan, triggered from the UI or API, makes the Gateway pick up on-disk changes.",
         "Configuration files are the source for resources.",
+        "Correct. A scan, triggered from the UI or API, makes the Gateway pick up on-disk changes.",
         "Device status does not control whether configuration is loaded.",
         "Licensing is unrelated."
       ]
     },
     {
       q: "A technician needs a script to monitor Gateway health through the REST API. What is the best practice?",
-      options: ["Create an API key with the narrowest security level that includes read access", "Share the admin password with the script", "Open the API with no authentication on the plant network", "Use a key with full access for convenience"],
-      answer: 0,
+      options: ["Share the admin password with the script", "Open the API with no authentication on the plant network", "Create an API key with the narrowest security level that includes read access", "Use a key with full access for convenience"],
+      answer: 2,
       explain: [
-        "Correct. Least privilege keeps a leaked key from being a catastrophe.",
         "Admin credentials in scripts are hard to rotate and audit.",
         "The configuration routes require API keys.",
+        "Correct. Least privilege keeps a leaked key from being a catastrophe.",
         "Convenience now means exposure later."
       ]
     },
@@ -251,13 +251,13 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
     },
     {
       q: "A clean install finds port 8088 already in use. What happens?",
-      options: ["The Gateway iterates to the next available port", "The install fails and deletes itself", "It silently shares 8088", "It switches to port 502"],
-      answer: 0,
+      options: ["The install fails and deletes itself", "It silently shares 8088", "It switches to port 502", "The Gateway iterates to the next available port"],
+      answer: 3,
       explain: [
-        "Correct. Clean installs check defaults and move up until a free port is found. Upgrades do not search and fault instead.",
         "The install does not fail on this.",
         "Two services cannot bind the same port.",
-        "Port 502 is Modbus TCP and unrelated."
+        "Port 502 is Modbus TCP and unrelated.",
+        "Correct. Clean installs check defaults and move up until a free port is found. Upgrades do not search and fault instead."
       ]
     }
   ],

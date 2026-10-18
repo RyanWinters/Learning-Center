@@ -136,7 +136,7 @@ DNP3 was developed in the 1990s for electric utility SCADA, and the DNP Users Gr
     },
     {
       title: "BACnet discovery fails across a router",
-      body: `The front end is on 10.1.1.0/24 and the controllers are on 10.1.2.0/24. Who-Is broadcasts from the front end never reach the controllers. The fix is a BBMD on the controller subnet, or registering the front end as a foreign device with it.`
+      body: `The front end is on 10.20.30.0/24 and the controllers are on 10.20.10.0/24. Who-Is broadcasts from the front end never reach the controllers. The fix is a BBMD on the controller subnet, or registering the front end as a foreign device with it.`
     }
   ],
 
@@ -173,23 +173,23 @@ DNP3 was developed in the 1990s for electric utility SCADA, and the DNP Users Gr
   quiz: [
     {
       q: "A water utility's RTUs send changed values and timestamps over a slow radio link. Which protocol is most likely?",
-      options: ["BACnet", "DNP3", "Modbus RTU only", "IEC 61850 GOOSE"],
-      answer: 1,
+      options: ["DNP3", "BACnet", "Modbus RTU only", "IEC 61850 GOOSE"],
+      answer: 0,
       explain: [
-        "BACnet is for building automation.",
         "Correct. DNP3 was built for telemetry over slow links with event buffering and source timestamps.",
+        "BACnet is for building automation.",
         "Modbus has no event buffer or timestamps, so it cannot report changes by itself.",
         "GOOSE is a fast Ethernet multicast inside substations, not a wide-area radio protocol."
       ]
     },
     {
       q: "What does DNP3's class 0 poll return?",
-      options: ["Only events since the last poll", "The current static values of all points", "Only alarms", "The outstation's clock"],
-      answer: 1,
+      options: ["Only events since the last poll", "Only alarms", "The current static values of all points", "The outstation's clock"],
+      answer: 2,
       explain: [
         "Events are in classes 1, 2 and 3.",
-        "Correct. Class 0 is the integrity poll: the current state of every point.",
         "Alarms are whatever you assign to event classes, not class 0.",
+        "Correct. Class 0 is the integrity poll: the current state of every point.",
         "Time sync is a separate function."
       ]
     },
@@ -213,32 +213,32 @@ DNP3 was developed in the 1990s for electric utility SCADA, and the DNP Users Gr
       q: "What does IEC 61850 provide that a Modbus register map does not?",
       options: [
         "Faster serial baud rates",
-        "Named, self-describing data models and fast peer-to-peer messages such as GOOSE",
         "Built-in cloud connectivity",
-        "A free license for all vendors"
+        "A free license for all vendors",
+        "Named, self-describing data models and fast peer-to-peer messages such as GOOSE"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Speed on the wire isn't its defining feature.",
-        "Correct. Devices expose standard logical nodes and described data, and GOOSE gives millisecond signaling between relays.",
         "It was designed for substations, not cloud links.",
-        "Licensing isn't what separates the standards."
+        "Licensing isn't what separates the standards.",
+        "Correct. Devices expose standard logical nodes and described data, and GOOSE gives millisecond signaling between relays."
       ]
     },
     {
       q: "A BACnet front end on one subnet sees no controllers on another. What is the likely cause?",
       options: [
-        "Who-Is broadcasts are not forwarded by routers, and a BBMD is missing",
         "BACnet only works on RS-485",
         "COV subscriptions expired",
-        "The controllers use function code 03"
+        "The controllers use function code 03",
+        "Who-Is broadcasts are not forwarded by routers, and a BBMD is missing"
       ],
-      answer: 0,
+      answer: 3,
       explain: [
-        "Correct. A BBMD or foreign-device registration carries broadcasts across subnets.",
         "BACnet/IP runs over Ethernet and UDP.",
         "Expired subscriptions affect notifications, not discovery.",
-        "Function codes are a Modbus concept."
+        "Function codes are a Modbus concept.",
+        "Correct. A BBMD or foreign-device registration carries broadcasts across subnets."
       ]
     }
   ],

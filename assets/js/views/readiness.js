@@ -42,7 +42,7 @@
 
   function stack(t) {
     const d = t.total ? 100 * t.done / t.total : 0, s = t.total ? 100 * t.skipped / t.total : 0;
-    return '<div class="rbar" role="img" aria-label="' + t.done + ' done, ' + t.skipped + ' skipped, of ' + t.total + '"><i class="rb-done" style="width:' + d.toFixed(1) + '%"></i><i class="rb-skip" style="width:' + s.toFixed(1) + '%"></i></div>';
+    return '<div class="rbar" role="img" aria-label="' + t.done + ' done, ' + t.skipped + ' marked known, of ' + t.total + '"><i class="rb-done" style="width:' + d.toFixed(1) + '%"></i><i class="rb-skip" style="width:' + s.toFixed(1) + '%"></i></div>';
   }
 
   LC.views.readiness = function (root) {
@@ -57,7 +57,7 @@
       '<header class="page-head"><p class="eyebrow">Goal</p><h1>Integrator readiness</h1><p class="lede">How much of the job you have covered. The first view follows the plant (Purdue levels 0 to 4). The second follows lesson difficulty, L1 to L4. The finish line is the capstone and the build labs.</p></header>' +
       '<section class="ready-hero ' + (sm.ready ? 'is-ready' : '') + '">' + U.ring(sm.pct / 100, 112, 10, '<span class="ring-num num">' + sm.pct + '%</span>') +
         '<div><p class="eyebrow">' + (sm.ready ? 'Integrator ready' : 'Advanced coverage') + '</p><p class="ready-state">' + (sm.ready ? 'Every L3 and L4 lesson in T4 to T9 is done.' : sm.done + ' of ' + sm.total + ' L3 and L4 lessons done in T4 to T9') + '</p>' +
-        '<p class="muted small">Finish those and the "Integrator ready" badge is yours. Skipped lessons do not count here; test out to count them.</p></div></section>' +
+        '<p class="muted small">Finish those and the "Integrator ready" badge is yours. Lessons you only marked as known do not count here; test out to count them.</p></div></section>' +
 
       '<section class="sec"><div class="sec-head"><h2>Plant levels</h2><span class="muted small">Purdue model, 0 to 4</span></div><div class="rrows">' + P.map(p =>
         '<div class="rrow"><div class="rrow-h"><span class="rrow-n" aria-hidden="true">' + p.n + '</span><div class="rrow-t"><b>Purdue level ' + p.n + ' · ' + esc(p.name) + '</b><span class="muted small">' + esc(p.sub) + '</span></div><span class="rrow-c num">' + p.done + '/' + p.total + '</span></div>' + stack(p) +
@@ -65,7 +65,7 @@
 
       '<section class="sec"><div class="sec-head"><h2>Lesson difficulty</h2><span class="muted small">L1 Intro to L4 Expert</span></div><div class="rrows">' + Lv.map(v =>
         '<div class="rrow"><div class="rrow-h">' + U.pips(v.l) + '<div class="rrow-t"><b>' + esc(v.name) + '</b></div><span class="rrow-c num">' + v.done + '/' + v.total + '</span></div>' + stack(v) + '</div>').join('') + '</div>' +
-        '<p class="legend rlegend"><span class="lg"><i class="sw sw-done"></i>Done or tested out</span><span class="lg"><i class="sw sw-skip"></i>Skipped</span></p></section>' +
+        '<p class="legend rlegend"><span class="lg"><i class="sw sw-done"></i>Done or tested out</span><span class="lg"><i class="sw sw-skip"></i>Marked known</span></p></section>' +
 
       '<section class="sec"><div class="sec-head"><h2>Finish line</h2></div>' +
         (cap ? '<a class="finish" href="#/lesson/' + CAPSTONE + '"><span class="finish-ic">' + icon('flag', 22) + '</span><span class="finish-main"><span class="eyebrow">Capstone</span><b>' + esc(cap.title) + '</b><span class="muted small">' + cap.minutes + ' min · ' + U.pips(cap.level) + '</span></span>' + U.chip(capSt, true) + '</a>' : '') +

@@ -225,67 +225,67 @@ Perspective arrived with Ignition 8.0 as the web-native successor to the Java-ba
   quiz: [
     {
       q: "A technician opens your scan-and-open-faceplate view in a desktop browser and taps the Scan Barcode button. What happens?",
-      options: ["The browser asks for webcam access and scans", "The action is ignored because it only works in the native app", "The Gateway throws a license error", "The session is converted to a mobile session"],
-      answer: 1,
+      options: ["The action is ignored because it only works in the native app", "The browser asks for webcam access and scans", "The Gateway throws a license error", "The session is converted to a mobile session"],
+      answer: 0,
       explain: [
-        "The scan action is built for the native app. Browser sessions do not get it.",
         "Correct. The action is ignored in a browser, so you need a manual fallback such as a text field.",
+        "The scan action is built for the native app. Browser sessions do not get it.",
         "Nothing about licensing changes. The action just does nothing outside the app.",
         "Sessions do not change type. The client type stays what it was."
       ]
     },
     {
       q: "A control room needs four monitors, each showing a different page, and operators must not reach the OS desktop. Which client fits?",
-      options: ["Four browser windows in full screen", "The Perspective mobile app on a tablet", "Perspective Workstation in kiosk mode with a page assigned to each display", "Four Vision clients"],
-      answer: 2,
+      options: ["Four browser windows in full screen", "The Perspective mobile app on a tablet", "Four Vision clients", "Perspective Workstation in kiosk mode with a page assigned to each display"],
+      answer: 3,
       explain: [
         "Full-screen browsers still expose shortcuts and the address bar, and need manual placement after a reboot.",
         "The app is for phones and tablets and has no multi-monitor model.",
-        "Correct. Workstation maps pages to displays and kiosk mode limits OS access.",
-        "Vision is a different module. The question is about Perspective."
+        "Vision is a different module. The question is about Perspective.",
+        "Correct. Workstation maps pages to displays and kiosk mode limits OS access."
       ]
     },
     {
       q: "A phone loses signal for 30 seconds while the user fills in a checklist. What should the design assume?",
-      options: ["The phone queues the entries and syncs later", "Entries tapped while disconnected are lost, so each step should be saved to the Gateway as it happens", "Perspective switches to local logic", "The Gateway holds the session open and replays taps"],
-      answer: 1,
+      options: ["The phone queues the entries and syncs later", "Perspective switches to local logic", "Entries tapped while disconnected are lost, so each step should be saved to the Gateway as it happens", "The Gateway holds the session open and replays taps"],
+      answer: 2,
       explain: [
         "Perspective is a thin client with no offline queue.",
-        "Correct. All logic is on the Gateway, so write each step when it occurs and show connection state.",
         "There is no local logic mode.",
+        "Correct. All logic is on the Gateway, so write each step when it occurs and show connection state.",
         "The Gateway cannot receive taps that never left the phone."
       ]
     },
     {
       q: "Which is the safest way to give maintenance phones access to a Gateway that sits on a plant network?",
-      options: ["Port-forward the Gateway web port on the plant firewall", "Put the Gateway in a public cloud IP", "A TLS reverse proxy in the DMZ with an identity provider and per-user roles (off-site phones join a VPN that ends in the DMZ)", "Share the Designer login with the crew"],
-      answer: 2,
+      options: ["Port-forward the Gateway web port on the plant firewall", "A TLS reverse proxy in the DMZ with an identity provider and per-user roles (off-site phones join a VPN that ends in the DMZ)", "Put the Gateway in a public cloud IP", "Share the Designer login with the crew"],
+      answer: 1,
       explain: [
         "Exposed ports are scanned within hours and expose login pages and every Gateway vulnerability.",
-        "Moving it to a public IP only widens exposure.",
         "Correct. Every connection ends in the DMZ, identity is enforced at the proxy, and Designer stays off the mobile path. A mesh landing on the Gateway would skip the DMZ.",
+        "Moving it to a public IP only widens exposure.",
         "Shared credentials destroy accountability and expand access."
       ]
     },
     {
       q: "Why validate the string returned by a barcode scan before using it as a tag path?",
-      options: ["Barcodes can be corrupted by dirty labels only", "Scanned text is user input, and someone could print a code that opens something you did not intend", "Tag paths cannot contain slashes", "Validation is automatic in the scan action"],
-      answer: 1,
+      options: ["Barcodes can be corrupted by dirty labels only", "Tag paths cannot contain slashes", "Validation is automatic in the scan action", "Scanned text is user input, and someone could print a code that opens something you did not intend"],
+      answer: 3,
       explain: [
         "Corruption is possible, but the main reason is deliberate or accidental wrong input.",
-        "Correct. Treat it like any input: check provider, existence and permissions.",
         "Tag paths use slashes freely.",
-        "The action delivers the raw text. Your script is responsible for checks."
+        "The action delivers the raw text. Your script is responsible for checks.",
+        "Correct. Treat it like any input: check provider, existence and permissions."
       ]
     },
     {
       q: "You need to record a short vibration burst from a phone placed on a pump. Which accelerometer mode fits?",
-      options: ["Continuous, left on all shift", "Batch for a set duration, handled in the Accelerometer Data Received event", "Off", "Continuous with a one-hour timer in a binding"],
-      answer: 1,
+      options: ["Continuous, left on all shift", "Off", "Batch for a set duration, handled in the Accelerometer Data Received event", "Continuous with a one-hour timer in a binding"],
+      answer: 2,
       explain: [
         "Continuous streams samples to the Gateway and wastes bandwidth and CPU.",
-        "Correct. Batch records for a duration, then sends the data once.",
         "Off stops the sensor and returns nothing.",
+        "Correct. Batch records for a duration, then sends the data once.",
         "A binding timer does not make a continuous stream cheap."
       ]
     }

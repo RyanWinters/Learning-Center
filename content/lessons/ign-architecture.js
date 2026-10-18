@@ -106,7 +106,7 @@ Perspective is the surprise. Although it feels like a web client, the scripts yo
 ## Worked trace: one tag value to one screen
 
 1. A Logix PLC holds \`LT101\` (the Area10 tank level transmitter) with a scaled value of 3.62 m.
-2. A device connection in the OPC UA module reads it every scan class period.
+2. A device connection in the OPC UA module reads it every tag group period.
 3. The tag \`[default]Plant1/Area10/Line1/LT101\` is bound to that OPC item, and the tag provider updates its value.
 4. A Perspective session for a user at a browser has a binding to that tag. The Gateway pushes the new value over the session's websocket.
 5. The browser redraws the gauge. Meanwhile the historian logs the change and the alarm engine compares it with its setpoints.
@@ -177,24 +177,24 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
   quiz: [
     {
       q: "A Perspective button script calls system.file.writeFile to save a CSV. Where does the file end up?",
-      options: ["On the Gateway server's disk", "On the user's laptop", "In the browser's downloads folder", "In the database"],
-      answer: 0,
+      options: ["On the user's laptop", "In the browser's downloads folder", "On the Gateway server's disk", "In the database"],
+      answer: 2,
       explain: [
-        "Correct. Perspective scripts run in the Gateway scope, so file functions act on the server.",
         "The browser is only a display. The script does not run there.",
         "A download needs a mechanism designed to send a file to the browser.",
+        "Correct. Perspective scripts run in the Gateway scope, so file functions act on the server.",
         "writeFile writes to a filesystem path, not to SQL."
       ]
     },
     {
       q: "Which item is configured at the Gateway level and shared by every project?",
-      options: ["Database connections", "Perspective views", "Project script libraries", "Named queries"],
-      answer: 0,
+      options: ["Perspective views", "Project script libraries", "Named queries", "Database connections"],
+      answer: 3,
       explain: [
-        "Correct. Database, device and tag provider connections are gateway-level resources.",
         "Views belong to a project.",
         "Script libraries belong to a project, though they can be inherited.",
-        "Named queries are project resources."
+        "Named queries are project resources.",
+        "Correct. Database, device and tag provider connections are gateway-level resources."
       ]
     },
     {
@@ -210,24 +210,24 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
     },
     {
       q: "What is the main architectural difference between a Vision client and a Perspective session?",
-      options: ["Perspective logic mostly executes on the Gateway while Vision logic mostly executes on the client", "Vision runs in a browser and Perspective needs Java", "Perspective cannot use tags", "Vision does not need a Gateway"],
-      answer: 0,
+      options: ["Vision runs in a browser and Perspective needs Java", "Perspective logic mostly executes on the Gateway while Vision logic mostly executes on the client", "Perspective cannot use tags", "Vision does not need a Gateway"],
+      answer: 1,
       explain: [
-        "Correct. This drives server sizing for Perspective and client sizing for Vision.",
         "It is the reverse: Perspective is browser based, and Vision uses a Java client.",
+        "Correct. This drives server sizing for Perspective and client sizing for Vision.",
         "Both use Gateway tags.",
         "Both connect to a Gateway."
       ]
     },
     {
       q: "You open the Designer from your workstation. What actually installs and launches it?",
-      options: ["The Designer Launcher downloads the matching Designer from the Gateway", "A full Ignition server on your PC", "A browser extension", "A copy of the SQL database"],
-      answer: 0,
+      options: ["A full Ignition server on your PC", "A browser extension", "A copy of the SQL database", "The Designer Launcher downloads the matching Designer from the Gateway"],
+      answer: 3,
       explain: [
-        "Correct. The launcher manages Designer versions per Gateway.",
         "Designers are not servers.",
         "No extension is involved.",
-        "The Designer edits projects on the Gateway and does not carry a database."
+        "The Designer edits projects on the Gateway and does not carry a database.",
+        "Correct. The launcher manages Designer versions per Gateway."
       ]
     }
   ],

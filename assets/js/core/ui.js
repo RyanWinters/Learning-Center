@@ -64,7 +64,7 @@
     complete: { label: 'Done', icon: 'check', cls: 'ok' },
     'tested-out': { label: 'Tested out', icon: 'medal', cls: 'ok' },
     'in-progress': { label: 'In progress', icon: 'half', cls: 'warn' },
-    skipped: { label: 'Skipped', icon: 'skip', cls: 'mute' },
+    skipped: { label: 'Marked known', icon: 'skip', cls: 'mute' },
     locked: { label: 'Locked', icon: 'lock', cls: 'mute' },
     available: { label: 'Ready', icon: 'circle', cls: 'accent' },
     soon: { label: 'Coming soon', icon: 'clock', cls: 'mute' }

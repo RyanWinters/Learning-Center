@@ -274,15 +274,15 @@ Psychologists were studying attention long before control rooms had screens. Geo
       "options": [
         "Working memory is too large for the task",
         "The font is too small for foveal vision",
-        "Nothing is preattentive, so the abnormal value must be found by serial reading and recalled limits",
-        "The operator has change blindness"
+        "The operator has change blindness",
+        "Nothing is preattentive, so the abnormal value must be found by serial reading and recalled limits"
       ],
-      "answer": 2,
+      "answer": 3,
       "explain": [
         "Working memory is limited to about four chunks, not too large. The problem is demand on it.",
         "Font size might matter, but the delay comes from having to read all 40, not from one unreadable item.",
-        "Correct. With no difference in color, length or position, detection depends on fixating each value and recalling its range.",
-        "Change blindness is about missing a change outside attention. This case is a static search problem."
+        "Change blindness is about missing a change outside attention. This case is a static search problem.",
+        "Correct. With no difference in color, length or position, detection depends on fixating each value and recalling its range."
       ]
     },
     {
@@ -305,46 +305,46 @@ Psychologists were studying attention long before control rooms had screens. Geo
       "q": "A Start command on faceplate M101 produces a message in a status bar at the bottom of the page. Operators miss it. What is the best fix based on change blindness?",
       "options": [
         "Make the status bar message flash",
+        "Show the new state in place on the Start button or next to it, where the eye already is",
         "Move the status bar to the top of the page",
-        "Add a sound for every command",
-        "Show the new state in place on the Start button or next to it, where the eye already is"
+        "Add a sound for every command"
       ],
-      "answer": 3,
+      "answer": 1,
       "explain": [
         "Flashing spends motion on a normal event and can annoy. It also does not address where the eye is.",
+        "Correct. NN/g advises placing important new elements near where the user's eyes are already focused.",
         "Top or bottom, a status bar is still away from the foveal spot at the moment of the click.",
-        "Sound for every command adds noise and dilutes alarm sounds.",
-        "Correct. NN/g advises placing important new elements near where the user's eyes are already focused."
+        "Sound for every command adds noise and dilutes alarm sounds."
       ]
     },
     {
       "q": "A screen needs the operator to compare the feed temperature and the reactor temperature while adjusting a valve. How should you use the working memory limit?",
       "options": [
         "Put each on its own page and add a navigation button",
-        "Put the two temperatures and the valve control on the same screen, close together",
         "Show both as large digits in the corner",
+        "Put the two temperatures and the valve control on the same screen, close together",
         "Add a table of 30 related values for context"
       ],
-      "answer": 1,
+      "answer": 2,
       "explain": [
         "Splitting across pages forces recall and adds a disruption.",
-        "Correct. The task needs only a few chunks if they are visible together, so the operator does not have to remember one while looking at the other.",
         "Large digits help reading but not comparison.",
+        "Correct. The task needs only a few chunks if they are visible together, so the operator does not have to remember one while looking at the other.",
         "Thirty extra values add chunks and make the key ones harder to find."
       ]
     },
     {
       "q": "Which design change best raises an indicator from situation awareness level 1 to level 3?",
       "options": [
-        "Add a short trend and a rate-of-change arrow in addition to the band and limits",
         "Add the normal band and alarm limit ticks only",
+        "Add a short trend and a rate-of-change arrow in addition to the band and limits",
         "Add a bigger font to the value",
         "Add a second digital readout in engineering units"
       ],
-      "answer": 0,
+      "answer": 1,
       "explain": [
-        "Correct. Trend and rate let the operator project what happens next.",
         "Bands and limits support comprehension (level 2). Level 3 needs direction and rate.",
+        "Correct. Trend and rate let the operator project what happens next.",
         "A bigger font helps reading (level 1) only.",
         "A second readout adds more numbers, not meaning."
       ]
@@ -352,17 +352,17 @@ Psychologists were studying attention long before control rooms had screens. Geo
     {
       "q": "A colleague says 'people hold 7 plus or minus 2 items, so each screen can have 9 groups'. What is the best response?",
       "options": [
+        "Plan for about four chunks, and make groups visibly distinct, because later work puts the limit lower and Miller called seven a rough estimate",
         "Agree, since Miller's number is a firm limit",
         "Working memory does not matter for screens",
-        "Limit screens to two items",
-        "Plan for about four chunks, and make groups visibly distinct, because later work puts the limit lower and Miller called seven a rough estimate"
+        "Limit screens to two items"
       ],
-      "answer": 3,
+      "answer": 0,
       "explain": [
+        "Correct. Cowan's review argues for about four chunks (three to five), so aim for few, distinct groups.",
         "Seven is a rough estimate and later work suggests it is lower.",
         "Working memory is the reason context should be displayed instead of recalled.",
-        "Two is too restrictive and has no support.",
-        "Correct. Cowan's review argues for about four chunks (three to five), so aim for few, distinct groups."
+        "Two is too restrictive and has no support."
       ]
     }
   ],

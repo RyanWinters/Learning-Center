@@ -72,16 +72,16 @@ LC.lesson({
       "q": "Why does CommLoss have a 5 second active delay but Overload has none?",
       "options": [
         "Overload is less important",
-        "Overload is a protective trip the PLC already confirmed, while comm loss often blips and would produce false alarms",
         "Delays are only allowed on Medium alarms",
-        "CommLoss cannot be Boolean"
+        "CommLoss cannot be Boolean",
+        "Overload is a protective trip the PLC already confirmed, while comm loss often blips and would produce false alarms"
       ],
-      "answer": 1,
+      "answer": 3,
       "explain": [
         "It is the opposite: Overload is a trip and needs immediate attention.",
-        "Correct. A delay filters transients, and a latched trip is not a transient.",
         "Delays can be set on any priority.",
-        "It is Boolean by definition."
+        "It is Boolean by definition.",
+        "Correct. A delay filters transients, and a latched trip is not a transient."
       ]
     },
     {
@@ -104,30 +104,30 @@ LC.lesson({
       "q": "Why is the deadband on history 'irreversible'?",
       "options": [
         "It deletes existing rows",
-        "Values inside the deadband are never stored, so that detail cannot be recovered later",
         "It locks the table",
+        "Values inside the deadband are never stored, so that detail cannot be recovered later",
         "It disables queries"
       ],
-      "answer": 1,
+      "answer": 2,
       "explain": [
         "Existing rows stay.",
-        "Correct. The historian discards in-band changes at write time.",
         "It does not lock anything.",
+        "Correct. The historian discards in-band changes at write time.",
         "Queries still work."
       ]
     },
     {
       "q": "You need the average motor speed per 5 minutes for a report. Which 8.3 function fits best?",
       "options": [
-        "system.tag.queryTagHistory",
         "system.historian.queryAggregatedPoints",
+        "system.tag.queryTagHistory",
         "system.db.runQuery",
         "system.historian.queryRawPoints with no window"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "It still runs but is deprecated in 8.3.",
         "Correct. Aggregated points collapse time windows into one value per aggregate.",
+        "It still runs but is deprecated in 8.3.",
         "That reads SQL tables directly and ignores the historian's structure.",
         "Raw points return stored samples, not per-window aggregates."
       ]

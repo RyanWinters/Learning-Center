@@ -39,7 +39,7 @@ LC.lesson({
   ],
   "eli5": "\nThink of a model railway. Before you can run trains, you need a table, a track, a power supply and a little town to drive past. None of that is the trains, but without it there is nowhere to put them.\n\nThis lab builds the table. The gateway is the control box with the power switch. The simulated PLC is a toy train driver that follows a script, so you can practise without a real factory. The database is a notebook where everything gets written down. The project is an empty screen waiting for pictures.\n\nGiving everything the same names as the real plant (the same station names on your model railway) means the lessons that follow can say \"go to PLC1\" and everyone, including you in six months, knows what that means.\n",
   "why": "\n**Why a simulator and not a real PLC?** The point of the labs is the Ignition side: UDTs, bindings, alarms, history. A simulator gives you repeatable data with no hardware and no risk. It also exercises the same OPC UA path as a real device, so the tag paths you build are the ones you would use against a Logix controller, with only the device name changing.\n\n**Why a real database and not the built-in options?** The historian, alarm journal and OEE tables all depend on SQL, and the SQL skills transfer to every plant. A tiny PostgreSQL container costs nothing and lets you look at the raw rows, which is how you learn what the historian is actually doing.\n\n**Why Docker, if the install is three clicks?** Containers let you throw the lab away and rebuild it from one file, and they are how many integrators run gateways in production now. The tradeoff is one more tool to learn and a few networking surprises, such as the `localhost` trap. Integrators argue about whether production gateways belong in containers. For a learning lab the reproducibility wins.\n\n**Why fix the names before building?** Renaming a tag provider, a device or a database connection after screens and bindings exist means touching every one of them. The house standard exists so that these names are decided once.\n",
-  "history": "\nIgnition Maker Edition arrived with version 8.0.14 as a free edition for hobbyists and learners. Before that, learners relied on the 2-hour trial timer that reset when you restarted. The Programmable Device Simulator replaced the older Generic, Dairy and SLC simulators in 8.0.8.\n",
+  "history": "\nIgnition Maker Edition arrived during the 8.x line (check the release notes for the exact version) as a free edition for hobbyists and learners. Before that, learners relied on the 2-hour trial timer that reset when you restarted. The Programmable Device Simulator replaced the older Generic, Dairy and SLC simulators in an 8.0 release (check the release notes for the exact version).\n",
   "diagrams": {
     "lab": "<svg viewBox=\"0 0 640 220\" role=\"img\" aria-label=\"Browser connects to the gateway on port 8088; the gateway contains the PLC1 simulator and connects to PostgreSQL on port 5432\"><defs><marker id=\"build-setup-ah\" markerWidth=\"10\" markerHeight=\"8\" refX=\"9\" refY=\"4\" orient=\"auto\"><path class=\"dg-fill-line\" d=\"M0,0 L10,4 L0,8 z\"/></marker></defs><rect class=\"dg-box\" x=\"20\" y=\"80\" width=\"110\" height=\"60\" rx=\"6\"/><text class=\"dg-text dg-mid\" x=\"75\" y=\"108\">Browser</text><text class=\"dg-text-sm dg-mid\" x=\"75\" y=\"126\">Designer</text><rect class=\"dg-box-accent\" x=\"220\" y=\"30\" width=\"220\" height=\"160\" rx=\"6\"/><text class=\"dg-title\" x=\"240\" y=\"56\">Gateway meridian-lab</text><rect class=\"dg-box\" x=\"240\" y=\"74\" width=\"180\" height=\"44\" rx=\"4\"/><text class=\"dg-text-sm dg-mid\" x=\"330\" y=\"101\">Simulator PLC1</text><rect class=\"dg-box\" x=\"240\" y=\"130\" width=\"180\" height=\"44\" rx=\"4\"/><text class=\"dg-text-sm dg-mid\" x=\"330\" y=\"157\">Tags + Project Meridian</text><rect class=\"dg-box\" x=\"520\" y=\"80\" width=\"100\" height=\"60\" rx=\"6\"/><text class=\"dg-text dg-mid\" x=\"570\" y=\"108\">Postgres</text><text class=\"dg-text-sm dg-mid\" x=\"570\" y=\"126\">meridian_db</text><line class=\"dg-line\" x1=\"130\" y1=\"110\" x2=\"218\" y2=\"110\" marker-end=\"url(#build-setup-ah)\"/><text class=\"dg-text-sm\" x=\"140\" y=\"100\">8088</text><line class=\"dg-line\" x1=\"440\" y1=\"110\" x2=\"518\" y2=\"110\" marker-end=\"url(#build-setup-ah)\"/><text class=\"dg-text-sm\" x=\"456\" y=\"100\">5432</text></svg>"
   },
@@ -65,16 +65,16 @@ LC.lesson({
       "q": "Your gateway runs in a container and the database in another container from the same compose file. What host belongs in the JDBC URL?",
       "options": [
         "localhost",
-        "The database service name, such as db",
         "The Docker host's public IP",
-        "127.0.0.1:8088"
+        "127.0.0.1:8088",
+        "The database service name, such as db"
       ],
-      "answer": 1,
+      "answer": 3,
       "explain": [
         "Inside the gateway container, localhost is the gateway container itself, so the connection fails.",
-        "Correct. Compose gives each service a DNS name on the shared network, so the gateway finds the database by service name.",
         "That could work through published ports but couples the lab to your network and breaks when the IP changes.",
-        "8088 is the gateway's own web port, not a database address."
+        "8088 is the gateway's own web port, not a database address.",
+        "Correct. Compose gives each service a DNS name on the shared network, so the gateway finds the database by service name."
       ]
     },
     {
@@ -96,15 +96,15 @@ LC.lesson({
     {
       "q": "Why does the lab use a simulator device instead of a spare real PLC?",
       "options": [
-        "The simulator is faster than any real PLC",
         "It needs no hardware and still exercises the same OPC UA tag path, so what you build transfers",
+        "The simulator is faster than any real PLC",
         "Real PLCs cannot be read by Ignition Maker Edition",
         "The simulator is the only way to get quality codes"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "Speed is not the reason.",
         "Correct. The tags you build refer to a device name and an item path, exactly as they would for a Logix device.",
+        "Speed is not the reason.",
         "Maker Edition can use real device drivers. The simulator is chosen for convenience.",
         "Quality codes come from any OPC connection."
       ]
@@ -113,15 +113,15 @@ LC.lesson({
       "q": "You rename the device from PLC1 to Sim1 after building tags. What is the likely result?",
       "options": [
         "Nothing, Ignition updates every path automatically",
-        "Tags that point at the old device show bad quality until their item paths are updated",
         "The database connection fails",
+        "Tags that point at the old device show bad quality until their item paths are updated",
         "The project is deleted"
       ],
-      "answer": 1,
+      "answer": 2,
       "explain": [
         "Tag OPC item paths store the device name as text. They do not track renames.",
-        "Correct. This is why names are fixed before building.",
         "The database connection is independent of device names.",
+        "Correct. This is why names are fixed before building.",
         "Renaming a device does not touch projects."
       ]
     },

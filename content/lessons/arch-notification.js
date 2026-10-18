@@ -165,13 +165,13 @@ The Alarm Notification module predates 8.x (check the 7.9 manual if you maintain
   quiz: [
     {
       q: "A roster has five users with different schedules. At 3 a.m., who does a Notification block contact?",
-      options: ["All five users", "Only the users whose schedules say they are available then", "The first user regardless of schedule", "Nobody, because rosters ignore schedules"],
-      answer: 1,
+      options: ["All five users", "The first user regardless of schedule", "Nobody, because rosters ignore schedules", "Only the users whose schedules say they are available then"],
+      answer: 3,
       explain: [
         "Rosters are filtered by schedule before contacting.",
-        "Correct. The roster is filtered by each user's schedule, then contacts are reached in order.",
         "The order matters, but availability is applied first.",
-        "Schedules are exactly what filter the roster."
+        "Schedules are exactly what filter the roster.",
+        "Correct. The roster is filtered by each user's schedule, then contacts are reached in order."
       ]
     },
     {
@@ -187,33 +187,33 @@ The Alarm Notification module predates 8.x (check the 7.9 manual if you maintain
     },
     {
       q: "A power loss trips 80 alarms and 80 phone calls start. What is the best design response?",
-      options: ["Add more voice lines", "Use a rollup or parent alarm, priority filtering and suppression of consequential alarms", "Turn off the Twilio profile", "Set the delay between messages to zero"],
-      answer: 1,
+      options: ["Use a rollup or parent alarm, priority filtering and suppression of consequential alarms", "Add more voice lines", "Turn off the Twilio profile", "Set the delay between messages to zero"],
+      answer: 0,
       explain: [
-        "That scales the spam.",
         "Correct. One call about the root cause is more useful than 80 about its effects.",
+        "That scales the spam.",
         "Disabling it removes the notification entirely.",
         "A very small or zero delay does not fix queueing and can overload the phone system, so it is not the answer here."
       ]
     },
     {
       q: "Why does acknowledging an alarm by phone need the Gateway's public hostname set?",
-      options: ["Twilio must call back into the Gateway to deliver the response", "Phones need a DNS name", "SMTP requires it", "It sets the alarm priority"],
-      answer: 0,
+      options: ["Phones need a DNS name", "SMTP requires it", "Twilio must call back into the Gateway to deliver the response", "It sets the alarm priority"],
+      answer: 2,
       explain: [
-        "Correct. Interactive acknowledgement needs Twilio to reach the Gateway, which is also why it needs security thought.",
         "Phones aren't the ones resolving the name.",
         "Email is unrelated to Twilio voice.",
+        "Correct. Interactive acknowledgement needs Twilio to reach the Gateway, which is also why it needs security thought.",
         "Priority is set on the alarm."
       ]
     },
     {
       q: "When is a broadcast voice notification appropriate?",
-      options: ["For critical alarms needing proof of acknowledgement", "For information-only messages where no inbound route or acknowledgement is needed", "Never", "Only for email"],
-      answer: 1,
+      options: ["For information-only messages where no inbound route or acknowledgement is needed", "For critical alarms needing proof of acknowledgement", "Never", "Only for email"],
+      answer: 0,
       explain: [
-        "Broadcast calls skip PIN and acknowledgement.",
         "Correct. They suit informational calls when acknowledgement isn't possible or needed.",
+        "Broadcast calls skip PIN and acknowledgement.",
         "They have a valid use.",
         "Broadcast is a voice option."
       ]

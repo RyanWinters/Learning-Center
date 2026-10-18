@@ -92,7 +92,7 @@ A backup nobody has restored is a hope. Restores fail for dull reasons: the back
 Also keep **offsite or offline copies**. A ransomware attack that encrypts the database server will encrypt backups mounted on the same network share.
 
 > [!note] Ignition's own backup
-> The Ignition gateway backup (.gwbk) saves projects, tags and gateway configuration, including the database *connection settings*. It does not contain the data in your database. You need both.
+> The Ignition Gateway backup (.gwbk) saves projects, tags and gateway configuration, including the database *connection settings*. It does not contain the data in your database. You need both.
 
 ## High availability in plain words
 
@@ -109,7 +109,7 @@ Backups protect against loss. {{term:high-availability|High availability}} (HA) 
 Words you'll hear: **synchronous** means a write is not confirmed until the second copy has it, so nothing is lost but writes are slower. **Asynchronous** confirms right away and may lose a moment of data. **Failover** is switching to the standby. **Split brain** is when both servers believe they are primary, which is why clusters use a witness or quorum to decide.
 
 > [!tip] Ignition helps you
-> Ignition's store and forward can buffer data on disk while the database is unreachable and flush it when it returns, for the features that use it (the Tag Historian is the main one; check the manual for which others in your version). A few minutes of database downtime costs you no history as long as the gateway's buffer has room. Many plants find that, plus a VM with HA, is enough, and skip clustering entirely. Size the buffer for the longest outage you accept.
+> Ignition's store-and-forward can buffer data on disk while the database is unreachable and flush it when it returns, for the features that use it (the Tag Historian is the main one; check the manual for which others in your version). A few minutes of database downtime costs you no history as long as the gateway's buffer has room. Many plants find that, plus a VM with HA, is enough, and skip clustering entirely. Size the buffer for the longest outage you accept.
 
 HA is not a backup. A bad \`DELETE\` replicates to the standby in milliseconds.
 
@@ -158,7 +158,7 @@ The {{term:purdue-model|Purdue model}} puts plant control at Levels 0 to 2, site
 {{diagram:placement}}
 
 - A database used only by Ignition and the plant's MES normally sits at **Level 3**, on the OT side, in a server VLAN behind a firewall. In the reference plant that is the SQL server at \`10.20.30.20\` in VLAN 30, with a read-only replica for the enterprise in the DMZ (VLAN 250).
-- Allow only the Ignition gateway(s) and named admin hosts to reach the database port (1433 for SQL Server, 5432 for PostgreSQL, 3306 for MySQL).
+- Allow only the Ignition Gateway(s) and named admin hosts to reach the database port (1433 for SQL Server, 5432 for PostgreSQL, 3306 for MySQL).
 - If the enterprise needs the data, **do not open a hole from IT into Level 3**. Replicate or push a copy into the DMZ or the IT side, or have the Level 3 system push outward. Direct inbound connections from corporate to a production database are a classic audit finding.
 - If the database lives in the cloud, the connection should be outbound from OT, via a controlled path, not inbound.
 - Don't put plant databases on the PLC network. A SQL Server on a control network is a patching and malware problem next to the controllers.
@@ -241,7 +241,7 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
   <text class="dg-text" x="30" y="196">Restore: Sunday FULL, then Thursday DIFF, then every log since the DIFF.</text>
   <text class="dg-text-muted" x="30" y="216">RPO = gap between the last good log backup and the failure.</text>
 </svg>`,
-    placement: `<svg viewBox="0 0 640 260" role="img" aria-label="Purdue placement: the database sits at Level 3 behind a firewall; Ignition gateway reaches it; a DMZ holds a replica or reporting copy for the enterprise; corporate IT does not connect directly to Level 3">
+    placement: `<svg viewBox="0 0 640 260" role="img" aria-label="Purdue placement: the database sits at Level 3 behind a firewall; Ignition Gateway reaches it; a DMZ holds a replica or reporting copy for the enterprise; corporate IT does not connect directly to Level 3">
   <defs><marker id="dbo-ah2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="dg-fill-line" d="M0,0 L8,4 L0,8 z"/></marker></defs>
   <rect class="dg-zone" x="20" y="14" width="600" height="52" rx="6"/>
   <text class="dg-title" x="34" y="36">Levels 4-5: enterprise IT</text>
@@ -252,7 +252,7 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
   <rect class="dg-zone" x="20" y="158" width="600" height="92" rx="6"/>
   <text class="dg-title" x="34" y="180">Level 3: site operations</text>
   <rect class="dg-box-accent" x="40" y="194" width="170" height="44" rx="4"/>
-  <text class="dg-text dg-mid" x="125" y="221">Ignition gateway</text>
+  <text class="dg-text dg-mid" x="125" y="221">Ignition Gateway</text>
   <rect class="dg-box" x="300" y="194" width="170" height="44" rx="4"/>
   <text class="dg-text dg-mid" x="385" y="221">Plant database</text>
   <line class="dg-line" x1="210" y1="216" x2="298" y2="216" marker-end="url(#dbo-ah2)"/>
@@ -278,35 +278,35 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
   quiz: [
     {
       q: "A SQL Server database in the full recovery model has a nightly full backup and no log backups. After eight months the data drive is full. What is the most likely cause?",
-      options: ["The historian ignored its retention setting", "The transaction log was never truncated because no log backups ran", "Differential backups filled the disk", "The simple recovery model keeps too much log"],
-      answer: 1,
+      options: ["The historian ignored its retention setting", "Differential backups filled the disk", "The transaction log was never truncated because no log backups ran", "The simple recovery model keeps too much log"],
+      answer: 2,
       explain: [
         "Retention can contribute to data growth, but the described pattern points at the log file.",
-        "Correct. In the full model the log is only reused after a log backup, so it grows without limit.",
         "No differential backups are mentioned, and backups are written elsewhere.",
+        "Correct. In the full model the log is only reused after a log backup, so it grows without limit.",
         "The simple model reuses the log automatically."
       ]
     },
     {
       q: "The plant says it can lose at most 15 minutes of data and be back within 4 hours. Which pair of numbers is that?",
-      options: ["RTO 15 minutes, RPO 4 hours", "RPO 15 minutes, RTO 4 hours", "Both are RPO", "Both are RTO"],
-      answer: 1,
+      options: ["RPO 15 minutes, RTO 4 hours", "RTO 15 minutes, RPO 4 hours", "Both are RPO", "Both are RTO"],
+      answer: 0,
       explain: [
-        "Reversed. RPO is about data lost and RTO is about downtime.",
         "Correct. RPO is the tolerable data loss and RTO is the tolerable time to recover.",
+        "Reversed. RPO is about data lost and RTO is about downtime.",
         "Only the 15 minutes of data loss is an RPO.",
         "Only the 4 hours of downtime is an RTO."
       ]
     },
     {
       q: "Which statement about high availability is true?",
-      options: ["A synchronous replica makes backups unnecessary", "An accidental DELETE is repaired by failing over to the standby", "Asynchronous replication can lose the last few seconds of writes at failover", "A failover cluster with shared storage survives loss of the storage array"],
-      answer: 2,
+      options: ["A synchronous replica makes backups unnecessary", "An accidental DELETE is repaired by failing over to the standby", "A failover cluster with shared storage survives loss of the storage array", "Asynchronous replication can lose the last few seconds of writes at failover"],
+      answer: 3,
       explain: [
         "HA copies mistakes as well as data. You still need point-in-time backups.",
         "The standby receives the DELETE too.",
-        "Correct. An asynchronous standby may not have received the newest log records when the primary dies.",
-        "Shared storage is a single point of failure for that design."
+        "Shared storage is a single point of failure for that design.",
+        "Correct. An asynchronous standby may not have received the newest log records when the primary dies."
       ]
     },
     {
@@ -322,24 +322,24 @@ The three-level backup scheme (full, differential, log) comes from enterprise re
     },
     {
       q: "A BI team needs dashboards from the plant database. What is the best account setup?",
-      options: ["Give them the Ignition gateway's login", "Create a read-only account with SELECT on specific views, reachable from the DMZ only", "Give them db_owner so they can build their own tables", "Share the sa password through the password manager"],
-      answer: 1,
+      options: ["Create a read-only account with SELECT on specific views, reachable from the DMZ only", "Give them the Ignition Gateway's login", "Give them db_owner so they can build their own tables", "Share the sa password through the password manager"],
+      answer: 0,
       explain: [
-        "Sharing the gateway's account hides whose queries are whose and gives write access.",
         "Correct. A dedicated read-only account on views limits the damage if its credentials leak.",
+        "Sharing the gateway's account hides whose queries are whose and gives write access.",
         "db_owner allows destructive changes and is far more than a reader needs.",
         "sa is full control of the server."
       ]
     },
     {
       q: "Why run a timed restore on a different server twice a year?",
-      options: ["To empty old backups to free space", "To prove the backups restore and to measure your real RTO", "Because SQL Server requires it", "To reset the log chain"],
-      answer: 1,
+      options: ["To empty old backups to free space", "Because SQL Server requires it", "To reset the log chain", "To prove the backups restore and to measure your real RTO"],
+      answer: 3,
       explain: [
         "Restore tests don't free space. Retention policy does.",
-        "Correct. It finds broken chains, missing keys and missing steps, and gives you a measured recovery time.",
         "No database requires it. It is good practice.",
-        "A restore test does not need to alter production's log chain, and doing it on production would risk it."
+        "A restore test does not need to alter production's log chain, and doing it on production would risk it.",
+        "Correct. It finds broken chains, missing keys and missing steps, and gives you a measured recovery time."
       ]
     }
   ],

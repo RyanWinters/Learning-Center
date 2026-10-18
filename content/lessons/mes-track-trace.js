@@ -283,34 +283,34 @@ Lot traceability began with paper batch records and lot codes stamped on contain
     },
     {
       q: "Operators scan material lots when pallets are received, and MES assumes any resin on a line that week came from that receipt. What is the main consequence for a recall?",
-      options: ["The recall is more accurate","Serial numbers become required","Nothing changes","The recall covers far more product than needed, because consumption was not recorded when material entered the process"],
-      answer: 3,
+      options: ["The recall is more accurate","Serial numbers become required","The recall covers far more product than needed, because consumption was not recorded when material entered the process","Nothing changes"],
+      answer: 2,
       explain: [
         "Assumed links are less accurate, not more.",
         "Serialization is a separate decision.",
-        "Granularity directly sets recall size.",
-        "Correct. Coarse records make every recall large. Record consumption at the point of use."
+        "Correct. Coarse records make every recall large. Record consumption at the point of use.",
+        "Granularity directly sets recall size."
       ]
     },
     {
       q: "A hopper is topped up with lot R-5530 while still holding R-5521. What should the system do?",
-      options: ["Record a new consumption event with a timestamp, and treat output as linked to both lots until the hopper is empty","Delete R-5521 from the record","Stop the line permanently","Ignore it, since the hopper is one container"],
-      answer: 0,
+      options: ["Delete R-5521 from the record","Stop the line permanently","Ignore it, since the hopper is one container","Record a new consumption event with a timestamp, and treat output as linked to both lots until the hopper is empty"],
+      answer: 3,
       explain: [
-        "Correct. Mixed hoppers produce outputs with more than one parent. Record it and apply the blending rule.",
         "Deleting history is the opposite of traceability.",
         "A top-up is normal, it only needs to be recorded.",
-        "Ignoring it loses the link to R-5530 and understates recall scope."
+        "Ignoring it loses the link to R-5530 and understates recall scope.",
+        "Correct. Mixed hoppers produce outputs with more than one parent. Record it and apply the blending rule."
       ]
     },
     {
       q: "A scan is entered against the wrong lot. How should the record be fixed?",
-      options: ["Leave it, since fixing is not allowed","Overwrite the original row","Add a correction record that references the original with a reason, keeping both","Delete the row and re-enter it silently"],
-      answer: 2,
+      options: ["Add a correction record that references the original with a reason, keeping both","Leave it, since fixing is not allowed","Overwrite the original row","Delete the row and re-enter it silently"],
+      answer: 0,
       explain: [
+        "Correct. Append-only records preserve the history, and the correction is auditable.",
         "Errors can be corrected, only through traceable records.",
         "Overwriting hides what the system believed and fails audit expectations.",
-        "Correct. Append-only records preserve the history, and the correction is auditable.",
         "Silent deletes break the audit trail."
       ]
     },

@@ -221,45 +221,45 @@ Rockwell controllers have been programmed by tag name since ControlLogix replace
   quiz: [
     {
       q: "Every tag on PLC1 goes Bad_Stale, the device shows Connected, and the device load factor is far above 100 percent. What is the best first move?",
-      options: ["Raise Max Concurrent Requests to 10", "Reduce subscribed tags or slow the fastest tag groups", "Re-enter the hostname", "Switch to a legacy driver"],
-      answer: 1,
+      options: ["Raise Max Concurrent Requests to 10", "Re-enter the hostname", "Switch to a legacy driver", "Reduce subscribed tags or slow the fastest tag groups"],
+      answer: 3,
       explain: [
         "More simultaneous requests can make an overloaded controller worse.",
-        "Correct. Reducing demand attacks the cause. Tune driver settings afterwards as a controlled experiment.",
         "The connection is working, so the address is not the issue.",
-        "Legacy drivers are slower and not the answer to overload."
+        "Legacy drivers are slower and not the answer to overload.",
+        "Correct. Reducing demand attacks the cause. Tune driver settings afterwards as a controlled experiment."
       ]
     },
     {
       q: "M101.Cmd.Start writes fail with Bad_NotWritable, but M101.Sts.Running reads fine. Which check is most likely to find the cause?",
-      options: ["Ping the PLC", "The tag's External Access setting in Studio 5000", "The hostname", "The historian"],
-      answer: 1,
+      options: ["The tag's External Access setting in Studio 5000", "Ping the PLC", "The hostname", "The historian"],
+      answer: 0,
       explain: [
-        "Reads work, so the network path is fine.",
         "Correct. A Read Only (or restricted) External Access setting blocks outside writes while allowing reads.",
+        "Reads work, so the network path is fine.",
         "A wrong hostname would break reads too.",
         "The historian does not affect writes to a tag."
       ]
     },
     {
       q: "After a download, only tags under UDT_MotorSts.Running show Bad_NotFound. What happened?",
-      options: ["The CIP connection size is too small", "A member was renamed or removed and Ignition still uses the old name", "The scan class is too fast", "The activation token expired"],
+      options: ["The CIP connection size is too small", "A member was renamed or removed and Ignition still uses the old name", "The tag group is too fast", "The activation token expired"],
       answer: 1,
       explain: [
         "A small connection size would slow reads, not produce a not-found error for one member.",
         "Correct. Ignition references tags by name, so renamed members no longer resolve.",
-        "A fast scan class produces stale or timeout quality, not not-found.",
+        "A fast tag group produces stale or timeout quality, not not-found.",
         "Licensing does not affect tag resolution."
       ]
     },
     {
       q: "A ControlLogix at 10.20.10.11 has its Ethernet module in slot 1 and the processor in slot 3. How do you reach the processor?",
-      options: ["Hostname of the processor, no path", "Hostname of the module with connection path 1, 3", "Hostname 10.20.10.11 and port 502", "Use Modbus"],
-      answer: 1,
+      options: ["Hostname of the processor, no path", "Hostname 10.20.10.11 and port 502", "Hostname of the module with connection path 1, 3", "Use Modbus"],
+      answer: 2,
       explain: [
         "A processor behind a separate module has no IP of its own.",
-        "Correct. The first 1 steps onto the backplane; 3 selects the slot.",
         "Port 502 is Modbus TCP. EtherNet/IP explicit messaging uses 44818.",
+        "Correct. The first 1 steps onto the backplane; 3 selects the slot.",
         "Modbus would be a different protocol with a different driver."
       ]
     },
@@ -276,11 +276,11 @@ Rockwell controllers have been programmed by tag name since ControlLogix replace
     },
     {
       q: "What is the difference between tag group rate and RPI?",
-      options: ["They are the same setting", "Tag group rate is how often Ignition polls values; RPI is the rate of a controller I/O connection to a module", "RPI controls Ignition historian writes", "Tag group rate sets the scan time of the PLC"],
-      answer: 1,
+      options: ["Tag group rate is how often Ignition polls values; RPI is the rate of a controller I/O connection to a module", "They are the same setting", "RPI controls Ignition historian writes", "Tag group rate sets the scan time of the PLC"],
+      answer: 0,
       explain: [
-        "They live on different systems and use different connections.",
         "Correct. They share the controller's communications capacity but are configured separately.",
+        "They live on different systems and use different connections.",
         "RPI is a controller I/O setting, unrelated to the historian.",
         "Program scan time is independent of the HMI poll rate."
       ]

@@ -188,33 +188,33 @@ Before ControlLogix (1997), Allen-Bradley PLC-5 and SLC-500 systems used data fi
   quiz: [
     {
       q: "Why should you default to DINT for whole numbers in Logix?",
-      options: ["It is the controller's native 32-bit size, so it is fastest and avoids 16-bit overflow", "It uses less memory than INT", "INT is not allowed", "DINT can hold decimals"],
-      answer: 0,
+      options: ["It uses less memory than INT", "INT is not allowed", "It is the controller's native 32-bit size, so it is fastest and avoids 16-bit overflow", "DINT can hold decimals"],
+      answer: 2,
       explain: [
-        "Correct. Math runs fastest on 32-bit types, and the range is large.",
         "A lone INT also occupies a 32-bit slot. Memory is not the reason.",
         "INT is allowed, just usually unnecessary.",
+        "Correct. Math runs fastest on 32-bit types, and the range is large.",
         "Decimals need REAL."
       ]
     },
     {
       q: "A photo-eye is wired to terminal 5 of the input card in slot 1 of the local chassis. Which tag reads it?",
-      options: ["Local:5:I.Data.1", "Local:1:I.Data.5", "Local:1:O.Data.5", "Local:1:C.5"],
-      answer: 1,
+      options: ["Local:5:I.Data.1", "Local:1:O.Data.5", "Local:1:C.5", "Local:1:I.Data.5"],
+      answer: 3,
       explain: [
         "That swaps slot and point.",
-        "Correct. Slot 1, input direction, bit 5.",
         "O is an output tag, and this is an input.",
-        "C is configuration data."
+        "C is configuration data.",
+        "Correct. Slot 1, input direction, bit 5."
       ]
     },
     {
       q: "Why create an alias tag for physical inputs?",
-      options: ["So the PLC runs faster", "So the logic uses a meaningful name and survives terminal changes by editing one place", "So the input becomes writable", "So HMIs can't read it"],
-      answer: 1,
+      options: ["So the logic uses a meaningful name and survives terminal changes by editing one place", "So the PLC runs faster", "So the input becomes writable", "So HMIs can't read it"],
+      answer: 0,
       explain: [
-        "Aliases do not change speed.",
         "Correct. The alias is a readable name pointing to the same memory.",
+        "Aliases do not change speed.",
         "Aliasing an input does not make it writable by logic in any useful way.",
         "Visibility is controlled by external access, not by aliasing."
       ]
@@ -232,24 +232,24 @@ Before ControlLogix (1997), Allen-Bradley PLC-5 and SLC-500 systems used data fi
     },
     {
       q: "Ignition needs to read a value that lives in a program-scoped tag. What is the simplest fix?",
-      options: ["Nothing, Ignition reads all scopes the same way", "Make it controller scope or copy it to a controller-scope tag", "Change it to an INT", "Set it as a constant"],
-      answer: 1,
+      options: ["Nothing, Ignition reads all scopes the same way", "Change it to an INT", "Make it controller scope or copy it to a controller-scope tag", "Set it as a constant"],
+      answer: 2,
       explain: [
         "Outside systems browse the controller-scope list by default.",
-        "Correct. Controller scope is the shared interface to the outside.",
         "Data type does not change visibility.",
+        "Correct. Controller scope is the shared interface to the outside.",
         "A constant cannot be changed, and that does not make it visible."
       ]
     },
     {
       q: "You want an HMI to display a tank level but never change it. Which setting fits?",
-      options: ["Constant", "External Access: Read Only", "External Access: None", "Program scope"],
-      answer: 1,
+      options: ["Constant", "External Access: None", "Program scope", "External Access: Read Only"],
+      answer: 3,
       explain: [
         "Constant stops logic from changing it too, which defeats the point of a live level.",
-        "Correct. Read Only lets outside systems read it but not write it.",
         "None hides it from the HMI altogether.",
-        "That would also hide it from the HMI."
+        "That would also hide it from the HMI.",
+        "Correct. Read Only lets outside systems read it but not write it."
       ]
     }
   ],

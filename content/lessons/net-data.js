@@ -258,27 +258,27 @@ Binary arithmetic in machines goes back to the early digital computers. Hex beca
       q: "A Modbus device documents a 32-bit float at 40101-40102. The tag reads about 2.4E-41 while the real value is about 100. What do you try first?",
       options: [
         "Zero-based addressing",
-        "A faster scan class",
-        "Replace the cable",
-        "Word swap (reverse word order) on the 32-bit tag"
+        "A faster tag group",
+        "Word swap (reverse word order) on the 32-bit tag",
+        "Replace the cable"
       ],
-      answer: 3,
+      answer: 2,
       explain: [
         "Wrong addressing gives a value from the neighboring registers, not a scrambled version of the right one.",
         "Speed does not change how the bits are decoded.",
-        "A bad cable gives bad quality or timeouts. The device is answering with valid data.",
-        "Correct. A tiny or huge value that tracks the process is the signature of swapped 16-bit halves."
+        "Correct. A tiny or huge value that tracks the process is the signature of swapped 16-bit halves.",
+        "A bad cable gives bad quality or timeouts. The device is answering with valid data."
       ]
     },
     {
       q: "A thumbwheel BCD input reads 0x0259 in the PLC. What does the operator see on the thumbwheel?",
-      options: ["601", "259", "0x259", "89"],
-      answer: 1,
+      options: ["601", "0x259", "89", "259"],
+      answer: 3,
       explain: [
         "601 is the decimal value of 0x259 as an ordinary binary integer, which is a wrong reading for BCD.",
-        "Correct. In BCD each hex nibble is a decimal digit, so 0x0259 shows 259.",
         "That is just the hex notation, not a decimal reading of what the operator set.",
-        "89 is the low byte 0x59 in decimal, which ignores the upper digit."
+        "89 is the low byte 0x59 in decimal, which ignores the upper digit.",
+        "Correct. In BCD each hex nibble is a decimal digit, so 0x0259 shows 259."
       ]
     },
     {

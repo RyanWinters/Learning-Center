@@ -67,7 +67,7 @@ The signal starts at 4 mA, not 0, so the value "zero percent" is distinguishable
 | 12 mA | 50 PSI |
 | 20 mA | 100 PSI |
 
-Currents just outside 4 to 20 mA (3.6 to 3.8 mA, or 20.5 to 21 mA, for example) have defined meanings in the NAMUR NE43 table later in this lesson.
+Currents just outside 4-20 mA (3.6 to 3.8 mA, or 20.5 to 21 mA, for example) have defined meanings in the NAMUR NE43 table later in this lesson.
 
 ### 2-wire vs 4-wire
 
@@ -198,7 +198,7 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
   <text class="dg-text-muted dg-mid" x="75" y="104">supply</text>
   <rect class="dg-box-accent" x="260" y="60" width="130" height="60" rx="4"/>
   <text class="dg-text-sm dg-mid" x="325" y="86">Transmitter</text>
-  <text class="dg-text-muted dg-mid" x="325" y="104">sets 4 to 20 mA</text>
+  <text class="dg-text-muted dg-mid" x="325" y="104">sets 4-20 mA</text>
   <rect class="dg-box" x="500" y="60" width="120" height="60" rx="4"/>
   <text class="dg-text-sm dg-mid" x="560" y="86">PLC AI card</text>
   <text class="dg-text-muted dg-mid" x="560" y="104">250 ohm shunt</text>
@@ -265,13 +265,13 @@ Pneumatic 3-15 psi signalling gave way to electronic 4-20 mA in the 1950s throug
     },
     {
       q: "What does the HART digital signal do to the 4-20 mA analog reading?",
-      options: ["It has no effect because its tones average to zero", "It raises it by 1 mA", "It replaces it", "It makes it noisy by design"],
-      answer: 0,
+      options: ["It raises it by 1 mA", "It replaces it", "It makes it noisy by design", "It has no effect because its tones average to zero"],
+      answer: 3,
       explain: [
-        "Correct. The FSK tones average out, so the PLC's analog reading is unchanged.",
         "HART's tones are symmetrical; they do not add a DC offset.",
         "The analog signal remains the primary measurement.",
-        "It is designed not to disturb the analog signal."
+        "It is designed not to disturb the analog signal.",
+        "Correct. The FSK tones average out, so the PLC's analog reading is unchanged."
       ]
     },
     {

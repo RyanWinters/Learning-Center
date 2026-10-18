@@ -68,30 +68,30 @@ LC.lesson({
       "q": "Every tile in your repeater shows M101's data. What is the most likely cause?",
       "options": [
         "The repeater is limited to one tile",
-        "The instance objects use a key that does not exactly match the view parameter name",
         "The historian is off",
+        "The instance objects use a key that does not exactly match the view parameter name",
         "Style classes are missing"
       ],
-      "answer": 1,
+      "answer": 2,
       "explain": [
         "The repeater makes one tile per instance.",
-        "Correct. A mismatched key (tagpath vs tagPath) leaves the param at its default, which is M101.",
         "History has no effect on live bindings.",
+        "Correct. A mismatched key (tagpath vs tagPath) leaves the param at its default, which is M101.",
         "Styles change looks, not data."
       ]
     },
     {
       "q": "Why derive one state property and not bind color and text to separate booleans?",
       "options": [
-        "Expressions run faster",
         "So color and text can never disagree, and priority between conditions is decided in one place",
+        "Expressions run faster",
         "Perspective only allows one binding per component",
         "Booleans cannot be bound to styles"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "Speed is not the driver.",
         "Correct. A single priority-ordered expression gives one answer for every consumer.",
+        "Speed is not the driver.",
         "Components can have many bindings.",
         "Booleans can be used. They just invite contradictions."
       ]
@@ -116,30 +116,30 @@ LC.lesson({
       "q": "The Start button is disabled when Ready is false. Does this make the motor safe against an unwanted start?",
       "options": [
         "Yes, the HMI is the last line of defense",
-        "No, it is a usability aid. The PLC and the hardwired circuit must enforce permissives and protection",
         "Yes, if the user role is Operator",
-        "Only if the button is hidden"
+        "Only if the button is hidden",
+        "No, it is a usability aid. The PLC and the hardwired circuit must enforce permissives and protection"
       ],
-      "answer": 1,
+      "answer": 3,
       "explain": [
         "The HMI can never be the only protection.",
-        "Correct. Anyone or any script that can write the bit bypasses the button.",
         "Roles limit who clicks, not what the PLC accepts.",
-        "Hiding does not stop a write."
+        "Hiding does not stop a write.",
+        "Correct. Anyone or any script that can write the bit bypasses the button."
       ]
     },
     {
       "q": "Why does the faceplate take tagPath instead of separate params for speed, state and command?",
       "options": [
-        "Perspective cannot take more than one param",
         "One path guarantees all members belong to the same motor because the UDT guarantees the members exist",
+        "Perspective cannot take more than one param",
         "Separate params are not allowed in embedded views",
         "It makes the view smaller on disk"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "Views can take many params.",
         "Correct. Members are derived from one identity, so mismatches cannot occur.",
+        "Views can take many params.",
         "They are allowed. They are just riskier.",
         "Disk size is not the reason."
       ]

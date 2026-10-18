@@ -222,22 +222,22 @@ Most treehouse arguments happen because the family and the builder pictured diff
   quiz: [
     {
       q: "A customer asks you to bid fixed price on a plant upgrade, but the existing wiring has never been documented. Which approach best manages risk?",
-      options: ["Bid fixed price for everything and add a large unstated buffer", "Bid fixed price for design and build, and T&M with a cap for the site work that depends on unknown wiring", "Refuse to quote until the customer redraws the whole plant", "Bid pure time and materials with no cap"],
-      answer: 1,
+      options: ["Bid fixed price for everything and add a large unstated buffer", "Refuse to quote until the customer redraws the whole plant", "Bid pure time and materials with no cap", "Bid fixed price for design and build, and T&M with a cap for the site work that depends on unknown wiring"],
+      answer: 3,
       explain: [
         "An unstated buffer hides the risk instead of pricing it, and customers dislike discovering hidden padding. It also does not protect you if the wiring is far worse than expected.",
-        "Correct. A hybrid prices what is known as fixed and shares the unknown, with written assumptions about the wiring.",
         "That is rarely realistic and loses the job. A hybrid gets you to the same protection faster.",
-        "It moves all risk to the customer, who will likely not accept it for a job that could be partly defined."
+        "It moves all risk to the customer, who will likely not accept it for a job that could be partly defined.",
+        "Correct. A hybrid prices what is known as fixed and shares the unknown, with written assumptions about the wiring."
       ]
     },
     {
       q: "What is the relationship between the URS and the FDS?",
-      options: ["They are the same document with two names", "The URS states what the customer needs, and the FDS states exactly how the delivered system will behave to meet it", "The FDS is written by the customer, the URS by the integrator", "The URS describes panel wiring and the FDS describes PLC code"],
-      answer: 1,
+      options: ["The URS states what the customer needs, and the FDS states exactly how the delivered system will behave to meet it", "They are the same document with two names", "The FDS is written by the customer, the URS by the integrator", "The URS describes panel wiring and the FDS describes PLC code"],
+      answer: 0,
       explain: [
-        "They differ in detail and owner. The URS is broad and written from the customer's view.",
         "Correct. The URS is the need, and the FDS is the integrator's committed, detailed answer that the customer approves.",
+        "They differ in detail and owner. The URS is broad and written from the customer's view.",
         "It is the other way around. The customer normally owns the URS.",
         "Wiring and code structure belong to detailed design, which follows the FDS."
       ]
@@ -255,24 +255,24 @@ Most treehouse arguments happen because the family and the builder pictured diff
     },
     {
       q: "Which statement best separates FAT from SAT?",
-      options: ["FAT happens at the integrator's facility against the FDS, and SAT happens at the customer's site in the real environment", "FAT tests software only, and SAT tests wiring only", "FAT is run by the customer alone, and SAT by the integrator alone", "They are two names for the same test"],
-      answer: 0,
+      options: ["FAT tests software only, and SAT tests wiring only", "FAT happens at the integrator's facility against the FDS, and SAT happens at the customer's site in the real environment", "FAT is run by the customer alone, and SAT by the integrator alone", "They are two names for the same test"],
+      answer: 1,
       explain: [
-        "Correct. Same traceable procedure approach, different place and conditions. SAT adds site-only items such as real communications and instrument ranges.",
         "Both can cover software and hardware. The location and conditions differ.",
+        "Correct. Same traceable procedure approach, different place and conditions. SAT adds site-only items such as real communications and instrument ranges.",
         "Both are normally witnessed together, with the customer signing.",
         "They are separate gates, often tied to separate payment milestones."
       ]
     },
     {
       q: "A project is 'done' but the customer has not yet signed acceptance, the as-builts are missing and the warranty clock has not started. What is the most likely root cause?",
-      options: ["The warranty period was too long", "Acceptance criteria and handover deliverables were not defined in the contract", "FAT was skipped", "The estimate used T&M"],
-      answer: 1,
+      options: ["The warranty period was too long", "FAT was skipped", "The estimate used T&M", "Acceptance criteria and handover deliverables were not defined in the contract"],
+      answer: 3,
       explain: [
         "Warranty length does not prevent acceptance from being signed.",
-        "Correct. Without written acceptance criteria and a handover list, there is no moment at which the project is complete.",
         "Skipping FAT causes other problems, but it does not explain missing as-builts and acceptance.",
-        "The pricing model is unrelated to the closing paperwork."
+        "The pricing model is unrelated to the closing paperwork.",
+        "Correct. Without written acceptance criteria and a handover list, there is no moment at which the project is complete."
       ]
     }
   ],

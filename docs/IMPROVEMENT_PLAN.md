@@ -3,6 +3,10 @@
 **Status: all five phases done.** Per-track changelogs (fixed / rejected / softened): `docs/reviews/fixes-*.md`.
 Second-pass reviews of the remaining lessons: `docs/reviews/pass2-*.md`.
 
+The plan is kept as written. Counts below are from when it was made (121 lessons); the app now has 141 lessons, 11 tracks plus 5 Build Labs,
+26 simulator challenges and 31 badges. Decisions 1 to 3 were all taken as recommended: the server binds to 127.0.0.1 and phones use
+`tailscale serve`, all five phases were done, and the second pass ran. `docs/reviews/audit-*.md` hold the later consistency audits.
+
 Reviewers (Haiku): veteran integrator, total beginner, electrical engineer, software engineer, the owner (process
 control engineer → integrator), mobile UX designer, senior Allen-Bradley programmer, OT network/security engineer.
 Each read 5–7 lessons plus the relevant screens, sim files or code. Together they covered ~45 of 121 lessons.

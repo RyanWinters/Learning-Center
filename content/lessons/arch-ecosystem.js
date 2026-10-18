@@ -152,33 +152,33 @@ Ignition has been modular since its early releases, with the SDK public so outsi
   quiz: [
     {
       q: "What best describes the Ignition Exchange?",
-      options: ["The official store where Inductive Automation sells its own modules", "A community library of shared projects, views, scripts and some modules, with light vetting", "A certification body for third-party vendors", "The module signing authority"],
-      answer: 1,
+      options: ["The official store where Inductive Automation sells its own modules", "A certification body for third-party vendors", "The module signing authority", "A community library of shared projects, views, scripts and some modules, with light vetting"],
+      answer: 3,
       explain: [
         "IA's own modules are licensed through Inductive Automation, not the Exchange.",
-        "Correct. It is community-shared material that you should review and then own.",
         "Certification of vendors is not what the Exchange does.",
-        "Signing certificates are requested from Inductive Automation, a separate process."
+        "Signing certificates are requested from Inductive Automation, a separate process.",
+        "Correct. It is community-shared material that you should review and then own."
       ]
     },
     {
       q: "A module vendor was a long-time partner of Inductive Automation. A bug appears at the module and platform boundary. Who supports the module?",
-      options: ["Inductive Automation, because they partner with the vendor", "The vendor, because the module is their product", "Nobody; partner modules are unsupported", "The integrator who installed it, always"],
-      answer: 1,
+      options: ["Inductive Automation, because they partner with the vendor", "Nobody; partner modules are unsupported", "The vendor, because the module is their product", "The integrator who installed it, always"],
+      answer: 2,
       explain: [
         "Partner status signals trust but does not move support responsibility.",
-        "Correct. The vendor builds and supports it, though you may need to coordinate both sides.",
         "Commercial modules normally come with vendor support.",
+        "Correct. The vendor builds and supports it, though you may need to coordinate both sides.",
         "You are the first contact, but the vendor still owns fixing their module."
       ]
     },
     {
       q: "You are upgrading from 8.1 to 8.3 and one third-party module has no 8.3 build. What is the sensible first step?",
-      options: ["Install the 8.1 module on 8.3 and hope it loads", "Ask the vendor for a timeline and plan alternatives such as keeping that function elsewhere or replacing it", "Skip the upgrade permanently", "Disable signature checks"],
-      answer: 1,
+      options: ["Ask the vendor for a timeline and plan alternatives such as keeping that function elsewhere or replacing it", "Install the 8.1 module on 8.3 and hope it loads", "Skip the upgrade permanently", "Disable signature checks"],
+      answer: 0,
       explain: [
-        "Modules are built against a specific SDK and Java version, so an 8.1 module will not simply load on 8.3.",
         "Correct. Find out the vendor's plan and prepare a workaround before the upgrade date.",
+        "Modules are built against a specific SDK and Java version, so an 8.1 module will not simply load on 8.3.",
         "Staying on old versions leaves you without patches and is rarely the right permanent answer.",
         "Disabling signature checks adds risk and does not make the module compatible."
       ]
@@ -196,13 +196,13 @@ Ignition has been modular since its early releases, with the SDK public so outsi
     },
     {
       q: "Which finding is the biggest red flag when vetting a niche module for a critical function?",
-      options: ["It has a free trial", "A single developer, no activity in the forum thread for a year and a private data format", "It is listed in the Module Showcase", "It requires a license key"],
-      answer: 1,
+      options: ["It has a free trial", "It is listed in the Module Showcase", "It requires a license key", "A single developer, no activity in the forum thread for a year and a private data format"],
+      answer: 3,
       explain: [
         "Trials are helpful and normal.",
-        "Correct. Weak continuity, low responsiveness and lock-in combine into a high longevity risk with no exit.",
         "The Showcase listing is normal, though it is only light vetting.",
-        "License keys are normal for commercial software."
+        "License keys are normal for commercial software.",
+        "Correct. Weak continuity, low responsiveness and lock-in combine into a high longevity risk with no exit."
       ]
     }
   ],

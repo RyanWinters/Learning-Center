@@ -249,66 +249,66 @@ Edgar F. Codd introduced the relational model at IBM in 1970, and he defined the
   quiz: [
     {
       q: "A shift report row has the cell 'Filler, Capper' in the machines column. Which normal form does this violate, and what is the fix?",
-      options: ["1NF; make one row per machine", "2NF; add a composite key", "3NF; move the machine names to a lookup table", "It violates none; text columns can hold lists"],
-      answer: 0,
+      options: ["2NF; add a composite key", "3NF; move the machine names to a lookup table", "It violates none; text columns can hold lists", "1NF; make one row per machine"],
+      answer: 3,
       explain: [
-        "Correct. 1NF requires one value per cell with no repeating groups. One row per downtime event and machine fixes it.",
         "2NF concerns columns that depend on only part of a composite key. This row has a multi-value cell, which is a 1NF problem.",
         "3NF is about non-key columns depending on other non-key columns. The multi-value cell comes first.",
-        "A database will happily store it, but you can no longer count, sum or join by machine."
+        "A database will happily store it, but you can no longer count, sum or join by machine.",
+        "Correct. 1NF requires one value per cell with no repeating groups. One row per downtime event and machine fixes it."
       ]
     },
     {
       q: "In downtime rows, 'reason_cat' (Mechanical, Planned) is repeated and depends on the 'reason' text, not on the event. What does that violate?",
-      options: ["1NF", "2NF", "3NF", "Nothing; repetition is fine in a historian table"],
-      answer: 2,
+      options: ["1NF", "3NF", "2NF", "Nothing; repetition is fine in a historian table"],
+      answer: 1,
       explain: [
         "1NF is about multi-valued cells, which this is not.",
-        "2NF is about partial dependence on a composite key. Here a non-key column depends on another non-key column.",
         "Correct. A non-key column (category) depends on another non-key column (reason), a transitive dependency. A lookup table fixes it.",
+        "2NF is about partial dependence on a composite key. Here a non-key column depends on another non-key column.",
         "The repetition is exactly what lets two rows disagree about a reason's category."
       ]
     },
     {
       q: "Line L3 is rebuilt and renumbered L5. Which design handles this with the least pain across 100 million production rows?",
-      options: ["Use line_code as the primary key and update every child row", "Use a surrogate line_id as the key, with line_code as a UNIQUE column", "Store the line name as text in every production row", "Create a new table for L5 and leave L3 as is"],
-      answer: 1,
+      options: ["Use a surrogate line_id as the key, with line_code as a UNIQUE column", "Use line_code as the primary key and update every child row", "Store the line name as text in every production row", "Create a new table for L5 and leave L3 as is"],
+      answer: 0,
       explain: [
-        "Changing a natural key means rewriting every child row, which is slow and risky.",
         "Correct. The code lives in one row, history keeps pointing at the same line_id, and UNIQUE prevents duplicates.",
+        "Changing a natural key means rewriting every child row, which is slow and risky.",
         "That repeats the name 100 million times and makes a rename a huge update.",
         "That splits one physical line's history across two tables and breaks trend reports."
       ]
     },
     {
       q: "An HMI inserts a downtime event with reason_id = 99, which doesn't exist. What stops it from being stored?",
-      options: ["The primary key on downtime_event", "A foreign key from downtime_event.reason_id to downtime_reason", "A UNIQUE constraint on start_time", "Nothing; the next JOIN will report an error"],
-      answer: 1,
+      options: ["The primary key on downtime_event", "A UNIQUE constraint on start_time", "A foreign key from downtime_event.reason_id to downtime_reason", "Nothing; the next JOIN will report an error"],
+      answer: 2,
       explain: [
         "The primary key only ensures event_id is unique.",
-        "Correct. The foreign key makes the database reject a value with no matching parent row.",
         "UNIQUE on start_time would block simultaneous events on different machines and has nothing to do with reasons.",
+        "Correct. The foreign key makes the database reject a value with no matching parent row.",
         "An inner JOIN doesn't error. It silently drops the row, which is the worse outcome."
       ]
     },
     {
       q: "Which is the best justification for denormalizing a table in a plant database?",
-      options: ["It saves typing in the schema", "A rebuildable reporting table makes dashboards fast while the normalized tables stay the source of truth", "Normalization is obsolete with modern databases", "It makes writes safer"],
-      answer: 1,
+      options: ["It saves typing in the schema", "Normalization is obsolete with modern databases", "A rebuildable reporting table makes dashboards fast while the normalized tables stay the source of truth", "It makes writes safer"],
+      answer: 2,
       explain: [
         "Convenience isn't a design reason, and it creates drift risk.",
-        "Correct. The copy is read-optimized and can be regenerated, so it can't permanently disagree with the source.",
         "Normalization still prevents anomalies. Faster hardware doesn't change that.",
+        "Correct. The copy is read-optimized and can be regenerated, so it can't permanently disagree with the source.",
         "Duplicated facts make writes riskier because several places must change together."
       ]
     },
     {
       q: "You need to record which materials each work order consumed. A material can appear on many work orders and a work order uses many materials. What do you add?",
-      options: ["A materials column on work_order holding a comma-separated list", "A junction table with work_order_id and material_id", "A second work_order table per material", "A foreign key from material to work_order only"],
-      answer: 1,
+      options: ["A junction table with work_order_id and material_id", "A materials column on work_order holding a comma-separated list", "A second work_order table per material", "A foreign key from material to work_order only"],
+      answer: 0,
       explain: [
-        "That repeats the 1NF violation from the lesson.",
         "Correct. A many-to-many relationship becomes two one-to-many relationships through a junction table, which can also hold quantity.",
+        "That repeats the 1NF violation from the lesson.",
         "That duplicates structure and breaks queries.",
         "A single foreign key would allow each material to belong to only one work order."
       ]

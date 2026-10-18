@@ -184,7 +184,7 @@ Siemens introduced its SIMATIC S7 line in the 1990s, and TIA Portal arrived arou
   <line class="dg-line" x1="150" y1="158" x2="198" y2="158" marker-end="url(#plc-other-vendors-ah)"/>
   <line class="dg-line" x1="330" y1="158" x2="378" y2="158" marker-end="url(#plc-other-vendors-ah)"/>
 </svg>`,
-    ignition: `<svg viewBox="0 0 640 230" role="img" aria-label="Ignition gateway connects to Logix over EtherNet/IP, to Siemens over the S7 driver or OPC UA, to Codesys controllers over OPC UA, and to others over Modbus TCP or MQTT">
+    ignition: `<svg viewBox="0 0 640 230" role="img" aria-label="Ignition Gateway connects to Logix over EtherNet/IP, to Siemens over the S7 driver or OPC UA, to Codesys controllers over OPC UA, and to others over Modbus TCP or MQTT">
   <rect class="dg-box-accent" x="20" y="80" width="130" height="70" rx="6"/>
   <text class="dg-text dg-mid" x="85" y="110">Ignition</text>
   <text class="dg-text-muted dg-mid" x="85" y="130">Gateway</text>
@@ -227,33 +227,33 @@ Siemens introduced its SIMATIC S7 line in the 1990s, and TIA Portal arrived arou
     },
     {
       q: "What is the difference between an FC and an FB in TIA Portal?",
-      options: ["FCs are safety-rated, FBs are not", "FBs keep their own data between calls in an instance DB, FCs do not", "FCs run in OB1, FBs in other OBs only", "There is no difference"],
-      answer: 1,
+      options: ["FCs are safety-rated, FBs are not", "FCs run in OB1, FBs in other OBs only", "There is no difference", "FBs keep their own data between calls in an instance DB, FCs do not"],
+      answer: 3,
       explain: [
         "Safety is a separate feature (F-blocks).",
-        "Correct. An FC has no memory between calls unless you pass data in and out. An FB has an instance DB.",
         "Both can be called from any OB.",
-        "They differ exactly on stored instance data."
+        "They differ exactly on stored instance data.",
+        "Correct. An FC has no memory between calls unless you pass data in and out. An FB has an instance DB."
       ]
     },
     {
       q: "Which of these is the vendor-neutral company behind a programming environment used by Wago and many other controller makers?",
-      options: ["CODESYS", "Sysmac", "GX Works", "STEP 7"],
-      answer: 0,
+      options: ["Sysmac", "GX Works", "CODESYS", "STEP 7"],
+      answer: 2,
       explain: [
-        "Correct. CODESYS licenses its tool and runtime to many hardware vendors.",
         "Sysmac Studio is Omron's own tool.",
         "GX Works is Mitsubishi's tool.",
+        "Correct. CODESYS licenses its tool and runtime to many hardware vendors.",
         "STEP 7 is Siemens' older engineering software."
       ]
     },
     {
       q: "You port a ladder program from one vendor to another by exporting and importing a file, because both claim IEC 61131-3 compliance. What most likely happens?",
-      options: ["It imports and runs unchanged", "It will not import directly; the logic ideas carry over but the project must be rebuilt", "Only the HMI breaks", "Only timers fail"],
-      answer: 1,
+      options: ["It will not import directly; the logic ideas carry over but the project must be rebuilt", "It imports and runs unchanged", "Only the HMI breaks", "Only timers fail"],
+      answer: 0,
       explain: [
-        "PLCopen XML (IEC 61131-10) can exchange program units between tools that support it, but hardware configuration, tags and project settings do not move between vendors, and support varies by tool.",
         "Correct. Concepts transfer, files and I/O configuration do not.",
+        "PLCopen XML (IEC 61131-10) can exchange program units between tools that support it, but hardware configuration, tags and project settings do not move between vendors, and support varies by tool.",
         "The issue is the controller project itself, not just the HMI.",
         "Timers are among the more portable parts, but the rest of the project is not."
       ]

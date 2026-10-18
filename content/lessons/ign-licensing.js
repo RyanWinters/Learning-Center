@@ -79,7 +79,7 @@ Because licenses do not cap load, you size from the work the Gateway does. Walk 
 
 Inductive Automation's Server Sizing and Architecture Guide gives tiers for a standard single Gateway. As summarized from the guide, small is around 2,500 to 5,000 tags with 5 to 10 clients on 2 cores, medium is 10,000 to 50,000 tags with 20 to 50 clients on 4 cores, and large is 75,000 to 150,000 tags with 50 to 100 clients on 8 to 16 cores. The guide is revised between versions, so use the current copy (linked below) and treat these numbers as a starting point, not a promise.
 
-> [!example] Meridian Plant 1 back-of-envelope
+> [!example] Meridian Foods Plant 1 back-of-envelope
 > Assume (these are illustrative assumptions) 20,000 tags on the Plant 1 master Gateway at \`10.20.30.10\`, a typical 10 percent of them changing in any given second, and 25 operators. That is about 2,000 value changes per second to push through alarming, history and bindings, with 25 Perspective sessions on top. On the guide's tiers this lands in the medium class. The SQL server at \`10.20.30.20\` is a separate machine sized for history writes. Measure it after commissioning: watch CPU, memory and the Gateway's status pages under real load and adjust.
 
 ## When to scale out
@@ -120,7 +120,7 @@ Ignition 8 licenses are activated against an online service, and the 8.3 documen
   examples: [
     {
       title: "Choosing an edition for three jobs",
-      body: `**A packaging machine with its own touch panel and a single OEM Gateway** fits Edge Panel (two sessions). **Meridian Plant 1's master Gateway** is Standard with Perspective, Reporting and the modules in the design document. **A student building the Plant 1 lab at home** uses Maker Edition and stays inside its non-commercial terms.`
+      body: `**A packaging machine with its own touch panel and a single OEM Gateway** fits Edge Panel (two sessions). **Meridian Foods Plant 1's master Gateway** is Standard with Perspective, Reporting and the modules in the design document. **A student building the Plant 1 lab at home** uses Maker Edition and stays inside its non-commercial terms.`
     },
     {
       title: "Diagnosing a Gateway that stops every two hours",
@@ -191,33 +191,33 @@ Ignition 8 licenses are activated against an online service, and the 8.3 documen
     },
     {
       q: "A Gateway that has run for months suddenly shows a trial banner and stops every two hours. What is the first thing to check?",
-      options: ["Whether Perspective sessions exceed a cap", "Whether the Gateway can still reach the activation service", "Whether the tag count grew", "Whether the historian is full"],
-      answer: 1,
+      options: ["Whether Perspective sessions exceed a cap", "Whether the tag count grew", "Whether the historian is full", "Whether the Gateway can still reach the activation service"],
+      answer: 3,
       explain: [
         "Session count does not move a licensed Gateway into trial mode.",
-        "Correct. Failed license check-ins past the timeout revert the Gateway to trial mode. Look at the Licensing page and recent firewall changes.",
         "Tag growth is not a licensing event on the standard platform.",
-        "A full historian causes storage problems, not a trial banner."
+        "A full historian causes storage problems, not a trial banner.",
+        "Correct. Failed license check-ins past the timeout revert the Gateway to trial mode. Look at the Licensing page and recent firewall changes."
       ]
     },
     {
       q: "Which load driver does Inductive Automation's guide treat as the most important when sizing tags?",
-      options: ["Tag count", "Value changes", "Number of modules", "Number of device connections"],
-      answer: 1,
+      options: ["Tag count", "Number of modules", "Value changes", "Number of device connections"],
+      answer: 2,
       explain: [
         "Tag count matters for memory, but idle tags are cheap.",
-        "Correct. Each value change can trigger alarms, history, bindings and scripts.",
         "Module count affects the license, not the load measure the guide emphasizes.",
+        "Correct. Each value change can trigger alarms, history, bindings and scripts.",
         "Device count is relevant to polling, but the guide singles out value changes."
       ]
     },
     {
       q: "A hobbyist wants to run a small paid job for a neighbor on Maker Edition. What is the right call?",
-      options: ["Fine, it is free", "Not allowed; Maker Edition is for non-commercial personal and educational use", "Fine if under 10 sessions", "Fine if the Gateway is offline"],
-      answer: 1,
+      options: ["Not allowed; Maker Edition is for non-commercial personal and educational use", "Fine, it is free", "Fine if under 10 sessions", "Fine if the Gateway is offline"],
+      answer: 0,
       explain: [
-        "Free does not mean unrestricted.",
         "Correct. Paid work needs a commercial license. Ask Inductive Automation or sales.",
+        "Free does not mean unrestricted.",
         "The session cap is a technical limit, not a permission to use it commercially.",
         "Being offline has no bearing on license terms."
       ]

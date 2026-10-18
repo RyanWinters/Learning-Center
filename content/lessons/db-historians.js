@@ -70,7 +70,7 @@ AVEVA PI's Asset Framework (AF) provides this, with templates so that you define
 | Product | Type | Strength | Watch for |
 |---|---|---|---|
 | **AVEVA PI** (formerly OSIsoft) | Proprietary process historian | Huge installed base, mature AF asset model, swinging-door compression, many interfaces, enterprise-scale reliability | License cost, a dedicated skill set, Windows-centric |
-| **Canary** | Process historian | Simple to deploy, lossless compression, built-in store and forward, a time-series-friendly web and API layer, priced for mid-sized sites | A smaller ecosystem than PI |
+| **Canary** | Process historian | Simple to deploy, lossless compression, built-in store-and-forward, a time-series-friendly web and API layer, priced for mid-sized sites | A smaller ecosystem than PI |
 | **Ignition Tag Historian** | SQL-based historian on your own database | Uses Ignition's Tag Historian module rather than a separate product, tag config is part of your project, trends in Perspective work out of the box | Scales with your database design; partitioning and retention are your job. See {{lesson:db-timeseries}} |
 | **InfluxDB** | Open-source time-series database | Data model built on measurements, tags (indexed) and fields (values); fast writes; common in IT and IoT stacks | High tag-cardinality hurts; query language and version differences |
 | **TimescaleDB** | PostgreSQL extension | Full SQL, hypertables that auto-partition by time, optional columnar compression; joins to your relational tables | You still run and tune PostgreSQL |
@@ -244,55 +244,55 @@ Dedicated process historians appeared in the early 1980s, when plants needed to 
     },
     {
       q: "Why can a compressed historian hide a short spike?",
-      options: ["The PLC never saw the spike", "A spike narrower than the allowed deviation fits inside the corridor and is discarded", "Interpolation deletes outliers", "Spikes are always stored as bad quality"],
-      answer: 1,
+      options: ["The PLC never saw the spike", "Interpolation deletes outliers", "Spikes are always stored as bad quality", "A spike narrower than the allowed deviation fits inside the corridor and is discarded"],
+      answer: 3,
       explain: [
         "The PLC may have seen it. The loss happens at the archive or at exception filtering.",
-        "Correct. Swinging door guarantees the curve stays within the deviation, so smaller excursions are not preserved.",
         "Interpolation only fills gaps. It doesn't delete stored points.",
-        "Quality is a separate field and is unrelated to compression."
+        "Quality is a separate field and is unrelated to compression.",
+        "Correct. Swinging door guarantees the curve stays within the deviation, so smaller excursions are not preserved."
       ]
     },
     {
       q: "What does an asset model like PI AF give you that a flat tag list does not?",
-      options: ["Faster disk writes", "Equipment hierarchy, templates and context so 'all fillers' is a query", "Lossless compression", "Automatic cloud upload"],
-      answer: 1,
+      options: ["Equipment hierarchy, templates and context so 'all fillers' is a query", "Faster disk writes", "Lossless compression", "Automatic cloud upload"],
+      answer: 0,
       explain: [
-        "An asset model organises meaning. It doesn't speed up writes.",
         "Correct. Templates let you define a Filler once and apply it to many machines, and analytics can work by asset.",
+        "An asset model organises meaning. It doesn't speed up writes.",
         "Compression is a separate feature of the archive.",
         "Cloud upload is configured elsewhere."
       ]
     },
     {
       q: "A cloud team wants every plant's data in one place for machine learning and finance reports. Which statement describes a sound design?",
-      options: ["Control the line from the cloud so the data is always in sync", "Keep the local historian authoritative, buffer at the edge, and push outbound through MQTT or Kafka to a lake or warehouse", "Open an inbound firewall rule from the cloud to the Level 3 database", "Replace every plant historian with the warehouse"],
-      answer: 1,
+      options: ["Control the line from the cloud so the data is always in sync", "Open an inbound firewall rule from the cloud to the Level 3 database", "Keep the local historian authoritative, buffer at the edge, and push outbound through MQTT or Kafka to a lake or warehouse", "Replace every plant historian with the warehouse"],
+      answer: 2,
       explain: [
         "Control must not depend on a cloud link.",
-        "Correct. The plant keeps running if the cloud is gone, and data catches up from the edge buffer.",
         "Inbound access to Level 3 from outside is the pattern to avoid.",
+        "Correct. The plant keeps running if the cloud is gone, and data catches up from the edge buffer.",
         "Warehouses are not built for real-time operations or tag trending in the plant."
       ]
     },
     {
       q: "Which pairing is correct?",
-      options: ["Data lake: cleaned and modelled tables loaded on a schema first", "Data warehouse: raw files in many formats with schema applied on read", "Data lake: raw data kept in open formats, schema applied when read", "Both are the same product under two names"],
-      answer: 2,
+      options: ["Data lake: cleaned and modelled tables loaded on a schema first", "Data warehouse: raw files in many formats with schema applied on read", "Both are the same product under two names", "Data lake: raw data kept in open formats, schema applied when read"],
+      answer: 3,
       explain: [
         "That describes a warehouse.",
         "That describes a lake.",
-        "Correct. Lakes hold raw files such as Parquet and JSON, and structure is imposed at query time.",
-        "They overlap in lakehouse products, but they are different concepts."
+        "They overlap in lakehouse products, but they are different concepts.",
+        "Correct. Lakes hold raw files such as Parquet and JSON, and structure is imposed at query time."
       ]
     },
     {
       q: "A site has one plant, Ignition SCADA, 5,000 tags and a DBA who already runs SQL Server. Which is the most defensible starting choice?",
-      options: ["Buy a full PI System and AF", "Ignition Tag Historian on a well-designed SQL database, with retention and partitioning planned", "Send everything straight to a cloud warehouse", "Skip history and rely on the PLC trends"],
-      answer: 1,
+      options: ["Ignition Tag Historian on a well-designed SQL database, with retention and partitioning planned", "Buy a full PI System and AF", "Send everything straight to a cloud warehouse", "Skip history and rely on the PLC trends"],
+      answer: 0,
       explain: [
-        "That may be right for a large enterprise, but it adds cost and skills this site doesn't yet need.",
         "Correct. It fits the scale and skills. Revisit if volume or consumers grow.",
+        "That may be right for a large enterprise, but it adds cost and skills this site doesn't yet need.",
         "A warehouse is not a trending tool and leaves the plant with no local history.",
         "PLC trend buffers are short and not for long-term records."
       ]

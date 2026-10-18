@@ -94,7 +94,7 @@ When the host sees a problem, it publishes an NCMD with the \`Node Control/Rebir
 
 ## The primary host application
 
-A **primary host application** is the single system of record, typically the SCADA or the Ignition gateway running MQTT Engine. It publishes a retained **STATE** message saying it is online, with a will that says offline. Edge nodes configured to know about a primary host watch that topic. When the host is offline, they can keep **buffering** data (store-and-forward). When it returns, they republish a rebirth and the buffered history, in order, flagged as historical. Without this handshake, a node would not know whether the host restarted and lost its state.
+A **primary host application** is the single system of record, typically the SCADA or the Ignition Gateway running MQTT Engine. It publishes a retained **STATE** message saying it is online, with a will that says offline. Edge nodes configured to know about a primary host watch that topic. When the host is offline, they can keep **buffering** data (store-and-forward). When it returns, they republish a rebirth and the buffered history, in order, flagged as historical. Without this handshake, a node would not know whether the host restarted and lost its state.
 
 ## Report by exception with state awareness
 
@@ -235,29 +235,29 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
       options: [
         "Ignore it, since seq is advisory",
         "Wait for 121 forever",
-        "Treat the data as suspect and publish an NCMD requesting a rebirth",
-        "Disconnect from the broker"
+        "Disconnect from the broker",
+        "Treat the data as suspect and publish an NCMD requesting a rebirth"
       ],
-      answer: 2,
+      answer: 3,
       explain: [
         "A gap means a message was lost, and ignoring it risks a wrong picture.",
         "MQTT will not deliver 121 later by itself.",
-        "Correct. A rebirth gives a fresh full snapshot and resets the host's view.",
-        "Disconnecting doesn't recover the missed value."
+        "Disconnecting doesn't recover the missed value.",
+        "Correct. A rebirth gives a fresh full snapshot and resets the host's view."
       ]
     },
     {
       q: "What is the job of bdSeq?",
       options: [
-        "It numbers every data message",
         "It matches an NDEATH will to the specific NBIRTH session it belongs to",
+        "It numbers every data message",
         "It encodes the device's address",
         "It limits how many tags a node can have"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "That is seq, which rolls from 0 to 255.",
         "Correct. A delayed will from an old session won't wrongly mark a newly reconnected node as dead.",
+        "That is seq, which rolls from 0 to 255.",
         "Addressing is in the topic.",
         "Tag counts aren't limited by bdSeq."
       ]
@@ -282,16 +282,16 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
       q: "Why is report-by-exception safer in Sparkplug than in plain MQTT?",
       options: [
         "Sparkplug sends every tag every second",
-        "Births give a full snapshot and deaths mark data stale, so silence has a defined meaning",
         "It uses QoS 2 for everything",
-        "It compresses values with a deadband"
+        "It compresses values with a deadband",
+        "Births give a full snapshot and deaths mark data stale, so silence has a defined meaning"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "That would be polling and defeat the purpose.",
-        "Correct. The consumer knows the node and devices are alive or dead, so a quiet tag isn't ambiguous.",
         "Sparkplug messages are normally QoS 0 or 1 depending on type.",
-        "Deadbands are applied by the publisher, not defined by Sparkplug itself."
+        "Deadbands are applied by the publisher, not defined by Sparkplug itself.",
+        "Correct. The consumer knows the node and devices are alive or dead, so a quiet tag isn't ambiguous."
       ]
     }
     ,
@@ -299,15 +299,15 @@ Cirrus Link, founded by Arlen Nipper, defined Sparkplug to give MQTT an interope
       q: "Who should be allowed to publish NCMD and DCMD topics on a Sparkplug broker?",
       options: [
         "Every edge node, so they can coordinate",
-        "Only the primary host application (and other explicitly authorized accounts), enforced by broker ACLs",
         "Anyone on the plant network, since Sparkplug authenticates senders",
+        "Only the primary host application (and other explicitly authorized accounts), enforced by broker ACLs",
         "Nobody, because commands are not part of Sparkplug"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "Edge nodes only need to receive commands for themselves. Letting them publish commands lets one compromised node write to others.",
-        "Correct. Command topics are write paths, so limit publishers with ACLs and add tag-level permission checks in the host.",
         "Sparkplug has no sender authentication. The broker must provide it.",
+        "Correct. Command topics are write paths, so limit publishers with ACLs and add tag-level permission checks in the host.",
         "NCMD and DCMD are part of Sparkplug, used for writes and rebirth requests."
       ]
     }

@@ -101,7 +101,7 @@ def startMotor(path):
 
 # in a Perspective button's onActionPerformed
 if shared.motors.startMotor(self.view.params.tagPath):   # [default]Plant1/Area10/Line1/M101
-    system.perspective.print("Start sent")
+    system.util.getLogger("shared.motors").info("Start sent")
 \`\`\`
 
 Libraries are inherited between projects, so a "global" parent project can carry the shared code for all child projects. Tag event scripts differ: they can only call functions defined in the **Gateway Script Project**, the project designated for gateway-level scripting, so shared tag logic must be there. See {{lesson:ign-projects}}.
@@ -232,34 +232,34 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
   quiz: [
     {
       q: "A Perspective button's onActionPerformed script runs in which JVM?",
-      options: ["The user's browser", "The Gateway's JVM, in the session's context", "A Vision client JVM", "The Designer's JVM"],
-      answer: 1,
+      options: ["The Gateway's JVM, in the session's context", "The user's browser", "A Vision client JVM", "The Designer's JVM"],
+      answer: 0,
       explain: [
-        "Perspective scripts are Python, which browsers don't run. Only the page's JavaScript runs there.",
         "Correct. Perspective Python runs on the Gateway, so slow scripts affect all users.",
+        "Perspective scripts are Python, which browsers don't run. Only the page's JavaScript runs there.",
         "That is Vision, a separate client technology.",
         "The Designer only runs scripts you launch from its Script Console."
       ]
     },
     {
       q: "You need the values of 150 tags in a gateway script. Which is best?",
-      options: ["150 readBlocking calls in a loop", "One readBlocking call with a list of 150 paths", "A while loop reading until all are good", "Expression bindings for each"],
-      answer: 1,
+      options: ["150 readBlocking calls in a loop", "A while loop reading until all are good", "Expression bindings for each", "One readBlocking call with a list of 150 paths"],
+      answer: 3,
       explain: [
         "Each call has fixed overhead, so the total time is much worse.",
-        "Correct. One call amortizes the overhead, and results come back in path order.",
         "A busy loop wastes a thread and doesn't speed up the read.",
-        "Bindings belong to components, not to a gateway script."
+        "Bindings belong to components, not to a gateway script.",
+        "Correct. One call amortizes the overhead, and results come back in path order."
       ]
     },
     {
       q: "Which statement about Ignition's Python is true?",
-      options: ["It is CPython 3 with full pip support", "It is Jython 2.7 and can import Java classes", "It can import NumPy", "It supports f-strings"],
-      answer: 1,
+      options: ["It is CPython 3 with full pip support", "It can import NumPy", "It is Jython 2.7 and can import Java classes", "It supports f-strings"],
+      answer: 2,
       explain: [
         "Ignition does not run CPython.",
-        "Correct. Jython runs Python 2.7 on the JVM and gives direct access to Java.",
         "NumPy has compiled extensions that Jython cannot load.",
+        "Correct. Jython runs Python 2.7 on the JVM and gives direct access to Java.",
         "F-strings arrived in Python 3.6, so they are not available in 2.7."
       ]
     },
@@ -276,24 +276,24 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
     },
     {
       q: "Why prefer system.util.getLogger over print in Gateway scripts?",
-      options: ["print doesn't work in Jython", "A logger has names and levels, and shows in the Gateway's log viewer", "Loggers run faster than print", "print is blocked in the Gateway"],
-      answer: 1,
+      options: ["print doesn't work in Jython", "Loggers run faster than print", "A logger has names and levels, and shows in the Gateway's log viewer", "print is blocked in the Gateway"],
+      answer: 2,
       explain: [
         "print works, but its output is hard to find and filter.",
-        "Correct. Named, levelled messages appear on the Gateway's Logs page and can be turned up or down.",
         "Speed isn't the reason.",
+        "Correct. Named, levelled messages appear on the Gateway's Logs page and can be turned up or down.",
         "It is not blocked. It simply lands in wrapper.log."
       ]
     },
     {
       q: "A write via writeBlocking to a tag raised no exception, but the value didn't change. What should you have checked?",
-      options: ["The Python version", "The list of quality codes returned by the write", "The Designer's output console only", "The tag's description"],
-      answer: 1,
+      options: ["The Python version", "The Designer's output console only", "The tag's description", "The list of quality codes returned by the write"],
+      answer: 3,
       explain: [
         "Version isn't the issue here.",
-        "Correct. Failures are reported in the returned quality codes. A bad or read-only tag does not necessarily raise an exception.",
         "The console shows nothing unless you log the result.",
-        "A description has no effect on writes."
+        "A description has no effect on writes.",
+        "Correct. Failures are reported in the returned quality codes. A bad or read-only tag does not necessarily raise an exception."
       ]
     }
   ],

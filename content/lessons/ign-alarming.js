@@ -220,34 +220,34 @@ The ten most frequent alarms in a week are your rationalization list. Column and
     },
     {
       q: "Operators want a list of alarms that occurred last night. What must exist?",
-      options: ["An alarm status table on a screen", "An alarm journal profile writing to a database", "A tag historian on the alarm tag", "A shelving rule"],
-      answer: 1,
+      options: ["An alarm journal profile writing to a database", "An alarm status table on a screen", "A tag historian on the alarm tag", "A shelving rule"],
+      answer: 0,
       explain: [
-        "The status table shows current state only.",
         "Correct. The journal stores events in a database for later queries.",
+        "The status table shows current state only.",
         "The Tag Historian stores values, not alarm events.",
         "Shelving hides alarms."
       ]
     },
     {
       q: "What does shelving an alarm do?",
-      options: ["Deletes it from the tag", "Suppresses notifications and hides its events from alarm status tables for a time", "Acknowledges it permanently", "Changes its priority to Diagnostic"],
-      answer: 1,
+      options: ["Deletes it from the tag", "Acknowledges it permanently", "Changes its priority to Diagnostic", "Suppresses notifications and hides its events from alarm status tables for a time"],
+      answer: 3,
       explain: [
         "The configuration remains.",
-        "Correct. It is a temporary, deliberate suppression.",
         "It is not an acknowledgement.",
-        "Priority is unchanged."
+        "Priority is unchanged.",
+        "Correct. It is a temporary, deliberate suppression."
       ]
     },
     {
       q: "Which alarm best matches an ISA-18.2 'good alarm'?",
-      options: ["Motor M101 running", "LT101 level high, requiring the operator to divert flow within 5 minutes to avoid overflow", "Any change on a setpoint tag", "Communications OK"],
-      answer: 1,
+      options: ["Motor M101 running", "Any change on a setpoint tag", "LT101 level high, requiring the operator to divert flow within 5 minutes to avoid overflow", "Communications OK"],
+      answer: 2,
       explain: [
         "Status information belongs on a screen.",
-        "Correct. It has a required action, a consequence and time to respond.",
         "That is a log entry, not an alarm.",
+        "Correct. It has a required action, a consequence and time to respond.",
         "Normal conditions are not alarms."
       ]
     }

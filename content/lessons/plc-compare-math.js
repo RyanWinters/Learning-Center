@@ -189,7 +189,7 @@ Finally, a ruler only goes so high. Keep adding to a counter that tops out and i
   history: `Early PLCs were relay replacers and had no arithmetic. Compare and math blocks arrived in the 1970s as controllers took on process work like batching and temperature control, and they were kept simple on purpose: one operation per block, with the result written to a named location. Floating point became common as processors improved, which is how REAL arrived next to integer types.`,
 
   examples: [
-    { title: "Scaling a 4-20 mA input", body: `Level transmitter LT101 measures 0 to 5.0 m. On the house teaching card its 4 to 20 mA signal arrives as raw counts 6,242 to 31,208 (counts are module-specific, see the analog lesson). \`CPT(LT101_Level,"(LT101_Raw - 6242.0) * 5.0 / 24966.0")\` gives 0.0 to 5.0 m. Raw 18725 gives exactly 2.5, and raw 18726 gives about 2.5002. Storing the result in a DINT would round it to 3 and lose that resolution, so keep it REAL. (Logix also has SCP for scaling, covered in the analog lesson.)` },
+    { title: "Scaling a 4-20 mA input", body: `Level transmitter LT101 measures 0 to 5.0 m. On the house teaching card its 4-20 mA signal arrives as raw counts 6,242 to 31,208 (counts are module-specific, see the analog lesson). \`CPT(LT101_Level,"(LT101_Raw - 6242.0) * 5.0 / 24966.0")\` gives 0.0 to 5.0 m. Raw 18725 gives exactly 2.5, and raw 18726 gives about 2.5002. Storing the result in a DINT would round it to 3 and lose that resolution, so keep it REAL. (Logix also has SCP for scaling, covered in the analog lesson.)` },
     { title: "Safe average of 10 readings", body: `Add 10 REAL readings into a sum with CPT, divide by 10.0 in the last step and store the result in a REAL. Dividing a DINT sum by 10 into a DINT leaves only a whole number, so the fraction is gone whichever way your version rounds the integer divide. If the sample count were a variable, wrap the divide in \`NEQ(Sample_Count,0)\` first.` }
   ],
 
@@ -243,12 +243,12 @@ Finally, a ruler only goes so high. Keep adding to a counter that tops out and i
   quiz: [
     {
       q: "`ADD(Total,1,Total)` is in a rung driven directly by a held sensor. The sensor is on for 0.5 s with a 10 ms scan. What does Total gain?",
-      options: ["1", "About 50", "0", "0.5"],
-      answer: 1,
+      options: ["1", "0", "About 50", "0.5"],
+      answer: 2,
       explain: [
         "That would need a one-shot.",
-        "Correct. The ADD runs every scan the rung is true, so about 50 scans, 50 additions.",
         "The rung is true, so it executes.",
+        "Correct. The ADD runs every scan the rung is true, so about 50 scans, 50 additions.",
         "The result is in units of added 1s, not seconds."
       ]
     },
@@ -265,24 +265,24 @@ Finally, a ruler only goes so high. Keep adding to a counter that tops out and i
     },
     {
       q: "What does `MOV(3.7,Count)` do when Count is a DINT?",
-      options: ["Stores 3", "Stores 4", "Faults", "Stores 3.7"],
-      answer: 1,
+      options: ["Stores 4", "Stores 3", "Faults", "Stores 3.7"],
+      answer: 0,
       explain: [
-        "Logix rounds to the nearest whole number on conversion.",
         "Correct. The REAL is rounded to 4.",
+        "Logix rounds to the nearest whole number on conversion.",
         "The conversion is legal.",
         "A DINT cannot hold a fraction."
       ]
     },
     {
       q: "Why does `EQU(Total,1.0)` fail after ten additions of 0.1 in a REAL?",
-      options: ["Total is a different type", "Rounding error leaves the total near but not exactly 1.0", "EQU only works on DINT", "Ten additions overflow"],
-      answer: 1,
+      options: ["Total is a different type", "EQU only works on DINT", "Ten additions overflow", "Rounding error leaves the total near but not exactly 1.0"],
+      answer: 3,
       explain: [
         "Types can be compared.",
-        "Correct. Binary floating point cannot store 0.1 exactly.",
         "EQU accepts REALs.",
-        "There is no overflow here."
+        "There is no overflow here.",
+        "Correct. Binary floating point cannot store 0.1 exactly."
       ]
     },
     {
@@ -298,13 +298,13 @@ Finally, a ruler only goes so high. Keep adding to a counter that tops out and i
     },
     {
       q: "When should you choose COP over MOV?",
-      options: ["Copying an array or a UDT of the same type", "Converting a REAL to a DINT", "Adding two numbers", "Clearing a tag"],
-      answer: 0,
+      options: ["Converting a REAL to a DINT", "Adding two numbers", "Clearing a tag", "Copying an array or a UDT of the same type"],
+      answer: 3,
       explain: [
-        "Correct. COP copies raw memory efficiently for blocks of the same type.",
         "COP does not convert, MOV does.",
         "COP does not calculate.",
-        "That is CLR."
+        "That is CLR.",
+        "Correct. COP copies raw memory efficiently for blocks of the same type."
       ]
     }
   ],

@@ -210,24 +210,24 @@ Sequential control predates PLCs. Relay panels used drum sequencers and stepping
   quiz: [
     {
       q: "A sequence is written with OTL/OTU latches per stage. After a power cycle, two stage latches are set. What is the root problem?",
-      options: ["The scan time is too long", "Nothing enforces that only one stage is active", "OTL instructions are not retentive", "The program needs a bigger timer"],
-      answer: 1,
+      options: ["Nothing enforces that only one stage is active", "The scan time is too long", "OTL instructions are not retentive", "The program needs a bigger timer"],
+      answer: 0,
       explain: [
-        "Scan time does not decide how many latches are set.",
         "Correct. A single step number can only hold one value, so only one state can be active.",
+        "Scan time does not decide how many latches are set.",
         "OTL is retentive, which is why the bits survive. That is part of the problem, not the root cause.",
         "Timers do not control which latches remain set."
       ]
     },
     {
       q: "Why put an ELSE branch that sets Step to the fault state in the CASE?",
-      options: ["It saves memory", "It makes the CASE run faster", "A corrupted or unexpected step value lands in a controlled state", "It is required by the compiler"],
-      answer: 2,
+      options: ["It saves memory", "It makes the CASE run faster", "It is required by the compiler", "A corrupted or unexpected step value lands in a controlled state"],
+      answer: 3,
       explain: [
         "Memory use is unaffected.",
         "Scan time does not improve.",
-        "Correct. Unknown values then produce a visible fault instead of silent inactivity.",
-        "The compiler accepts CASE without ELSE."
+        "The compiler accepts CASE without ELSE.",
+        "Correct. Unknown values then produce a visible fault instead of silent inactivity."
       ]
     },
     {
@@ -243,12 +243,12 @@ Sequential control predates PLCs. Relay panels used drum sequencers and stepping
     },
     {
       q: "Which design adds pause/resume with the least risk?",
-      options: ["A Held step number for every step", "A hold flag that freezes the timer and forces outputs off while Step stays unchanged", "Resetting to Idle on hold", "Unlatching all outputs and re-latching them on resume"],
-      answer: 1,
+      options: ["A Held step number for every step", "Resetting to Idle on hold", "A hold flag that freezes the timer and forces outputs off while Step stays unchanged", "Unlatching all outputs and re-latching them on resume"],
+      answer: 2,
       explain: [
         "That multiplies the states and the chance of a missed path.",
-        "Correct. The step is preserved and resuming continues in place.",
         "That loses the batch progress.",
+        "Correct. The step is preserved and resuming continues in place.",
         "Latching is the pattern the state machine avoids."
       ]
     },

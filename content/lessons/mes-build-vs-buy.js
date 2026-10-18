@@ -49,7 +49,7 @@ The trouble is rarely the first screen. It is everything that arrives after.
 - **Hidden logic.** Business rules end up spread across Transaction Groups, gateway scripts, SQL triggers and Perspective bindings. After the original developer leaves, nobody holds the whole picture.
 - **No tested core.** You write the state machine, the OEE rules, the lot genealogy queries and the edge cases (what happens on a power cycle mid-run, when two operators scan the same lot). Each is a place for bugs, and you are the only tester.
 - **Documentation and training.** Packaged products come with manuals and community knowledge. Your custom system has whatever you wrote down.
-- **Upgrades.** Ignition 8.1 to 8.3 changes can touch scripting, Perspective components and the gateway network. Custom code is yours to retest and fix. See {{lesson:arch-webdev}} for how much surface a custom web layer adds.
+- **Upgrades.** Ignition 8.1 to 8.3 changes can touch scripting, Perspective components and the Gateway Network. Custom code is yours to retest and fix. See {{lesson:arch-webdev}} for how much surface a custom web layer adds.
 - **Multi-site.** The second plant needs the same thing slightly different. A parameterized model helps; a copy-and-edit fork of the first project does not.
 
 A rough test is the "bus factor." If one person leaving would leave the customer unable to change a recipe or fix a report, you built a liability, not an asset.
@@ -176,11 +176,11 @@ The question is not which one is better. It is how big the library will get, and
   quiz: [
     {
       q: "A customer wants downtime reasons and shift counts on one line, nothing else, and has a dedicated in-house Ignition developer. What's the most defensible recommendation?",
-      options: ["Plain Ignition with a documented schema, and revisit if scope grows", "Always license every Sepasoft module for future growth", "Buy a separate non-Ignition MES", "Delay until ERP integration is defined"],
-      answer: 0,
+      options: ["Always license every Sepasoft module for future growth", "Plain Ignition with a documented schema, and revisit if scope grows", "Buy a separate non-Ignition MES", "Delay until ERP integration is defined"],
+      answer: 1,
       explain: [
-        "Correct. The scope is small and stable and a developer will stay, so a custom build is reasonable. Document it and reassess if lots, batch or ERP orders appear.",
         "Licensing every module for a speculative future is expensive and not justified by the stated scope.",
+        "Correct. The scope is small and stable and a developer will stay, so a custom build is reasonable. Document it and reassess if lots, batch or ERP orders appear.",
         "That adds a second platform and cost without a driver for it.",
         "ERP integration is not part of the requirement, so waiting on it solves nothing."
       ]
@@ -191,7 +191,7 @@ The question is not which one is better. It is how big the library will get, and
       answer: 2,
       explain: [
         "PLC communication is the job of Ignition's OPC UA drivers and is unrelated to MES modules.",
-        "The modules run inside the Ignition gateway. They don't replace it.",
+        "The modules run inside the Ignition Gateway. They don't replace it.",
         "Correct. The three durable benefits are the structured model of the plant, the vendor-tested schema and logic, and versioned upgrades with support.",
         "Storage is not what the modules are for."
       ]
@@ -209,35 +209,35 @@ The question is not which one is better. It is how big the library will get, and
     },
     {
       q: "Which scope most strongly pushes the decision toward Sepasoft?",
-      options: ["One line with state and counts", "Multiple plants with ERP orders, lot genealogy and audit requirements", "A single dashboard for a supervisor", "A proof of concept for a trade show"],
-      answer: 1,
+      options: ["Multiple plants with ERP orders, lot genealogy and audit requirements", "One line with state and counts", "A single dashboard for a supervisor", "A proof of concept for a trade show"],
+      answer: 0,
       explain: [
-        "That's the textbook custom-friendly scope.",
         "Correct. Multi-site, ERP integration and regulated traceability each add heavy build and test effort that a packaged product already covers.",
+        "That's the textbook custom-friendly scope.",
         "A dashboard needs no MES platform.",
         "A proof of concept is short-lived and does not justify licensing."
       ]
     },
     {
       q: "A vendor's brochure says its MES lowers TCO versus custom builds. What should you do?",
-      options: ["Rebuild the comparison over five years using the customer's own labor rates and scope", "Accept it because the vendor knows its product", "Ignore TCO and compare license prices only", "Assume custom is always cheaper"],
-      answer: 0,
+      options: ["Accept it because the vendor knows its product", "Ignore TCO and compare license prices only", "Rebuild the comparison over five years using the customer's own labor rates and scope", "Assume custom is always cheaper"],
+      answer: 2,
       explain: [
-        "Correct. Use their numbers: build hours, test effort, upgrades, licenses and the risk of key-person loss.",
         "The vendor has an interest in the result, and your customer's scope may differ from their example.",
         "License price alone ignores the largest cost, labor.",
+        "Correct. Use their numbers: build hours, test effort, upgrades, licenses and the risk of key-person loss.",
         "Custom is cheaper only for small, stable scopes, so it is not a general rule."
       ]
     },
     {
       q: "A customer starts with a custom downtime tracker but expects to grow. What design choice keeps the packaged option open?",
-      options: ["Hard-code line names into scripts", "Model the plant hierarchy (site, area, line) in tables, with consistent naming", "Store all data in a single wide table", "Avoid any database"],
-      answer: 1,
+      options: ["Hard-code line names into scripts", "Store all data in a single wide table", "Avoid any database", "Model the plant hierarchy (site, area, line) in tables, with consistent naming"],
+      answer: 3,
       explain: [
         "Hard-coded names are exactly what makes a second site or a later migration painful.",
-        "Correct. A hierarchy that mirrors ISA-95 maps cleanly onto a production model later, and also helps a second site.",
         "A wide table couples everything and complicates later mapping.",
-        "MES needs persistent history. Skipping a database loses it."
+        "MES needs persistent history. Skipping a database loses it.",
+        "Correct. A hierarchy that mirrors ISA-95 maps cleanly onto a production model later, and also helps a second site."
       ]
     }
   ],

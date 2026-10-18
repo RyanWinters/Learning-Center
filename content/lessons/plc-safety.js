@@ -18,11 +18,11 @@ LC.lesson({
   body: `
 ## What this lesson is, and is not
 
-A safety function is something that must reduce risk to people even when parts of the control system fail: an e-stop that drops motor power, a light curtain that stops a press, a high-pressure trip that closes a feed valve. Standard PLCs are built to be flexible and easy to change. Safety PLCs are built to be **provably predictable when they break**. This lesson gives you awareness-level vocabulary so you can read a spec, talk to a safety engineer and know when to stop. It is not a design course. Specifying and validating a safety function is a job for a qualified functional safety engineer.
+A safety function is something that must reduce risk to people even when parts of the control system fail: an E-stop that drops motor power, a light curtain that stops a press, a high-pressure trip that closes a feed valve. Standard PLCs are built to be flexible and easy to change. Safety PLCs are built to be **provably predictable when they break**. This lesson gives you awareness-level vocabulary so you can read a spec, talk to a safety engineer and know when to stop. It is not a design course. Specifying and validating a safety function is a job for a qualified functional safety engineer.
 
 ## Why you never put safety in standard logic
 
-A standard PLC can fail dangerously and silently. A relay-output card can weld shut, a CPU memory bit can flip, an input can stick at 1, and the ladder program has no way to know. A rung that says \`XIC(EStop) OTE(MotorRun)\` assumes the e-stop signal is honest. For a safety function that assumption is not allowed.
+A standard PLC can fail dangerously and silently. A relay-output card can weld shut, a CPU memory bit can flip, an input can stick at 1, and the ladder program has no way to know. A rung that says \`XIC(EStop) OTE(MotorRun)\` assumes the E-stop signal is honest. For a safety function that assumption is not allowed.
 
 Safety systems answer this with:
 
@@ -34,7 +34,7 @@ Safety systems answer this with:
 Putting a safety function in standard logic loses all four. Even if it works on the bench, you cannot prove it, and an insurer or inspector will not accept it.
 
 > [!warning] The standard-logic trap
-> A common mistake is a "software e-stop" in the standard task, or a safety reset that the HMI can write. If a bug, a forced bit or a screen can defeat the safety function, it is not a safety function.
+> A common mistake is a "software E-stop" in the standard task, or a safety reset that the HMI can write. If a bug, a forced bit or a screen can defeat the safety function, it is not a safety function.
 
 ## What a safety PLC adds
 
@@ -54,11 +54,11 @@ On the Rockwell side the family is **GuardLogix** (ControlLogix-style, e.g. 1756
 The **safety signature** is how a safety engineer proves that the program in the controller is the one that was validated. Studio 5000 can generate a signature report. A signature is expected for SIL 2 or SIL 3 operation. When you see a different signature than the validation paperwork, the machine needs re-validation.
 
 > [!note] How this reaches Ignition
-> Ignition can read safety tags like any other tag, to display the e-stop chain or guard status. It must never write them. Treat safety tags as read-only information, and never use a screen button as a safety reset.
+> Ignition can read safety tags like any other tag, to display the E-stop chain or guard status. It must never write them. Treat safety tags as read-only information, and never use a screen button as a safety reset.
 
 ## Dual-channel inputs
 
-A safety device such as an e-stop button or a light curtain has **two independent contacts** wired to two input terminals. The safety module evaluates both channels:
+A safety device such as an E-stop button or a light curtain has **two independent contacts** wired to two input terminals. The safety module evaluates both channels:
 
 - Both channels must agree. If one reads closed and the other open for longer than a **discrepancy time** (for example 20 ms), the module declares a fault and drives the function to its safe state.
 - The module can pulse each channel with **test outputs** to detect shorts to power or to the other channel.
@@ -67,7 +67,7 @@ A safety device such as an e-stop button or a light curtain has **two independen
 The cost is double the wiring and I/O. The gain is that **a single failure cannot silently defeat the function**.
 
 > [!example] A stuck contact
-> An e-stop has two normally closed contacts. One contact welds closed. When the operator hits the button, channel B opens and channel A does not. After the discrepancy time the safety module faults and de-energizes the output. A single-channel input would have kept running.
+> An E-stop has two normally closed contacts. One contact welds closed. When the operator hits the button, channel B opens and channel A does not. After the discrepancy time the safety module faults and de-energizes the output. A single-channel input would have kept running.
 
 ## Stop categories and the motor starter
 
@@ -75,11 +75,11 @@ Machine standards (IEC 60204-1, which uses the same vocabulary as ISO 13850 for 
 
 | Category | What happens | Typical use |
 |---|---|---|
-| **0** | Power to the actuator is removed at once (an uncontrolled stop) | Most e-stops: the safety output drops the starter coil, and the motor coasts |
+| **0** | Power to the actuator is removed at once (an uncontrolled stop) | Most E-stops: the safety output drops the starter coil, and the motor coasts |
 | **1** | A controlled stop with power kept available to stop the machine, then power removed | A heavy conveyor or drive that must ramp down before the contactor opens |
 | **2** | A controlled stop with power left on the actuator | Normal functional stops, such as the operator Stop button in a seal-in rung |
 
-Check the standard for the exact wording in your edition. The point for a PLC programmer is where each one lives. The operator's **Stop** button in the PLC program is a functional stop in the process logic, not a safety function. The **e-stop** (category 0 or 1) and the motor **overload** are hardwired into the starter coil circuit, so even a dead or faulted PLC cannot keep the motor running. For motor M101 in Plant 1 the PLC reads an auxiliary contact (run feedback) and the overload status, and it uses them for alarms and interlocks. It never provides the only means of stopping the motor. That is why the seal-in rung in {{lesson:plc-sealin}} stops on a command bit but the hardware cuts the coil independently, and {{lesson:found-motor-control}} shows the starter circuit that makes this true.
+Check the standard for the exact wording in your edition. The point for a PLC programmer is where each one lives. The operator's **Stop** button in the PLC program is a functional stop in the process logic, not a safety function. The **E-stop** (category 0 or 1) and the motor **overload** are hardwired into the starter coil circuit, so even a dead or faulted PLC cannot keep the motor running. For motor M101 in Plant 1 the PLC reads an auxiliary contact (run feedback) and the overload status, and it uses them for alarms and interlocks. It never provides the only means of stopping the motor. That is why the seal-in rung in {{lesson:plc-sealin}} stops on a command bit but the hardware cuts the coil independently, and {{lesson:found-motor-control}} shows the starter circuit that makes this true.
 
 ## SIL and PL: two scales for the same idea
 
@@ -106,7 +106,7 @@ In process plants the vocabulary changes:
 
 Independence is the point. If the BPCS and SIS share a sensor or a PLC, a single failure can take out both the control and its safety net. That is why a trip valve usually has its own transmitter, wired to a separate logic solver. Some vendors offer SIS-rated variants (Rockwell's Logix SIS family is one) for process safety systems.
 
-On a machine, the equivalent is simply "the safety circuit": e-stops, guard door switches and light curtains going into a safety relay or GuardLogix, and from there to contactors.
+On a machine, the equivalent is simply "the safety circuit": E-stops, guard door switches and light curtains going into a safety relay or GuardLogix, and from there to contactors.
 
 ## Awareness checklist
 
@@ -134,7 +134,7 @@ SIL and PL are grades, like a star rating, for how trustworthy the brakes are.
 
 **Why SIS separate from BPCS?** If one fault can cause the upset and defeat the protection, you do not have two layers of protection, you have one. Independence is what earns the risk reduction credit.
 
-**Where engineers argue.** Some teams use safety PLCs for all machine safety and accept the cost. Others use hardwired safety relays for simple functions (a single e-stop with one contactor) because they are simpler to validate and need no programming. Process teams argue about shared hardware between BPCS and SIS to save money, and in practice most standards-minded owners insist on separation. Integrators also differ on how much safety they will design: many will wire and program to a specification from a safety engineer, but will not own the risk assessment.
+**Where engineers argue.** Some teams use safety PLCs for all machine safety and accept the cost. Others use hardwired safety relays for simple functions (a single E-stop with one contactor) because they are simpler to validate and need no programming. Process teams argue about shared hardware between BPCS and SIS to save money, and in practice most standards-minded owners insist on separation. Integrators also differ on how much safety they will design: many will wire and program to a specification from a safety engineer, but will not own the risk assessment.
 `,
 
   history: `
@@ -144,11 +144,11 @@ Machine safety was first done with hardwired relays, and the functional safety s
   examples: [
     {
       title: "Reading a spec line",
-      body: `A machine specification says: *"E-stop function, ISO 13849-1 PL d, Category 3, stop category 0."* PL d with Category 3 means a dual-channel architecture with good diagnostics. Stop category 0 means remove power to the actuators immediately. In practice that points to dual-channel e-stop inputs on a safety module, and a safety output that drops the contactor coils.`
+      body: `A machine specification says: *"E-stop function, ISO 13849-1 PL d, Category 3, stop category 0."* PL d with Category 3 means a dual-channel architecture with good diagnostics. Stop category 0 means remove power to the actuators immediately. In practice that points to dual-channel E-stop inputs on a safety module, and a safety output that drops the contactor coils.`
     },
     {
       title: "What Ignition shows",
-      body: `A Perspective screen shows the status of three e-stops and a guard door. The tags are safety tags read through the controller's OPC connection. The screen displays *Guard open* and who last reset it. It has no button that resets the safety circuit, because the reset is a physical button wired to the safety input, per the machine's validated design.`
+      body: `A Perspective screen shows the status of three E-stops and a guard door. The tags are safety tags read through the controller's OPC connection. The screen displays *Guard open* and who last reset it. It has no button that resets the safety circuit, because the reset is a physical button wired to the safety input, per the machine's validated design.`
     }
   ],
 
@@ -174,7 +174,7 @@ Machine safety was first done with hardwired relays, and the functional safety s
   },
 
   pitfalls: [
-    "Building a 'software e-stop' or safety reset in the standard task or on an HMI screen.",
+    "Building a 'software E-stop' or safety reset in the standard task or on an HMI screen.",
     "Forcing, bypassing or jumpering a safety input to keep a machine running during troubleshooting.",
     "Changing safety logic without regenerating the signature and re-validating.",
     "Assuming SIL 2 and PL d are interchangeable on paper. Use the standard the specification names.",
@@ -185,25 +185,25 @@ Machine safety was first done with hardwired relays, and the functional safety s
 
   quiz: [
     {
-      q: "Why is an e-stop implemented as XIC(EStop) OTE(MotorRun) in a standard PLC task not acceptable as a safety function?",
-      options: ["Ladder logic is too slow", "Standard PLCs cannot read pushbuttons", "A standard PLC cannot detect its own dangerous failures, such as a stuck input", "Ignition would override it"],
-      answer: 2,
+      q: "Why is an E-stop implemented as XIC(EStop) OTE(MotorRun) in a standard PLC task not acceptable as a safety function?",
+      options: ["Ladder logic is too slow", "A standard PLC cannot detect its own dangerous failures, such as a stuck input", "Standard PLCs cannot read pushbuttons", "Ignition would override it"],
+      answer: 1,
       explain: [
         "Speed is rarely the issue. Ladder can be fast enough.",
-        "Standard PLCs read pushbuttons fine. The issue is trust under failure.",
         "Correct. Safety needs diagnostics, redundancy and certified hardware so a single fault cannot defeat the function.",
+        "Standard PLCs read pushbuttons fine. The issue is trust under failure.",
         "Ignition is not the reason. Even with no SCADA the design is inadequate."
       ]
     },
     {
-      q: "An e-stop with two contacts feeds a safety input. One contact welds shut. What does a dual-channel safety module do when the button is pressed?",
-      options: ["Ignores it, since one channel still says run", "Detects the discrepancy and drives the function to its safe state", "Waits for Ignition to confirm", "Switches to single-channel mode"],
-      answer: 1,
+      q: "An E-stop with two contacts feeds a safety input. One contact welds shut. What does a dual-channel safety module do when the button is pressed?",
+      options: ["Ignores it, since one channel still says run", "Waits for Ignition to confirm", "Switches to single-channel mode", "Detects the discrepancy and drives the function to its safe state"],
+      answer: 3,
       explain: [
         "This is exactly the failure dual-channel inputs exist to catch.",
-        "Correct. The channels disagree beyond the discrepancy time, which is treated as a fault and results in the safe state.",
         "Safety modules do not depend on SCADA.",
-        "Safety modules do not fall back to a lower-integrity mode silently."
+        "Safety modules do not fall back to a lower-integrity mode silently.",
+        "Correct. The channels disagree beyond the discrepancy time, which is treated as a fault and results in the safe state."
       ]
     },
     {
@@ -219,23 +219,23 @@ Machine safety was first done with hardwired relays, and the functional safety s
     },
     {
       q: "A specification calls for 'PL d'. Which standard family is this from?",
-      options: ["IEC 61511", "IEC 61131-3", "ISA-95", "ISO 13849-1"],
-      answer: 3,
+      options: ["IEC 61511", "IEC 61131-3", "ISO 13849-1", "ISA-95"],
+      answer: 2,
       explain: [
         "IEC 61511 is process safety and uses SIL.",
         "IEC 61131-3 defines PLC programming languages.",
-        "ISA-95 is about enterprise-control integration.",
-        "Correct. ISO 13849-1 defines performance levels a to e for machinery."
+        "Correct. ISO 13849-1 defines performance levels a to e for machinery.",
+        "ISA-95 is about enterprise-control integration."
       ]
     },
     {
       q: "In a process plant, which is true about the BPCS and SIS?",
-      options: ["They should share sensors to reduce cost and drift", "The SIS should be independent so one fault cannot defeat both control and protection", "The SIS is just another Ignition project", "The SIS runs the normal PID loops"],
-      answer: 1,
+      options: ["They should share sensors to reduce cost and drift", "The SIS is just another Ignition project", "The SIS should be independent so one fault cannot defeat both control and protection", "The SIS runs the normal PID loops"],
+      answer: 2,
       explain: [
         "Shared sensors create a common cause failure and remove independence.",
-        "Correct. Independence is what lets the SIS count as a separate layer of protection.",
         "SCADA is part of the BPCS side and is not a safety system.",
+        "Correct. Independence is what lets the SIS count as a separate layer of protection.",
         "Normal regulatory control is the BPCS's job."
       ]
     }

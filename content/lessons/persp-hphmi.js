@@ -52,7 +52,7 @@ A {{term:display-hierarchy|display hierarchy}} gives progressive exposure of det
 |---|---|---|
 | **1 Overview** | Whole area at a glance: key KPIs, summary of abnormal conditions. Often on the big screen | Plant overview with the 10 most important indicators |
 | **2 Unit control** | Run one unit: see and act in one place, with trends and the controls to respond | Reactor R-101 with temperature, pressure, feed and cooling |
-| **3 Detail** | Equipment or loop detail: faceplate-level data, interlocks, P&ID-like views | Pump P-101 detail with permissives |
+| **3 Detail** | Equipment or loop detail: faceplate-level data, interlocks, P&ID-like views | Pump P101 detail with permissives |
 | **4 Support** | Diagnostics, help, procedures, tuning, maintenance data | Calibration data, device diagnostics |
 
 Level 1 is for knowing whether anything needs attention. Level 2 is where most real operating happens. Levels 3 and 4 are for investigation and are visited rarely.
@@ -312,11 +312,11 @@ The ASM Consortium formed in the 1990s to study abnormal situations in process p
     },
     {
       q: "Which level of the display hierarchy is where operators do most real-time operating, seeing and acting in one place?",
-      options: ["Level 1", "Level 2", "Level 3", "Level 4"],
-      answer: 1,
+      options: ["Level 2", "Level 1", "Level 3", "Level 4"],
+      answer: 0,
       explain: [
-        "Level 1 is the overview used to see whether anything needs attention.",
         "Correct. Level 2 shows one unit with its controls and trends together.",
+        "Level 1 is the overview used to see whether anything needs attention.",
         "Level 3 is detail for investigation.",
         "Level 4 holds support and diagnostic displays."
       ]
@@ -334,35 +334,35 @@ The ASM Consortium formed in the 1990s to study abnormal situations in process p
     },
     {
       q: "You implement an HP HMI in Perspective. What is the best way to color a pump symbol by alarm state?",
-      options: ["A script computes a hex color on each change", "An expression binding on the style classes property chooses a meaning-named class", "Separate views for each color", "Inline background color typed on each pump"],
-      answer: 1,
+      options: ["A script computes a hex color on each change", "Separate views for each color", "Inline background color typed on each pump", "An expression binding on the style classes property chooses a meaning-named class"],
+      answer: 3,
       explain: [
         "That scatters color decisions in scripts and defeats the style guide.",
-        "Correct. Data selects the class, and the class (one definition) decides the look, so the palette changes in one place.",
         "Views aren't the unit of styling and would multiply maintenance.",
-        "Inline colors across all pumps are exactly the maintenance problem classes avoid."
+        "Inline colors across all pumps are exactly the maintenance problem classes avoid.",
+        "Correct. Data selects the class, and the class (one definition) decides the look, so the palette changes in one place."
       ]
     },
     {
       q: "An operator says the grey screens look like information was removed. What is the most effective response?",
-      options: ["Tell them the standard requires it", "Switch back to bright colors", "Show that the values are still there, now with context, and run a side-by-side test of how fast an abnormal condition is spotted", "Remove the old screens so there is no choice"],
-      answer: 2,
+      options: ["Show that the values are still there, now with context, and run a side-by-side test of how fast an abnormal condition is spotted", "Tell them the standard requires it", "Switch back to bright colors", "Remove the old screens so there is no choice"],
+      answer: 0,
       explain: [
+        "Correct. It respects the concern, shows the information is kept, and uses evidence.",
         "Appeal to authority does not address their concern and breeds resentment.",
         "That abandons the design goals.",
-        "Correct. It respects the concern, shows the information is kept, and uses evidence.",
         "Forcing the change without buy-in tends to fail."
       ]
     },
     {
       q: "What does ISA-101.01 treat as more than a graphics guide?",
-      options: ["A color palette only", "A lifecycle: philosophy, style guide, toolkit, design, implementation and maintenance", "A list of approved fonts", "A Perspective-specific API"],
-      answer: 1,
+      options: ["A color palette only", "A list of approved fonts", "A Perspective-specific API", "A lifecycle: philosophy, style guide, toolkit, design, implementation and maintenance"],
+      answer: 3,
       explain: [
         "Color is only one part.",
-        "Correct. The standard covers the whole HMI lifecycle, including keeping it consistent over time.",
         "Fonts are a small part of a style guide.",
-        "ISA-101 is vendor-neutral and says nothing about Ignition."
+        "ISA-101 is vendor-neutral and says nothing about Ignition.",
+        "Correct. The standard covers the whole HMI lifecycle, including keeping it consistent over time."
       ]
     }
   ],

@@ -149,13 +149,13 @@ Inductive Automation was founded in 2003 by Steve Hechtman. Its early products w
   quiz: [
     {
       q: "A competitor prices by tags and clients. Your customer adds 3,000 tags to an existing Ignition Standard system, and 8 more operators will use Perspective. What is the licensing consequence?",
-      options: ["No tag purchase is needed, but confirm the Perspective module's session allowance covers the extra operators and size the hardware", "A larger tag license tier", "One new Gateway license per operator station", "An upgrade to Cloud Edition"],
-      answer: 0,
+      options: ["A larger tag license tier", "One new Gateway license per operator station", "An upgrade to Cloud Edition", "No tag purchase is needed, but confirm the Perspective module's session allowance covers the extra operators and size the hardware"],
+      answer: 3,
       explain: [
-        "Correct. Tags are not counted. Sessions and clients are licensed per module, so check that allowance, and the other constraint is server capacity.",
         "Ignition does not sell tag tiers.",
         "Operators do not need their own Gateway license. Their sessions fall under the visualization module's licensing.",
-        "Cloud Edition is a hosting model, not an upgrade path for tag counts."
+        "Cloud Edition is a hosting model, not an upgrade path for tag counts.",
+        "Correct. Tags are not counted. Sessions and clients are licensed per module, so check that allowance, and the other constraint is server capacity."
       ]
     },
     {
@@ -171,34 +171,34 @@ Inductive Automation was founded in 2003 by Steve Hechtman. Its early products w
     },
     {
       q: "Where is Ignition's role NOT appropriate?",
-      options: ["Running the machine's safety interlocks and sequence control", "Plant-wide historian at level 3", "Operator HMI at level 2", "Forwarding data to cloud dashboards"],
-      answer: 0,
+      options: ["Plant-wide historian at level 3", "Operator HMI at level 2", "Running the machine's safety interlocks and sequence control", "Forwarding data to cloud dashboards"],
+      answer: 2,
       explain: [
-        "Correct. Control and safety belong in the PLC, which keeps running if the Gateway restarts.",
         "A historian is a standard Ignition use.",
         "HMI is its most common role.",
+        "Correct. Control and safety belong in the PLC, which keeps running if the Gateway restarts.",
         "Cloud and enterprise data flow is a normal use."
       ]
     },
     {
       q: "You need a free environment to learn Perspective at home with no commercial use. Which choice fits?",
-      options: ["Maker Edition", "Cloud Edition", "Edge on a production machine", "Standard with a purchased license"],
-      answer: 0,
+      options: ["Cloud Edition", "Maker Edition", "Edge on a production machine", "Standard with a purchased license"],
+      answer: 1,
       explain: [
-        "Correct. Maker Edition is the free, non-commercial option for learning and hobby use.",
         "Cloud Edition is hosted and usage-priced.",
+        "Correct. Maker Edition is the free, non-commercial option for learning and hobby use.",
         "Edge is a commercial edition for devices and machines.",
         "A purchase is unnecessary for personal learning."
       ]
     },
     {
       q: "A trial Gateway you left running over a weekend is showing expired screens. What happened?",
-      options: ["The two-hour trial timer ran out and was not reset", "The tag limit was exceeded", "The 30-day evaluation period ended", "The database lost its license"],
-      answer: 0,
+      options: ["The tag limit was exceeded", "The 30-day evaluation period ended", "The two-hour trial timer ran out and was not reset", "The database lost its license"],
+      answer: 2,
       explain: [
-        "Correct. The trial runs on a two-hour timer that you can reset any number of times.",
         "The trial does not cap tags.",
         "The trial is timed in hours and reset repeatedly, not by a one-time 30-day period.",
+        "Correct. The trial runs on a two-hour timer that you can reset any number of times.",
         "Databases are separate products and have no bearing on the Ignition trial."
       ]
     }

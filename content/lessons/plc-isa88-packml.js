@@ -205,12 +205,12 @@ ISA-88 (ANSI/ISA-88.00.01) grew out of the batch control work of the late 1980s 
   quiz: [
     {
       q: "A valve with an open and a closed limit switch is best described in ISA-88 as a:",
-      options: ["Unit", "Equipment module", "Control module", "Process cell"],
-      answer: 2,
+      options: ["Control module", "Unit", "Equipment module", "Process cell"],
+      answer: 0,
       explain: [
+        "Correct. A control module is the smallest group acting as one device.",
         "A unit is a larger item such as a tank that holds a batch.",
         "An equipment module groups several devices to do a job.",
-        "Correct. A control module is the smallest group acting as one device.",
         "A process cell is a whole line or group of units."
       ]
     },
@@ -227,35 +227,35 @@ ISA-88 (ANSI/ISA-88.00.01) grew out of the batch control work of the late 1980s 
     },
     {
       q: "Why does PackML separate Aborting and Aborted from Stopping and Stopped?",
-      options: ["Faults need a fast route to a safe state and a deliberate Clear", "To use more state numbers", "Stopping is for the HMI only", "ISA-88 requires it for batch"],
-      answer: 0,
+      options: ["To use more state numbers", "Stopping is for the HMI only", "ISA-88 requires it for batch", "Faults need a fast route to a safe state and a deliberate Clear"],
+      answer: 3,
       explain: [
-        "Correct. A fault is not a planned stop, and a restart command should not hide it.",
         "The number of states is a result, not the reason.",
         "Stopping is a real machine state.",
-        "The abort distinction is part of PackML, not a batch requirement."
+        "The abort distinction is part of PackML, not a batch requirement.",
+        "Correct. A fault is not a planned stop, and a restart command should not hide it."
       ]
     },
     {
       q: "In the procedural model, which element is the smallest that runs on a single unit?",
-      options: ["Procedure", "Unit procedure", "Operation", "Phase"],
-      answer: 3,
+      options: ["Procedure", "Unit procedure", "Phase", "Operation"],
+      answer: 2,
       explain: [
         "The procedure is the top level for the whole product.",
         "A unit procedure is the work for one unit, built from operations.",
-        "An operation is a group of phases.",
-        "Correct. A phase such as Charge Water is the smallest piece."
+        "Correct. A phase such as Charge Water is the smallest piece.",
+        "An operation is a group of phases."
       ]
     },
     {
       q: "You need one Perspective status template for ten machines from different builders. What makes that possible?",
-      options: ["Using the same PLC brand", "Every machine exposing the standard StateCurrent numbers and PackTag names", "Running all the machines in Production mode", "Polling faster"],
-      answer: 1,
+      options: ["Using the same PLC brand", "Running all the machines in Production mode", "Polling faster", "Every machine exposing the standard StateCurrent numbers and PackTag names"],
+      answer: 3,
       explain: [
         "Brand does not decide what the numbers mean.",
-        "Correct. Common state numbers and tag names let one view serve every machine.",
         "Mode says why the machine is running, not how it reports.",
-        "Poll rate does not solve inconsistent definitions."
+        "Poll rate does not solve inconsistent definitions.",
+        "Correct. Common state numbers and tag names let one view serve every machine."
       ]
     }
   ],

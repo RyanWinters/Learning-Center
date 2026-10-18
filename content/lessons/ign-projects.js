@@ -182,44 +182,44 @@ Vision was Ignition's original client technology, a Java Swing application launc
     },
     {
       q: "A bug in a shared formatting script is fixed in the Global project. Packaging and Warehouse pick it up, but Utilities still shows the bug. What is the likely cause?",
-      options: ["Utilities needs a gateway restart", "Utilities overrides the script locally", "Perspective caches scripts for a week", "Global can only change one child"],
-      answer: 1,
+      options: ["Utilities needs a gateway restart", "Perspective caches scripts for a week", "Global can only change one child", "Utilities overrides the script locally"],
+      answer: 3,
       explain: [
         "Inherited changes do not need a restart.",
-        "Correct. A child's override wins over the parent's version, so the parent's fix does not reach it.",
         "There is no such cache rule.",
-        "A parent project affects every child that inherits from it."
+        "A parent project affects every child that inherits from it.",
+        "Correct. A child's override wins over the parent's version, so the parent's fix does not reach it."
       ]
     },
     {
       q: "A timer script is defined in the base project, and ten apps inherit from it. How many times does it run?",
-      options: ["Ten, once per child", "Once per session", "It does not run for inherited children, so put the call in the leaf project", "Zero, timers are not allowed in projects"],
-      answer: 2,
+      options: ["Ten, once per child", "It does not run for inherited children, so put the call in the leaf project", "Once per session", "Zero, timers are not allowed in projects"],
+      answer: 1,
       explain: [
         "Gateway event resources are not run once per inheriting child.",
-        "Sessions are a UI concept, not a timer trigger.",
         "Correct. Keep the logic in a base library function and call it from a small event script in the leaf project.",
+        "Sessions are a UI concept, not a timer trigger.",
         "Timers are valid project gateway events."
       ]
     },
     {
       q: "Which job is the best fit for Vision rather than Perspective?",
-      options: ["A phone dashboard for managers", "A browser view for remote contractors", "A fixed-resolution control room HMI that prints to a local label printer from client scripts", "A responsive page for tablets"],
-      answer: 2,
+      options: ["A fixed-resolution control room HMI that prints to a local label printer from client scripts", "A phone dashboard for managers", "A browser view for remote contractors", "A responsive page for tablets"],
+      answer: 0,
       explain: [
+        "Correct. Vision has client-scope scripting that reaches local devices, and fixed layouts suit control room screens.",
         "Phones are Perspective's strength.",
         "Remote browser access is Perspective's strength.",
-        "Correct. Vision has client-scope scripting that reaches local devices, and fixed layouts suit control room screens.",
         "Responsive layout for tablets favors Perspective."
       ]
     },
     {
       q: "Where do you set which project's scripts are available to tag event scripts that run outside any project?",
-      options: ["In each view's properties", "The gateway scripting project setting", "In the tag provider's name", "In the Vision client launcher"],
-      answer: 1,
+      options: ["The gateway scripting project setting", "In each view's properties", "In the tag provider's name", "In the Vision client launcher"],
+      answer: 0,
       explain: [
-        "Views only affect their own scripts.",
         "Correct. The gateway designates one project as the scripting project for scripts outside project scope.",
+        "Views only affect their own scripts.",
         "A provider name has no effect on scripting.",
         "The launcher is client-side."
       ]

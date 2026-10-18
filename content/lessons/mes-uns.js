@@ -252,23 +252,23 @@ MQTT was created in 1999 for monitoring oil pipelines over expensive satellite l
     },
     {
       q: "A teammate proposes the topic meridian/plant1/area10/line1/m101/sts/speed/1450. What's wrong with it?",
-      options: ["Nothing", "It has too many levels", "Topics cannot contain numbers", "The value belongs in the payload, and a topic should identify a thing"],
-      answer: 3,
+      options: ["Nothing", "The value belongs in the payload, and a topic should identify a thing", "It has too many levels", "Topics cannot contain numbers"],
+      answer: 1,
       explain: [
         "Putting the value in the topic creates a new topic for every reading.",
+        "Correct. The topic names the thing. The payload carries the value, timestamp and quality.",
         "A deep hierarchy is not the problem. Inconsistent structure is.",
-        "Topics can contain digits. The problem is putting changing data in them.",
-        "Correct. The topic names the thing. The payload carries the value, timestamp and quality."]
+        "Topics can contain digits. The problem is putting changing data in them."]
     },
     {
       q: "What is a fair argument for plain JSON topics over Sparkplug B in an enterprise UNS?",
-      options: ["JSON is always smaller", "Topic hierarchy and payload semantics are fully under your control", "JSON has built-in birth and death messages", "Brokers cannot carry Sparkplug"],
-      answer: 1,
+      options: ["JSON is always smaller", "JSON has built-in birth and death messages", "Brokers cannot carry Sparkplug", "Topic hierarchy and payload semantics are fully under your control"],
+      answer: 3,
       explain: [
         "Sparkplug's binary payload is usually more compact than JSON.",
-        "Correct. Flexibility to model the business hierarchy and meaning is the main argument, at the cost of defining your own conventions.",
         "Birth and death messages are a Sparkplug feature.",
-        "Sparkplug runs on ordinary MQTT brokers."]
+        "Sparkplug runs on ordinary MQTT brokers.",
+        "Correct. Flexibility to model the business hierarchy and meaning is the main argument, at the cost of defining your own conventions."]
     },
     {
       q: "A plant publishes everything to a broker and then asks 'what was the average level last Tuesday?' What's the lesson?",
@@ -286,7 +286,7 @@ MQTT was created in 1999 for monitoring oil pipelines over expensive satellite l
       answer: 0,
       explain: [
         "Correct. Ignition connects to the namespace through MQTT modules and adds historian, UDT models and screens.",
-        "Ignition gateways connect to brokers, and the broker can be a third-party one.",
+        "Ignition Gateways connect to brokers, and the broker can be a third-party one.",
         "PLCs still run control logic.",
         "UNS designs are about open participation by many systems."]
     }

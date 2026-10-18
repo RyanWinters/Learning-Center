@@ -57,13 +57,13 @@ Querying is separate from storing. A client on the hub can query a remote histor
 
 Alarm data also crosses gateways in two ways:
 
-- **Remote alarm journal profile.** A gateway forwards its alarm events to a journal on another gateway. This is typical for hub-and-spoke where headquarters wants one searchable history of alarms. The remote profile has a **Use Store and Forward** option. When it is on, journal events go through store and forward. When it is off, events are written directly against the remote gateway, so an outage means missing rows.
+- **Remote alarm journal profile.** A gateway forwards its alarm events to a journal on another gateway. This is typical for hub-and-spoke where headquarters wants one searchable history of alarms. The remote profile has a **Use Store and Forward** option. When it is on, journal events go through store-and-forward. When it is off, events are written directly against the remote gateway, so an outage means missing rows.
 - **Remote gateway notification.** A notification profile can use pipelines or hardware on another gateway (for example, one gateway with a modem or voice service for all sites). The Alarm Notification module must be installed and licensed on every gateway involved. The local gateway sees the remote pipelines and tags can target them directly.
 
 Live alarm status is different from journal data. A status table on the hub that reads another gateway's active alarms is a live view and needs the link. The journal is a record.
 
 > [!warning] Not every service buffers
-> Tag history can be buffered. Remote tag values cannot, because they are live. Alarm journal buffering exists only if you turn on store and forward for that profile. Community reports of gaps in alarm journal data after an outage, while tag history filled in correctly, usually trace back to this difference. Test the drill, do not assume.
+> Tag history can be buffered. Remote tag values cannot, because they are live. Alarm journal buffering exists only if you turn on store-and-forward for that profile. Community reports of gaps in alarm journal data after an outage, while tag history filled in correctly, usually trace back to this difference. Test the drill, do not assume.
 
 ## What happens when the link drops
 
@@ -189,15 +189,15 @@ So the lesson is: ask which of the three has a pile, and make sure the pile rule
       q: "The WAN to a plant drops. What do remote tag provider tags show on the central gateway?",
       options: [
         "The last known value with good quality",
-        "Zero",
         "Bad quality, because the values are live and cannot be fetched",
+        "Zero",
         "Values from the plant's historian"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "Showing stale data as good would mislead operators. Ignition does not do this.",
-        "Ignition does not substitute zero. Bad quality is the signal.",
         "Correct. Remote tag values are not stored on the central gateway, so they go bad quality when the link breaks.",
+        "Ignition does not substitute zero. Bad quality is the signal.",
         "The provider does not fall back to history automatically."
       ]
     },
@@ -205,31 +205,31 @@ So the lesson is: ask which of the three has a pile, and make sure the pile rule
       q: "A remote historian is configured with storage allowed, and the WAN is down for 2 hours. What happens to the plant's history rows?",
       options: [
         "They are lost",
-        "They buffer in the sending gateway's store-and-forward cache and forward when the link returns",
         "They buffer on the receiving gateway",
-        "They are written twice"
+        "They are written twice",
+        "They buffer in the sending gateway's store-and-forward cache and forward when the link returns"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
-        "That would only be the case without store and forward, or if the cache overflowed.",
-        "Correct. The buffer lives on the sender and forwards in order after reconnect.",
+        "That would only be the case without store-and-forward, or if the cache overflowed.",
         "The receiving gateway can't hold data it never received.",
-        "Duplicates are not the normal result of forwarding."
+        "Duplicates are not the normal result of forwarding.",
+        "Correct. The buffer lives on the sender and forwards in order after reconnect."
       ]
     },
     {
       q: "After an outage, history is complete but the HQ alarm journal has a gap. What is the first thing to check?",
       options: [
-        "Whether the remote alarm journal profile has Use Store and Forward enabled",
         "Whether the tag deadband is set correctly",
         "Whether the historian module is licensed",
+        "Whether the remote alarm journal profile has Use Store and Forward enabled",
         "Whether Perspective sessions were active"
       ],
-      answer: 0,
+      answer: 2,
       explain: [
-        "Correct. Without S&F, journal events are written straight to the remote and are lost if the link is down.",
         "Deadband affects tag logging, not alarm journal delivery.",
         "History worked, so the historian is fine.",
+        "Correct. Without S&F, journal events are written straight to the remote and are lost if the link is down.",
         "Sessions don't affect journal storage."
       ]
     },

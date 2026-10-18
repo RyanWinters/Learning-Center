@@ -202,29 +202,29 @@ The ping-based detection is the current model: the old Failover Timeout setting 
 
   quiz: [
     {
-      q: "The master has a PLC connection at 10.10.5.20. Your backup must reach the PLC at a different address on its own network. How do you handle that?",
+      q: "The master has a PLC connection at 10.20.10.10. Your backup must reach the PLC at a different address on its own network. How do you handle that?",
       options: [
         "Edit the same device on both gateways by hand",
-        "Add a Backup version of that resource with the different address",
         "Disable synchronization",
-        "Use cold standby"
+        "Use cold standby",
+        "Add a Backup version of that resource with the different address"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Manual edits on the backup get overwritten or drift, and defeat the purpose of synced configuration.",
-        "Correct. A backup version of the resource overrides only the fields that must differ, and the rest still syncs from the master.",
         "Turning sync off makes the pair diverge and risks losing changes at failover.",
-        "The standby level does not change which address the connection uses."
+        "The standby level does not change which address the connection uses.",
+        "Correct. A backup version of the resource overrides only the fields that must differ, and the rest still syncs from the master."
       ]
     },
     {
       q: "You need the fastest takeover, and your PLCs can handle two simultaneous clients. Which standby level?",
-      options: ["Cold", "Warm", "Manual", "Partial"],
-      answer: 1,
+      options: ["Cold", "Manual", "Warm", "Partial"],
+      answer: 2,
       explain: [
         "Cold must subscribe tags and initialize at failover, so it is slower.",
-        "Correct. Warm runs like the active node except for writing to devices and logging, so takeover is quick.",
         "Manual is a recovery mode, not a standby level.",
+        "Correct. Warm runs like the active node except for writing to devices and logging, so takeover is quick.",
         "Partial is a history mode."
       ]
     },
@@ -264,16 +264,16 @@ The ping-based detection is the current model: the old Failover Timeout setting 
       q: "In a failover test the backup becomes active in 5 seconds, but Perspective operators see stale screens for about a minute. Where do you look first?",
       options: [
         "The redundancy ping rate",
-        "Client reconnect behavior such as the websocket idle timeout",
         "The SQL query cache",
-        "The Designer connection"
+        "The Designer connection",
+        "Client reconnect behavior such as the websocket idle timeout"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Ping rate affects how fast the backup detects the master failure, and the gateway already switched in 5 seconds.",
-        "Correct. Client reconnect is a separate timer, and forum reports trace slow client switching to the websocket idle timeout.",
         "Query caching does not hold screens stale for a minute after a gateway switch.",
-        "The Designer only connects to the master and is not involved with operator sessions."
+        "The Designer only connects to the master and is not involved with operator sessions.",
+        "Correct. Client reconnect is a separate timer, and forum reports trace slow client switching to the websocket idle timeout."
       ]
     },
     {

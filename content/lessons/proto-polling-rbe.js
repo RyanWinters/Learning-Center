@@ -170,13 +170,13 @@ Early SCADA was polled out of necessity: radios and leased lines were slow, remo
   quiz: [
     {
       q: "10,000 tags polled at 1 s cost about 200 KB/s. With 2% of tags changing per second and 30 bytes per update, RBE costs about:",
-      options: ["600 B/s", "6 KB/s", "60 KB/s", "200 KB/s"],
-      answer: 1,
+      options: ["600 B/s", "60 KB/s", "200 KB/s", "6 KB/s"],
+      answer: 3,
       explain: [
         "That would be 20 tags changing, not 200.",
-        "Correct. 10,000 x 2% = 200 updates, 200 x 30 B = 6,000 B/s.",
         "That would be 2,000 tags changing, or 20% of the tags.",
-        "That is the polling figure. RBE sends only the changes."
+        "That is the polling figure. RBE sends only the changes.",
+        "Correct. 10,000 x 2% = 200 updates, 200 x 30 B = 6,000 B/s."
       ]
     },
     {
@@ -224,11 +224,11 @@ Early SCADA was polled out of necessity: radios and leased lines were slow, remo
     },
     {
       q: "A pressure signal flickers by 0.2 PSI around 100 PSI and RBE is sending constantly. What helps?",
-      options: ["Raise the poll rate", "Add a deadband larger than the noise", "Lower QoS to 0", "Remove the heartbeat"],
-      answer: 1,
+      options: ["Add a deadband larger than the noise", "Raise the poll rate", "Lower QoS to 0", "Remove the heartbeat"],
+      answer: 0,
       explain: [
-        "Faster polling captures more noise.",
         "Correct. A deadband larger than the noise suppresses reports unless the value really moves.",
+        "Faster polling captures more noise.",
         "QoS changes delivery guarantees and not how often reports are generated.",
         "Removing the heartbeat reduces little and hurts stale detection."
       ]

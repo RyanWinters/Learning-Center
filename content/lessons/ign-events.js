@@ -242,44 +242,44 @@ Early Ignition (7.x) had separate "client event scripts" and "gateway event scri
     },
     {
       q: "You need to build a report on a PLC 'batch done' bit. It takes 8 seconds and queries a slow database. What is the best design?",
-      options: ["Run it inside the tag event script", "Put it in a shared 1-second timer", "The tag event sends a message to a dedicated-thread handler that builds the report", "Use a Vision client button"],
-      answer: 2,
+      options: ["Run it inside the tag event script", "Put it in a shared 1-second timer", "Use a Vision client button", "The tag event sends a message to a dedicated-thread handler that builds the report"],
+      answer: 3,
       explain: [
         "That blocks a shared tag event worker for eight seconds.",
         "A shared timer would block every other shared timer for the same time.",
-        "Correct. The trigger returns immediately and the slow work runs on its own thread.",
-        "A client may not be open, and the job must run unattended."
+        "A client may not be open, and the job must run unattended.",
+        "Correct. The trigger returns immediately and the slow work runs on its own thread."
       ]
     },
     {
       q: "Which is the right tool for 'roll the shift counter at 06:00 every day'?",
-      options: ["A timer script with a 86,400,000 ms delay", "A scheduled script", "A tag event script on the clock tag", "A startup script"],
-      answer: 1,
+      options: ["A timer script with a 86,400,000 ms delay", "A tag event script on the clock tag", "A scheduled script", "A startup script"],
+      answer: 2,
       explain: [
         "It drifts by the run time and starts over at each Gateway restart.",
-        "Correct. Scheduled scripts follow the wall clock.",
         "That would run on every clock tick change, not once a day.",
+        "Correct. Scheduled scripts follow the wall clock.",
         "Startup runs only when the project starts."
       ]
     },
     {
       q: "What does missedEvents = True tell a valueChanged script?",
-      options: ["The tag has bad quality", "Some changes were dropped because the event queue overflowed", "The previous script run raised an exception", "The Gateway clock jumped"],
-      answer: 1,
+      options: ["Some changes were dropped because the event queue overflowed", "The tag has bad quality", "The previous script run raised an exception", "The Gateway clock jumped"],
+      answer: 0,
       explain: [
-        "Quality is reported separately.",
         "Correct. It is a signal that your scripts cannot keep up with the rate of change.",
+        "Quality is reported separately.",
         "Errors go to the Gateway log, not this flag.",
         "Clock changes are unrelated."
       ]
     },
     {
       q: "A motor UDT should log each run to history. Where is the cleanest place to attach that behavior?",
-      options: ["A tag event script on the UDT definition", "A separate gateway tag change script listing all 300 motor paths", "A Perspective view script", "A client timer"],
-      answer: 0,
+      options: ["A separate gateway tag change script listing all 300 motor paths", "A tag event script on the UDT definition", "A Perspective view script", "A client timer"],
+      answer: 1,
       explain: [
-        "Correct. Each instance inherits the behavior, and new motors need no extra setup.",
         "That works but must be edited for every new motor.",
+        "Correct. Each instance inherits the behavior, and new motors need no extra setup.",
         "Views only run while open.",
         "Clients are not guaranteed to be running."
       ]

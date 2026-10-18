@@ -238,13 +238,13 @@ Ignition's older Vision client had a large set of component event handlers writt
   quiz: [
     {
       q: "A label should show 'RUNNING' in green when a tag is 1 and 'STOPPED' in grey otherwise. What is the best implementation?",
-      options: ["A property change script on the tag", "A timer script that polls every second", "Expression or map bindings for text and a style class", "A message handler that updates the label"],
-      answer: 2,
+      options: ["A property change script on the tag", "A timer script that polls every second", "A message handler that updates the label", "Expression or map bindings for text and a style class"],
+      answer: 3,
       explain: [
         "It works but hides the dependency, fires at load and needs null handling.",
         "Polling wastes resources and lags behind. Tag bindings are subscribed.",
-        "Correct. The output is a property value, so a binding is the simplest, most visible approach.",
-        "A message handler is for decoupled events, not to compute a display from a tag."
+        "A message handler is for decoupled events, not to compute a display from a tag.",
+        "Correct. The output is a property value, so a binding is the simplest, most visible approach."
       ]
     },
     {
@@ -260,34 +260,34 @@ Ignition's older Vision client had a large set of component event handlers writt
     },
     {
       q: "Which is the best use of a message rather than shared state?",
-      options: ["Recording which area the operator selected", "Showing a 'Recipe saved' toast", "Holding the current shift", "Storing the user's preferred units"],
-      answer: 1,
+      options: ["Recording which area the operator selected", "Holding the current shift", "Showing a 'Recipe saved' toast", "Storing the user's preferred units"],
+      answer: 2,
       explain: [
         "The selection is state that a late-loading view also needs, so use a tag or session prop.",
-        "Correct. A toast is a one-time event, and late-loading views do not need to replay it.",
         "Shift is ongoing state.",
+        "Correct. A toast is a one-time event, and late-loading views do not need to replay it.",
         "Units are a persistent preference. Use session.custom."
       ]
     },
     {
       q: "Why can a property change script run when a view first loads, with no user action?",
-      options: ["Scripts always run at load", "The first value delivered by a binding counts as a change", "The Gateway restarts the script", "Message handlers trigger it"],
-      answer: 1,
+      options: ["The first value delivered by a binding counts as a change", "Scripts always run at load", "The Gateway restarts the script", "Message handlers trigger it"],
+      answer: 0,
       explain: [
-        "They only run when the property changes, or on startup if that option is selected.",
         "Correct. The property goes from its default to the bound value, so the script sees a change with a null or empty previous value.",
+        "They only run when the property changes, or on startup if that option is selected.",
         "The Gateway doesn't re-run scripts on its own.",
         "Message handlers are a separate mechanism."
       ]
     },
     {
       q: "A button's onActionPerformed script runs a 3-second database query. Operators say that screen freezes. What is the right fix?",
-      options: ["Add more RAM to the Gateway", "Run the slow work asynchronously and give feedback in the UI", "Convert it to a property change script", "Change the scope to session"],
-      answer: 1,
+      options: ["Add more RAM to the Gateway", "Convert it to a property change script", "Run the slow work asynchronously and give feedback in the UI", "Change the scope to session"],
+      answer: 2,
       explain: [
         "The issue is blocking in the event thread, not memory.",
-        "Correct. Use asynchronous execution for slow work and show a busy state bound to a flag.",
         "A property change script still runs in the same way.",
+        "Correct. Use asynchronous execution for slow work and show a busy state bound to a flag.",
         "Scope applies to messages and has no effect on blocking."
       ]
     }

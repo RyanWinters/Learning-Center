@@ -9,7 +9,7 @@ LC.lesson({
   summary: "Run Ignition from an official image, commission it with environment variables, keep state in volumes, and combine 8.3's file-based config with git for repeatable deployments.",
   objectives: [
     "Explain what a container image, container and volume are and how they differ from a VM",
-    "Start a commissioned Ignition gateway with docker run and environment variables",
+    "Start a commissioned Ignition Gateway with docker run and environment variables",
     "Write a docker-compose file that pairs Ignition with a database",
     "Describe how file-based 8.3 projects and config plus git make deployments repeatable",
     "Say what Kubernetes, Helm and Ignition Cloud Edition add, and where the limits are"
@@ -207,7 +207,7 @@ Docker appeared in 2013 and made Linux container packaging mainstream. Inductive
   ],
 
   diagrams: {
-    compose: `<svg viewBox="0 0 640 230" role="img" aria-label="Docker Compose network with an Ignition gateway container and a database container, each with its own volume, and HTTPS port 8043 published to the host">
+    compose: `<svg viewBox="0 0 640 230" role="img" aria-label="Docker Compose network with an Ignition Gateway container and a database container, each with its own volume, and HTTPS port 8043 published to the host">
   <defs>
     <marker id="arch-containers-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="dg-fill-line" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
@@ -256,44 +256,44 @@ Docker appeared in 2013 and made Linux container packaging mainstream. Inductive
     },
     {
       q: "The gateway container cannot reach its database container using jdbc:mariadb://localhost:3306/ignition. What is the fix?",
-      options: ["Use the database's compose service name as the host", "Open port 3306 on the plant firewall", "Install a MariaDB driver on the host", "Use the host machine's loopback address"],
-      answer: 0,
+      options: ["Open port 3306 on the plant firewall", "Install a MariaDB driver on the host", "Use the database's compose service name as the host", "Use the host machine's loopback address"],
+      answer: 2,
       explain: [
-        "Correct. Compose gives each service a DNS name on the network, and localhost inside the gateway container is the gateway itself.",
         "The traffic never leaves the Docker network, so the plant firewall is not involved.",
         "The host's drivers are irrelevant. The gateway container has its own Java and driver.",
+        "Correct. Compose gives each service a DNS name on the network, and localhost inside the gateway container is the gateway itself.",
         "The host's loopback is also not reachable as localhost from inside a container."
       ]
     },
     {
       q: "Which environment variable is required so the official image skips the license-agreement step of commissioning?",
-      options: ["IGNITION_EDITION=standard", "ACCEPT_IGNITION_EULA=Y", "GATEWAY_MODULES_ENABLED=all", "TZ=UTC"],
-      answer: 1,
+      options: ["ACCEPT_IGNITION_EULA=Y", "IGNITION_EDITION=standard", "GATEWAY_MODULES_ENABLED=all", "TZ=UTC"],
+      answer: 0,
       explain: [
-        "That chooses the edition. It does not accept the agreement.",
         "Correct. This variable accepts the license agreement and, with admin credentials, lets the gateway commission without a browser.",
+        "That chooses the edition. It does not accept the agreement.",
         "That controls which built-in modules stay enabled.",
         "That sets the time zone. It does not affect commissioning."
       ]
     },
     {
       q: "Why does 8.3's file-based configuration help container-based deployment?",
-      options: ["It makes licenses free in containers", "Config and projects are files that diff, merge and live in git, so a pipeline can rebuild a gateway from a repository", "It removes the need for any volume or secret", "It lets Ignition run without Java"],
-      answer: 1,
+      options: ["It makes licenses free in containers", "It removes the need for any volume or secret", "It lets Ignition run without Java", "Config and projects are files that diff, merge and live in git, so a pipeline can rebuild a gateway from a repository"],
+      answer: 3,
       explain: [
         "Licensing is unchanged by storage format.",
-        "Correct. Text files in directories can be reviewed, branched and deployed repeatably, which is the point of infrastructure as code.",
         "Secrets still must be injected, and runtime data like logs and historian storage still need a home.",
-        "Ignition still runs on the JVM."
+        "Ignition still runs on the JVM.",
+        "Correct. Text files in directories can be reviewed, branched and deployed repeatably, which is the point of infrastructure as code."
       ]
     },
     {
       q: "A customer wants the PLC-facing gateway in a cloud region so they can drop their on-site server. What is the main risk?",
-      options: ["Cloud Edition cannot read tags", "A WAN or internet outage stops control-adjacent data collection and screens on site", "Containers cannot use TCP", "The gateway needs a GPU"],
-      answer: 1,
+      options: ["A WAN or internet outage stops control-adjacent data collection and screens on site", "Cloud Edition cannot read tags", "Containers cannot use TCP", "The gateway needs a GPU"],
+      answer: 0,
       explain: [
-        "Tag reading is not the issue. The network path is.",
         "Correct. Anything that must keep working through an internet failure belongs on site. The cloud suits aggregation and development.",
+        "Tag reading is not the issue. The network path is.",
         "Containers use TCP freely.",
         "Ignition has no GPU requirement."
       ]

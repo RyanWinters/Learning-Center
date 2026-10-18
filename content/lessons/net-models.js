@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## Why layers exist
 
-A message from an Ignition gateway to a PLC crosses cables, switches, addresses, connections and a protocol that understands tags. Nobody builds all of that as one lump. Networks are split into **layers**, where each layer does one job and only talks to the layer above and below. A fiber cable does not care whether it carries Modbus or video. The practical payoff is troubleshooting: "link light is off" is a layer 1 problem and "wrong subnet" is layer 3, and you can stop looking at the other layers.
+A message from an Ignition Gateway to a PLC crosses cables, switches, addresses, connections and a protocol that understands tags. Nobody builds all of that as one lump. Networks are split into **layers**, where each layer does one job and only talks to the layer above and below. A fiber cable does not care whether it carries Modbus or video. The practical payoff is troubleshooting: "link light is off" is a layer 1 problem and "wrong subnet" is layer 3, and you can stop looking at the other layers.
 
 ## The two models
 
@@ -137,7 +137,7 @@ The OSI reference model was published by ISO in 1984 as a framework for building
     },
     {
       title: "A firewall rule between zones",
-      body: `The security team asks what the Ignition gateway needs to reach a ControlLogix controller and a Modbus power meter. Answer: TCP 44818 to the Logix (explicit messaging) and UDP 2222 if a CIP I/O connection crosses the firewall, plus TCP 502 to the meter. Everything else stays blocked.`
+      body: `The security team asks what the Ignition Gateway needs to reach a ControlLogix controller and a Modbus power meter. Answer: TCP 44818 to the Logix (explicit messaging) and UDP 2222 if a CIP I/O connection crosses the firewall, plus TCP 502 to the meter. Everything else stays blocked.`
     }
   ],
 
@@ -208,15 +208,15 @@ The OSI reference model was published by ISO in 1984 as a framework for building
       q: "Why does EtherNet/IP use UDP for implicit I/O instead of TCP?",
       options: [
         "UDP is more secure",
-        "TCP cannot carry more than 500 bytes",
         "The latest data matters more than retransmitting old data, and TCP retransmission would delay newer packets",
+        "TCP cannot carry more than 500 bytes",
         "UDP uses a different cable"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "UDP has no security features of its own.",
-        "TCP carries large streams with no such limit.",
         "Correct. Cyclic I/O replaces itself every RPI, so a lost packet is superseded and a timeout flags a dead connection.",
+        "TCP carries large streams with no such limit.",
         "Both run over the same Ethernet cable."
       ]
     },
@@ -224,16 +224,16 @@ The OSI reference model was published by ISO in 1984 as a framework for building
       q: "Which statement about a Layer 3 device is true?",
       options: [
         "It forwards frames using MAC addresses only",
-        "It makes decisions using IP addresses and joins different networks",
         "It amplifies the signal on copper",
-        "It encrypts Modbus traffic"
+        "It encrypts Modbus traffic",
+        "It makes decisions using IP addresses and joins different networks"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "That describes a layer 2 switch.",
-        "Correct. Routers and L3 switches use IP addresses to move packets between subnets.",
         "That is a layer 1 repeater function.",
-        "Routers do not encrypt application data by default."
+        "Routers do not encrypt application data by default.",
+        "Correct. Routers and L3 switches use IP addresses to move packets between subnets."
       ]
     },
     {
@@ -256,16 +256,16 @@ The OSI reference model was published by ISO in 1984 as a framework for building
       q: "Which of these cannot be routed between subnets because it works directly on Ethernet frames?",
       options: [
         "Modbus TCP",
-        "PROFINET real-time",
         "MQTT",
-        "OPC UA"
+        "OPC UA",
+        "PROFINET real-time"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Modbus TCP uses IP and TCP, so it routes.",
-        "Correct. PROFINET RT uses layer 2 frames with no IP header, so a router has nothing to forward.",
         "MQTT runs over TCP/IP.",
-        "OPC UA runs over TCP/IP."
+        "OPC UA runs over TCP/IP.",
+        "Correct. PROFINET RT uses layer 2 frames with no IP header, so a router has nothing to forward."
       ]
     }
   ],

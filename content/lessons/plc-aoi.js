@@ -246,24 +246,24 @@ Add-On Instructions arrived in RSLogix 5000 around version 16 (2007), at a time 
   quiz: [
     {
       q: "A motor AOI is called on a rung that goes false, and the motor output stays on. Why?",
-      options: ["Logic did not execute, and nothing cleared the outputs", "The AOI ran twice", "EnableOut forced the output high", "The timer expired"],
-      answer: 0,
+      options: ["The AOI ran twice", "EnableOut forced the output high", "The timer expired", "Logic did not execute, and nothing cleared the outputs"],
+      answer: 3,
       explain: [
-        "Correct. A false rung skips Logic. Without an EnableInFalse routine, outputs keep their last values.",
         "An AOI does not run twice per scan from one call.",
         "EnableOut only passes rung state forward. It does not drive a physical output.",
-        "Timers have nothing to do with it."
+        "Timers have nothing to do with it.",
+        "Correct. A false rung skips Logic. Without an EnableInFalse routine, outputs keep their last values."
       ]
     },
     {
       q: "Which parameter usage should carry a UDT_Motor tag into an AOI?",
-      options: ["Input", "Output", "Local", "InOut"],
-      answer: 3,
+      options: ["Input", "Output", "InOut", "Local"],
+      answer: 2,
       explain: [
         "An Input copies the data in, so the AOI's writes would not reach the caller's tag.",
         "An Output copies out only, and the AOI could not read the incoming commands.",
-        "Locals are private to the instance and not visible to the caller.",
-        "Correct. InOut is passed by reference, so the AOI reads and writes the real tag."
+        "Correct. InOut is passed by reference, so the AOI reads and writes the real tag.",
+        "Locals are private to the instance and not visible to the caller."
       ]
     },
     {
@@ -279,34 +279,34 @@ Add-On Instructions arrived in RSLogix 5000 around version 16 (2007), at a time 
     },
     {
       q: "Why can't you freely edit an AOI definition on a running controller?",
-      options: ["Rockwell wants you to buy more licenses", "Changes alter the data layout and code of every instance at once", "AOIs cannot be edited at all", "Only the PlantPAx library can be edited"],
-      answer: 1,
+      options: ["Changes alter the data layout and code of every instance at once", "Rockwell wants you to buy more licenses", "AOIs cannot be edited at all", "Only the PlantPAx library can be edited"],
+      answer: 0,
       explain: [
-        "Licensing has nothing to do with it.",
         "Correct. One definition backs many instances, so layout and logic changes affect all of them.",
+        "Licensing has nothing to do with it.",
         "AOIs can be edited. The restriction is on doing it online.",
         "PlantPAx objects follow the same rules as any AOI."
       ]
     },
     {
       q: "What is the signature of an AOI for?",
-      options: ["To store the author's name", "To encrypt the logic", "To check that two AOIs claiming the same name and revision are identical in content", "To set the scan mode"],
-      answer: 2,
+      options: ["To store the author's name", "To encrypt the logic", "To set the scan mode", "To check that two AOIs claiming the same name and revision are identical in content"],
+      answer: 3,
       explain: [
         "That is the vendor field.",
         "Source protection encrypts. The signature does not.",
-        "Correct. It's a content-derived check, useful for proving which definition is running.",
-        "Scan behavior is separate."
+        "Scan behavior is separate.",
+        "Correct. It's a content-derived check, useful for proving which definition is running."
       ]
     },
     {
       q: "Which job fits a UDT, not an AOI?",
-      options: ["Describing the Cmd/Sts/Cfg/Alm shape of a motor", "Fail-to-start timing for each motor", "Interlocking a valve against a pump", "Calculating a PID output"],
-      answer: 0,
+      options: ["Fail-to-start timing for each motor", "Interlocking a valve against a pump", "Describing the Cmd/Sts/Cfg/Alm shape of a motor", "Calculating a PID output"],
+      answer: 2,
       explain: [
-        "Correct. A UDT holds the data shape and no logic.",
         "That is logic, which belongs in an AOI.",
         "Interlocks are logic.",
+        "Correct. A UDT holds the data shape and no logic.",
         "A PID is logic and belongs in an instruction or AOI."
       ]
     }

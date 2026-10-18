@@ -254,17 +254,17 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
     {
       q: "You add a param called selectedRow to a table view and bind it to the table's selection inside the view. The binding is refused. What is the most likely cause?",
       options: [
-        "The param is still the default direction, input",
         "Params cannot be bound at all",
         "Table selection is not a property",
-        "The param must be stored in session props first"
+        "The param must be stored in session props first",
+        "The param is still the default direction, input"
       ],
-      answer: 0,
+      answer: 3,
       explain: [
-        "Correct. Input params are read-only inside the view. Switch it to output (or in/out) so the view can write it.",
         "Params can be bound. Output and in/out params are written by bindings inside the view.",
         "The table's selection is exposed as a property and can be a binding source.",
-        "Session props are an alternative home for state, not a prerequisite for binding params."
+        "Session props are an alternative home for state, not a prerequisite for binding params.",
+        "Correct. Input params are read-only inside the view. Switch it to output (or in/out) so the view can write it."
       ]
     },
     {
@@ -302,16 +302,16 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
     {
       q: "What does paramDirection control in a view's propConfig?",
       options: [
+        "Which side, parent or view, may write the param and whether the parent can read it",
         "Whether the view is shown on mobile",
         "The order bindings are evaluated in",
-        "Which side, parent or view, may write the param and whether the parent can read it",
         "Whether the param is persistent across sessions"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. Input is parent-written, output is view-written and parent-readable, in/out is both.",
         "Mobile behavior is layout, not param direction.",
         "Direction affects who may write, not evaluation order.",
-        "Correct. Input is parent-written, output is view-written and parent-readable, in/out is both.",
         "The separate persistent flag concerns what is saved with the view, not user sessions."
       ]
     },
@@ -319,15 +319,15 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
       q: "A teammate stores a 'total running motors' count in view custom, updated by a script on each motor tile. What is the better design?",
       options: [
         "Keep it. Scripts are more flexible than bindings",
-        "Move it to session props so other views can reach it",
         "Bind it with an expression over the data it is derived from",
+        "Move it to session props so other views can reach it",
         "Store it in a component's meta"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "Script-maintained derived state goes stale when any path to update is missed.",
-        "Session scope does not fix staleness and widens the reach unnecessarily.",
         "Correct. A bound derived value is recomputed whenever its inputs change.",
+        "Session scope does not fix staleness and widens the reach unnecessarily.",
         "meta holds fixed identity and behavior fields. You cannot store arbitrary values there."
       ]
     }

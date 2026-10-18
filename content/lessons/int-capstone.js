@@ -83,7 +83,7 @@ Gateway is \`.1\` on each subnet. In Plant 1, PLC1 is \`10.20.10.10\`, the Ignit
 
 Revisit {{lesson:arch-edge}} and {{lesson:ign-architecture}}.
 
-**Decision D3: a full Ignition gateway at each plant; Edge gateways at selected machines.**
+**Decision D3: a full Ignition Gateway at each plant; Edge gateways at selected machines.**
 - *Context:* Each plant must run alone for 72 hours (R1) and needs local history, alarming, notification and MES.
 - *Decision:* Chicago, Dallas and Phoenix each run a full gateway (Chicago redundant, see D7). Three packaged machines at Dallas and a wastewater skid at Phoenix get Edge gateways that publish to the site gateway through MQTT. Check the Edge licensing and feature list for your Ignition version before committing the machine list.
 - *Alternatives:* Edge as the only gateway at Phoenix (cheaper, but no room for the MES and local reporting the plant will ask for); everything on one central gateway (a WAN failure would blind the plants).
@@ -110,7 +110,7 @@ See {{lesson:db-historians}}, {{lesson:db-schema}} and {{lesson:db-timeseries}}.
 
 **Decision D5: raw history stays at the plant; rolled-up data goes to HQ.**
 - *Context:* 9,000 tags at 1-second scan in Chicago is a lot to ship over WAN, and R1 demands local history.
-- *Decision:* Each plant has its own SQL database server in Level 3 (Plant 1: \`10.20.30.20\`) holding Ignition history (with store and forward on), alarm journal and MES tables. At Chicago it is a high-availability database (see D7), because R4 counts it. Central keeps a reporting database with shift OEE, downtime and lot summaries, plus selected analog tags at low frequency. HQ reads raw history from the DMZ historian replica (Plant 1: \`10.20.250.20\`), not from the Level 3 server.
+- *Decision:* Each plant has its own SQL database server in Level 3 (Plant 1: \`10.20.30.20\`) holding Ignition history (with store-and-forward on), alarm journal and MES tables. At Chicago it is a high-availability database (see D7), because R4 counts it. Central keeps a reporting database with shift OEE, downtime and lot summaries, plus selected analog tags at low frequency. HQ reads raw history from the DMZ historian replica (Plant 1: \`10.20.250.20\`), not from the Level 3 server.
 - *Alternatives:* Central-only historian (WAN dependency, large bandwidth); full replication of raw history (cost and little value).
 - *Consequences:* Cross-site raw-data queries need the plant database, reachable from HQ through the Gateway Network or the DMZ read-only replica. State this in the design so nobody promises a global 1-second trend.
 
@@ -138,7 +138,7 @@ See {{lesson:arch-redundancy}}.
 | Same, with a tested failover and tighter targets | 99.98 % | 99.95 % | 0.9998 x 0.9995 = 99.93 % | about 6.1 h, with margin |
 
 The WAN does not count against R4, because the plant runs locally. Anything else in the series (switches, power, the host) multiplies in as well, which is why the pair sits on separate hosts and switches. The lesson of the table: a redundant gateway in front of a single database cannot reach the target, however good the gateway is.
-- *Decision:* Chicago runs a master and backup gateway on separate hosts and switches (Plant 1: \`10.20.30.10\` and \`.11\`) and a high-availability SQL database. The HA choice (failover cluster, availability group or replicated pair, with its RPO, RTO and cost) is covered in {{lesson:db-operations}}. Dallas and Phoenix run a single gateway and database on a virtualization cluster with restart-on-failure, plus tested backups. Store and forward keeps tag history buffered if the database is briefly unreachable, which helps but does not replace database HA for queries, the alarm journal and MES.
+- *Decision:* Chicago runs a master and backup gateway on separate hosts and switches (Plant 1: \`10.20.30.10\` and \`.11\`) and a high-availability SQL database. The HA choice (failover cluster, availability group or replicated pair, with its RPO, RTO and cost) is covered in {{lesson:db-operations}}. Dallas and Phoenix run a single gateway and database on a virtualization cluster with restart-on-failure, plus tested backups. Store-and-forward keeps tag history buffered if the database is briefly unreachable, which helps but does not replace database HA for queries, the alarm journal and MES.
 - *Alternatives:* Redundancy everywhere (cost and upkeep, little value at Phoenix); a redundant gateway pair only (fails R4 by the table above); none (fails R4).
 - *Consequences:* The PLC layer is not made redundant by this decision. If the customer wants controller redundancy, that is a separate, costed item. The database HA licence and the second host are part of the Chicago budget.
 
@@ -339,34 +339,34 @@ Multi-site SCADA used to mean a central master station polling remote terminal u
   quiz: [
     {
       q: "Requirement R1 says each plant must run 72 hours without the WAN. Which design choice follows most directly?",
-      options: ["A full gateway, local history database and queued confirmations at each plant", "A single central gateway for all plants", "Edge gateways with no site database", "Direct ERP links to each PLC"],
-      answer: 0,
+      options: ["A single central gateway for all plants", "Edge gateways with no site database", "Direct ERP links to each PLC", "A full gateway, local history database and queued confirmations at each plant"],
+      answer: 3,
       explain: [
-        "Correct. Local gateway, history and queued messages keep operation and data safe through an outage and let queues drain afterwards.",
         "A central gateway would lose the plants when the WAN drops.",
         "Edge can be right for machines, but a site with MES and 72 hours of history needs a site database and a full gateway.",
-        "ERP should never connect directly to controllers, and that does not help WAN autonomy."
+        "ERP should never connect directly to controllers, and that does not help WAN autonomy.",
+        "Correct. Local gateway, history and queued messages keep operation and data safe through an outage and let queues drain afterwards."
       ]
     },
     {
       q: "Why does the log keep both the Gateway Network and an MQTT UNS between plants and HQ?",
-      options: ["Gateway Network gives Ignition-specific features such as remote tags and EAM; the UNS decouples non-Ignition consumers", "They are duplicates for redundancy", "MQTT cannot run over a WAN", "The Gateway Network is required for ERP"],
-      answer: 0,
+      options: ["They are duplicates for redundancy", "Gateway Network gives Ignition-specific features such as remote tags and EAM; the UNS decouples non-Ignition consumers", "MQTT cannot run over a WAN", "The Gateway Network is required for ERP"],
+      answer: 1,
       explain: [
-        "Correct. Each fits a different job, and the plan assigns data to one path to avoid ambiguity.",
         "They are for different purposes, not copies. Duplicate carriage creates two sources of truth.",
+        "Correct. Each fits a different job, and the plan assigns data to one path to avoid ambiguity.",
         "MQTT is designed for unreliable networks and works over a WAN.",
         "ERP integration is handled by a separate integration layer."
       ]
     },
     {
       q: "Chicago loses 18,000 USD per hour of downtime; Phoenix loses about 500 USD. What does the redundancy decision imply?",
-      options: ["Redundant gateway pair and database HA at Chicago; tested backup and fast restore at Phoenix", "Redundant pairs everywhere", "No redundancy anywhere", "Redundant pair at Phoenix only"],
-      answer: 0,
+      options: ["Redundant pairs everywhere", "No redundancy anywhere", "Redundant gateway pair and database HA at Chicago; tested backup and fast restore at Phoenix", "Redundant pair at Phoenix only"],
+      answer: 2,
       explain: [
-        "Correct. Spend where the cost of an hour justifies it, and rely on tested restores elsewhere.",
         "Uniform redundancy costs more and adds maintenance with little return at Phoenix.",
         "That fails the 99.9 percent requirement at Chicago.",
+        "Correct. Spend where the cost of an hour justifies it, and rely on tested restores elsewhere.",
         "This is backwards relative to downtime cost."
       ]
     },
@@ -383,46 +383,46 @@ Multi-site SCADA used to mean a central master station polling remote terminal u
     },
     {
       q: "Chicago runs a redundant gateway pair (99.95 percent) in front of a single SQL database (99.90 percent). Live screens and history queries need both. What availability can the design promise?",
-      options: ["99.95 percent, the better of the two", "99.99 percent, because redundancy adds nines", "About 99.85 percent, so it misses a 99.9 percent target", "99.90 percent, the database figure alone"],
-      answer: 2,
+      options: ["About 99.85 percent, so it misses a 99.9 percent target", "99.95 percent, the better of the two", "99.99 percent, because redundancy adds nines", "99.90 percent, the database figure alone"],
+      answer: 0,
       explain: [
+        "Correct. Components in series multiply: 0.9995 x 0.9990 = 0.9985. Adding HA to the database is what brings the chain to 99.90 percent or better.",
         "The chain is never better than its weakest member, and here both count.",
         "Redundancy improves a single element, not the chain. A single database still limits the result.",
-        "Correct. Components in series multiply: 0.9995 x 0.9990 = 0.9985. Adding HA to the database is what brings the chain to 99.90 percent or better.",
         "The product is slightly lower than the weakest element alone, because the gateway pair also has some downtime."
       ]
     },
     {
       q: "Which statement about the ERP integration decision is correct?",
-      options: ["A central integration layer with staging tables and message IDs gives one audited order flow and safe retries", "Each plant should have its own ERP connector", "ERP writes orders directly into PLC tags", "Confirmations should be sent only when the WAN is up and discarded otherwise"],
-      answer: 0,
+      options: ["Each plant should have its own ERP connector", "ERP writes orders directly into PLC tags", "A central integration layer with staging tables and message IDs gives one audited order flow and safe retries", "Confirmations should be sent only when the WAN is up and discarded otherwise"],
+      answer: 2,
       explain: [
-        "Correct. One flow is easier to audit, and IDs prevent duplicates after a retry.",
         "Three separate integrations triple the build and audit effort.",
         "ERP does not belong at the control level.",
+        "Correct. One flow is easier to audit, and IDs prevent duplicates after a retry.",
         "Dropping confirmations loses production records. Queue them locally instead."
       ]
     },
     {
       q: "A reviewer asks why you did not use one flat VLAN per plant. Which answer comes from the log?",
-      options: ["A flat network lets a fault or malware on one line reach all lines, and 62443 expects zones and conduits", "Flat networks cannot carry Ethernet/IP", "VLANs are required by Ignition", "A flat network costs more"],
-      answer: 0,
+      options: ["Flat networks cannot carry EtherNet/IP", "A flat network lets a fault or malware on one line reach all lines, and 62443 expects zones and conduits", "VLANs are required by Ignition", "A flat network costs more"],
+      answer: 1,
       explain: [
+        "EtherNet/IP runs on flat networks. That is the reason they are common and risky.",
         "Correct. Blast radius and the zone model drive the decision.",
-        "Ethernet/IP runs on flat networks. That is the reason they are common and risky.",
         "Ignition does not require VLANs.",
         "Flat networks are usually cheaper. The issue is risk, not price."
       ]
     },
     {
       q: "Why does the rollout order put Chicago last?",
-      options: ["It has the highest cost of failure, so the template should be proven at lower-risk sites first", "It has the fewest tags", "It cannot use the template", "It has no network"],
-      answer: 0,
+      options: ["It has the fewest tags", "It cannot use the template", "It has no network", "It has the highest cost of failure, so the template should be proven at lower-risk sites first"],
+      answer: 3,
       explain: [
-        "Correct. Lessons from the first sites improve the template before it reaches the plant that can least afford surprises.",
         "Chicago has the most tags.",
         "It uses the same template.",
-        "It has a network. The ordering is about risk."
+        "It has a network. The ordering is about risk.",
+        "Correct. Lessons from the first sites improve the template before it reaches the plant that can least afford surprises."
       ]
     }
   ],

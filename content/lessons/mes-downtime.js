@@ -124,7 +124,7 @@ ORDER BY minutes DESC;
 
 ## Where the PLC should help: first-out fault codes
 
-When a conveyor jams, the PLC often shows ten faults in the next second: the jam, a downstream starved alarm, a low-air warning caused by the e-stop. The operator sees a screen full of red. Only the first one matters. A **first-out** latch captures the first fault that occurred and holds it until reset, so MES can suggest the right reason code.
+When a conveyor jams, the PLC often shows ten faults in the next second: the jam, a downstream starved alarm, a low-air warning caused by the E-stop. The operator sees a screen full of red. Only the first one matters. A **first-out** latch captures the first fault that occurred and holds it until reset, so MES can suggest the right reason code.
 
 \`\`\`st
 // Pseudo-ST: FaultCode is the ID of the fault that just became active (0 if none).
@@ -276,23 +276,23 @@ Downtime logging began as paper forms and clipboard tallies on the line, and TPM
     },
     {
       q: "A 40-minute changeover spans a 06:00 shift change (starts 05:40). How should MES handle it?",
-      options: ["Assign all 40 minutes to the night shift", "Assign all 40 minutes to the day shift", "Cut the event at 06:00 so each shift gets 20 minutes", "Discard the event"],
-      answer: 2,
+      options: ["Cut the event at 06:00 so each shift gets 20 minutes", "Assign all 40 minutes to the night shift", "Assign all 40 minutes to the day shift", "Discard the event"],
+      answer: 0,
       explain: [
+        "Correct. Each shift should be charged for its own time.",
         "That overstates night shift losses.",
         "That overstates day shift losses.",
-        "Correct. Each shift should be charged for its own time.",
         "Discarding it hides a real loss."
       ]
     },
     {
       q: "The weekly Pareto shows 'Jam - labeler' as 27 percent of minutes and 'Changeover' as 34 percent. What else should you check before deciding what to fix?",
-      options: ["The event counts and the size of the 'Other' and unassigned buckets","The OEE target","The PLC scan time","Nothing, fix the biggest bar"],
-      answer: 0,
+      options: ["The OEE target","The PLC scan time","The event counts and the size of the 'Other' and unassigned buckets","Nothing, fix the biggest bar"],
+      answer: 2,
       explain: [
-        "Correct. Frequency and data quality both change the priority.",
         "The target does not affect which loss is largest.",
         "Scan time is unrelated.",
+        "Correct. Frequency and data quality both change the priority.",
         "Minutes alone hide whether the loss is many short events or a few long ones, which need different fixes."
       ]
     }

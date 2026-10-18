@@ -108,7 +108,7 @@ What goes on it, and why:
 - **State and mode.** \`Sts.Running\`, \`Sts.Fault\`, \`Sts.Auto\` as words ("Stopped", "Manual"), not just colors. In auto, the sequence owns the motor. In manual, the operator does. Make that visible and gate the buttons on it.
 - **Commands.** \`Cmd.Start\`, \`Cmd.Stop\`, \`Cmd.Reset\` as three verb buttons, always in the same positions. Buttons that cannot apply right now are shown disabled (dashed outline, muted text) and never hidden, because a button that vanishes teaches the operator nothing.
 - **Permissives and interlock reasons.** A {{term:permissive|permissive}} is a condition that must be true before a start. List each one with a plain "MET" or "NOT MET". When Start is disabled, say why in one line: "Start blocked: FV101 discharge valve is not open." The PLC should publish the reason (a bit or code per permissive), because the HMI should not re-implement the logic. An unexplained greyed-out button is a support call at 3 a.m. For an {{term:interlock|interlock}} that stops the motor, show which one tripped.
-- **Hardwired protection is context, not a command.** E-stop and overload are in the starter circuit by house standard. The faceplate shows their state (\`Alm.Overload\`, a monitored e-stop contact) but never offers a button that claims to defeat them.
+- **Hardwired protection is context, not a command.** E-stop and overload are in the starter circuit by house standard. The faceplate shows their state (\`Alm.Overload\`, a monitored E-stop contact) but never offers a button that claims to defeat them.
 - **Feedback strip.** The last command, when it was sent, and whether the equipment confirmed it.
 - **Alarms.** \`Alm.FailToStart\`, \`Alm.Overload\`, \`Alm.CommLoss\` shown as a quiet "none active" and only loud when active. See {{lesson:hmi-abnormal}}.
 - **Secondary info.** Run hours (\`Sts.RunHours\`), configuration (\`Cfg.StartDelay\`) and links to trends and maintenance, further down or behind a role check. Do not let them compete with the command area.
@@ -341,15 +341,15 @@ Fitts' law is a model of pointing time from experimental psychology that interfa
       q: "An overview graphic shows each motor as a rounded box that says \"M101 RUN\" or \"M101 STOP\" and toggles the motor when touched. What is the best fix?",
       options: [
         "Add a confirmation dialog to every toggle",
-        "Make the box a flat status indicator and put Start and Stop on the M101 faceplate",
         "Change the colors so running is red and stopped is green",
+        "Make the box a flat status indicator and put Start and Stop on the M101 faceplate",
         "Make the boxes bigger so they are easier to hit"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "A dialog treats the symptom. The box still reads as both lamp and switch, and operators will tap through the dialog.",
-        "Correct. Status and command are separated, and the faceplate header names the equipment, which doubles as the select step.",
         "Color choice does not fix the ambiguity, and it breaks the rule that red is for abnormal conditions.",
+        "Correct. Status and command are separated, and the faceplate header names the equipment, which doubles as the select step.",
         "A bigger target makes accidental toggles more likely, not less."
       ]
     },
@@ -357,15 +357,15 @@ Fitts' law is a model of pointing time from experimental psychology that interfa
       q: "Operators wear insulated gloves. Your panel buttons are 44 px high, matching the WCAG 2.1 enhanced target size. What should you do?",
       options: [
         "Nothing. 44 px meets the guidance, so it is safe",
-        "Switch to 9 mm because it is the same number",
         "Treat 44 to 48 px as the smallest target, enlarge critical commands, and test with the actual gloves on the panel",
+        "Switch to 9 mm because it is the same number",
         "Add hover highlights so operators know what they are touching"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "The published figures are minimums for bare fingers. They do not cover gloves.",
-        "44 CSS px and 9 mm are not equal. They depend on the screen's pixel density.",
         "Correct. Use the guidance as a floor, go larger for critical buttons, and verify on the real device with real gloves.",
+        "44 CSS px and 9 mm are not equal. They depend on the screen's pixel density.",
         "Touchscreens do not show hover, so this does not help."
       ]
     },
@@ -373,30 +373,30 @@ Fitts' law is a model of pointing time from experimental psychology that interfa
       q: "The operator presses Start on M101. Which behavior is correct?",
       options: [
         "Show Running immediately so the operator gets instant feedback",
-        "Show pressed state within about 100 ms, show Command sent when the write is accepted, show Running only when Sts.Running is true, and flag a timeout if it never is",
         "Wait silently until Sts.Running is true, then update the screen",
-        "Show a modal dialog until Sts.Running is true"
+        "Show a modal dialog until Sts.Running is true",
+        "Show pressed state within about 100 ms, show Command sent when the write is accepted, show Running only when Sts.Running is true, and flag a timeout if it never is"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "That reports command intent as plant state. If the motor fails to start, the screen lies.",
-        "Correct. Each stage reports a different fact, and the timeout makes a failure visible as an abnormal state.",
         "A silent gap longer than about a second makes operators press the button again.",
-        "A blocking modal prevents the operator from doing other things and does not add information."
+        "A blocking modal prevents the operator from doing other things and does not add information.",
+        "Correct. Each stage reports a different fact, and the timeout makes a failure visible as an abnormal state."
       ]
     },
     {
       q: "A plant has a confirmation dialog on every command, including changing a trend time range. Operators click OK without reading. What is the best response?",
       options: [
-        "Add a second confirmation for important commands",
         "Remove confirmation from harmless and reversible actions, and keep specific, named confirmations or select-then-act for hard-to-reverse ones",
+        "Add a second confirmation for important commands",
         "Remove all confirmations and rely on training",
         "Make the dialog flash so it gets read"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "More dialogs deepen the click-through habit.",
         "Correct. Spend the operator's attention only where the consequence justifies it, and make the confirm label name the action.",
+        "More dialogs deepen the click-through habit.",
         "Hard-to-reverse and safety-related actions still need a deliberate step.",
         "Flashing adds noise and does not change the habit."
       ]
@@ -405,31 +405,31 @@ Fitts' law is a model of pointing time from experimental psychology that interfa
       q: "Start is disabled on the M101 faceplate in manual mode. What should the screen show?",
       options: [
         "Nothing extra, since the disabled style is enough",
-        "A hidden Start button, so operators cannot press it",
         "A dashed Start button and a one-line reason such as \"Start blocked: FV101 discharge valve is not open\", published by the PLC",
+        "A hidden Start button, so operators cannot press it",
         "A pop-up listing all interlocks in the plant"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "A grey button with no reason leads to phone calls and workarounds.",
-        "Hiding it removes the cue that a command exists and makes the screen look broken.",
         "Correct. The PLC owns the logic and publishes the reason, so the HMI is explaining without re-implementing.",
+        "Hiding it removes the cue that a command exists and makes the screen look broken.",
         "Too much information. The operator needs the one unmet permissive."
       ]
     },
     {
       q: "A speed setpoint field accepts 600 to 1,800 rpm. An operator types 11500. Which design is best?",
       options: [
+        "Refuse it with a message that shows the allowed range, keep the old value, and enforce the same limits in the PLC",
         "Clamp to 1,800 rpm and apply it",
         "Apply it and let the PLC reject it later",
-        "Refuse it with a message that shows the allowed range, keep the old value, and enforce the same limits in the PLC",
         "Accept any value and show a warning"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. The HMI gives immediate feedback, and the PLC limit protects against other clients and scripts.",
         "Silent clamping hides the typo and writes a value the operator did not intend.",
         "The operator would get no feedback, and the screen could show a wrong setpoint.",
-        "Correct. The HMI gives immediate feedback, and the PLC limit protects against other clients and scripts.",
         "A warning lets a bad value reach the plant."
       ]
     }

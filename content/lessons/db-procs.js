@@ -174,11 +174,12 @@ call.registerReturnParam(system.db.INTEGER)
 
 system.db.execSProcCall(call)
 
+log = system.util.getLogger("Meridian.Downtime")
 if call.getReturnValue() == 0:
     closed = call.getOutParamValue("closed_id")
-    system.perspective.print("Closed event %d" % closed)
+    log.info("Closed event %d" % closed)
 else:
-    system.perspective.print("No open downtime on M101")
+    log.info("No open downtime on M101")
 \`\`\`
 
 Parameters can be registered by position or by name. Input, output, in/out and return values each have their own register call; results come back via \`getResultSet()\`, \`getUpdateCount()\`, \`getReturnValue()\` and \`getOutParamValue()\`. See the [8.3 system.db reference](https://www.docs.inductiveautomation.com/docs/8.3/appendix/scripting-functions/system-db) (and the 8.1 [createSProcCall page](https://www.docs.inductiveautomation.com/docs/8.1/appendix/scripting-functions/system-db/system-db-createSProcCall) if you run 8.1) for the exact argument forms in your version. \`createSProcCall\` only builds the object. The blocking happens in \`execSProcCall\`, so a slow procedure ties up the thread that ran it ([forum discussion](https://forum.inductiveautomation.com/t/stored-procedure-call-blocking-or-timeout/74316)).
@@ -294,13 +295,13 @@ Stored procedures became common in the 1980s and 1990s as client/server database
     },
     {
       q: "Why might you grant the Ignition database user EXECUTE on a stored procedure and no UPDATE on the table?",
-      options: ["It makes queries run faster", "Changes can only happen through code you wrote and tested", "Ignition cannot update tables directly", "It is required by SQL Bridge"],
-      answer: 1,
+      options: ["It makes queries run faster", "Ignition cannot update tables directly", "It is required by SQL Bridge", "Changes can only happen through code you wrote and tested"],
+      answer: 3,
       explain: [
         "Permissions don't make a query faster.",
-        "Correct. The procedure becomes the only door to the data, which narrows what a bug or a compromised account can do.",
         "Ignition can run UPDATE statements fine. This is a policy choice.",
-        "SQL Bridge does not require it. Plain table groups write directly."
+        "SQL Bridge does not require it. Plain table groups write directly.",
+        "Correct. The procedure becomes the only door to the data, which narrows what a bug or a compromised account can do."
       ]
     },
     {
@@ -316,34 +317,34 @@ Stored procedures became common in the 1980s and 1990s as client/server database
     },
     {
       q: "Which rule is the best candidate to live in the database rather than in an Ignition script?",
-      options: ["Show a red banner when a tag is bad quality", "Closing a downtime event must update two tables or neither, for every system that writes downtime", "Hide a button for operators without a role", "Pick the right unit label for a tag"],
-      answer: 1,
+      options: ["Show a red banner when a tag is bad quality", "Hide a button for operators without a role", "Closing a downtime event must update two tables or neither, for every system that writes downtime", "Pick the right unit label for a tag"],
+      answer: 2,
       explain: [
         "That depends on tag quality and screens, so it belongs in Ignition.",
-        "Correct. Several writers and an all-or-nothing change point to a stored procedure and a transaction.",
         "Roles and screen elements are Ignition concerns.",
+        "Correct. Several writers and an all-or-nothing change point to a stored procedure and a transaction.",
         "Display formatting is presentation logic."
       ]
     },
     {
       q: "You need an OUT parameter and a return value from a stored procedure in a Perspective button script. What do you use?",
-      options: ["system.db.runQuery", "system.db.createSProcCall with registerOutParam and registerReturnParam, then execSProcCall", "system.db.runNamedQuery only", "A tag history binding"],
-      answer: 1,
+      options: ["system.db.createSProcCall with registerOutParam and registerReturnParam, then execSProcCall", "system.db.runQuery", "system.db.runNamedQuery only", "A tag history binding"],
+      answer: 0,
       explain: [
-        "runQuery returns a result set. It is not the route for out and return parameters.",
         "Correct. The call object holds registered parameters and you read the results after execSProcCall.",
+        "runQuery returns a result set. It is not the route for out and return parameters.",
         "A named query can call a procedure, but output and return values are most direct with the call object.",
         "History bindings read the historian, not stored procedure results."
       ]
     },
     {
       q: "A Stored Procedure transaction group fails on PostgreSQL even though the procedure exists. What does Ignition's documentation suggest checking?",
-      options: ["Switching the group to run once per day", "The JDBC connection string setting escapeSyntaxCallMode", "Removing all output items", "Renaming the procedure with an sp_ prefix"],
-      answer: 1,
+      options: ["Switching the group to run once per day", "Removing all output items", "The JDBC connection string setting escapeSyntaxCallMode", "Renaming the procedure with an sp_ prefix"],
+      answer: 2,
       explain: [
         "Schedule has nothing to do with whether the call syntax works.",
-        "Correct. The documentation notes that PostgreSQL may need escapeSyntaxCallMode=callIfNoReturn for the call to work.",
         "Output items are supported, and removing them does not fix a syntax problem.",
+        "Correct. The documentation notes that PostgreSQL may need escapeSyntaxCallMode=callIfNoReturn for the call to work.",
         "A prefix has no effect on how the driver builds the call."
       ]
     }

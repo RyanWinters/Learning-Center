@@ -223,11 +223,11 @@ If you ask the clicker "have we hit the number we wanted?", it says yes as soon 
   quiz: [
     {
       q: "A CTU rung is true for 400 scans while a box passes the eye. How many counts is that?",
-      options: ["400", "1", "0", "It depends on the preset"],
-      answer: 1,
+      options: ["1", "400", "0", "It depends on the preset"],
+      answer: 0,
       explain: [
-        "Counters do not count every scan the rung is true.",
         "Correct. CTU adds one on the false-to-true transition.",
+        "Counters do not count every scan the rung is true.",
         "It counts when the rung rises.",
         "The preset sets DN, not the number of counts per event."
       ]
@@ -256,33 +256,33 @@ If you ask the clicker "have we hit the number we wanted?", it says yes as soon 
     },
     {
       q: "For a car park, which is the right structure?",
-      options: ["Two COUNTERs, subtract the ACCs", "A CTU and a CTD on the same COUNTER tag", "A TON and a CTU", "One CTU and manual MOVs"],
-      answer: 1,
+      options: ["Two COUNTERs, subtract the ACCs", "A TON and a CTU", "One CTU and manual MOVs", "A CTU and a CTD on the same COUNTER tag"],
+      answer: 3,
       explain: [
         "That drifts after any missed edge.",
-        "Correct. They share ACC, so it always holds the cars inside.",
         "A timer is not involved.",
-        "That is more work and more error."
+        "That is more work and more error.",
+        "Correct. They share ACC, so it always holds the cars inside."
       ]
     },
     {
       q: "You count a total in a REAL tag with ADD(Total,1,Total). What goes wrong around 16.7 million?",
-      options: ["It overflows and sets .OV", "Adding 1 stops changing the value", "It faults the controller", "It rolls to negative"],
-      answer: 1,
+      options: ["It overflows and sets .OV", "It faults the controller", "Adding 1 stops changing the value", "It rolls to negative"],
+      answer: 2,
       explain: [
         "REAL has no .OV member.",
-        "Correct. A 32-bit float cannot represent the next whole number, so the total freezes.",
         "No fault is raised, which is why it is dangerous.",
+        "Correct. A 32-bit float cannot represent the next whole number, so the total freezes.",
         "That is the DINT wrap, not REAL behavior."
       ]
     },
     {
       q: "A part sensor pulses for 3 ms and the task scans every 10 ms. What is likely?",
-      options: ["Every part is counted", "Some parts are missed", "Parts are counted twice", "The counter faults"],
-      answer: 1,
+      options: ["Some parts are missed", "Every part is counted", "Parts are counted twice", "The counter faults"],
+      answer: 0,
       explain: [
-        "The scan can fall between pulses.",
         "Correct. The PLC only sees the input when it scans.",
+        "The scan can fall between pulses.",
         "A one-sample pulse produces at most one edge.",
         "No fault is raised."
       ]

@@ -31,7 +31,7 @@ You will use it daily, mostly as shared vocabulary: "that's a Level 2 problem", 
 | 5 | Enterprise / external | Corporate network, cloud, vendor and partner access | days to years | What is the business doing? |
 | 4 | Business planning | {{term:erp|ERP}} (SAP, Oracle), supply chain, corporate BI (business intelligence reporting) | shifts to months | What should we make and sell? |
 | 3.5 | Industrial DMZ | Firewalls, jump hosts, replicated historians, brokers | n/a | What may cross between IT and OT? |
-| 3 | Site operations | {{term:mes|MES}} (manufacturing execution system), site historian, Ignition gateway (site), batch, LIMS (laboratory information management system) | minutes to shifts | How did production go? What is next? |
+| 3 | Site operations | {{term:mes|MES}} (manufacturing execution system), site historian, Ignition Gateway (site), batch, LIMS (laboratory information management system) | minutes to shifts | How did production go? What is next? |
 | 2 | Supervisory control | SCADA (supervisory control and data acquisition) and {{term:hmi|HMI}} (human-machine interface), operator stations, alarm servers, Ignition | seconds to minutes | What is the process doing? |
 | 1 | Basic control | {{term:plc|PLCs}} (programmable logic controllers), DCS (distributed control system) controllers, drive controllers, safety PLCs | milliseconds to seconds | What should the outputs be right now? |
 | 0 | Process | Sensors, valves, motors, instruments | real time (continuous) | What is physically happening? |
@@ -60,7 +60,7 @@ Meridian Foods' tank level transmitter LT101 (0 to 5.0 m) sends 14 mA on a 4-20 
 
 1. **Level 0:** the {{term:transmitter|transmitter}} measures pressure and sets the loop current.
 2. **Level 1:** the PLC's analog input card converts it to a count, the program scales it to 62.5 percent of range (3.125 m), and the pump logic uses it every scan.
-3. **Level 2:** an Ignition gateway reads the LT101 tag from the PLC (PLC1, 10.20.10.10) every second and shows it on a Perspective screen. It raises a high alarm at 90 percent.
+3. **Level 2:** an Ignition Gateway reads the LT101 tag from the PLC (PLC1, 10.20.10.10) every second and shows it on a Perspective screen. It raises a high alarm at 90 percent.
 4. **Level 3:** the site historian stores a sample each minute. The MES uses it to compute that batch 4412 used 8,300 L.
 5. **Level 3.5:** a replicated historian in the DMZ copies the batch summary out.
 6. **Level 4:** the ERP posts the material consumption to inventory and finance.
@@ -107,7 +107,7 @@ The Purdue model is that same idea for a factory's machines and computers, with 
 
 **Why separate IT from OT?** The worst outcome in a plant is not lost data, it is a stopped line or a safety incident. IT networks get patched, rebooted and exposed to email and the internet. Control systems often cannot be patched for years. The boundary stops a ransomware infection in the office from reaching the PLCs. That is the reason for the DMZ and for the guidance in {{lesson:net-security}}.
 
-**What integrators argue about.** Is the model still useful? Some say the UNS and cloud have killed it. Others say it remains the best way to reason about risk and responsibility, and that a UNS is simply a new way of routing data across the same levels. Both camps agree you still need to know what runs where. Another live argument is where to put things that straddle levels, such as an Ignition gateway that reads PLCs and also publishes to a cloud broker. The usual answer is to treat the gateway as a Level 2/3 system and keep its cloud-facing connection outbound-only through the DMZ.
+**What integrators argue about.** Is the model still useful? Some say the UNS and cloud have killed it. Others say it remains the best way to reason about risk and responsibility, and that a UNS is simply a new way of routing data across the same levels. Both camps agree you still need to know what runs where. Another live argument is where to put things that straddle levels, such as an Ignition Gateway that reads PLCs and also publishes to a cloud broker. The usual answer is to treat the gateway as a Level 2/3 system and keep its cloud-facing connection outbound-only through the DMZ.
 
 **Why data volume shrinks going up.** The PLC may see 1,000 values per second. The historian keeps a selection. The MES keeps batch totals. The ERP keeps one number per order. Good architecture decides at each level what to keep and what to discard, instead of trying to move everything everywhere.
 `,
@@ -150,7 +150,7 @@ The Purdue Reference Model for Computer Integrated Manufacturing was developed a
 
   <rect class="dg-box-accent" x="20" y="196" width="464" height="48" rx="4"/>
   <text class="dg-text" x="32" y="216">Level 3   Site operations</text>
-  <text class="dg-text-sm" x="32" y="234">MES, site historian, batch, Ignition gateway</text>
+  <text class="dg-text-sm" x="32" y="234">MES, site historian, batch, Ignition Gateway</text>
   <text class="dg-text-sm" x="494" y="224">minutes to shifts</text>
 
   <rect class="dg-box-accent" x="20" y="250" width="464" height="48" rx="4"/>
@@ -197,24 +197,24 @@ The Purdue Reference Model for Computer Integrated Manufacturing was developed a
     },
     {
       q: "The ERP team asks for live line counts. Which design respects the model?",
-      options: ["Open the ERP server to the PLC subnet", "Install ERP software on the PLC network", "Email a spreadsheet every hour", "Publish counts to a broker or replica in the DMZ that ERP reads"],
-      answer: 3,
+      options: ["Publish counts to a broker or replica in the DMZ that ERP reads", "Open the ERP server to the PLC subnet", "Install ERP software on the PLC network", "Email a spreadsheet every hour"],
+      answer: 0,
       explain: [
+        "Correct. The DMZ keeps sessions from crossing directly between IT and OT.",
         "That creates a direct IT-to-OT session that bypasses the DMZ.",
         "ERP does not belong on the control network.",
-        "It works but is manual and not a real integration.",
-        "Correct. The DMZ keeps sessions from crossing directly between IT and OT."
+        "It works but is manual and not a real integration."
       ]
     },
     {
       q: "A diagram labels the MES server 'Level 3.5 DMZ'. What is wrong?",
-      options: ["The MES runs production applications, so it is Level 3, not a buffer zone", "Nothing, MES is a DMZ system", "MES belongs at Level 1", "DMZs only contain databases"],
-      answer: 0,
+      options: ["Nothing, MES is a DMZ system", "MES belongs at Level 1", "DMZs only contain databases", "The MES runs production applications, so it is Level 3, not a buffer zone"],
+      answer: 3,
       explain: [
-        "Correct. Level 3 is site operations; 3.5 is a buffer with no operational function of its own.",
         "The DMZ hosts intermediaries, not operational applications.",
         "MES is a plant-level manufacturing operations system, not a controller.",
-        "DMZs contain several kinds of intermediary services, not only databases."
+        "DMZs contain several kinds of intermediary services, not only databases.",
+        "Correct. Level 3 is site operations; 3.5 is a buffer with no operational function of its own."
       ]
     },
     {
@@ -230,24 +230,24 @@ The Purdue Reference Model for Computer Integrated Manufacturing was developed a
     },
     {
       q: "How does a Unified Namespace change the Purdue picture?",
-      options: ["It removes the need for security zones", "It moves PLCs to Level 4", "Systems publish and subscribe to a central broker rather than passing data level by level", "It makes OPC UA unnecessary"],
-      answer: 2,
+      options: ["It removes the need for security zones", "It moves PLCs to Level 4", "It makes OPC UA unnecessary", "Systems publish and subscribe to a central broker rather than passing data level by level"],
+      answer: 3,
       explain: [
         "The zoning and firewall rules remain; the broker usually sits in the OT side or DMZ.",
         "PLCs stay at Level 1.",
-        "Correct. Data moves by topic through the broker, which bends the strict hierarchy while keeping the level thinking for risk.",
-        "OPC UA is still a common way to get data from devices into the namespace."
+        "OPC UA is still a common way to get data from devices into the namespace.",
+        "Correct. Data moves by topic through the broker, which bends the strict hierarchy while keeping the level thinking for risk."
       ]
     },
     {
-      q: "Where does an Ignition gateway running Perspective screens and a historian belong?",
-      options: ["Only Level 0", "Level 5", "Level 3.5 only", "Level 2, reaching into Level 3 for historian and reporting"],
-      answer: 3,
+      q: "Where does an Ignition Gateway running Perspective screens and a historian belong?",
+      options: ["Only Level 0", "Level 5", "Level 2, reaching into Level 3 for historian and reporting", "Level 3.5 only"],
+      answer: 2,
       explain: [
         "Level 0 is physical devices.",
         "Level 5 is external and enterprise.",
-        "The DMZ is for buffering and intermediaries, not running the site's HMI.",
-        "Correct. Ignition is a supervisory platform that extends into site operations as you add modules."
+        "Correct. Ignition is a supervisory platform that extends into site operations as you add modules.",
+        "The DMZ is for buffering and intermediaries, not running the site's HMI."
       ]
     }
   ],

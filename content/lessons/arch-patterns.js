@@ -230,16 +230,16 @@ IA's reference architectures have been published for years as a standard, a scal
     {
       q: "In a scale-out design, what runs on the back-end gateways?",
       options: [
+        "Device connections, tag providers, history and alarming",
         "Perspective sessions for operators",
         "The load balancer",
-        "Device connections, tag providers, history and alarming",
         "Only the SQL database"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. Back-ends own the I/O and the tag providers. Front-ends read those through remote tag providers.",
         "Sessions run on front-end gateways, which is the point of the split.",
         "The load balancer is a separate network component in front of the front-ends.",
-        "Correct. Back-ends own the I/O and the tag providers. Front-ends read those through remote tag providers.",
         "The database is a separate service, not a gateway role."
       ]
     },
@@ -247,16 +247,16 @@ IA's reference architectures have been published for years as a standard, a scal
       q: "A site on an unreliable satellite link must keep running when the link drops. Which pattern fits?",
       options: [
         "Scale-out with the front-end at headquarters",
-        "Hub-and-spoke with a complete gateway at the site",
         "Standard, with the only gateway at headquarters",
-        "A cloud gateway that reads the PLC directly"
+        "A cloud gateway that reads the PLC directly",
+        "Hub-and-spoke with a complete gateway at the site"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "A remote front-end would lose its back-end data when the link fails, so site operators would be blind.",
-        "Correct. A full local gateway keeps control, HMI, alarms and history buffering working while disconnected.",
         "Operators at the site would lose everything when the link drops.",
-        "Direct PLC access from the cloud over an unreliable link is the worst case."
+        "Direct PLC access from the cloud over an unreliable link is the worst case.",
+        "Correct. A full local gateway keeps control, HMI, alarms and history buffering working while disconnected."
       ]
     },
     {

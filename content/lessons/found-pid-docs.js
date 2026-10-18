@@ -254,13 +254,13 @@ A loop sheet is the page of instructions for one single wire, from the gadget in
   quiz: [
     {
       q: "What does the tag LSH-310 describe?",
-      options: ["Level Switch, High, loop 310", "Liquid Sensor Hot, loop 310", "Level Signal Hardwired, loop 310", "Line Speed High, loop 310"],
-      answer: 0,
+      options: ["Liquid Sensor Hot, loop 310", "Level Signal Hardwired, loop 310", "Line Speed High, loop 310", "Level Switch, High, loop 310"],
+      answer: 3,
       explain: [
-        "Correct. L is level, S is switch, H is high; 310 is the loop number.",
         "The first letter L means level in ISA-5.1, and the S in second position means switch.",
         "ISA-5.1 letters are functions, so 'hardwired' is not a meaning here.",
-        "Line speed would start with S for speed. L is level."
+        "Line speed would start with S for speed. L is level.",
+        "Correct. L is level, S is switch, H is high; 310 is the loop number."
       ]
     },
     {
@@ -276,35 +276,35 @@ A loop sheet is the page of instructions for one single wire, from the gadget in
     },
     {
       q: "A circle drawn inside a square on a P&ID usually means:",
-      options: ["A gauge in the field", "A shared display or control function, such as in a DCS", "A manual valve", "A pneumatic signal"],
-      answer: 1,
+      options: ["A gauge in the field", "A manual valve", "A shared display or control function, such as in a DCS", "A pneumatic signal"],
+      answer: 2,
       explain: [
         "Field gauges are plain circles.",
-        "Correct. The square marks a shared display and shared control function normally in a DCS.",
         "Manual valves are valve symbols, not bubbles.",
+        "Correct. The square marks a shared display and shared control function normally in a DCS.",
         "Pneumatic signals are shown by line style, not bubble shape."
       ]
     },
     {
       q: "A P&ID has one flow transmitter, one control valve with open and closed limit switches, and one high-level switch. How many I/O points does that add up to?",
-      options: ["3", "4", "5", "6"],
-      answer: 2,
+      options: ["5", "3", "4", "6"],
+      answer: 0,
       explain: [
+        "Correct. FT gives 1 AI, the valve gives 1 AO plus 2 DI for the limits, and the switch gives 1 DI: 1 AI, 1 AO, 3 DI.",
         "That counts devices, not signals. The valve has three signals on its own.",
         "That misses a limit switch. Valve command plus two limits make three points.",
-        "Correct. FT gives 1 AI, the valve gives 1 AO plus 2 DI for the limits, and the switch gives 1 DI: 1 AI, 1 AO, 3 DI.",
         "That would need another signal that was not described."
       ]
     },
     {
       q: "The I/O list shows 70 discrete inputs and the DI cards have 16 channels. You want at least 15 percent installed spare. How many cards do you order?",
-      options: ["7", "4", "5", "6"],
-      answer: 3,
+      options: ["7", "4", "6", "5"],
+      answer: 2,
       explain: [
         "Seven cards (112 channels) is about 60 percent spare, more than the rule of thumb calls for.",
         "Four cards give 64 channels, which cannot even cover the 70 points.",
-        "Five cards give 80 channels. That leaves 10 spare, about 14 percent of the 70, just under the target.",
-        "Correct. 70 x 1.15 = 80.5 channels needed, and 6 cards x 16 = 96, which covers it with room for rounding up."
+        "Correct. 70 x 1.15 = 80.5 channels needed, and 6 cards x 16 = 96, which covers it with room for rounding up.",
+        "Five cards give 80 channels. That leaves 10 spare, about 14 percent of the 70, just under the target."
       ]
     }
   ],

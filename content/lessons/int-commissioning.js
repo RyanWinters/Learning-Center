@@ -325,11 +325,11 @@ Loop checks and instrument loop folders come from process-plant construction pra
   quiz: [
     {
       q: "During a loop check you inject 4, 12 and 20 mA at a 0-5.0 m level transmitter and the HMI shows 0.05 m, 2.55 m and 5.05 m. What does this pattern suggest?",
-      options: ["A zero offset of about 0.05 m, constant across the range, so check the transmitter zero or the scaling constants", "The wire is broken", "The HMI is in simulation mode", "The PLC scan time is too slow"],
-      answer: 0,
+      options: ["The wire is broken", "A zero offset of about 0.05 m, constant across the range, so check the transmitter zero or the scaling constants", "The HMI is in simulation mode", "The PLC scan time is too slow"],
+      answer: 1,
       explain: [
-        "Correct. The same +0.05 m error at all three points is a constant zero offset (a span error would grow or shrink with the reading). The three-point test exposed it.",
         "A broken wire produces a bad or fault state, or a reading near 0 mA. It does not give a nearly correct value.",
+        "Correct. The same +0.05 m error at all three points is a constant zero offset (a span error would grow or shrink with the reading). The three-point test exposed it.",
         "A simulation would not respond to the injected current at all.",
         "Scan time delays an update. It cannot create a steady scaling error."
       ]
@@ -358,35 +358,35 @@ Loop checks and instrument loop folders come from process-plant construction pra
     },
     {
       q: "A tank overflowed weeks after commissioning because a level switch input stayed forced healthy. Which practice would have prevented it?",
-      options: ["A force log reconciled with the controller's force list at the end of each session", "A faster historian", "More alarm priorities", "Checking IP addresses"],
-      answer: 0,
+      options: ["A faster historian", "More alarm priorities", "A force log reconciled with the controller's force list at the end of each session", "Checking IP addresses"],
+      answer: 2,
       explain: [
-        "Correct. Forces are invisible to operators. A reconciled log makes sure every one is removed or documented.",
         "History records the problem. It does not stop a force from persisting.",
         "Alarm priorities do not help when the input they depend on is forced.",
+        "Correct. Forces are invisible to operators. A reconciled log makes sure every one is removed or documented.",
         "Addressing is unrelated to a forced input."
       ]
     },
     {
       q: "In a brownfield cutover, what is the purpose of running the new system in parallel with the old one before taking over outputs?",
-      options: ["To compare real inputs and logic results before the new system controls anything", "To double the production rate", "To avoid writing a rollback plan", "To skip the I/O checkout"],
-      answer: 0,
+      options: ["To double the production rate", "To avoid writing a rollback plan", "To skip the I/O checkout", "To compare real inputs and logic results before the new system controls anything"],
+      answer: 3,
       explain: [
-        "Correct. Reading the same inputs lets you verify scaling and logic outputs while the old system keeps running safely.",
         "Parallel running is about verification, not capacity.",
         "A rollback plan is still required.",
-        "Parallel running supplements the checkout and does not replace it."
+        "Parallel running supplements the checkout and does not replace it.",
+        "Correct. Reading the same inputs lets you verify scaling and logic outputs while the old system keeps running safely."
       ]
     },
     {
       q: "An Ignition tag sweep shows 14 bad-quality tags across a provider. What is the best response?",
-      options: ["Investigate each, then fix, delete or document it, so that bad quality always means something", "Ignore them, they are probably spares", "Disable quality display on views", "Raise the historian deadband"],
-      answer: 0,
+      options: ["Ignore them, they are probably spares", "Disable quality display on views", "Raise the historian deadband", "Investigate each, then fix, delete or document it, so that bad quality always means something"],
+      answer: 3,
       explain: [
-        "Correct. Each one is a wiring, address, device or configuration fault, or a documented spare.",
         "Some may be spares, but you only know after checking. Unexamined bad tags hide real faults.",
         "Hiding quality removes the operator's warning that data is not reliable.",
-        "Deadband controls storage, not whether a tag is healthy."
+        "Deadband controls storage, not whether a tag is healthy.",
+        "Correct. Each one is a wiring, address, device or configuration fault, or a documented spare."
       ]
     }
   ],

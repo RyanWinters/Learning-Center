@@ -57,7 +57,7 @@ The switch builds that table by itself:
 5. Entries age out after a few minutes of silence (the aging time is configurable, so check your switch manual for its default), so the table adapts when a cable is moved.
 
 > [!example] A frame crosses a switch
-> The Ignition gateway (MAC \`AA\`, port 1) pings a PLC (MAC \`BB\`, port 5) for the first time. The ARP request is a broadcast, so the switch floods it. The PLC replies from port 5, so the switch learns "BB is on port 5". From then on, frames between \`AA\` and \`BB\` go only between ports 1 and 5, and the other ports never see them.
+> The Ignition Gateway (MAC \`AA\`, port 1) pings a PLC (MAC \`BB\`, port 5) for the first time. The ARP request is a broadcast, so the switch floods it. The PLC replies from port 5, so the switch learns "BB is on port 5". From then on, frames between \`AA\` and \`BB\` go only between ports 1 and 5, and the other ports never see them.
 
 This is a major reason switches replaced hubs. A hub repeated every frame to every port, so devices fought over one shared wire (a "collision domain") and half duplex was the rule. Each switch port is its own collision domain, so full duplex (send and receive at once) is the normal case and collisions are gone.
 
@@ -135,7 +135,7 @@ Rules that avoid the problem:
 
 ## Putting it together in Ignition-world
 
-When an Ignition gateway cannot reach a device, a layer 2 view helps. Can the gateway's switch port see the device's MAC in its table? Does the port show a link and the expected speed and duplex? Are error counters climbing? Those answers come before IP configuration. Many managed industrial switches also let you see port status from a web page, and some Rockwell switches integrate with Studio 5000 (check your model's manual), so you can diagnose a remote cabinet without opening it.
+When an Ignition Gateway cannot reach a device, a layer 2 view helps. Can the gateway's switch port see the device's MAC in its table? Does the port show a link and the expected speed and duplex? Are error counters climbing? Those answers come before IP configuration. Many managed industrial switches also let you see port status from a web page, and some Rockwell switches integrate with Studio 5000 (check your model's manual), so you can diagnose a remote cabinet without opening it.
 `,
 
   eli5: `
@@ -228,27 +228,27 @@ Ethernet was developed at Xerox PARC in the 1970s by a team including Robert Met
     {
       q: "A camera pings fine but drops its EtherNet/IP connection under load. The switch port shows late collisions and the camera side shows CRC errors. Likely cause?",
       options: [
-        "Duplex mismatch",
         "Wrong subnet mask",
+        "Duplex mismatch",
         "A full MAC table",
         "Fiber with the wrong wavelength"
       ],
-      answer: 0,
+      answer: 1,
       explain: [
-        "Correct. One end hard-coded and the other on auto leaves a half-duplex end colliding with a full-duplex end.",
         "A wrong mask would break reachability, not produce late collisions.",
+        "Correct. One end hard-coded and the other on auto leaves a half-duplex end colliding with a full-duplex end.",
         "A full MAC table makes the switch flood more, but it would not create late collisions on one port.",
         "The camera uses copper, and a wavelength mismatch gives no link at all."
       ]
     },
     {
       q: "You connect eight switches in a line with no routers or VLANs. How many broadcast domains do you have?",
-      options: ["Eight", "Four", "One", "It depends on the number of devices"],
-      answer: 2,
+      options: ["One", "Eight", "Four", "It depends on the number of devices"],
+      answer: 0,
       explain: [
+        "Correct. Plain switches forward broadcasts, so everything is a single broadcast domain.",
         "Each switch does not make a new domain.",
         "Daisy-chaining does not pair them off.",
-        "Correct. Plain switches forward broadcasts, so everything is a single broadcast domain.",
         "The number of devices affects load, not how many domains exist."
       ]
     },
@@ -272,15 +272,15 @@ Ethernet was developed at Xerox PARC in the 1970s by a team including Robert Met
       q: "Why is an unmanaged switch a poor choice in a plant-wide backbone?",
       options: [
         "It cannot forward frames",
-        "It uses less power",
         "It gives no VLANs, no port statistics and no way to diagnose or segment",
+        "It uses less power",
         "It cannot use RJ45"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "Unmanaged switches forward frames perfectly well.",
-        "Power use is not the concern.",
         "Correct. A backbone needs visibility, segmentation and redundancy features that unmanaged switches lack.",
+        "Power use is not the concern.",
         "Unmanaged switches use RJ45 connectors normally."
       ]
     }

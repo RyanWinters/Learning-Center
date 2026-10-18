@@ -206,45 +206,45 @@ Early PLCs ran one program from the top in a single scan. The ControlLogix platf
   quiz: [
     {
       q: "Which task type is the right home for a PID loop tuned for a steady 100 ms update?",
-      options: ["Continuous task", "Event task triggered by the HMI", "Periodic task at 100 ms", "Any, because the scan is always 100 ms"],
-      answer: 2,
+      options: ["Continuous task", "Periodic task at 100 ms", "Event task triggered by the HMI", "Any, because the scan is always 100 ms"],
+      answer: 1,
       explain: [
         "The continuous task has a variable scan time, so the sample time drifts.",
-        "An HMI trigger is irregular.",
         "Correct. A periodic task gives a regular tick.",
+        "An HMI trigger is irregular.",
         "Scan time varies with the load and is not fixed."
       ]
     },
     {
       q: "Task A has priority 3 and Task B has priority 8. Both are ready. What happens?",
-      options: ["B runs first because 8 is higher", "A runs first and can interrupt B", "They run at the same time on one core", "The continuous task runs first"],
-      answer: 1,
+      options: ["A runs first and can interrupt B", "B runs first because 8 is higher", "They run at the same time on one core", "The continuous task runs first"],
+      answer: 0,
       explain: [
-        "A lower number is the higher priority.",
         "Correct. Priority 3 outranks priority 8 and preempts it.",
+        "A lower number is the higher priority.",
         "A single task engine does not run two tasks simultaneously.",
         "The continuous task has the lowest priority."
       ]
     },
     {
       q: "A tag called Run exists in program Mixer and in program Filler. Is this allowed?",
-      options: ["Only if both are BOOL", "No, names must be unique in the controller", "Yes, if both are program-scoped tags", "Only with a prefix"],
-      answer: 2,
+      options: ["Only if both are BOOL", "No, names must be unique in the controller", "Only with a prefix", "Yes, if both are program-scoped tags"],
+      answer: 3,
       explain: [
         "The data type does not matter.",
         "Names must be unique within a scope, not across all programs.",
-        "Correct. Each program has its own scope.",
-        "A prefix is a convention, not a requirement."
+        "A prefix is a convention, not a requirement.",
+        "Correct. Each program has its own scope."
       ]
     },
     {
       q: "What should MainRoutine mostly contain?",
-      options: ["JSR calls to other routines in execution order", "All the program logic", "Only comments", "Only the I/O mapping"],
-      answer: 0,
+      options: ["All the program logic", "Only comments", "JSR calls to other routines in execution order", "Only the I/O mapping"],
+      answer: 2,
       explain: [
-        "Correct. It works as an index of what runs and in what order.",
         "That produces one unreadable routine.",
         "Comments help but do nothing.",
+        "Correct. It works as an index of what runs and in what order.",
         "I/O mapping belongs in a dedicated routine."
       ]
     },
@@ -261,13 +261,13 @@ Early PLCs ran one program from the top in a single scan. The ControlLogix platf
     },
     {
       q: "Which layout reads best to a new engineer?",
-      options: ["Programs named after the engineer who wrote them", "One program with a 4,000-rung routine", "Programs by area, numbered routines by function, MainRoutine as an index", "One program per tag"],
-      answer: 2,
+      options: ["Programs named after the engineer who wrote them", "One program with a 4,000-rung routine", "One program per tag", "Programs by area, numbered routines by function, MainRoutine as an index"],
+      answer: 3,
       explain: [
         "Names should describe the plant, not people.",
         "Nothing can be found or reused.",
-        "Correct. Names answer where something lives.",
-        "That is far too fine-grained."
+        "That is far too fine-grained.",
+        "Correct. Names answer where something lives."
       ]
     }
   ],

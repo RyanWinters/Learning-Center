@@ -6,7 +6,7 @@ LC.lesson({
   level: 3,
   prereqs: ["ign-architecture", "net-routing"],
   tags: ["gateway-network", "ignition", "security", "certificates", "architecture"],
-  summary: "The secure, encrypted link that lets Ignition gateways share tags, history, alarms and management traffic. Every multi-gateway design rides on it.",
+  summary: "The secure, encrypted link that lets Ignition Gateways share tags, history, alarms and management traffic. Every multi-gateway design rides on it.",
   objectives: [
     "Explain what the Gateway Network is and which services travel over it",
     "Distinguish incoming and outgoing connections and say which side starts the link",
@@ -98,7 +98,7 @@ That whole private phone line, with badges and permission lists, is the Gateway 
 `,
 
   why: `
-**Why approval by default?** A gateway network link can expose live tags and, if you allow it, writes. If any gateway that could reach port 8060 were trusted automatically, a stray laptop with Ignition installed could join your network. The \`ApprovedOnly\` default and two-way authentication in 8.3 put a human decision at every new link. Integrators sometimes switch the policy to Unrestricted to get through commissioning and then forget. Audit it.
+**Why approval by default?** A Gateway Network link can expose live tags and, if you allow it, writes. If any gateway that could reach port 8060 were trusted automatically, a stray laptop with Ignition installed could join your network. The \`ApprovedOnly\` default and two-way authentication in 8.3 put a human decision at every new link. Integrators sometimes switch the policy to Unrestricted to get through commissioning and then forget. Audit it.
 
 **Why who dials matters.** Firewalls usually allow outbound easily and inbound reluctantly. Making the DMZ gateway the listener means the plant needs only an outbound rule to one address on 8060, and corporate needs the same. Neither zone accepts an inbound connection from the other, and a compromised enterprise host cannot open a path into Level 3. Security teams argue for this layout. The cost is one more gateway to patch and a proxy hop for corporate-to-plant traffic.
 
@@ -169,31 +169,31 @@ The Gateway Network was formerly called the Gateway Area Network (GAN), and the 
     {
       q: "Plant 1 and the corporate network may not connect to each other directly. Which Gateway Network setup follows the DMZ pattern?",
       options: [
-        "The Plant 1 gateway and the corporate gateway each create an outgoing connection to the DMZ gateway on port 8060",
         "The corporate gateway creates an outgoing connection straight to the Plant 1 gateway",
         "Open inbound 8060 on the plant firewall and let the corporate gateway dial in",
+        "The Plant 1 gateway and the corporate gateway each create an outgoing connection to the DMZ gateway on port 8060",
         "The Plant 1 gateway dials the corporate gateway directly as the default design"
       ],
-      answer: 0,
+      answer: 2,
       explain: [
-        "Correct. Both sides dial out and the DMZ gateway listens. Corporate reaches the plant through it by proxy, and no connection passes straight from Level 3 to Level 4.",
         "This needs an inbound path into the plant, which the zone model forbids.",
         "This widens the plant's exposure for no reason.",
+        "Correct. Both sides dial out and the DMZ gateway listens. Corporate reaches the plant through it by proxy, and no connection passes straight from Level 3 to Level 4.",
         "A direct plant-to-HQ link is only a documented exception. It is not the default design."
       ]
     },
     {
       q: "A new incoming connection shows PendingApproval and no remote tags appear. Under default settings, what is the next step?",
       options: [
-        "Restart the gateway service",
         "Approve the certificate, then approve the connection on the Incoming Connections tab",
+        "Restart the gateway service",
         "Change the port from 8060 to 8088",
         "Install the Enterprise Administration module"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "A restart does not approve anything. The connection stays pending.",
         "Correct. ApprovedOnly holds the link until an administrator approves it.",
+        "A restart does not approve anything. The connection stays pending.",
         "The link already reached the gateway, so the port is fine.",
         "EAM is unrelated. Tag sharing uses the Gateway Network itself."
       ]
@@ -202,15 +202,15 @@ The Gateway Network was formerly called the Gateway Area Network (GAN), and the 
       q: "HQ should see live plant values but must never write to plant PLCs. Which control enforces this?",
       options: [
         "Set the Connection Policy to SpecifiedList",
-        "Use a shorter ping timeout",
         "Set Service Security on the plant's tag provider to read-only for remote gateways",
+        "Use a shorter ping timeout",
         "Turn off Require SSL"
       ],
-      answer: 2,
+      answer: 1,
       explain: [
         "SpecifiedList controls which gateways may connect at all, not what they may do afterwards.",
-        "Ping settings tune link health, not permissions.",
         "Correct. Service Security sets the access level per provider on the gateway that owns it.",
+        "Ping settings tune link health, not permissions.",
         "Disabling SSL weakens security and has nothing to do with write access."
       ]
     },
@@ -218,32 +218,32 @@ The Gateway Network was formerly called the Gateway Area Network (GAN), and the 
       q: "A link over LTE keeps faulting, and the log shows many socket read timeouts. The certificates are fine. What is the most likely fix?",
       options: [
         "Switch the connection policy to Unrestricted",
-        "Raise the ping timeout and missed-ping count to suit the real latency",
         "Delete and recreate the certificate",
-        "Increase the number of proxy hops"
+        "Increase the number of proxy hops",
+        "Raise the ping timeout and missed-ping count to suit the real latency"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Policy only decides who may connect. It does not change timing behavior.",
-        "Correct. The default timeout can be too tight for cellular latency spikes, so slow replies count as missed pings.",
         "Certificates are not the issue when the link connects and then drops on timeouts.",
-        "Proxy hops affect reachability, not the ping timing of a direct link."
+        "Proxy hops affect reachability, not the ping timing of a direct link.",
+        "Correct. The default timeout can be too tight for cellular latency spikes, so slow replies count as missed pings."
       ]
     },
     {
       q: "Why did 8.3 default Require Two-Way Authentication to true?",
       options: [
         "To make the link faster",
-        "So each end explicitly trusts the other, so a rogue gateway cannot impersonate either one",
         "Because OPC UA requires it",
-        "To allow Java serialization for older gateways"
+        "To allow Java serialization for older gateways",
+        "So each end explicitly trusts the other, so a rogue gateway cannot impersonate either one"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Authentication adds a trust step, not speed.",
-        "Correct. Both ends must approve each other's certificates, which tightens the network against impersonation.",
         "OPC UA is a separate protocol with its own security settings.",
-        "Java serialization is a separate setting that is off on new 8.3 installs."
+        "Java serialization is a separate setting that is off on new 8.3 installs.",
+        "Correct. Both ends must approve each other's certificates, which tightens the network against impersonation."
       ]
     }
   ],

@@ -98,7 +98,7 @@ You will sometimes need to see a live signal. Keep these rules of thumb.
 - **If a live measurement is truly required**, a qualified person does it, under your employer's permit process, with the right meter category and PPE. You can stand outside the boundary and read the numbers.
 - **Never bypass interlocks, door switches or guards** to see something running.
 
-> [!example] A Meridian Plant 1 call
+> [!example] A Meridian Foods Plant 1 call
 > M101 in Area10 is a 480 V motor fed by a VFD. The drive trips on overcurrent at 02:00. The operator asks you to "have a look at the drive." You connect to the drive's Ethernet port from the engineering workstation (VLAN 50) and read its fault history without opening the cabinet. The log shows a ground fault. You stop there and call the electrician. Checking the motor leads means lockout, a 5-minute wait, a DC bus measurement and a megohm test, all done by a qualified person.
 
 ## Why controls engineers still need this
@@ -210,13 +210,13 @@ OSHA issued its control of hazardous energy standard, 29 CFR 1910.147, to cover 
     },
     {
       q: "An unqualified controls engineer needs to read a label on a panel with an arc flash boundary of 14 ft. What does the boundary mean for them?",
-      options: ["Nothing, because they are not touching anything", "Inside it, arc-rated PPE is required and entry should follow site rules for unqualified people", "It is the distance within which they may take voltage readings", "It only matters when the door is closed"],
-      answer: 1,
+      options: ["Nothing, because they are not touching anything", "It is the distance within which they may take voltage readings", "It only matters when the door is closed", "Inside it, arc-rated PPE is required and entry should follow site rules for unqualified people"],
+      answer: 3,
       explain: [
         "Arc flash does not require contact.",
-        "Correct. The boundary is where incident energy reaches the level that burns bare skin, so PPE and site permit rules apply.",
         "Measurements need a qualified person and a permit.",
-        "Closed doors reduce exposure but operation of equipment still causes injuries."
+        "Closed doors reduce exposure but operation of equipment still causes injuries.",
+        "Correct. The boundary is where incident energy reaches the level that burns bare skin, so PPE and site permit rules apply."
       ]
     },
     {
@@ -243,22 +243,22 @@ OSHA issued its control of hazardous energy standard, 29 CFR 1910.147, to cover 
     },
     {
       q: "A technician asks you to hold a flashlight while they measure voltage in a 480 V MCC bucket. What is the best response?",
-      options: ["Stay beside them so you can help", "Hold the light from outside the limited approach boundary, if the permit and your site rules allow your presence at all", "Open the door for them", "Bypass the door interlock so it is easier"],
-      answer: 1,
+      options: ["Stay beside them so you can help", "Open the door for them", "Hold the light from outside the limited approach boundary, if the permit and your site rules allow your presence at all", "Bypass the door interlock so it is easier"],
+      answer: 2,
       explain: [
         "Standing next to an energized MCC puts you inside the boundaries.",
-        "Correct. An unqualified person stays out of the boundaries and follows the permit process.",
         "Opening an MCC door is an operation that is itself an arc flash risk.",
+        "Correct. An unqualified person stays out of the boundaries and follows the permit process.",
         "Never defeat interlocks."
       ]
     },
     {
       q: "Which of these is stored energy that survives opening the main disconnect?",
-      options: ["The 480 V utility feed", "Capacitors in the VFD DC bus and air trapped in a cylinder", "The PLC's firmware", "The Ethernet link light"],
-      answer: 1,
+      options: ["Capacitors in the VFD DC bus and air trapped in a cylinder", "The 480 V utility feed", "The PLC's firmware", "The Ethernet link light"],
+      answer: 0,
       explain: [
-        "The feed is isolated by the disconnect, although upstream parts of the panel stay live.",
         "Correct. Both capacitors and compressed air can injure someone after the disconnect is open.",
+        "The feed is isolated by the disconnect, although upstream parts of the panel stay live.",
         "Firmware is not an energy hazard.",
         "A link light is not a hazard."
       ]

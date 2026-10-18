@@ -159,24 +159,24 @@ PROFIBUS was developed in a German public research project and standardized in t
   quiz: [
     {
       q: "Which network uses RS-485 as its physical layer?",
-      options: ["PROFINET", "DeviceNet", "PROFIBUS DP", "ControlNet"],
-      answer: 2,
+      options: ["PROFIBUS DP", "PROFINET", "DeviceNet", "ControlNet"],
+      answer: 0,
       explain: [
+        "Correct. PROFIBUS DP uses RS-485, so termination and daisy-chain wiring rules apply.",
         "PROFINET runs on standard Ethernet.",
         "DeviceNet uses a CAN bus.",
-        "Correct. PROFIBUS DP uses RS-485, so termination and daisy-chain wiring rules apply.",
         "ControlNet uses coaxial cable."
       ]
     },
     {
       q: "A replacement PROFINET drive powers up and its link light is on, but the PLC reports it missing. What is the most likely cause?",
-      options: ["The drive needs an RS-485 terminator", "The drive has no station name matching the configuration", "DeviceNet power is off", "The GSD file is for PROFIBUS"],
-      answer: 1,
+      options: ["The drive needs an RS-485 terminator", "DeviceNet power is off", "The GSD file is for PROFIBUS", "The drive has no station name matching the configuration"],
+      answer: 3,
       explain: [
         "PROFINET runs on Ethernet and has no RS-485 terminators.",
-        "Correct. PROFINET devices are found by name, so a replacement must be given the old device's name.",
         "DeviceNet is a different network.",
-        "A PROFIBUS GSD would not have been used for the PLC configuration. The imported file for PROFINET is a GSDML."
+        "A PROFIBUS GSD would not have been used for the PLC configuration. The imported file for PROFINET is a GSDML.",
+        "Correct. PROFINET devices are found by name, so a replacement must be given the old device's name."
       ]
     },
     {
@@ -192,33 +192,33 @@ PROFIBUS was developed in a German public research project and standardized in t
     },
     {
       q: "Ignition needs a value from a flow meter on a PROFIBUS DP segment mastered by an S7 PLC. What is the simplest approach?",
-      options: ["Install a PROFIBUS driver in the Gateway", "Read the value from the PLC tag that holds the meter's input data", "Connect Ignition to the PROFIBUS cable as a second master", "Convert the PROFIBUS cable to Ethernet with a hub"],
-      answer: 1,
+      options: ["Install a PROFIBUS driver in the Gateway", "Connect Ignition to the PROFIBUS cable as a second master", "Read the value from the PLC tag that holds the meter's input data", "Convert the PROFIBUS cable to Ethernet with a hub"],
+      answer: 2,
       explain: [
         "Ignition does not provide a native PROFIBUS driver.",
-        "Correct. The PLC already has the data, so use a PLC driver.",
         "A second master on a DP bus is not the normal way to read process data and needs special hardware.",
+        "Correct. The PLC already has the data, so use a PLC driver.",
         "PROFIBUS and Ethernet are different networks. A hub does not convert."
       ]
     },
     {
       q: "What does a GSDML file do?",
-      options: ["It configures the switch VLANs", "It describes a PROFINET device so the engineering tool knows its modules, data sizes and parameters", "It stores the PLC program", "It encrypts PROFINET traffic"],
-      answer: 1,
+      options: ["It configures the switch VLANs", "It stores the PLC program", "It describes a PROFINET device so the engineering tool knows its modules, data sizes and parameters", "It encrypts PROFINET traffic"],
+      answer: 2,
       explain: [
         "Switches are configured separately.",
-        "Correct. It is the PROFINET counterpart of the PROFIBUS GSD and the CIP EDS file.",
         "The program lives in the controller project.",
+        "Correct. It is the PROFINET counterpart of the PROFIBUS GSD and the CIP EDS file.",
         "GSDML has no security function."
       ]
     },
     {
       q: "Random devices on a DeviceNet trunk drop out under load. Which check is the most relevant?",
-      options: ["Bus power voltage and terminators at both ends", "IGMP snooping settings", "The station name of each device", "The RPI of the Ethernet module"],
-      answer: 0,
+      options: ["IGMP snooping settings", "Bus power voltage and terminators at both ends", "The station name of each device", "The RPI of the Ethernet module"],
+      answer: 1,
       explain: [
-        "Correct. DeviceNet carries 24 V on the cable and needs termination, and either problem causes intermittent faults.",
         "DeviceNet is not an Ethernet network and does not use IGMP.",
+        "Correct. DeviceNet carries 24 V on the cable and needs termination, and either problem causes intermittent faults.",
         "Station names belong to PROFINET.",
         "The RPI is a CIP-over-Ethernet parameter and unrelated to the CAN trunk's physical faults."
       ]

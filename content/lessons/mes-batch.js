@@ -257,56 +257,56 @@ ISA-88 grew out of work in the late 1980s to give batch process plants a common 
     },
     {
       q: "Where should valve sequencing for a Heat phase and its interlocks live?",
-      options: ["In the batch engine, so it is all in one place", "In the master recipe as extra steps", "In the batch record database", "In the PLC phase logic"],
-      answer: 3,
+      options: ["In the PLC phase logic", "In the batch engine, so it is all in one place", "In the master recipe as extra steps", "In the batch record database"],
+      answer: 0,
       explain: [
+        "Correct. The PLC owns fast control and safety so the phase stays safe if the engine is unavailable.",
         "A server reboot or network drop would leave the process half-controlled.",
         "Recipes describe order and parameters at phase level. Device sequencing is equipment behavior.",
-        "The database stores records. It does not run equipment.",
-        "Correct. The PLC owns fast control and safety so the phase stays safe if the engine is unavailable."
+        "The database stores records. It does not run equipment."
       ]
     },
     {
       q: "Which of these is a unit in the ISA-88 physical model?",
-      options: ["A kettle that holds one batch at a time", "A single steam valve", "Plant1 (the whole site)", "A step in the recipe called Heat"],
-      answer: 0,
+      options: ["A single steam valve", "Plant1 (the whole site)", "A kettle that holds one batch at a time", "A step in the recipe called Heat"],
+      answer: 2,
       explain: [
-        "Correct. A unit is the vessel-level equipment that processes one batch at a time.",
         "A valve with its feedback is a control module.",
         "A location like a plant is a site.",
+        "Correct. A unit is the vessel-level equipment that processes one batch at a time.",
         "A recipe step is part of the procedural model, not the physical model."
       ]
     },
     {
       q: "A recipe says 'Heat and hold' and that action contains phases for ramp and hold. At what procedural level is 'Heat and hold'?",
-      options: ["Procedure", "Unit procedure", "Operation", "Phase"],
-      answer: 2,
+      options: ["Procedure", "Unit procedure", "Phase", "Operation"],
+      answer: 3,
       explain: [
         "The procedure is the whole recipe.",
         "A unit procedure is the work for one unit, which contains several operations.",
-        "Correct. Operations sit between unit procedure and phase and group phases into a major action.",
-        "Phases are the leaf level that equipment executes. This item contains phases."
+        "Phases are the leaf level that equipment executes. This item contains phases.",
+        "Correct. Operations sit between unit procedure and phase and group phases into a major action."
       ]
     },
     {
       q: "The batch engine host reboots in the middle of a 20 minute hold phase. What is the best behavior?",
-      options: ["The PLC phase continues and the engine, once back, reads the phase state and resumes waiting", "The PLC aborts the phase immediately", "The engine restarts the phase from the beginning", "The batch record is discarded"],
-      answer: 0,
+      options: ["The PLC aborts the phase immediately", "The PLC phase continues and the engine, once back, reads the phase state and resumes waiting", "The engine restarts the phase from the beginning", "The batch record is discarded"],
+      answer: 1,
       explain: [
-        "Correct. A phase that is its own state machine keeps controlling, and the engine recovers by reading state.",
         "Aborting would waste material for an infrastructure problem.",
+        "Correct. A phase that is its own state machine keeps controlling, and the engine recovers by reading state.",
         "Restarting would double the hold time and break the record.",
         "Records should be written continuously so a reboot loses nothing already stored."
       ]
     },
     {
       q: "What is the main difference between a PackML-style machine and an ISA-88 batch process?",
-      options: ["PackML has no states", "A batch has its own ID, a recipe-driven sequence and a per-batch record, while a packaging machine mostly runs a repeating cycle", "ISA-88 only applies to manual processes", "Batch processes cannot use PLCs"],
-      answer: 1,
+      options: ["PackML has no states", "ISA-88 only applies to manual processes", "A batch has its own ID, a recipe-driven sequence and a per-batch record, while a packaging machine mostly runs a repeating cycle", "Batch processes cannot use PLCs"],
+      answer: 2,
       explain: [
         "PackML defines a state model with states such as Idle, Execute and Held.",
-        "Correct. Batch work is recipe and record centered, discrete work is rate and uptime centered.",
         "ISA-88 applies to manual and automated processes alike.",
+        "Correct. Batch work is recipe and record centered, discrete work is rate and uptime centered.",
         "Most batch plants use PLCs for phase logic."
       ]
     }

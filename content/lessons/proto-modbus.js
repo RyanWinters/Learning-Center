@@ -176,23 +176,23 @@ Modicon released Modbus in 1979 for its 084 and 184 controllers. Modicon is the 
   quiz: [
     {
       q: "A meter manual lists 'Total kWh' at 40021. Which function code reads it, and what offset goes on the wire?",
-      options: ["FC04, offset 21", "FC03, offset 20", "FC03, offset 40021", "FC01, offset 20"],
-      answer: 1,
+      options: ["FC03, offset 20", "FC04, offset 21", "FC03, offset 40021", "FC01, offset 20"],
+      answer: 0,
       explain: [
-        "FC04 reads input registers (3xxxx). 4xxxx is the holding register table.",
         "Correct. 4xxxx means holding registers (FC03), and register 40021 is offset 20 because wire addresses start at 0.",
+        "FC04 reads input registers (3xxxx). 4xxxx is the holding register table.",
         "The leading 4 isn't sent. It only tells a human which table to use.",
         "FC01 reads coils, which are single bits."
       ]
     },
     {
       q: "Which two Modbus tables can a client write to?",
-      options: ["Coils and holding registers", "Discrete inputs and input registers", "Holding and input registers", "All four"],
-      answer: 0,
+      options: ["Discrete inputs and input registers", "Holding and input registers", "Coils and holding registers", "All four"],
+      answer: 2,
       explain: [
-        "Correct. Coils (bits) and holding registers (words) are read/write.",
         "Both of these are read-only by definition.",
         "Input registers are read-only.",
+        "Correct. Coils (bits) and holding registers (words) are read/write.",
         "Discrete inputs and input registers are read-only."
       ]
     },
@@ -209,33 +209,33 @@ Modicon released Modbus in 1979 for its 084 and 184 controllers. Modicon is the 
     },
     {
       q: "Why does Modbus TCP not need the CRC that Modbus RTU uses?",
-      options: ["TCP already detects and retransmits corrupted data", "Modbus TCP values are encrypted", "Ethernet cables don't have noise", "The MBAP header contains a CRC"],
-      answer: 0,
+      options: ["Modbus TCP values are encrypted", "Ethernet cables don't have noise", "The MBAP header contains a CRC", "TCP already detects and retransmits corrupted data"],
+      answer: 3,
       explain: [
-        "Correct. TCP (and Ethernet underneath it) handles error detection and retransmission.",
         "Standard Modbus TCP has no encryption at all.",
         "Noise exists everywhere. The lower layers detect it.",
-        "The MBAP header holds a transaction ID, protocol ID, length and unit ID. It has no checksum."
+        "The MBAP header holds a transaction ID, protocol ID, length and unit ID. It has no checksum.",
+        "Correct. TCP (and Ethernet underneath it) handles error detection and retransmission."
       ]
     },
     {
       q: "Ignition talks Modbus TCP to a serial gateway with six RS-485 drives behind it. What tells the gateway which drive a request is for?",
-      options: ["The TCP port number", "The unit ID in the MBAP header", "A different IP address per drive", "The function code"],
-      answer: 1,
+      options: ["The TCP port number", "A different IP address per drive", "The unit ID in the MBAP header", "The function code"],
+      answer: 2,
       explain: [
         "Every request goes to the same port, normally 502.",
-        "Correct. The gateway forwards each request to the RS-485 device whose address matches the unit ID.",
         "The drives sit behind one gateway with one IP address.",
+        "Correct. The gateway forwards each request to the RS-485 device whose address matches the unit ID.",
         "The function code says what to do, not which device to do it on."
       ]
     },
     {
       q: "What is the biggest security concern with Modbus TCP?",
-      options: ["It uses UDP", "It has no authentication, so anything that reaches port 502 can write", "It only works on a single subnet", "Its CRC can be forged"],
-      answer: 1,
+      options: ["It has no authentication, so anything that reaches port 502 can write", "It uses UDP", "It only works on a single subnet", "Its CRC can be forged"],
+      answer: 0,
       explain: [
-        "Modbus TCP runs over TCP, not UDP.",
         "Correct. Network segmentation is the main defense.",
+        "Modbus TCP runs over TCP, not UDP.",
         "It's routable like any TCP traffic, which is part of the risk.",
         "Modbus TCP has no CRC. Even RTU's CRC is only error detection, not security."
       ]

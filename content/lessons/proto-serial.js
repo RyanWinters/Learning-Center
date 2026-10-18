@@ -198,24 +198,24 @@ RS-232 was published by the Electronic Industries Association in 1960 to connect
     },
     {
       q: "A 300 m RS-485 run at 115200 baud works with 2 devices on the bench but throws CRC errors in the plant. What do you check first?",
-      options: ["Whether the baud rate is a multiple of 9600", "That both ends of the bus have a 120 ohm terminator", "That the cable is shielded RS-232 cable", "The parity of the master"],
-      answer: 1,
+      options: ["That both ends of the bus have a 120 ohm terminator", "Whether the baud rate is a multiple of 9600", "That the cable is shielded RS-232 cable", "The parity of the master"],
+      answer: 0,
       explain: [
-        "115200 is valid. The same settings worked on the bench.",
         "Correct. Short and slow buses hide missing termination. At speed and distance, reflections corrupt bits.",
+        "115200 is valid. The same settings worked on the bench.",
         "RS-232 cable is not the right type of cable for a differential bus.",
         "A parity mismatch would have failed on the bench as well."
       ]
     },
     {
       q: "What does a bias (fail-safe) network do?",
-      options: ["Matches the cable impedance", "Defines the bus idle state when no driver is active", "Raises the signal voltage for longer distances", "Isolates the shield from ground"],
-      answer: 1,
+      options: ["Matches the cable impedance", "Raises the signal voltage for longer distances", "Isolates the shield from ground", "Defines the bus idle state when no driver is active"],
+      answer: 3,
       explain: [
         "That is the job of the termination resistor.",
-        "Correct. Without it, the floating pair can be decoded as noise or random bytes.",
         "It does not increase the drive level.",
-        "It acts on the signal pair, not the shield."
+        "It acts on the signal pair, not the shield.",
+        "Correct. Without it, the floating pair can be decoded as noise or random bytes."
       ]
     },
     {
@@ -231,24 +231,24 @@ RS-232 was published by the Electronic Industries Association in 1960 to connect
     },
     {
       q: "Six drives sit on one RS-485 bus behind a Modbus TCP gateway. Does the gateway make polling all six faster than a direct serial connection at the same baud rate?",
-      options: ["Yes, Ethernet is faster so all six are read at once", "No, the serial bus still carries one request at a time at the same baud rate", "Yes, but only if each drive has its own IP address", "No, because a gateway always adds a second master"],
-      answer: 1,
+      options: ["Yes, Ethernet is faster so all six are read at once", "Yes, but only if each drive has its own IP address", "No, the serial bus still carries one request at a time at the same baud rate", "No, because a gateway always adds a second master"],
+      answer: 2,
       explain: [
         "Ethernet carries the request quickly, but the serial side remains one request at a time.",
-        "Correct. A gateway changes the connection type, not the speed of the serial bus.",
         "Drives behind a gateway share the gateway's IP address and are chosen by unit ID.",
+        "Correct. A gateway changes the connection type, not the speed of the serial bus.",
         "A protocol gateway acts as the single serial master. It does not add a second one."
       ]
     },
     {
       q: "An RS-232 link between a PC and a PLC port shows no data in either direction. The cable is straight-through. What is the most likely fix?",
-      options: ["Add termination resistors", "Use a null-modem cable that swaps TX and RX", "Change the stop bits to 2", "Add bias resistors"],
-      answer: 1,
+      options: ["Add termination resistors", "Change the stop bits to 2", "Add bias resistors", "Use a null-modem cable that swaps TX and RX"],
+      answer: 3,
       explain: [
         "RS-232 does not use termination resistors.",
-        "Correct. Two devices that both transmit on the same pin need the TX and RX lines crossed.",
         "Framing errors may garble data but would not cause complete silence in both directions.",
-        "Bias is an RS-485 concern."
+        "Bias is an RS-485 concern.",
+        "Correct. Two devices that both transmit on the same pin need the TX and RX lines crossed."
       ]
     }
   ],

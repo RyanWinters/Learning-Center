@@ -94,7 +94,7 @@ Your laptop needs a **communication driver**. It is the program that turns "cont
 
 In Logix Designer, the **Who Active** button (or *Communications > Who Active*) opens a browser of drivers. You pick the controller, then choose *Download*, *Upload* or *Go Online*. Another way is to set the **path** in the project's Controller Properties, but Who Active is the best place to start.
 
-To connect over Ethernet, your laptop and controller must be on the same network or routable to each other, which brings us back to {{lesson:net-ip}}. A common first-day problem is a laptop on 192.168.0.x while PLC1 is on the control VLAN at 10.20.10.x.
+To connect over Ethernet, your laptop and controller must be on the same network or routable to each other, which brings us back to {{lesson:net-ip}}. A common first-day problem is a laptop left on a home-network address such as 192.168.0.x while PLC1 is on the control VLAN at 10.20.10.x.
 
 ## Firmware revisions
 
@@ -198,44 +198,44 @@ Logix Designer began as RSLogix 5000, introduced with ControlLogix in the late 1
     },
     {
       q: "Before changing a running controller you do not know well, what should you do first?",
-      options: ["Go online and edit right away", "Upload to a dated file as a baseline", "Switch the keyswitch to PROG", "Reboot the laptop"],
-      answer: 1,
+      options: ["Go online and edit right away", "Switch the keyswitch to PROG", "Upload to a dated file as a baseline", "Reboot the laptop"],
+      answer: 2,
       explain: [
         "Editing first leaves you with no record of what was there.",
-        "Correct. An upload captures what is actually running. You can then compare it with other copies.",
         "Switching to PROG stops the machine and does not save anything.",
+        "Correct. An upload captures what is actually running. You can then compare it with other copies.",
         "Rebooting your laptop has no effect on the problem."
       ]
     },
     {
       q: "The keyswitch is in RUN. Which statement is true?",
-      options: ["Software cannot change the controller to Program mode", "The controller will ignore all tag writes", "The controller cannot be monitored", "It can only be downloaded to"],
-      answer: 0,
+      options: ["The controller will ignore all tag writes", "The controller cannot be monitored", "It can only be downloaded to", "Software cannot change the controller to Program mode"],
+      answer: 3,
       explain: [
-        "Correct. RUN locks the mode so that software cannot pause the controller. That protects against accidents.",
         "Tag writes by logic and by HMIs still work in Run mode.",
         "You can monitor in any mode.",
-        "A download requires Program mode, so RUN prevents downloading until the key is changed."
+        "A download requires Program mode, so RUN prevents downloading until the key is changed.",
+        "Correct. RUN locks the mode so that software cannot pause the controller. That protects against accidents."
       ]
     },
     {
       q: "A download fails with a revision mismatch. Which fix is least disruptive to the plant?",
-      options: ["Flash the controller firmware immediately", "Change the project's controller revision to match, then verify and test", "Replace the controller", "Disable electronic keying"],
-      answer: 1,
+      options: ["Change the project's controller revision to match, then verify and test", "Flash the controller firmware immediately", "Replace the controller", "Disable electronic keying"],
+      answer: 0,
       explain: [
-        "Flashing firmware can wipe the program and affects the hardware. It needs a plan.",
         "Correct. Aligning the project to the controller avoids touching the hardware, but you must re-verify and test the logic.",
+        "Flashing firmware can wipe the program and affects the hardware. It needs a plan.",
         "Replacement is costly and unnecessary.",
         "Electronic keying is about modules, not the controller's firmware revision."
       ]
     },
     {
       q: "What do RSLinx Classic and FactoryTalk Linx do?",
-      options: ["They edit ladder logic", "They provide the communication driver so software on a PC can reach controllers", "They monitor firmware health", "They convert .ACD files to .L5X"],
-      answer: 1,
+      options: ["They provide the communication driver so software on a PC can reach controllers", "They edit ladder logic", "They monitor firmware health", "They convert .ACD files to .L5X"],
+      answer: 0,
       explain: [
-        "Ladder is edited in Logix Designer.",
         "Correct. They are the drivers that let Logix Designer and HMIs reach the controller.",
+        "Ladder is edited in Logix Designer.",
         "They do not monitor firmware health.",
         "Export to L5X is a function inside Logix Designer."
       ]

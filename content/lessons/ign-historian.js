@@ -24,8 +24,8 @@ In 8.3 the Historian module offers two storage back ends, called **history provi
 
 | Provider | Stores data in | Notes |
 |---|---|---|
-| **SQL Historian** (the classic one) | Your own relational database (MySQL/MariaDB, PostgreSQL, SQL Server, Oracle and others) | Uses {{term:store-and-forward|store and forward}}; you own backups and indexing |
-| **Core Historian** (new in 8.3) | A built-in {{term:questdb|QuestDB}} time-series store on the Gateway's disk | Needs no external database; writes via a write-ahead log, skipping store and forward |
+| **SQL Historian** (the classic one) | Your own relational database (MySQL/MariaDB, PostgreSQL, SQL Server, Oracle and others) | Uses {{term:store-and-forward|store-and-forward}}; you own backups and indexing |
+| **Core Historian** (new in 8.3) | A built-in {{term:questdb|QuestDB}} time-series store on the Gateway's disk | Needs no external database; writes via a write-ahead log, skipping store-and-forward |
 
 > [!note] In 8.1
 > 8.1 has the Tag Historian module, which stores to SQL, the same approach 8.3 calls the SQL Historian provider. The Core Historian provider is new in 8.3. Everything below about sample modes and deadbands applies to both versions. The sqlth tables apply to the SQL provider in both. {{lesson:ign-architecture}} lists the module naming across versions.
@@ -37,7 +37,7 @@ The SQL Historian creates a small set of tables with the \`sqlth_\` prefix plus 
 | Table | Holds |
 |---|---|
 | \`sqlth_drv\` | One row per Gateway history provider ("driver") writing to this database |
-| \`sqlth_scinfo\` | Scan class info, the historical sample rate and tag groups |
+| \`sqlth_scinfo\` | Tag group (scan class) info and the historical sample rate |
 | \`sqlth_te\` | **Tag entries**: one row per unique historical configuration of a tag, with a numeric \`id\` |
 | \`sqlth_partitions\` | Maps time ranges to data table names |
 | \`sqlt_data_<driver>_<year>_<month>\` | The values: tag id, int/float/string/date value, data integrity (quality), timestamp in milliseconds |
@@ -90,9 +90,9 @@ Around those modes sit guard rails. **Minimum time between records** drops rapid
 
 {{diagram:flow}}
 
-## Store and forward
+## Store-and-forward
 
-The Gateway does not write directly to your database. Values enter a {{term:store-and-forward|store and forward}} pipeline that batches them, retries when the database is down and caches to disk. A database outage then loses nothing for hours, as long as the disk cache is not exceeded. Core Historian writes straight to its own disk through a write-ahead log, so this layer is not involved. The details of the engine are covered in {{lesson:ign-databases}}.
+The Gateway does not write directly to your database. Values enter a {{term:store-and-forward|store-and-forward}} pipeline that batches them, retries when the database is down and caches to disk. A database outage then loses nothing for hours, as long as the disk cache is not exceeded. Core Historian writes straight to its own disk through a write-ahead log, so this layer is not involved. The details of the engine are covered in {{lesson:ign-databases}}.
 
 ## Querying history
 
@@ -167,7 +167,7 @@ Ignition's Tag Historian has stored data in SQL tables for many Ignition version
   ],
 
   diagrams: {
-    flow: `<svg viewBox="0 0 640 210" role="img" aria-label="Tag change flows through sample mode and deadband, then store and forward, into a data partition table; sqlth_te and sqlth_partitions are lookup tables">
+    flow: `<svg viewBox="0 0 640 210" role="img" aria-label="Tag change flows through sample mode and deadband, then store-and-forward, into a data partition table; sqlth_te and sqlth_partitions are lookup tables">
   <defs><marker id="ign-historian-ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="dg-fill-line" d="M0,0 L8,4 L0,8 z"/></marker></defs>
   <rect class="dg-box" x="20" y="60" width="100" height="50" rx="6"/>
   <text class="dg-text-sm dg-mid" x="70" y="90">Tag value</text>
@@ -206,35 +206,35 @@ Ignition's Tag Historian has stored data in SQL tables for many Ignition version
   quiz: [
     {
       q: "A level signal sits flat for hours with small noise. Which setup stores it most efficiently while still catching real moves?",
-      options: ["Periodic every second", "On Change, analog deadband sized near the noise floor, with a maximum time between records", "On Change, deadband 0", "Tag group at 100 ms"],
-      answer: 1,
+      options: ["On Change, analog deadband sized near the noise floor, with a maximum time between records", "Periodic every second", "On Change, deadband 0", "Tag group at 100 ms"],
+      answer: 0,
       explain: [
-        "That records 86,400 rows a day of mostly identical values.",
         "Correct. Noise is filtered, real changes are kept, and the heartbeat row proves the system is alive.",
+        "That records 86,400 rows a day of mostly identical values.",
         "Every noise flicker would create a row.",
         "That is even more rows than a one-second periodic."
       ]
     },
     {
       q: "Why does the SQL Historian store a tagid rather than the tag path in each data row?",
-      options: ["To hide tag names for security", "To make rows narrow, with paths looked up in sqlth_te", "Because paths can't be stored in SQL", "To make renames automatic"],
-      answer: 1,
+      options: ["To hide tag names for security", "Because paths can't be stored in SQL", "To make rows narrow, with paths looked up in sqlth_te", "To make renames automatic"],
+      answer: 2,
       explain: [
         "It is a storage optimization, not a security feature.",
-        "Correct. A small integer per row saves enormous space across millions of rows.",
         "Strings can be stored. They are just wasteful at this scale.",
+        "Correct. A small integer per row saves enormous space across millions of rows.",
         "Renames actually create a new sqlth_te entry."
       ]
     },
     {
       q: "What does pruning do in the SQL Historian?",
-      options: ["Deletes individual old rows nightly", "Drops entire partition tables whose newest data is older than the prune age", "Compresses the oldest rows", "Moves old data to the Core Historian"],
-      answer: 1,
+      options: ["Deletes individual old rows nightly", "Compresses the oldest rows", "Moves old data to the Core Historian", "Drops entire partition tables whose newest data is older than the prune age"],
+      answer: 3,
       explain: [
         "That would be slow and bloat the tables, the exact problem partitions avoid.",
-        "Correct. Dropping a partition is fast, and it means data lives slightly beyond the nominal age.",
         "Pruning removes data. It does not compress it.",
-        "Pruning only deletes."
+        "Pruning only deletes.",
+        "Correct. Dropping a partition is fast, and it means data lives slightly beyond the nominal age."
       ]
     },
     {
@@ -250,22 +250,22 @@ Ignition's Tag Historian has stored data in SQL tables for many Ignition version
     },
     {
       q: "5,000 tags change every 10 s on average and a row costs about 50 bytes. About how much raw data per day before compression?",
-      options: ["220 MB", "2.2 GB", "22 GB", "220 GB"],
-      answer: 1,
+      options: ["220 MB", "22 GB", "2.2 GB", "220 GB"],
+      answer: 2,
       explain: [
         "That is ten times too small.",
-        "Correct. 500 rows/s × 86,400 s × 50 B is about 2.2 GB.",
         "That is ten times too large.",
+        "Correct. 500 rows/s × 86,400 s × 50 B is about 2.2 GB.",
         "That is a hundred times too large."
       ]
     },
     {
       q: "Which is true of the 8.3 Core Historian compared with the SQL Historian?",
-      options: ["It requires an external SQL database", "It stores data on the Gateway using QuestDB and does not use store and forward", "It uses sqlth_te tables", "It is only available in Ignition Edge"],
-      answer: 1,
+      options: ["It stores data on the Gateway using QuestDB and does not use store-and-forward", "It requires an external SQL database", "It uses sqlth_te tables", "It is only available in Ignition Edge"],
+      answer: 0,
       explain: [
-        "Needing no external database is its main attraction.",
         "Correct. It writes to local disk through a write-ahead log.",
+        "Needing no external database is its main attraction.",
         "Those tables belong to the SQL Historian.",
         "It is part of the Historian module in standard Ignition 8.3."
       ]

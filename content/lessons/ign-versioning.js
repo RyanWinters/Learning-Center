@@ -193,45 +193,45 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
   quiz: [
     {
       q: "You changed one Perspective view on dev and want it on prod. Which approach is the best fit?",
-      options: ["Restore dev's .gwbk onto prod", "Promote the project change through git or a project export", "Retype the view by hand on prod", "Copy the whole data folder from dev"],
-      answer: 1,
+      options: ["Promote the project change through git or a project export", "Restore dev's .gwbk onto prod", "Retype the view by hand on prod", "Copy the whole data folder from dev"],
+      answer: 0,
       explain: [
-        "A restore replaces everything, including dev's devices and settings.",
         "Correct. Promote the change itself and leave environment settings alone.",
+        "A restore replaces everything, including dev's devices and settings.",
         "Retyping invites mistakes and leaves no record.",
         "Copying the whole folder carries environment config too."
       ]
     },
     {
       q: "Which of these is NOT brought back by restoring a .gwbk file onto a new server?",
-      options: ["Project resources", "Tag definitions", "Historian data stored in your SQL database", "Gateway settings such as database connections"],
-      answer: 2,
+      options: ["Project resources", "Historian data stored in your SQL database", "Tag definitions", "Gateway settings such as database connections"],
+      answer: 1,
       explain: [
         "Projects are in the backup.",
-        "Tags are in the backup.",
         "Correct. Historian data lives in your database, which needs its own backup.",
+        "Tags are in the backup.",
         "Gateway settings are in the backup."
       ]
     },
     {
       q: "In an 8.3 project on disk, what is the job of resource.json?",
-      options: ["It stores the resource's payload such as a view's layout", "It stores metadata about the resource, like its scope, version and signatures", "It stores the gateway password", "It holds historian data"],
-      answer: 1,
+      options: ["It stores the resource's payload such as a view's layout", "It stores the gateway password", "It holds historian data", "It stores metadata about the resource, like its scope, version and signatures"],
+      answer: 3,
       explain: [
         "The payload is in a separate file such as view.json.",
-        "Correct. Each resource has a small metadata file next to its payload.",
         "Secrets are not stored this way.",
-        "Historian data is in a database."
+        "Historian data is in a database.",
+        "Correct. Each resource has a small metadata file next to its payload."
       ]
     },
     {
       q: "The dev and prod gateways must use different PLC addresses for the same project. What is the 8.3 way to handle that?",
-      options: ["Edit the project on prod after each deployment", "Use deployment modes to give mode-specific configuration", "Keep two copies of every view", "Disable the devices in test"],
-      answer: 1,
+      options: ["Edit the project on prod after each deployment", "Keep two copies of every view", "Use deployment modes to give mode-specific configuration", "Disable the devices in test"],
+      answer: 2,
       explain: [
         "Post-deployment hand edits are the error-prone approach.",
-        "Correct. Mode-specific resources let identical projects differ only in endpoints.",
         "Duplicated views drift apart.",
+        "Correct. Mode-specific resources let identical projects differ only in endpoints.",
         "Disabling devices does not point them at the right addresses."
       ]
     },
@@ -248,13 +248,13 @@ Ignition 7 and 8.0 stored projects inside the gateway, and teams worked around t
     },
     {
       q: "Why might a team add transaction groups and reports to .gitignore?",
-      options: ["They are secret", "They are stored as binary data that cannot be merged or reviewed sensibly", "Git cannot store files over 1 KB", "They are never needed again"],
-      answer: 1,
+      options: ["They are secret", "Git cannot store files over 1 KB", "They are never needed again", "They are stored as binary data that cannot be merged or reviewed sensibly"],
+      answer: 3,
       explain: [
         "They are not secret by nature.",
-        "Correct. The official guide suggests ignoring resource types stored as Java binary files, which cannot be diffed meaningfully.",
         "Git handles large files.",
-        "They are needed, which is why backups still cover them."
+        "They are needed, which is why backups still cover them.",
+        "Correct. The official guide suggests ignoring resource types stored as Java binary files, which cannot be diffed meaningfully."
       ]
     }
   ],
