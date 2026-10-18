@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-faults",
   title: "Faults, fault routines and diagnostics",
   track: "plc",
-  minutes: 20,
+  minutes: 10,
   level: 3,
   prereqs: ["plc-organization"],
   tags: ["faults", "gsv", "ssv", "diagnostics", "fault-handler", "io-status"],

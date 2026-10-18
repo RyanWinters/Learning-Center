@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-lifecycle",
   title: "Project lifecycle: proposal to handover",
   track: "int",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["found-roles"],
   tags: ["projects", "lifecycle", "FAT", "SAT", "estimating", "change orders", "handover"],

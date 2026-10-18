@@ -2,9 +2,9 @@ LC.lesson({
   id: "ign-databases",
   title: "Databases in Ignition: named queries, transaction groups, store & forward",
   track: "ign",
-  minutes: 30,
+  minutes: 15,
   level: 2,
-  prereqs: ["ign-tags", "db-sql-select"],
+  prereqs: ["ign-tags", "db-sql-select", "ign-scripting"],
   tags: ["ignition", "database", "named-queries", "transaction-groups", "store-and-forward", "jdbc"],
   summary: "How Ignition talks to SQL databases: connections and pools, why named queries beat ad-hoc queries, what transaction groups do, and how store-and-forward keeps data safe when the database is down.",
   objectives: [

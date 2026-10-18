@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-charts",
   title: "Charts and trends",
   track: "persp",
-  minutes: 25,
+  minutes: 20,
   level: 2,
   prereqs: ["persp-bindings", "ign-historian"],
   tags: ["perspective", "charts", "trends", "historian", "aggregation", "performance", "hp-hmi"],

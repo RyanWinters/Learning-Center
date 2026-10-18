@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-expressions",
   title: "The expression language",
   track: "ign",
-  minutes: 20,
+  minutes: 10,
   level: 2,
   prereqs: ["ign-tags"],
   tags: ["ignition", "expressions", "bindings", "runscript", "polling"],

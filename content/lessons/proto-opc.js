@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-opc",
   title: "From OPC Classic to OPC UA",
   track: "proto",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-routing"],
   tags: ["opc", "opc-ua", "opc-da", "security", "certificates", "subscriptions"],

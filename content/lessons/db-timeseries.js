@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-timeseries",
   title: "Time-series data in SQL and historian tables",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["db-indexes", "ign-historian"],
   tags: ["historian", "time-series", "partitioning", "sqlth", "storage"],

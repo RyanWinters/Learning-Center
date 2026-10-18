@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-downtime",
   title: "Downtime tracking and reason codes",
   track: "mes",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["mes-oee"],
   tags: ["downtime", "reason-codes", "pareto", "micro-stops", "first-out", "oee"],

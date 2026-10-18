@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-navigation",
   title: "Sessions, pages, docks and popups",
   track: "persp",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["persp-containers"],
   tags: ["perspective", "session", "navigation", "popups", "docks", "pages"],

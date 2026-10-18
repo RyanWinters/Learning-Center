@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-build-vs-buy",
   title: "Plain Ignition vs Sepasoft",
   track: "mes",
-  minutes: 20,
+  minutes: 15,
   level: 4,
   prereqs: ["mes-sepasoft"],
   tags: ["mes", "sepasoft", "architecture", "decision", "tco"],

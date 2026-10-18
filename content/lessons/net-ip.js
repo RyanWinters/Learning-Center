@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-ip",
   title: "IP addressing and subnetting",
   track: "net",
-  minutes: 30,
+  minutes: 15,
   level: 2,
   prereqs: ["net-ethernet"],
   tags: ["ip", "subnet", "cidr", "mask", "addressing", "dhcp", "arp"],

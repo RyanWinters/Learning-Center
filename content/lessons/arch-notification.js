@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-notification",
   title: "Alarm notification, voice and SMS",
   track: "arch",
-  minutes: 20,
+  minutes: 10,
   level: 2,
   prereqs: ["ign-alarming"],
   tags: ["alarm-notification", "pipelines", "twilio", "sms", "on-call"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-historian",
   title: "The Tag Historian",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-tags", "db-intro"],
   tags: ["ignition", "historian", "history", "sql", "deadband", "store-and-forward"],

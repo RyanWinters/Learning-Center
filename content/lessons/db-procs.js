@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-procs",
   title: "Views, stored procedures and logic in the database",
   track: "db",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["db-sql-joins"],
   tags: ["sql", "views", "stored-procedures", "triggers", "ignition", "architecture"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-gateway-network",
   title: "The Gateway Network",
   track: "arch",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-architecture", "net-routing"],
   tags: ["gateway-network", "ignition", "security", "certificates", "architecture"],

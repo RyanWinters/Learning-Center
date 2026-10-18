@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-ecosystem",
   title: "Third-party modules and the Ignition Exchange",
   track: "arch",
-  minutes: 10,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-architecture"],
   tags: ["modules", "third-party", "exchange", "sdk", "ecosystem", "risk"],

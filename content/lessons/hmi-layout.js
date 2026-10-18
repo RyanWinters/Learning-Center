@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-layout",
   title: "Layout, grouping and where the eye lands",
   track: "hmi",
-  minutes: 30,
+  minutes: 20,
   level: 2,
   prereqs: ["hmi-perception"],
   tags: ["hmi", "layout", "gestalt", "grid", "eye tracking", "perspective", "containers"],

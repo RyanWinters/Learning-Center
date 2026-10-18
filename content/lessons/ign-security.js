@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-security",
   title: "Users, roles, identity providers and security zones",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-architecture"],
   tags: ["security", "users", "roles", "identity-provider", "zones", "hardening"],

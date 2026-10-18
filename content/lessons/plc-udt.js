@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-udt",
   title: "UDTs: designing data structures",
   track: "plc",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["plc-tags", "plc-compare-math"],
   tags: ["udt", "data-types", "structure", "logix", "naming", "faceplates"],

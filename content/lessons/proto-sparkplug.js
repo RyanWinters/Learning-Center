@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-sparkplug",
   title: "Sparkplug B",
   track: "proto",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["proto-mqtt"],
   tags: ["sparkplug", "mqtt", "protobuf", "birth-death", "uns", "iiot"],

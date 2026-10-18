@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-sql-select",
   title: "SQL I: SELECT, WHERE and ORDER BY",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 1,
   prereqs: ["db-intro"],
   tags: ["sql", "select", "where", "order by", "null", "timestamps", "dialects"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-erp",
   title: "ERP integration, B2MML and ISA-95 Part 2",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 4,
   prereqs: ["mes-what", "arch-webdev"],
   tags: ["erp", "isa-95", "b2mml", "integration", "sap", "rest"],

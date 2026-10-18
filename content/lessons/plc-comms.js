@@ -2,9 +2,9 @@ LC.lesson({
   id: "plc-comms",
   title: "Produced/consumed tags, MSG and remote I/O",
   track: "plc",
-  minutes: 25,
+  minutes: 15,
   level: 3,
-  prereqs: ["plc-organization", "proto-enip"],
+  prereqs: ["plc-organization", "proto-enip", "plc-udt"],
   tags: ["produced-consumed", "msg", "rpi", "remote-io", "cip", "connections"],
   summary: "The three ways Logix controllers move data: shared tags between controllers, MSG for one-off reads and writes, and remote I/O over EtherNet/IP.",
   objectives: [

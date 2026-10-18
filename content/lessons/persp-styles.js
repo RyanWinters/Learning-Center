@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-styles",
   title: "Styles, style classes and themes",
   track: "persp",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["persp-containers"],
   tags: ["perspective", "styles", "css", "themes", "style classes"],

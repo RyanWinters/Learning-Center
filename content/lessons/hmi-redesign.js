@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-redesign",
   title: "Workshop: redesigning a bad screen",
   track: "hmi",
-  minutes: 40,
+  minutes: 20,
   level: 4,
   prereqs: ["hmi-process", "hmi-dataviz", "hmi-abnormal"],
   tags: ["hmi", "workshop", "redesign", "critique", "checklist", "capstone", "isa-101"],

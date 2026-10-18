@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-versioning",
   title: "Backups, exports and version control",
   track: "ign",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-projects"],
   tags: ["backup", "gwbk", "git", "version-control", "deployment", "promotion"],

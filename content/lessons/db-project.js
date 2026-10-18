@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-project",
   title: "Project: design a production and downtime schema",
   track: "db",
-  minutes: 40,
+  minutes: 15,
   level: 3,
   prereqs: ["db-schema", "db-sql-modify"],
   tags: ["project", "schema", "oee", "downtime", "named-queries", "transaction-groups"],

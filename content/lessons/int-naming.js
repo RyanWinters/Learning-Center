@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-naming",
   title: "Tag naming and system-wide standards",
   track: "int",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["plc-udt", "ign-udts"],
   tags: ["naming", "standards", "isa-5.1", "isa-95", "tag-paths", "uns", "udt", "database"],

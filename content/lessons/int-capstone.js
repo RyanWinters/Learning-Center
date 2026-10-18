@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-capstone",
   title: "Capstone: architect a multi-site system",
   track: "int",
-  minutes: 45,
+  minutes: 25,
   level: 4,
   prereqs: ["arch-patterns", "mes-uns", "db-schema", "int-naming"],
   tags: ["architecture", "capstone", "multi-site", "decision-log", "purdue", "uns", "mes", "redundancy", "security"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-fds",
   title: "Writing a functional design specification",
   track: "int",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["int-lifecycle"],
   tags: ["FDS", "specification", "control narrative", "alarms", "interlocks", "traceability", "scope"],

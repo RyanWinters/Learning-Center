@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-remote-services",
   title: "Remote tag providers, historians and alarm journals",
   track: "arch",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["arch-gateway-network", "ign-historian", "ign-alarming"],
   tags: ["remote-tag-provider", "historian", "alarm-journal", "store-and-forward", "gateway-network"],

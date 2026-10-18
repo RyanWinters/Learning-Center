@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-licensing",
   title: "Licensing, editions and sizing",
   track: "ign",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-architecture"],
   tags: ["licensing", "editions", "sizing", "maker", "edge", "cloud", "scale-out"],

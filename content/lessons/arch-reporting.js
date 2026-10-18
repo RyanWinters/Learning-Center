@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-reporting",
   title: "The Reporting module",
   track: "arch",
-  minutes: 25,
+  minutes: 10,
   level: 2,
   prereqs: ["ign-databases"],
   tags: ["reporting", "pdf", "schedules", "named-queries", "perspective"],

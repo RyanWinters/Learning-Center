@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-sql-modify",
   title: "SQL III: INSERT, UPDATE, DELETE and transactions",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["db-sql-select"],
   tags: ["sql", "insert", "update", "delete", "transaction", "acid", "sql injection", "named queries"],

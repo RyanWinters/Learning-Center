@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-pid-docs",
   title: "Reading P&IDs, loop sheets and I/O lists",
   track: "found",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["found-signals"],
   tags: ["p&id", "isa-5.1", "io-list", "loop-sheet", "documentation"],

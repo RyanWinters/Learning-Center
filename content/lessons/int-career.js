@@ -2,9 +2,9 @@ LC.lesson({
   id: "int-career",
   title: "Certifications and career path",
   track: "int",
-  minutes: 10,
+  minutes: 15,
   level: 1,
-  prereqs: ["int-lifecycle"],
+  prereqs: ["found-roles"],
   tags: ["career", "certification", "inductive-university", "isa", "csia", "pe", "portfolio", "home-lab"],
   summary: "Which credentials exist, what each one proves, and a capstone-style plan for what to build, using the Build Labs, so a hiring manager believes your skill.",
   objectives: [

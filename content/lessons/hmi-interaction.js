@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-interaction",
   title: "Controls, faceplates and preventing operator error",
   track: "hmi",
-  minutes: 30,
+  minutes: 20,
   level: 3,
   prereqs: ["hmi-layout"],
   tags: ["hmi", "faceplate", "controls", "touch", "confirmation", "poka-yoke", "motor", "usability"],

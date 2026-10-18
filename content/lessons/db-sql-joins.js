@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-sql-joins",
   title: "SQL II: JOINs and GROUP BY",
   track: "db",
-  minutes: 30,
+  minutes: 15,
   level: 2,
   prereqs: ["db-sql-select"],
   tags: ["sql", "join", "group by", "aggregate", "having", "downtime", "reporting"],

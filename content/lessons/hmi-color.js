@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-color",
   title: "Color theory for control rooms",
   track: "hmi",
-  minutes: 30,
+  minutes: 20,
   level: 2,
   prereqs: ["hmi-perception"],
   tags: ["hmi", "color", "contrast", "wcag", "accessibility", "themes", "perspective"],

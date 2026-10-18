@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-eam",
   title: "Enterprise Administration Module (EAM)",
   track: "arch",
-  minutes: 25,
+  minutes: 10,
   level: 3,
   prereqs: ["arch-gateway-network", "ign-versioning"],
   tags: ["eam", "fleet-management", "backup", "agent-tasks", "licensing", "upgrades"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-what",
   title: "What MES is: ISA-95 Part 3",
   track: "mes",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["found-purdue"],
   tags: ["mes", "isa-95", "level-3", "mesa", "scope"],

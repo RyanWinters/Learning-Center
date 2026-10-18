@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-mqtt",
   title: "MQTT with Cirrus Link modules",
   track: "arch",
-  minutes: 30,
+  minutes: 10,
   level: 3,
   prereqs: ["proto-sparkplug", "arch-edge"],
   tags: ["mqtt", "sparkplug", "cirrus-link", "transmission", "engine", "distributor", "chariot"],

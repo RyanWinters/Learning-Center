@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-troubleshoot",
   title: "Troubleshooting toolkit: ping to Wireshark",
   track: "net",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-routing"],
   tags: ["troubleshooting", "ping", "wireshark", "arp", "tracert", "test-netconnection", "span", "nslookup"],

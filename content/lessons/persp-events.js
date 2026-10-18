@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-events",
   title: "Events, actions and message handlers",
   track: "persp",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["persp-bindings", "ign-scripting"],
   tags: ["perspective", "events", "actions", "message handlers", "scripting", "bindings"],

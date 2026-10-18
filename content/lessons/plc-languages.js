@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-languages",
   title: "Structured Text, FBD and SFC",
   track: "plc",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["plc-organization"],
   tags: ["structured-text", "fbd", "sfc", "iec-61131-3", "ladder", "languages", "logix"],

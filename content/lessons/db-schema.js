@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-schema",
   title: "Schema design and normalization",
   track: "db",
-  minutes: 30,
+  minutes: 15,
   level: 3,
   prereqs: ["db-sql-joins"],
   tags: ["schema", "normalization", "keys", "design", "sql"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-devices",
   title: "Field devices: sensors, transmitters, actuators, drives",
   track: "found",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["found-purdue"],
   tags: ["sensors", "transmitters", "actuators", "valves", "vfd", "motor-control", "level-0"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-modbus",
   title: "Modbus RTU & TCP",
   track: "proto",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["proto-serial", "net-ip"],
   tags: ["modbus", "polling", "registers", "serial", "drivers"],

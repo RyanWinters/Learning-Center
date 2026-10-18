@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-event-streams",
   title: "Event Streams and Kafka (8.3)",
   track: "arch",
-  minutes: 20,
+  minutes: 15,
   level: 4,
   prereqs: ["arch-webdev", "proto-mqtt"],
   tags: ["event-streams", "kafka", "mqtt", "pipeline", "8.3", "integration"],

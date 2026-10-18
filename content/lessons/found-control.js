@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-control",
   title: "Control basics: loops, on/off and PID",
   track: "found",
-  minutes: 25,
+  minutes: 20,
   level: 2,
   prereqs: ["found-signals"],
   tags: ["control", "pid", "loops", "tuning", "setpoint"],

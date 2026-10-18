@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-routing",
   title: "Routing, gateways, NAT, DHCP and DNS",
   track: "net",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-ip"],
   tags: ["routing", "gateway", "nat", "dhcp", "dns", "stratix", "layer 3"],

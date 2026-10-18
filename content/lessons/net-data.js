@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-data",
   title: "Bits, bytes, hex and data types",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["found-signals"],
   tags: ["binary", "hex", "bcd", "endianness", "float", "data types", "modbus"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-performance",
   title: "Performance and scale",
   track: "persp",
-  minutes: 25,
+  minutes: 20,
   level: 4,
   prereqs: ["persp-embedding", "persp-events"],
   tags: ["perspective", "performance", "scale", "gateway", "bindings", "diagnostics", "load-testing"],

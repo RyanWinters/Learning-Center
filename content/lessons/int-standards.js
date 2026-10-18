@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-standards",
   title: "Standards cheat-sheet",
   track: "int",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["found-purdue"],
   tags: ["standards", "ISA", "IEC", "NFPA", "UL", "reference"],

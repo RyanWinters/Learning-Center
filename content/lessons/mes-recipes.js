@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-recipes",
   title: "Recipes, settings and changeovers",
   track: "mes",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["mes-batch"],
   tags: ["recipes", "changeover", "smed", "plc-handshake", "versioning"],

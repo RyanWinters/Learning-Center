@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-historians",
   title: "Historians and data lakes: PI, Canary, InfluxDB, cloud",
   track: "db",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["db-timeseries"],
   tags: ["historian", "pi", "canary", "influxdb", "timescaledb", "data-lake", "cloud", "compression"],

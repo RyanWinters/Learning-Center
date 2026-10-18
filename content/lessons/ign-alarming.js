@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-alarming",
   title: "Alarming",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-tags"],
   tags: ["ignition", "alarms", "isa-18.2", "notification", "operators"],

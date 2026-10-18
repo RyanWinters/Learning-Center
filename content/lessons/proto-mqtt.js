@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-mqtt",
   title: "MQTT: publish/subscribe for industry",
   track: "proto",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["net-routing"],
   tags: ["mqtt", "pub-sub", "broker", "qos", "iiot"],

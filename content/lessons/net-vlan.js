@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-vlan",
   title: "VLANs, QoS and IGMP snooping",
   track: "net",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-routing"],
   tags: ["vlan", "802.1Q", "igmp", "multicast", "qos", "dscp", "switching"],

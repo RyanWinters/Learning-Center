@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-enip",
   title: "EtherNet/IP and CIP",
   track: "proto",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-vlan"],
   tags: ["ethernet-ip", "cip", "allen-bradley", "io", "rpi", "multicast"],

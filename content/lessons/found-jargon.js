@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-jargon",
   title: "Jargon survival guide",
   track: "found",
-  minutes: 10,
+  minutes: 15,
   level: 1,
   prereqs: ["found-purdue"],
   tags: ["jargon", "glossary", "vocabulary", "field-guide"],

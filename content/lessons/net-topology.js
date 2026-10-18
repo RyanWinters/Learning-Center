@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-topology",
   title: "Industrial topologies, rings and DLR",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["net-vlan"],
   tags: ["topology", "ring", "dlr", "rstp", "redundancy", "cpwe", "switching"],

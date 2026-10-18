@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-scripting",
   title: "Python scripting and scopes",
   track: "ign",
-  minutes: 30,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-expressions"],
   tags: ["ignition", "scripting", "python", "jython", "scopes", "system-library"],

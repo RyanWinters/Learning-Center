@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-sepasoft",
   title: "The Sepasoft MES modules",
   track: "mes",
-  minutes: 35,
+  minutes: 20,
   level: 3,
   prereqs: ["mes-oee", "mes-track-trace", "ign-databases"],
   tags: ["sepasoft", "mes", "oee", "track-trace", "batch", "spc", "modules"],

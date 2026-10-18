@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-isa88-packml",
   title: "ISA-88 and the PackML state model",
   track: "plc",
-  minutes: 25,
+  minutes: 10,
   level: 3,
   prereqs: ["plc-state-machines"],
   tags: ["isa-88", "packml", "omac", "packtags", "state-model", "equipment-module"],

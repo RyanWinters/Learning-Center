@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-spc",
   title: "SPC: control charts and rules",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["mes-what"],
   tags: ["spc", "quality", "control-charts", "cpk", "sampling"],

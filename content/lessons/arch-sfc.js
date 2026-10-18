@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-sfc",
   title: "The SFC module",
   track: "arch",
-  minutes: 20,
+  minutes: 10,
   level: 3,
   prereqs: ["ign-scripting", "plc-state-machines"],
   tags: ["sfc", "sequencing", "batch", "state-machine", "safety"],

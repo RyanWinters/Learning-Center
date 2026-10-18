@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-uns",
   title: "The Unified Namespace",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 4,
   prereqs: ["proto-sparkplug", "mes-what"],
   tags: ["uns", "mqtt", "sparkplug", "isa-95", "architecture", "iiot"],

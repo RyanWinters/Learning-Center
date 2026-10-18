@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-webdev",
   title: "WebDev and REST APIs",
   track: "arch",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-scripting"],
   tags: ["webdev", "rest", "api", "json", "http", "integration"],

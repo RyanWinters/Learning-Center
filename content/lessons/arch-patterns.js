@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-patterns",
   title: "Architectures: standard, scale-out, hub-and-spoke, cloud",
   track: "arch",
-  minutes: 30,
+  minutes: 15,
   level: 3,
   prereqs: ["arch-gateway-network"],
   tags: ["architecture", "scale-out", "hub-and-spoke", "cloud", "design", "mqtt"],

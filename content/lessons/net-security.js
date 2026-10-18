@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-security",
   title: "Firewalls, DMZs and ISA/IEC 62443",
   track: "net",
-  minutes: 30,
+  minutes: 15,
   level: 3,
   prereqs: ["net-vlan", "found-purdue"],
   tags: ["security", "firewall", "dmz", "62443", "zones", "conduits", "remote-access", "purdue"],

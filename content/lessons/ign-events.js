@@ -2,9 +2,9 @@ LC.lesson({
   id: "ign-events",
   title: "Events: tag change, gateway events, timers and messages",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 3,
-  prereqs: ["ign-scripting"],
+  prereqs: ["ign-scripting", "ign-udts"],
   tags: ["ignition", "events", "timer", "gateway", "scripting", "threads"],
   summary: "Where Ignition runs your Python on the Gateway without a screen open: tag events, gateway events, timers and messages, and the shared queues that make slow scripts dangerous.",
   objectives: [

@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-views",
   title: "Views, components and properties",
   track: "persp",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-projects", "ign-tags"],
   tags: ["perspective", "views", "components", "params", "custom props", "session"],

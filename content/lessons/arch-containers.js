@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-containers",
   title: "Ignition in Docker, Kubernetes and the cloud",
   track: "arch",
-  minutes: 25,
+  minutes: 15,
   level: 4,
   prereqs: ["arch-patterns", "ign-versioning"],
   tags: ["docker", "containers", "kubernetes", "cloud", "deployment", "devops", "8.3"],

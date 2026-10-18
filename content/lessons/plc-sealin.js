@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-sealin",
   title: "Seal-in circuits, start/stop and latches",
   track: "plc",
-  minutes: 20,
+  minutes: 25,
   level: 2,
   prereqs: ["plc-ladder-basics"],
   tags: ["ladder", "seal-in", "start-stop", "OTL", "OTU", "latch", "motor-control"],

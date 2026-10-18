@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-best-practices",
   title: "Structuring a Logix project like an integrator",
   track: "plc",
-  minutes: 30,
+  minutes: 20,
   level: 4,
   prereqs: ["plc-aoi", "plc-state-machines", "plc-faults"],
   tags: ["best-practices", "project-structure", "naming", "udt", "aoi", "io-mapping", "source-control", "code-review"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-abnormal",
   title: "Making abnormal obvious: alarms, states and attention",
   track: "hmi",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["hmi-color", "ign-alarming"],
   tags: ["hmi", "alarms", "equipment state", "flashing", "quality", "interlocks", "perspective", "isa-18.2", "isa-101"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-install",
   title: "Installing, commissioning and the Gateway web UI (8.3)",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-architecture"],
   tags: ["ignition", "install", "commissioning", "docker", "git", "rest-api", "ports", "backup"],

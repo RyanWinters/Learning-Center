@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-containers",
   title: "Containers and responsive layout",
   track: "persp",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["persp-views"],
   tags: ["perspective", "layout", "flex", "responsive", "containers", "breakpoints"],

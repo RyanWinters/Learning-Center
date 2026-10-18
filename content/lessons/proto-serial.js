@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-serial",
   title: "Serial: RS-232, RS-422 and RS-485",
   track: "proto",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["net-data"],
   tags: ["serial", "rs485", "rs232", "wiring", "gateways"],

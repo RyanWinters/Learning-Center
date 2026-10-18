@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-studio",
   title: "A tour of Studio 5000 Logix Designer",
   track: "plc",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["plc-intro"],
   tags: ["studio-5000", "logix-designer", "online", "download", "run-mode", "firmware"],

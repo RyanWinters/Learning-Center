@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-organization",
   title: "Tasks, programs and routines",
   track: "plc",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["plc-ladder-basics"],
   tags: ["tasks", "programs", "routines", "scan", "organization", "logix"],

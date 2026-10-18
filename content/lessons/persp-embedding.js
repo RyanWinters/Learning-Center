@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-embedding",
   title: "Embedded views, parameters and flex repeaters",
   track: "persp",
-  minutes: 30,
+  minutes: 15,
   level: 3,
   prereqs: ["persp-bindings", "ign-udts"],
   tags: ["perspective", "embedded view", "flex repeater", "view canvas", "udt", "templates", "params"],

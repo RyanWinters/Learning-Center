@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-indexes",
   title: "Indexes and query performance",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["db-schema"],
   tags: ["index", "b-tree", "performance", "execution-plan", "sql"],

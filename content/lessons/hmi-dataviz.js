@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-dataviz",
   title: "Showing data: trends, bars, gauges and deviation",
   track: "hmi",
-  minutes: 30,
+  minutes: 20,
   level: 3,
   prereqs: ["hmi-type-numbers", "hmi-color"],
   tags: ["hmi", "data visualization", "trends", "gauges", "sparklines", "deviation", "perspective", "bullet graph"],

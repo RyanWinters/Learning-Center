@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-edge",
   title: "Ignition Edge",
   track: "arch",
-  minutes: 20,
+  minutes: 10,
   level: 3,
   prereqs: ["arch-patterns"],
   tags: ["edge", "oem", "sync-services", "store-and-forward", "licensing"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-ot-monitoring",
   title: "OT monitoring, asset inventory and data diodes",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 4,
   prereqs: ["net-security"],
   tags: ["ot-security", "monitoring", "asset-inventory", "data-diode", "ids", "62443", "incident-response"],

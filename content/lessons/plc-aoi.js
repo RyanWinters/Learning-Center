@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-aoi",
   title: "Add-On Instructions",
   track: "plc",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["plc-udt", "plc-timers"],
   tags: ["aoi", "add-on-instruction", "reuse", "logix", "plantpax", "parameters"],

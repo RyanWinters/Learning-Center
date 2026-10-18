@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-intro",
   title: "What a PLC is and the Allen-Bradley family",
   track: "plc",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["found-devices"],
   tags: ["plc", "allen-bradley", "controllogix", "compactlogix", "hardware"],

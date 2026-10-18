@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-timesync",
   title: "Time synchronization and sequence of events",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["net-routing"],
   tags: ["ntp", "ptp", "cip-sync", "soe", "timestamps", "utc", "dst"],

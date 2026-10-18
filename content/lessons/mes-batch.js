@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-batch",
   title: "Batch control: ISA-88 models",
   track: "mes",
-  minutes: 30,
+  minutes: 15,
   level: 3,
   prereqs: ["mes-what", "plc-isa88-packml"],
   tags: ["isa-88", "batch", "recipes", "phases", "batch-records"],

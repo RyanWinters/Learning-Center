@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-state-machines",
   title: "State machines and sequences",
   track: "plc",
-  minutes: 30,
+  minutes: 25,
   level: 3,
   prereqs: ["plc-counters", "plc-compare-math"],
   tags: ["state-machine", "sequence", "case", "ladder", "structured-text", "fault"],

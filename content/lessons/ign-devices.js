@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-devices",
   title: "Device connections and the OPC UA server",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-install", "proto-opc"],
   tags: ["ignition", "devices", "opc-ua", "logix", "kepware", "drivers", "diagnostics"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-motor-control",
   title: "Motor control circuits and output wiring",
   track: "found",
-  minutes: 25,
+  minutes: 20,
   level: 2,
   prereqs: ["found-devices", "found-signals"],
   tags: ["motor-control", "contactor", "wiring", "schematics", "stop-categories", "safety"],

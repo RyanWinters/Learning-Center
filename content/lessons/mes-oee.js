@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-oee",
   title: "OEE",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["mes-what"],
   tags: ["oee", "availability", "performance", "quality", "tpm", "metrics"],

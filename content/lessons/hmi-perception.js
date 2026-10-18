@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-perception",
   title: "How operators see: perception and attention",
   track: "hmi",
-  minutes: 25,
+  minutes: 20,
   level: 2,
   prereqs: ["found-purdue"],
   tags: ["hmi", "perception", "attention", "human factors", "situation awareness", "design"],

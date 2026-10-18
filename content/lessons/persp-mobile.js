@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-mobile",
   title: "Perspective on mobile and workstation",
   track: "persp",
-  minutes: 15,
+  minutes: 20,
   level: 2,
   prereqs: ["persp-navigation"],
   tags: ["perspective", "mobile", "workstation", "kiosk", "barcode", "nfc", "touch", "vpn"],

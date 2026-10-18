@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-hphmi",
   title: "High-Performance HMI and ISA-101",
   track: "persp",
-  minutes: 30,
+  minutes: 20,
   level: 3,
   prereqs: ["persp-styles"],
   tags: ["hmi", "isa-101", "high-performance", "alarms", "style classes", "design"],

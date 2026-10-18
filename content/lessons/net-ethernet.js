@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-ethernet",
   title: "Ethernet, MAC addresses and switches",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["net-models"],
   tags: ["ethernet", "mac", "switch", "stratix", "fiber", "duplex", "m12"],

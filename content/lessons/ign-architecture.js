@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-architecture",
   title: "Gateway, Designer, clients and modules",
   track: "ign",
-  minutes: 20,
+  minutes: 10,
   level: 1,
   prereqs: ["ign-what"],
   tags: ["ignition", "gateway", "designer", "modules", "perspective", "vision", "scopes"],

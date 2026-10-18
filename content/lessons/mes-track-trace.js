@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-track-trace",
   title: "Track & trace and genealogy",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["mes-what", "db-schema"],
   tags: ["genealogy", "lots", "serials", "traceability", "recall", "barcodes", "part-11"],

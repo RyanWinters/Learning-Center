@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-process",
   title: "Designing with operators: task analysis, style guides and testing",
   track: "hmi",
-  minutes: 30,
+  minutes: 20,
   level: 3,
   prereqs: ["hmi-interaction", "persp-hphmi"],
   tags: ["hmi", "process", "task analysis", "style guide", "usability testing", "heuristic evaluation", "isa-101", "operators"],

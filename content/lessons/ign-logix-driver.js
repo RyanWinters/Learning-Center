@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-logix-driver",
   title: "The Logix driver in practice: tuning and bad-quality triage",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-devices", "plc-tags"],
   tags: ["logix", "driver", "ethernet-ip", "quality", "troubleshooting", "tuning"],

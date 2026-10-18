@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-alarm-mgmt",
   title: "Alarm management in practice (ISA-18.2)",
   track: "int",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["ign-alarming", "int-standards"],
   tags: ["alarms", "ISA-18.2", "EEMUA 191", "rationalization", "shelving", "operators"],

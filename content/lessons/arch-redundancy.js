@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-redundancy",
   title: "Redundancy",
   track: "arch",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["arch-gateway-network"],
   tags: ["redundancy", "failover", "high-availability", "master", "backup", "warm-standby"],

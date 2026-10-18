@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-bindings",
   title: "Bindings and transforms",
   track: "persp",
-  minutes: 30,
+  minutes: 20,
   level: 2,
   prereqs: ["persp-views", "ign-expressions"],
   tags: ["perspective", "bindings", "transforms", "tags", "expressions", "queries", "performance"],

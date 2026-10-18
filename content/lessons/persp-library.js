@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-library",
   title: "Building a reusable faceplate library",
   track: "persp",
-  minutes: 35,
+  minutes: 20,
   level: 4,
   prereqs: ["persp-embedding", "persp-hphmi"],
   tags: ["perspective", "faceplate", "library", "udt", "inheritance", "style-classes", "versioning", "capstone"],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-analog",
   title: "Analog scaling, alarm limits and deadband",
   track: "plc",
-  minutes: 25,
+  minutes: 20,
   level: 2,
   prereqs: ["plc-compare-math", "found-signals"],
   tags: ["analog", "scaling", "scp", "alarms", "deadband", "4-20ma", "logix"],
