@@ -92,6 +92,7 @@ for (const f of files) {
   const l = lessons[id];
   if (!l) { err(id, "file did not call LC.lesson() with a matching id"); continue; }
   const row = index.find((r) => r[0] === id);
+  if (l.track !== id.split("-")[0]) err(id, `track "${l.track}" should be "${id.split("-")[0]}"`);
   if (row && l.title !== row[1]) warn(id, `title differs from curriculum ("${row[1]}")`);
 
   for (const k of ["summary", "objectives", "body", "eli5", "why", "quiz", "resources", "keyTerms"])

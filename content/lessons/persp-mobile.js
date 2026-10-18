@@ -51,7 +51,7 @@ The native app exposes hardware as **component actions** and **session events**.
 >         title=path.split('/')[-1],
 >         modal=False)
 > \`\`\`
-> One scan, no typing, no navigation tree. Validate the string before you use it: a barcode is user input. Check it starts with a known provider and exists as a tag, or someone will open a faceplate on a path you did not intend. The exact event handler signature is on the session events page of the manual.
+> One scan, no typing, no navigation tree. Validate the string before you use it: a barcode is user input. Check it starts with a known provider and exists as a tag, or someone will open a faceplate on a path you did not intend. The handler signature shown is illustrative. Confirm it on the session events page of the manual for your version.
 
 Because these actions only exist in the app, guard them. In a browser the action is ignored, so give browser users a manual path (a text field to type the tag name) or the screen looks broken.
 
@@ -59,10 +59,10 @@ Because these actions only exist in the app, guard them. In a browser the action
 
 Perspective Workstation is a launcher-style desktop application that shows Perspective without a browser. Operators cannot wander to other tabs, and the PC looks like a dedicated HMI.
 
-- **Windowed and Kiosk.** Launch mode is a setting you can override at launch. Kiosk is full screen with OS access limited. A component action and the \`system.perspective.workstation\` scripting functions can switch a running session between the two, which is how you build the "Exit kiosk" button for a maintenance login.
+- **Windowed and Kiosk.** Launch mode is a setting you can override at launch. Kiosk is full screen with OS access limited. A component action, and the Workstation-related functions listed under \`system.perspective\` in the manual (check the names for your version), can switch a running session between the two, which is how you build an "Exit kiosk" button for a maintenance login.
 - **Multiple monitors.** One Workstation application opens one OS window per display. You assign a Perspective page to each display and pick a primary display for login prompts. A control room with four screens runs one Workstation and four pages, each with its own URL path in the project.
 - **Automated startup.** Export the launcher configuration and launch from a startup script or shortcut so a rebooted PC returns to the right pages without anyone touching it.
-- **Limits.** Workstation sessions use the same tab for authentication flows, and Workstation connects only to Gateways of a supported version. Test your identity provider login in Workstation before commissioning.
+- **Limits.** Test your identity provider login in Workstation before commissioning, and check the manual for the launcher versions your Gateway version supports.
 
 {{diagram:clients}}
 
@@ -70,7 +70,7 @@ Perspective Workstation is a launcher-style desktop application that shows Persp
 
 A mouse-sized control is wrong on a wet tank farm. Rules that survive a site walkdown:
 
-1. **Target size.** Make tap targets at least about 48 px square, with space between them. Gloves need more.
+1. **Target size.** Size tap targets to your site's glove and device spec, with space between them. Platform design guidelines publish minimum touch sizes, so cite the one you adopt in your style guide. Gloves need more.
 2. **No hover, no right-click.** Touch has no hover state. Every action must work from a plain tap.
 3. **Confirm the dangerous, not the routine.** A confirm popup for every setpoint teaches people to tap through. Use it for starts, stops and mode changes.
 4. **One hand.** Put the main actions in the lower third of a phone screen, where a thumb reaches.
@@ -87,14 +87,62 @@ Perspective is thin client. All logic, bindings and scripts run on the Gateway a
 
 ## Security: reaching the Gateway from a phone
 
-The worst design is a Gateway port forwarded to the internet. The Gateway then carries login pages, designer access and every vulnerability that ships with them. Better, in order:
+The worst design is a Gateway port forwarded to the internet. The Gateway then carries login pages, designer access and every vulnerability that ships with them. The second worst is any path that lands on the Gateway (VLAN 30, 10.20.30.10) directly from outside, because it skips the DMZ. Plant 1 rules apply to phones as to any other client: no connection passes straight from Level 3 to Level 4 or back, and every connection ends in the DMZ.
 
-1. **VPN or a mesh overlay network.** A WireGuard-based {{term:mesh-vpn|mesh VPN}} such as Tailscale puts the phone and the Gateway on a private overlay. The Gateway keeps its private address, and only enrolled devices can reach it. Treat the overlay's access rules like a firewall rule set: allow the phone group to reach only the Gateway's web port.
-2. **Reverse proxy with TLS and an identity provider** in a DMZ, so the Gateway is not directly reachable. See {{lesson:net-security}}.
-3. **Device hygiene.** Use the Gateway's identity provider and per-user roles, require a screen lock, and revoke a lost phone's access in the overlay and in the IdP.
+> [!warning] A phone path is a Purdue level jump
+> A phone that can reach the Gateway can reach the plant. Limit it by role, log it, and keep Designer access off the mobile path entirely. Never route a vendor or mobile VPN straight into VLAN 10 or VLAN 30.
 
-> [!warning] Security zones
-> A phone on a mesh VPN can reach the plant network. That is a Purdue level jump. Limit it by role, log it, and keep Designer access off the mobile path entirely.
+The default design, in order:
+
+1. **Reverse proxy in the DMZ with TLS and an identity provider.** The phone reaches the DMZ reverse proxy (\`10.20.250.10\`) over HTTPS (8043 in the examples). The proxy forwards to the front-end gateway or the site gateway over the Gateway Network, with the site side making the outgoing connection. Roles come from the IdP. See {{lesson:net-security}}.
+2. **Remote (off-site) phones** first join a VPN that terminates in the DMZ, then use the same proxy. The VPN grants access to the proxy only.
+3. **Device hygiene.** Use per-user roles, require a screen lock, and revoke a lost phone in the VPN and in the IdP.
+
+A {{term:mesh-vpn|mesh VPN}} (a WireGuard-based overlay such as Tailscale) is **not** the default. It is a documented, site-approved exception. If security approves one, the overlay endpoint (a subnet router or the node that publishes the proxy) sits in the DMZ and publishes only the reverse proxy's HTTPS port, never the Gateway or a control-network subnet. Write the access rules down like firewall rules: which device group, which destination, which port, who approves enrollment, and who revokes it.
+
+## If you already build Perspective
+
+The lesson so far is a checklist. These are the decisions that make a mobile and kiosk estate operable.
+
+### Identity provider choice and role mapping
+
+Pick the IdP before building screens, because roles drive navigation and writes. Options are the Gateway's internal user source, an external directory (LDAP or Active Directory), or a SAML or OpenID Connect provider. For phones outside the plant, an external IdP with multi-factor authentication behind the DMZ proxy is the usual pattern. Decide how directory groups map to Ignition roles (\`Operator\`, \`Maintenance\`, \`Engineer\`), then drive page visibility and write permission from those roles, as in {{lesson:persp-navigation}}. A phone should usually get a reduced role set: view, acknowledge, scan and fill checklists, with no setpoint writes. Check your Ignition version's security zone and IdP pages for the exact configuration.
+
+### Kiosk recovery
+
+A kiosk is a session that must come back unattended. Test these cases and write down the observed behaviour:
+
+1. Gateway restart while the kiosk is open.
+2. Network drop of a minute, then return.
+3. Session timeout (check the setting for your version).
+4. Monitor power cycle.
+5. Login prompt after recovery: does it appear on the primary display, and can an operator reach it without a keyboard?
+
+The kiosk start URL must rebuild state from the URL and tags only, not from session props. Combine with a watchdog (a Gateway tag the kiosk writes, an alarm if stale) so the control room learns a wall display froze.
+
+### Device enrollment and revocation as a procedure
+
+Write it as a runbook, not a habit:
+
+| Step | Owner | Record |
+|---|---|---|
+| Request with business reason and role | Supervisor | Ticket |
+| Approve and assign IdP group | Controls lead | Group membership |
+| Enroll device, set screen lock, install app | IT | Device ID in register |
+| Test: login, scan, one write attempt that must be refused | Integrator | Test note |
+| Quarterly review of active devices | Controls lead | Signed list |
+| Revoke on loss or departure, within a time your policy sets | IT | Ticket, IdP and VPN both |
+
+Revocation must happen in both the VPN and the IdP. Test it by revoking a test phone and confirming it can no longer load the login page.
+
+### Scan workflows as data entry
+
+Treat a scan as untrusted input, and keep an audit trail. Validate against a known list (a query or tag browse) rather than a string prefix test. Log user, device, scanned value and result. For work-order or checklist scans, write each step to the Gateway at once so a dropped connection loses at most one step.
+
+### Performance on cellular
+
+Every property change is a message from the Gateway to the phone. Keep mobile views small: no 300-tile repeaters, no high-rate charts. Bind to summary tags, and page long lists. Measure a session with the browser or app network tools on the same link your crew uses.
+
 `,
 
   eli5: `
@@ -104,7 +152,7 @@ A waiter at a restaurant table (a browser) can show the plate and take your orde
 
 But the waiter never cooks. If he walks out of range of the kitchen, he just stands there. Nothing he said gets remembered until he gets back. So you never put important work on the tray. You make sure the kitchen hears every step as it happens.
 
-And you do not leave the kitchen's back door open to the street. You give staff a private tunnel to it.
+And you do not leave the kitchen's back door open to the street. You give staff a guarded front desk that checks who they are.
 `,
 
   why: `
@@ -114,7 +162,7 @@ And you do not leave the kitchen's back door open to the street. You give staff 
 
 **Why kiosk mode instead of a locked-down browser?** Browser kiosk modes work, but the user can still reach the address bar, shortcuts and crash dialogs. Workstation closes more of those doors and gives you multi-monitor handling and scripted switching. It also makes patching a managed install rather than a browser policy.
 
-**Why a mesh VPN instead of port forwarding?** Every exposed port is attack surface, scanned within hours. An overlay shrinks the audience to enrolled devices, and the Gateway needs no inbound exposure. The tradeoff is operational: you now own device enrollment and the overlay's access policy, and a stolen enrolled phone is a key to the plant.
+**Why a DMZ proxy instead of port forwarding or a mesh straight to the Gateway?** Every exposed port is attack surface, scanned within hours. A DMZ reverse proxy with an identity provider gives one inspected entry point, and the Gateway needs no inbound exposure from outside. A mesh VPN shrinks the audience to enrolled devices, but if it lands on the Gateway it skips the DMZ. The tradeoff of any enrolled-device scheme is operational: you own enrollment and revocation, and a stolen enrolled phone is a key to the plant.
 
 **Why bigger touch targets than your designer wants?** Because the screen is used in gloves, with wet hands, in a vehicle. A mis-tap on a valve is an incident. Safe UI is slightly ugly.
 `,
@@ -148,7 +196,7 @@ Perspective arrived with Ignition 8.0 as the web-native successor to the Java-ba
   <text class="dg-text-sm dg-mid" x="105" y="234">kiosk, multi-monitor</text>
   <rect class="dg-box-2" x="250" y="95" width="130" height="80" rx="6"/>
   <text class="dg-title dg-mid" x="315" y="128">Overlay / TLS</text>
-  <text class="dg-text-sm dg-mid" x="315" y="150">VPN or proxy</text>
+  <text class="dg-text-sm dg-mid" x="315" y="150">DMZ proxy</text>
   <rect class="dg-box-accent" x="450" y="60" width="170" height="150" rx="6"/>
   <text class="dg-title dg-mid" x="535" y="92">Gateway</text>
   <text class="dg-text-sm dg-mid" x="535" y="120">bindings</text>
@@ -164,7 +212,7 @@ Perspective arrived with Ignition 8.0 as the web-native successor to the Java-ba
   },
 
   pitfalls: [
-    "Forwarding the Gateway port to the internet so phones can connect. Use a VPN, an overlay or a reverse proxy with an identity provider.",
+    "Forwarding the Gateway port to the internet so phones can connect, or running a mesh VPN straight onto the Gateway. Use a DMZ reverse proxy with an identity provider.",
     "Building scan-only workflows with no browser fallback. The action is ignored outside the native app.",
     "Trusting scanned text. A barcode or NFC tag is user input and must be validated before it becomes a tag path or a query parameter.",
     "Leaving the accelerometer in continuous mode and flooding the Gateway with samples.",
@@ -210,12 +258,12 @@ Perspective arrived with Ignition 8.0 as the web-native successor to the Java-ba
     },
     {
       q: "Which is the safest way to give maintenance phones access to a Gateway that sits on a plant network?",
-      options: ["Port-forward the Gateway web port on the plant firewall", "Put the Gateway in a public cloud IP", "A VPN or mesh overlay, or a TLS reverse proxy in a DMZ, with per-user roles", "Share the Designer login with the crew"],
+      options: ["Port-forward the Gateway web port on the plant firewall", "Put the Gateway in a public cloud IP", "A TLS reverse proxy in the DMZ with an identity provider and per-user roles (off-site phones join a VPN that ends in the DMZ)", "Share the Designer login with the crew"],
       answer: 2,
       explain: [
         "Exposed ports are scanned within hours and expose login pages and every Gateway vulnerability.",
         "Moving it to a public IP only widens exposure.",
-        "Correct. Limit who can reach the Gateway, enforce identity, and keep Designer off the mobile path.",
+        "Correct. Every connection ends in the DMZ, identity is enforced at the proxy, and Designer stays off the mobile path. A mesh landing on the Gateway would skip the DMZ.",
         "Shared credentials destroy accountability and expand access."
       ]
     },
