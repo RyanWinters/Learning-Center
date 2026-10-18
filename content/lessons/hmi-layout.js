@@ -334,15 +334,15 @@ Gestalt psychology came out of early twentieth-century German research on how pe
 
   quiz: [
     {
-      q: "A vendor says 'always put the most critical process variable top-left, because that is where eyes land first'. How do you apply that on your Area10 screens?",
-      options: [
+      "q": "A vendor says 'always put the most critical process variable top-left, because that is where eyes land first'. How do you apply that on your Area10 screens?",
+      "options": [
         "Put LT101 top-left on every screen, regardless of unit",
         "Put the area name, overall status and alarm summary top-left and keep every screen's arrangement the same",
         "Ignore the claim, because eye tracking is irrelevant to operators",
         "Put the largest number top-left and shrink the rest"
       ],
-      answer: 1,
-      explain: [
+      "answer": 1,
+      "explain": [
         "Unit-specific variables vary by screen, so the position would not be consistent. The first glance is better spent on orientation and alarm state.",
         "Correct. The first glance usually lands near top-left for left-to-right readers, so use it for overview. Consistency across screens matters more than the corner.",
         "The research is about web pages, so it only partly transfers, but it is not irrelevant. It supports using the top-left for orientation.",
@@ -350,63 +350,63 @@ Gestalt psychology came out of early twentieth-century German research on how pe
       ]
     },
     {
-      q: "Three pumps' Start buttons are in a row at the bottom, and their status and current values are at the top. Operators sometimes start the wrong pump. Which principle does the layout break, and what is the fix?",
-      options: [
+      "q": "Three pumps' Start buttons are in a row at the bottom, and their status and current values are at the top. Operators sometimes start the wrong pump. Which principle does the layout break, and what is the fix?",
+      "options": [
         "Continuity, so draw longer pipes",
-        "Proximity, so place each Start button next to its own pump",
+        "Similarity, so make all buttons different colors",
         "Closure, so add dashed outlines",
-        "Similarity, so make all buttons different colors"
+        "Proximity, so place each Start button next to its own pump"
       ],
-      answer: 1,
-      explain: [
+      "answer": 3,
+      "explain": [
         "Pipe continuity is unrelated to which button belongs to which pump.",
-        "Correct. Proximity tells the eye what belongs together. Controls should sit with their equipment.",
+        "Different button colors would use up color and make the abnormal harder to spot, and the buttons still would not be near their pumps.",
         "Closure is a weaker cue and would not fix the separation.",
-        "Different button colors would use up color and make the abnormal harder to spot, and the buttons still would not be near their pumps."
+        "Correct. Proximity tells the eye what belongs together. Controls should sit with their equipment."
       ]
     },
     {
-      q: "A screen has a light panel, a thick border and a different font color around every group of values. What is the most likely improvement?",
-      options: [
-        "Keep all three and add a fourth cue",
+      "q": "A screen has a light panel, a thick border and a different font color around every group of values. What is the most likely improvement?",
+      "options": [
         "Use one cue per grouping, such as proximity plus a subtle panel, and remove the rest",
+        "Keep all three and add a fourth cue",
         "Remove all grouping and use one large table",
         "Switch to a darker theme"
       ],
-      answer: 1,
-      explain: [
-        "More cues add clutter without extra meaning.",
+      "answer": 0,
+      "explain": [
         "Correct. One grouping method per relationship, usually proximity with a subtle enclosure, is enough.",
+        "More cues add clutter without extra meaning.",
         "A single table loses the grouping that supports chunking.",
         "Theme choice does not fix redundant visual cues."
       ]
     },
     {
-      q: "Which Perspective approach gives the most reliable consistency of header and alarm banner across 30 pages?",
-      options: [
+      "q": "Which Perspective approach gives the most reliable consistency of header and alarm banner across 30 pages?",
+      "options": [
         "Copy the same components onto every page and keep them aligned by hand",
-        "Put them in docked views or a shared embedded view used by every page",
         "Use a breakpoint container on each page",
+        "Put them in docked views or a shared embedded view used by every page",
         "Set the alarm banner colors through a script on each page"
       ],
-      answer: 1,
-      explain: [
+      "answer": 2,
+      "explain": [
         "Manual copies drift over time as people edit pages.",
-        "Correct. A shared view is literally the same on every page, so consistency does not depend on discipline.",
         "Breakpoint containers swap layouts by width. They do not enforce sameness across pages.",
+        "Correct. A shared view is literally the same on every page, so consistency does not depend on discipline.",
         "Colors and position are different issues, and scripts per page make drift worse."
       ]
     },
     {
-      q: "A table shows five tank levels with varying digits, left-aligned. What change helps the operator compare magnitudes most?",
-      options: [
+      "q": "A table shows five tank levels with varying digits, left-aligned. What change helps the operator compare magnitudes most?",
+      "options": [
         "Increase the font weight",
         "Right-align on the decimal point with a fixed number of decimals",
         "Center the values",
         "Add a different color for each row"
       ],
-      answer: 1,
-      explain: [
+      "answer": 1,
+      "explain": [
         "Weight does not help compare magnitudes.",
         "Correct. Aligned digits let the eye compare by length, in line with the tabular scanning that NN/g describes.",
         "Centered numbers make digits misalign.",
@@ -414,35 +414,35 @@ Gestalt psychology came out of early twentieth-century German research on how pe
       ]
     },
     {
-      q: "You are designing the Area10 mixing Level 2 screen. Which layout best supports the process?",
-      options: [
-        "Group by measurement type: all levels, all flows, all pressures",
+      "q": "You are designing the Area10 mixing Level 2 screen. Which layout best supports the process?",
+      "options": [
         "Group by process step in flow order: Feed, Mix, Discharge, left to right",
+        "Group by measurement type: all levels, all flows, all pressures",
         "Put all controls in one panel at the bottom",
         "Scatter symbols to fit the available space"
       ],
-      answer: 1,
-      explain: [
-        "That follows the I/O list, not how operators think about the process.",
+      "answer": 0,
+      "explain": [
         "Correct. Process-order grouping reduces chunks, and left-to-right flow matches reading direction and P&IDs.",
+        "That follows the I/O list, not how operators think about the process.",
         "Separating controls from their equipment breaks proximity.",
         "Scattered symbols have no grouping or alignment."
       ]
     },
     {
-      q: "Which is the best statement about the Z-pattern?",
-      options: [
+      "q": "Which is the best statement about the Z-pattern?",
+      "options": [
         "NN/g proved it is how operators scan SCADA screens",
-        "It is a design heuristic for sparse pages, and I did not find eye-tracking evidence establishing it, so do not rely on it for monitoring screens",
+        "It replaces the F-pattern on all dense pages",
         "It means the bottom-right is the most important zone",
-        "It replaces the F-pattern on all dense pages"
+        "It is a design heuristic for sparse pages, and I did not find eye-tracking evidence establishing it, so do not rely on it for monitoring screens"
       ],
-      answer: 1,
-      explain: [
+      "answer": 3,
+      "explain": [
         "NN/g research does not claim this about operator screens, and operator behavior differs from web browsing.",
-        "Correct. Treat it as a heuristic for simple layouts and do not build a control room standard on it.",
+        "The F-pattern and Z-pattern describe different page types, and neither is a rule for monitoring screens.",
         "The pattern describes a scan path, not a ranking of zones.",
-        "The F-pattern and Z-pattern describe different page types, and neither is a rule for monitoring screens."
+        "Correct. Treat it as a heuristic for simple layouts and do not build a control room standard on it."
       ]
     }
   ],

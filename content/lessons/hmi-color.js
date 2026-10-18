@@ -38,6 +38,8 @@ The key practical point: **lightness difference makes things readable, hue diffe
 
 If the background and equipment are low-saturation greys, a saturated alarm color is the most vivid thing on screen by a wide margin. That is the preattentive effect from {{lesson:hmi-perception}} at work. Bright saturated backgrounds, such as neon on black, make every item compete and are tiring over a long shift.
 
+{{diagram:goodbad}}
+
 ## Luminance contrast and WCAG
 
 **Luminance** is how much light a color gives off, weighted for how the eye responds to red, green and blue. The WCAG contrast ratio compares the relative luminance of two colors:
@@ -53,7 +55,7 @@ The ratio runs from 1:1 (identical) to 21:1 (black on white). WCAG is a web acce
 | 1.4.3 Contrast (Minimum), AA | 4.5:1 for normal text; 3:1 for large text (at least 24 px, or 18.5 px bold) | Value text, labels, units, alarm text |
 | 1.4.11 Non-text Contrast, AA | 3:1 for UI component boundaries and meaningful graphics | Equipment outlines, bar markers, alarm borders, icons, focus rings |
 
-W3C explains that 4.5:1 allows for the contrast loss from moderately low vision, color deficiencies and aging. The ratios are hard thresholds, so 4.499:1 does not pass. Many operators are over 40, and control room glare lowers effective contrast, so these are minimums, not targets.
+W3C explains that 4.5:1 allows for the contrast loss from moderately low vision, color deficiencies and aging. The ratios are hard thresholds, so 4.499:1 does not pass. Operators span a wide age range, and control room glare lowers effective contrast, so treat these as minimums, not targets.
 
 ### Worked example: checking the palette from the HP HMI lesson
 
@@ -78,7 +80,7 @@ The finding: on a light background, yellow, orange and cyan **cannot be thin lin
 
 ## Color vision deficiency
 
-Color vision deficiency (CVD) is mostly inherited. Reviews put red-green deficiency at up to about 8% of men and about 0.5% of women of Northern European descent (a 2025 review in PMC; Colour Blind Awareness gives about 1 in 12 men and 1 in 200 women). Rates are lower in some other populations. The two commonest forms are **deuteranopia and deuteranomaly** (reduced green sensitivity) and **protanopia and protanomaly** (reduced red sensitivity); in both, reds, greens, oranges and browns can look alike. Tritan (blue-yellow) deficiency is rare. Operators are mostly men and many sites have dozens of people, so assume that every site has some.
+Color vision deficiency (CVD) is mostly inherited. Reviews put red-green deficiency at up to about 8% of men and about 0.5% of women of Northern European descent (a 2025 review in PMC; Colour Blind Awareness gives about 1 in 12 men and 1 in 200 women). Rates are lower in some other populations. The two commonest forms are **deuteranopia and deuteranomaly** (reduced green sensitivity) and **protanopia and protanomaly** (reduced red sensitivity); in both, reds, greens, oranges and browns can look alike. Tritan (blue-yellow) deficiency is rare. Control rooms are often staffed mostly by men, so assume that every site has someone affected.
 
 A red-green status pair is the single worst choice for an HMI: it is the exact pair that the most common CVD confuses, and both are used for normal state in old screens.
 
@@ -288,7 +290,7 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
   <rect class="dg-fill-fg" x="512" y="40" width="108" height="56" rx="4"/>
   <text class="dg-text-sm" x="522" y="62">Text, values</text>
   <text class="dg-text-sm" x="522" y="80">7:1 or more</text>
-  <text class="dg-title" x="20" y="132">Layer 2: reserved, used only when abnormal</text>
+  <text class="dg-title" x="20" y="132">Layer 2: reserved, used only when abnormal (schematic shades)</text>
   <rect class="dg-fill-alarm" x="20" y="146" width="136" height="56" rx="4"/>
   <text class="dg-text-sm" x="30" y="168">1 Critical</text>
   <text class="dg-text-sm" x="30" y="186">white text, 5.9:1</text>
@@ -300,7 +302,7 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
   <text class="dg-text-sm" x="330" y="186">dark text, 9.2:1</text>
   <rect class="dg-fill-ok" x="470" y="146" width="150" height="56" rx="4"/>
   <text class="dg-text-sm" x="480" y="168">4 Low</text>
-  <text class="dg-text-sm" x="480" y="186">dark text, 5.4:1 on dark</text>
+  <text class="dg-text-sm" x="480" y="186">dark text, 5.4:1</text>
   <rect class="dg-box-accent" x="20" y="222" width="600" height="64" rx="6"/>
   <text class="dg-text" x="34" y="248">Rule: the alarm hues have one meaning each and are never used</text>
   <text class="dg-text" x="34" y="270">for decoration. Check every pair against every background.</text>
@@ -361,31 +363,31 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
 
   quiz: [
     {
-      q: "The High priority alarm is drawn as an orange (#e07000) outline, 2 px wide, on a #ebebeb panel. The contrast is 2.7:1. What is the best fix?",
-      options: [
+      "q": "The High priority alarm is drawn as an orange (#e07000) outline, 2 px wide, on a #ebebeb panel. The contrast is 2.7:1. What is the best fix?",
+      "options": [
         "Make the line 4 px wide in the same orange",
-        "Use a filled orange badge with dark text and a shape cue, and keep the outline dark grey",
+        "Leave it, because the hue is vivid",
         "Switch the orange for pure yellow",
-        "Leave it, because the hue is vivid"
+        "Use a filled orange badge with dark text and a shape cue, and keep the outline dark grey"
       ],
-      answer: 1,
-      explain: [
+      "answer": 3,
+      "explain": [
         "Width helps visibility, but the contrast ratio is unchanged, and thick outlines add clutter.",
-        "Correct. Dark text on orange is 4.7:1, and a filled shape with a number does not depend on thin-line contrast. The shape and number also work in greyscale.",
+        "Vivid hue does not give readable lightness contrast, and a user with CVD may not see the hue at all.",
         "Yellow on this grey is about 1.4:1, which is worse.",
-        "Vivid hue does not give readable lightness contrast, and a user with CVD may not see the hue at all."
+        "Correct. Dark text on orange is 4.7:1, and a filled shape with a number does not depend on thin-line contrast. The shape and number also work in greyscale."
       ]
     },
     {
-      q: "A client's old screens show green for running and red for stopped. You are doing an ISA-101 style redesign. What is the best approach for pump state?",
-      options: [
+      "q": "A client's old screens show green for running and red for stopped. You are doing an ISA-101 style redesign. What is the best approach for pump state?",
+      "options": [
         "Keep green and red, since operators know them",
         "Show run versus stop with fill, label text and position, and keep red for alarms only",
         "Use blue for running and yellow for stopped",
         "Hide the state unless it is abnormal"
       ],
-      answer: 1,
-      explain: [
+      "answer": 1,
+      "explain": [
         "That uses alarm red for a normal state, collides with the common red-green deficiency and spends the color budget.",
         "Correct. Redundant, non-hue cues carry normal state, and the alarm hues stay reserved.",
         "Yellow is an alarm hue in the reserved set and blue would still be color-only.",
@@ -393,63 +395,63 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
       ]
     },
     {
-      q: "About how common is red-green color vision deficiency, and what does that imply for a 12-person control room team that is mostly men?",
-      options: [
+      "q": "About how common is red-green color vision deficiency, and what does that imply for a 12-person control room team that is mostly men?",
+      "options": [
         "About 0.5% of men, so you can ignore it",
-        "Up to about 8% of men of Northern European descent, so assume at least one team member could be affected and design for it",
         "About 25% of men, so avoid all color",
+        "Up to about 8% of men of Northern European descent, so assume at least one team member could be affected and design for it",
         "It only affects women"
       ],
-      answer: 1,
-      explain: [
+      "answer": 2,
+      "explain": [
         "0.5% is the figure for women, not men.",
-        "Correct. Sources give up to roughly 8% of men of Northern European descent, so a mostly male team of 12 has a real chance of at least one affected person.",
         "The figure is not that high, and the answer is redundant cues, not no color.",
+        "Correct. Sources give up to roughly 8% of men of Northern European descent, so a mostly male team of 12 has a real chance of at least one affected person.",
         "It is more common in men because the genes are on the X chromosome."
       ]
     },
     {
-      q: "Your dark theme reuses the day theme's red, #c8102e, on a #262626 background (about 2.6:1). What should you do?",
-      options: [
-        "Nothing, since red is always visible",
+      "q": "Your dark theme reuses the day theme's red, #c8102e, on a #262626 background (about 2.6:1). What should you do?",
+      "options": [
         "Lighten the Critical token in the dark theme until the ratio passes (for example near #ff4d5e at about 4.7:1)",
+        "Nothing, since red is always visible",
         "Make Critical blue in the dark theme",
         "Replace the alarm color with white"
       ],
-      answer: 1,
-      explain: [
-        "Contrast depends on the pair, and a dark red on dark grey is weak.",
+      "answer": 0,
+      "explain": [
         "Correct. Override the semantic token for the theme and recheck, keeping meaning and shape the same.",
+        "Contrast depends on the pair, and a dark red on dark grey is weak.",
         "Changing the hue between themes breaks the rule of one meaning per color.",
         "White loses the hue, and white is commonly used for text and ordinary values."
       ]
     },
     {
-      q: "A breaker single-line on your process screen shows closed breakers in green, but the electrical engineer expects red for closed and energized. What is the sound design response?",
-      options: [
+      "q": "A breaker single-line on your process screen shows closed breakers in green, but the electrical engineer expects red for closed and energized. What is the sound design response?",
+      "options": [
         "Argue that green is correct because it is the traffic-light convention",
-        "Find the site's or client's documented convention, apply it to the breaker symbols only, and add OPEN / CLOSED text",
         "Use random colors for each breaker",
+        "Find the site's or client's documented convention, apply it to the breaker symbols only, and add OPEN / CLOSED text",
         "Remove the breaker display"
       ],
-      answer: 1,
-      explain: [
+      "answer": 2,
+      "explain": [
         "Neither convention is a formal IEC or ISA standard according to the sources, so arguing from tradition is weak.",
-        "Correct. Follow the local standard, label the state with text so color is not the only cue, and record it in the style guide.",
         "Random colors confuse everybody.",
+        "Correct. Follow the local standard, label the state with text so color is not the only cue, and record it in the style guide.",
         "Operators need the breaker state."
       ]
     },
     {
-      q: "Which test would catch the most palette problems with the least effort?",
-      options: [
+      "q": "Which test would catch the most palette problems with the least effort?",
+      "options": [
         "Ask the screen designer if it looks good",
         "Convert screenshots to greyscale, run deuteranopia and protanopia emulation, compute contrast ratios, and ask an operator to name each alarm state",
         "Compare the hex codes to a competitor's screens",
         "Check only the day theme"
       ],
-      answer: 1,
-      explain: [
+      "answer": 1,
+      "explain": [
         "Designers have the most trained eye and the best monitors, so this is the least representative test.",
         "Correct. Each step catches a different failure: lightness, CVD confusion, contrast and meaning.",
         "Copying hex codes does not tell you whether they pass on your backgrounds.",
@@ -464,7 +466,7 @@ The WCAG contrast thresholds come from the W3C Web Accessibility Initiative guid
     { title: "Web Content Accessibility Guidelines (WCAG) 2.1", url: "https://www.w3.org/TR/WCAG21/", type: "standard", source: "W3C" },
     { title: "ColorBrewer: Color Advice for Maps", url: "https://colorbrewer2.org/", type: "tool", source: "ColorBrewer" },
     { title: "Color scheme types (ColorBrewer)", url: "https://colorbrewer2.org/learnmore/schemes_full.html", type: "docs", source: "ColorBrewer" },
-    { title: "Creating and Using Custom Perspective Themes (Ignition 8.3)", url: "https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/perspective/styles/creating-and-using-custom-perspective-themes", type: "docs", source: "Inductive Automation" },
+    { title: "Creating and Using Custom Perspective Themes (Ignition manual)", url: "https://www.docs.inductiveautomation.com/docs/8.1/ignition-modules/perspective/styles/creating-and-using-custom-perspective-themes", type: "docs", source: "Inductive Automation" },
     { title: "A Global Perspective of Color Vision Deficiency: Awareness, Diagnosis, and Lived Experiences", url: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12385717/", type: "article", source: "PMC" },
     { title: "Colour Blind Awareness", url: "https://www.colourblindawareness.org/", type: "article", source: "Colour Blind Awareness" },
     { title: "HMI Breaker Status Color Standards and Best Practices", url: "https://industrialmonitordirect.com/blogs/knowledgebase/hmi-breaker-status-color-standards-and-best-practices", type: "article", source: "Industrial Monitor Direct (vendor note)" }
