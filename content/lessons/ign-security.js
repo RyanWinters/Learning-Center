@@ -32,7 +32,7 @@ Ignition 8.3 separates authentication into two strategies on the Gateway.
 The Designer always logs in through the Classic strategy, even if your whole system is Perspective. So you need a user source for engineers and an IdP for operators. They can point at the same directory, but they are configured separately.
 
 > [!note] In 8.1
-> Perspective also used user sources, selected per project. 8.3 moves Perspective to identity providers, and an IdP export from 8.1 cannot be imported into 8.3. Plan to recreate IdPs during an upgrade. Service security settings (who may call a gateway service) also moved into security zone configuration.
+> Perspective also used user sources, selected per project. 8.3 moves Perspective to identity providers, and IdPs are not carried over by simply importing an 8.1 export, so plan to recreate them during an upgrade. Service security settings (who may call a gateway service) also moved into security zone configuration. Confirm both points in the 8.1 to 8.3 upgrade guide for your build.
 
 ### User sources (Classic)
 
@@ -55,7 +55,7 @@ With SAML or OIDC the gateway never sees the password. The operator logs in at t
 
 ## Roles, security levels and zones
 
-Pre-8.3 Ignition used flat **roles**: Operator, Supervisor, Engineer. 8.3 organizes access around **security levels**, a tree of named levels such as \`Authenticated/Roles/Operator\`. Roles from the IdP map onto nodes in that tree. A reserved \`SecurityZones\` node holds the levels that come from your zones.
+Pre-8.3 Ignition used flat **roles**: Operator, Supervisor, Engineer. 8.3 organizes access around **security levels**, a tree of named levels such as \`Authenticated/Roles/Operator\` (check the security level pages for the exact node names in your version). Roles from the IdP map onto nodes in that tree. A reserved \`SecurityZones\` node holds the levels that come from your zones.
 
 A **security zone** is a named group of gateways, computers or IP addresses/hostnames. A user inside the zone "Control Room" gets an extra security level automatically. You can then require both:
 
@@ -64,7 +64,7 @@ Role: Supervisor     (what you are)
 Zone: Control Room   (where you are)
 \`\`\`
 
-A supervisor on a phone in the parking lot has the role but not the zone, so the setpoint view stays read-only. Security level rules are expressions that can check IdP attributes and zone membership, with helpers such as \`containsAny\` and \`containsAll\`.
+A supervisor on a phone in the parking lot has the role but not the zone, so the setpoint view stays read-only. Security level rules are expressions that can check IdP attributes and zone membership, with helper functions for matching sets of levels (see the Security Level Rules page for the current names).
 
 {{diagram:layers}}
 
@@ -79,8 +79,8 @@ A supervisor on a phone in the parking lot has the role but not the zone, so the
 | Designer | Who may open the project or edit it |
 | Gateway Network and services | Which remote gateways may connect or call services |
 
-> [!example] Worked example: a pump setpoint
-> Tag \`[default]Plant/Pumps/P101/SP\` has write permission set to security level \`Roles/Supervisor\`. The Perspective numeric entry is bound to it. Any operator can see the value. The write succeeds only when the session carries Supervisor and the zone rule says the client is on the \`10.20.30.0/24\` control room subnet. From a laptop on guest Wi-Fi the same supervisor gets a rejected write, and with auditing on, the attempt is logged.
+> [!example] Worked example: a motor speed limit
+> Tag \`[default]Plant1/Area10/Line1/M101/Cfg/SpeedHigh\` has write permission set to security level \`Roles/Supervisor\`. The Perspective numeric entry is bound to it. Any operator can see the value. The write succeeds only when the session carries Supervisor and the zone rule says the client is on the \`10.20.20.0/24\` HMI VLAN (VLAN 20). The Ignition servers live on a different subnet (\`10.20.30.0/24\`), so do not use that range for a client zone. From a laptop on guest Wi-Fi the same supervisor gets a rejected write, and with auditing on, the attempt is logged.
 
 ## Least privilege
 
@@ -94,10 +94,10 @@ A supervisor on a phone in the parking lot has the role but not the zone, so the
 
 ## Hardening the gateway
 
-1. **Turn on HTTPS.** Ignition ships with a self-signed certificate on the secure port. Install a certificate your clients trust and redirect HTTP to HTTPS, so passwords and session tokens never cross the plant network in clear text.
+1. **Turn on HTTPS.** A new Gateway's secure port normally starts with a self-signed certificate. Install a certificate your clients trust and redirect HTTP to HTTPS, so passwords and session tokens never cross the plant network in clear text.
 2. **Remove defaults.** Change or delete the initial admin account made at commissioning. Give the Gateway Web Interface its own named engineers.
 3. **Segment the network.** Only the gateway should reach PLC ports. Only engineers should reach port 8088/8043. See {{lesson:net-security}}.
-4. **Enable audit logging.** Create an audit profile (a database table) and assign it to the gateway and to projects. Tag writes, logins and project saves are then recorded with user and time. After a restore, audit profiles come back disabled and must be re-enabled.
+4. **Enable audit logging.** Create an audit profile (a database table) and assign it to the gateway and to projects. Actions such as tag writes and logins are then recorded with user and time (check the audit log page for exactly which events your version captures). After a restore, verify that audit profiles are enabled, because they can come back disabled.
 5. **Restrict OPC UA and service access.** Use security zones to limit which remote gateways may connect.
 6. **Patch.** Ignition publishes security fixes in new versions. Stay on a supported release.
 

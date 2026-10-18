@@ -59,7 +59,7 @@ rows = system.db.execQuery("Production/getLineLog",
 
 In Perspective, you can bind a table straight to the named query with parameters from the page. The key properties:
 
-- **Parameters are typed** and become real JDBC prepared-statement parameters when used as values, so the database never confuses data with SQL. This defeats {{term:sql-injection|SQL injection}} for values. An *identifier* parameter (a table or column name) is checked against allowed characters, and a *query string* parameter is dropped in as raw text, so avoid that type for user input.
+- **Parameters are typed** and become real JDBC prepared-statement parameters when used as values, so the database never confuses data with SQL. This defeats {{term:sql-injection|SQL injection}} for values. An *identifier* parameter (a table or column name) is validated, and a *query string* parameter is dropped in as raw text, so avoid that type for user input. Check the manual for how each parameter type is treated in your version.
 - **Execution happens on the Gateway**. A client or browser sends only the name and parameters. The Gateway can apply **security**, restricting a query by user role or security zone, and the client never needs database credentials or network access to the database.
 - **Caching**: a query can cache results for a set time. Each distinct parameter set has its own cache, so an expensive "plant summary" query can serve 50 screens from one database hit. \`system.db.clearNamedQueryCache(path)\` clears all cached results for that query.
 - **Query types**: Query (rows), Scalar (one value), and Update (INSERT/UPDATE/DELETE, returning row count or generated keys).
@@ -73,7 +73,7 @@ In Perspective, you can bind a table straight to the named query with parameters
 
 ## Transaction groups (SQL Bridge)
 
-The **SQL Bridge (Transaction Groups)** module moves data between tags and database rows without scripting. A {{term:ign-sql-bridge|transaction group}} has a name, an execution schedule, a target table and a list of items (tags or expressions mapped to columns). Four types exist in 8.3:
+The **SQL Bridge (Transaction Groups)** module moves data between tags and database rows without scripting. A {{term:ign-sql-bridge|transaction group}} has a name, an execution schedule, a target table and a list of items (tags or expressions mapped to columns). The group types you will meet are these four (confirm the list for your version in the SQL Bridge manual):
 
 | Type | Direction | Typical use |
 |---|---|---|
@@ -97,7 +97,7 @@ Without a handshake the PLC does not know whether the insert occurred, so it eit
 When Ignition writes history, alarms journal rows or transaction group rows, it uses the {{term:store-and-forward|store and forward}} engine so a database outage or restart does not drop data. Records go first into a **memory buffer**, then to the **database sink**, which retries on failure. The **disk cache** persists records that cannot be delivered yet.
 
 - The memory buffer is fast but volatile. If the Gateway restarts, it is gone, and it cannot quarantine anything.
-- The disk cache holds data waiting to forward and has a maximum record count (a configurable record count; check the store and forward page of the manual for your version's default and its advice on raising it, since the cache is short-term storage). The examples in this lesson assume a cache of 25,000 records. When full, new records are dropped.
+- The disk cache holds data waiting to forward and has a maximum record count (configurable; check the store and forward page of the manual for your version's default and its advice on raising it, since the cache is short-term storage). The examples in this lesson assume a cache of 25,000 records. When full, new records are dropped.
 - The sink retries a failed batch record by record. A record that keeps failing, for example from a data type mismatch or a missing column, goes to **{{term:quarantine|quarantine}}** instead of blocking everything behind it.
 
 Check the **Store & Forward** status page and the system tags for quarantined and dropped counts. Quarantined data stays on disk until a person looks at it, fixes the cause (a table missing, a column too short) and releases or discards it. A non-zero quarantine count after commissioning is a real problem. Someone should be alerted.
