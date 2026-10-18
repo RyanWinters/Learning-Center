@@ -74,19 +74,21 @@ The usual convention: put I/O and shared state at controller scope, and everythi
 
 ## Tag name rules
 
-A tag name has up to 40 characters, starts with a letter or underscore, and uses letters, numbers and underscores. Names are not case sensitive (\`Pump1\` and \`PUMP1\` are the same), but be consistent. Avoid double underscores and ending with an underscore. Descriptions (up to 512 characters) are stored with the tag and **appear in the ladder editor** next to every instruction that uses it, so writing them is the cheapest documentation you can do.
+A tag name has up to 40 characters, starts with a letter or underscore, and uses letters, numbers and underscores. Names are not case sensitive (\`Pump1\` and \`PUMP1\` are the same), but be consistent. Avoid double underscores and ending with an underscore. Descriptions are stored with the tag and can be shown in the ladder editor and the tag window (check your version for the display options and the length limit), so writing them is the cheapest documentation you can do.
 
 ## Module-defined I/O tags
 
 When you add an I/O module to the {{term:io-configuration|I/O Configuration}}, Logix creates its tags for you. These are {{term:module-defined-tag|module-defined tags}} and follow a pattern:
 
 \`\`\`text
-Local:1:I.Data        inputs of the module in slot 1 (a DINT, one bit per point)
+Local:1:I.Data        inputs of the module in slot 1 (one bit per point; the width depends on the module)
 Local:1:I.Data.0      input point 0
 Local:2:O.Data.3      output point 3 of the module in slot 2
 Local:3:I.Ch0Data     analog channel 0 of the module in slot 3
 Local:3:C             configuration data (ranges, filters)
 \`\`\`
+
+The size of \`.Data\` follows the module: a 16-point card such as a 16-point 24 V DC input typically presents an INT, and a 32-point card a DINT. Check the module profile in your project rather than assuming. The bit-per-point addressing (\`.Data.5\`) works the same either way.
 
 \`Local\` means the same chassis as the controller. Modules reached across Ethernet use their module name instead, such as \`Rack2_Slot4:I.Data.5\`. The letter after the colon says the direction: **I** input, **O** output, **C** configuration.
 
@@ -116,7 +118,7 @@ A controller-scope tag can be configured as **produced** so other controllers ca
 
 ## Structures
 
-Types can be grouped. Built-in structures exist for timers (\`TIMER\` with \`.PRE\`, \`.ACC\`, \`.DN\`), counters and strings. You can define your own **user-defined types** (UDTs) with named members. A tag named \`Pump1\` of type \`Motor\` can have \`Pump1.Run\`, \`Pump1.Fault\`, \`Pump1.Speed\`. Designing them is the subject of {{lesson:plc-udt}}.
+Types can be grouped. Built-in structures exist for timers (\`TIMER\` with \`.PRE\`, \`.ACC\`, \`.DN\`), counters and strings. You can define your own **user-defined types** (UDTs) with named members. In this course the motor tag \`M101\` has type \`UDT_Motor\`, with nested members you reach by path: \`M101.Cmd.Start\`, \`M101.Sts.Running\`, \`M101.Sts.Speed\`, \`M101.Cfg.StartDelay\`. Designing them is the subject of {{lesson:plc-udt}}.
 `,
 
   eli5: `

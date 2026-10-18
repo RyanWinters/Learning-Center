@@ -47,7 +47,7 @@ Do not start I/O checkout until the construction check is signed off, whatever t
 
 ## The I/O list drives everything
 
-The I/O list is the master checklist. Each row is one point: the plant tag, a description, signal type, panel and terminal, PLC address, range and units, alarm limits. Drawings and the I/O list keep the hyphen (`LT-101`). In the PLC and Ignition the same point is `LT101`, because hyphens are not valid in Logix tag names. The checkout record is the same list with extra columns. Do not invent a second spreadsheet. Extend the first one so nothing can drift.
+The I/O list is the master checklist. Each row is one point: the plant tag, a description, signal type, panel and terminal, PLC address, range and units, alarm limits. Drawings and the I/O list keep the hyphen (\`LT-101\`). In the PLC and Ignition the same point is \`LT101\`, because hyphens are not valid in Logix tag names. The checkout record is the same list with extra columns. Do not invent a second spreadsheet. Extend the first one so nothing can drift.
 
 | Tag | Description | Type | Terminal | PLC address | Range | Wired OK | Signal OK | Scaled OK | Alarm OK | Initials / date |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -193,7 +193,7 @@ In a {{term:brownfield|brownfield}} project the old system is running production
 
 ## Worked example: one pump, start to sign-off
 
-Pump P-101 (PLC tag `P101`, type `UDT_Motor`) has a start/stop, a run feedback, a motor overload contact, a discharge pressure transmitter PT-101 (tag `PT101`, 0-100 psi) and a high-pressure alarm at 85 psi. The overload and E-stop are hardwired in the starter coil circuit. The PLC only monitors the overload auxiliary contact.
+Pump P-101 (PLC tag \`P101\`, type \`UDT_Motor\`) has a start/stop, a run feedback, a motor overload contact, a discharge pressure transmitter PT-101 (tag \`PT101\`, 0-100 psi) and a high-pressure alarm at 85 psi. The overload and E-stop are hardwired in the starter coil circuit. The PLC only monitors the overload auxiliary contact.
 
 - **Pre-comm**: motor megger-tested, overload set to nameplate amps, panel power on.
 - **DI checkout**: HS-101 (start pushbutton on a DI) sets the start request that the PLC maps to \`P101.Cmd.Start\`. The overload auxiliary contact is wired normally closed (fail-safe), and opening it sets \`P101.Alm.Overload\` to 1 in Ignition within one second.

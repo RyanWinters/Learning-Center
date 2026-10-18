@@ -51,7 +51,7 @@ Tables, charts and text boxes repeat across the page for each row of their data 
 
 ### Schedules
 
-A {{term:report-schedule|report schedule}} uses cron format and runs on the Gateway, so it uses the Gateway's local time. A schedule can have several actions at once:
+A {{term:report-schedule|report schedule}} uses a cron-style expression and runs on the Gateway, so it uses the Gateway's local time. A schedule can have several actions at once:
 
 - **Email:** send to addresses or to users by role, with the subject, body and attachment name driven by expressions. Needs an SMTP profile on the gateway.
 - **Save:** write the file to a path on the gateway's file system (a network share is common).
@@ -62,11 +62,11 @@ A {{term:report-schedule|report schedule}} uses cron format and runs on the Gate
 Formats include PDF, CSV, HTML, XLS, RTF, XML and image types. PDF is the usual choice for documents people read, and CSV or XLS when someone will keep working with the data.
 
 > [!example] Daily shift report
-> Schedule: \`0 0 6,14,22 * * ?\` (cron, 6:00, 14:00 and 22:00 on the Gateway clock). Parameters: \`StartDate\` = an expression for 8 hours earlier, \`EndDate\` = now. Actions: Email the PDF to the \`Supervisor\` role with subject \`Shift report \` plus the date, and Save a copy to \`\\\\fileserver\\reports\\shift\\\`. The email is delivered, and the file archive is there when someone asks for last Tuesday's report.
+> Schedule: \`0 0 6,14,22 * * ?\` (a six-field, Quartz-style cron expression with seconds first: second 0, minute 0, hours 6, 14 and 22, any day of month and month, and \`?\` meaning "no specific value" for day of week; verify the format in the schedule editor for your version). It runs at 6:00, 14:00 and 22:00 on the Gateway clock. Parameters: \`StartDate\` = an expression for 8 hours earlier, \`EndDate\` = now. Actions: Email the PDF to the \`Supervisor\` role with subject \`Shift report \` plus the date, and Save a copy to \`\\\\fileserver\\reports\\shift\\\`. The email is delivered, and the file archive is there when someone asks for last Tuesday's report.
 
 ### On demand in Perspective
 
-Perspective can show a report in a **Report Viewer** component, which displays the generated PDF. You bind the report path and parameters, often to dropdowns and date pickers on the screen. Users can also download the PDF. Scripts can call the report-execution functions in the \`system.report\` package to generate files from buttons or events.
+Perspective can show a report in a **Report Viewer** component, which displays the generated PDF. You bind the report path and parameters, often to dropdowns and date pickers on the screen. Users can also download the PDF. Scripts can call the report functions in the \`system.report\` package to generate files from buttons or events (names per the 8.3 scripting function list; check the manual for your version).
 
 > [!note] In 8.1
 > The same schedule model applies. Some Perspective report options and the print-mode behavior changed in later 8.3 patch releases, so read the release notes for your version.
@@ -78,7 +78,7 @@ Perspective can show a report in a **Report Viewer** component, which displays t
 - **Cache heavy data.** If five reports use the same expensive query, compute it once into a summary table on a schedule.
 - **Avoid scripts for big loops.** Python over tens of thousands of rows is slower than the same logic in SQL.
 - **Stagger schedules.** Twenty reports at 6:00:00 each hit the database at once. Offset them by a few minutes.
-- **Mind the gateway.** Generating large PDFs uses memory. Heavy reporting at the end of a shift can slow screens if the gateway is small. Move reports to a separate gateway on large systems (see {{lesson:arch-remote-services}}).
+- **Mind the gateway.** Generating large PDFs uses memory. Heavy reporting at the end of a shift can slow screens if the gateway is small. Move reports to a separate gateway on large systems (see {{lesson:arch-patterns}} for splitting workloads).
 `,
 
   eli5: `

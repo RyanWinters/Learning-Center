@@ -91,7 +91,7 @@ Typical reasons for a long scan: a big program in one task, loops that process a
 
 ### Watchdog
 
-Each task has a **{{term:watchdog|watchdog}}** time, 500 ms by default. If a task runs longer than its watchdog, the controller raises a major fault and stops. This is a safety net against logic stuck in a loop or a stuck JMP. Setting the watchdog to a huge value hides real problems. Setting it just above the expected maximum scan time is the usual approach.
+Each task has a **{{term:watchdog|watchdog}}** time, set in Task Properties (check the default for your version). If a task runs longer than its watchdog, the controller raises a major fault and stops. This is a safety net against logic stuck in a loop or a stuck JMP. Setting the watchdog to a huge value hides real problems. Setting it just above the expected maximum scan time is the usual approach.
 
 ## Worked example
 
@@ -212,7 +212,7 @@ Early PLCs had one processor that could do one thing at a time, so the loop (rea
       answer: 0,
       explain: [
         "Correct. A task that takes longer than its period causes overlaps and signals a design problem.",
-        "A 12 ms scan is far below the default 500 ms watchdog.",
+        "A 12 ms scan is far below a typical watchdog setting.",
         "RPI affects I/O data, not the task's own run time.",
         "The next trigger arrives regardless, and the controller counts the overlap."
       ]
