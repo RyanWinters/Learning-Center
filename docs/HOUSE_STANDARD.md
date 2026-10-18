@@ -47,7 +47,7 @@ Site supernet `10.20.0.0/16` (Plant 2 = `10.21.0.0/16`, Plant 3 = `10.22.0.0/16`
 | 40 | OEM skid uplinks (1:1 NAT) | 10.20.40.0/24 | |
 | 50 | Engineering workstations | 10.20.50.0/24 | |
 | 99 | Network management | 10.20.99.0/24 | |
-| 250 | DMZ (Level 3.5) | 10.20.250.0/24 | DMZ gateway / reverse proxy `10.20.250.10`, historian replica `.20`, jump host `.30` |
+| 250 | DMZ (Level 3.5) | 10.20.250.0/24 | DMZ gateway / reverse proxy `10.20.250.10`, historian replica `.20`, jump host `.30`, NTP server `.40` |
 
 ## 4. Zones, conduits and the DMZ pattern
 

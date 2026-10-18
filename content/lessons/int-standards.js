@@ -79,7 +79,7 @@ IEC 61508 is the generic functional safety standard. IEC 61511 applies it to the
 
 ### IEC 61131-3
 
-This standard defines five PLC languages: ladder diagram, function block diagram, structured text, sequential function chart and instruction list (deprecated in later editions), plus a software model of programs, tasks and variables. Allen-Bradley's Studio 5000 follows much of it with vendor extensions. Knowing it helps you read Siemens or Codesys code and write portable structure.
+This standard defines five PLC languages: ladder diagram, function block diagram, structured text, sequential function chart and instruction list (deprecated or removed in recent editions; check the edition you are working to), plus a software model of programs, tasks and variables. Allen-Bradley's Studio 5000 follows much of it with vendor extensions. Knowing it helps you read Siemens or Codesys code and write portable structure.
 
 ### OPC UA, MQTT and Sparkplug
 
@@ -126,7 +126,7 @@ Industrial standards do the same thing for factories. One agreement says how to 
   examples: [
     {
       title: "Reading an instrument tag with ISA-5.1",
-      body: `Tag **TIC-210A**: T is temperature, I is indicate, C is control, 210 is the loop number, A distinguishes a second instrument in the same loop. On the P&ID the bubble sits in the field or on the panel depending on whether it is a field instrument or part of the DCS or PLC. In Ignition, many integrators mirror it as \`Plant/Area2/TIC_210A\` because hyphens do not work well in some tag paths.`
+      body: `Tag **TIC-210A**: T is temperature, I is indicate, C is control, 210 is the loop number, A distinguishes a second instrument in the same loop. On the P&ID the bubble sits in the field or on the panel depending on whether it is a field instrument or part of the DCS or PLC. In the PLC and Ignition the hyphen is dropped (hyphens are not valid in Logix tag names), so the house form is \`TIC210A\`, for example \`[default]Plant1/Area20/Line1/TIC210A\`. See {{lesson:int-naming}}.`
     },
     {
       title: "Panel refused for SCCR",
@@ -201,9 +201,9 @@ Industrial standards do the same thing for factories. One agreement says how to 
       answer: 0,
       explain: [
         "Correct. F is flow, I is indicate, C is controller.",
-        "ISA-5.1 letters describe the measured variable and function, not the meaning in this guess.",
-        "Not an ISA-5.1 reading.",
-        "Not an ISA-5.1 reading."
+        "F is the measured variable flow, not frequency. An input converter would not be named with a loop number and the C of a controller.",
+        "ISA-5.1 letters describe the measured variable and function (flow, indicate, control), not a cabinet.",
+        "No ISA-5.1 letter means fire inspection. F here is flow."
       ]
     },
     {

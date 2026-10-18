@@ -24,7 +24,7 @@ Every Perspective component renders to HTML, so its look is CSS. Ignition gives 
 2. **Style classes**: named, reusable bundles stored in the project.
 3. **Inline style** (the \`style\` property): CSS set directly on one component.
 
-Think of it as a cascade from broad to specific. The more you push styling toward the broad end, the cheaper the project is to change.
+If you enable the advanced stylesheet (below), its rules sit between the theme and the named classes, so the full order is theme, stylesheet, named classes, inline. Think of it as a cascade from broad to specific. The more you push styling toward the broad end, the cheaper the project is to change.
 
 {{diagram:cascade}}
 
@@ -44,14 +44,14 @@ A {{term:style-class|style class}} is a named set of style properties stored und
 - **Folders**: classes can live in folders, and the folder becomes part of the name.
 - **Multiple classes** on one component: handy, but the order they apply in is not controlled by the order you list them. Keep classes that set the same property from overlapping.
 
-Built-in classes use an \`IA_\` prefix (for example the table and button helpers that ship with Perspective). Do not reuse that prefix for your own classes.
+Perspective's built-in base styling uses classes with an \`ia_\` prefix. The manual reserves that prefix, so do not use it for your own classes. Avoid dots in class names too, since a dot is a selector character in CSS.
 
 ### Binding the class itself
 
 You can bind \`props.style.classes\` to an expression, which is the cleanest way to show state:
 
 \`\`\`text
-if({[default]Pump1/Fault}, "hmi/pump fault", if({[default]Pump1/Running}, "hmi/pump run", "hmi/pump idle"))
+if({[default]Plant1/Area10/Line1/M101/Sts/Fault}, "hmi/motor-fault", if({[default]Plant1/Area10/Line1/M101/Sts/Running}, "hmi/motor-run", "hmi/motor-idle"))
 \`\`\`
 
 The data decides which class applies. The look of "fault" lives in one class, so changing the fault look is one edit. Compare that with an expression computing a hex color on 400 symbols.
@@ -61,7 +61,7 @@ The data decides which class applies. The look of "fault" lives in one class, so
 
 ## Themes
 
-A {{term:persp-theme|theme}} is the base layer: default fonts, component colors, backgrounds. Perspective ships light and dark themes, and users can switch. Themes live on the Gateway in a themes directory as folders of CSS files, and 8.3 supports creating custom themes by copying a bundled one or through the Gateway API. A derivative theme can extend a base theme and override only what differs.
+A {{term:persp-theme|theme}} is the base layer: default fonts, component colors, backgrounds. Perspective ships light and dark themes, and users can switch. Themes live on the Gateway as folders of CSS files. In 8.3 the manual describes a custom theme with its own \`config.json\` and an \`index.css\` entry point. The bundled light and dark themes are maintained by Inductive Automation and are not meant to be edited, so you derive a custom theme from one and override only what differs. Check the custom themes page of the manual for your version for the exact folder layout.
 
 The mechanism that makes this workable is the {{term:css-variable|CSS variable}}. Rather than hardcode \`#1b1b1b\` in forty places, a theme declares:
 
@@ -97,11 +97,63 @@ Define in the advanced stylesheet:
 }
 \`\`\`
 
-Create classes \`hmi/value\`, \`hmi/value-warn\`, \`hmi/value-alarm\`, each setting only \`color\` from the matching variable, plus \`hmi/value\` carrying font size, weight and number alignment. Components get \`hmi/value\` always, with the state class added by a binding. A customer asks for a darker red: one variable changes, 800 components follow. A customer asks for colorblind-safe palette: one theme override.
+Create classes \`hmi/value\`, \`hmi/value-warn\`, \`hmi/value-alarm\`, each setting only \`color\` from the matching variable, plus \`hmi/value\` carrying font size, weight and number alignment. Components get \`hmi/value\` always, with the state class added by a binding. A customer asks for a darker red: one variable changes, 800 components follow. A customer asks for a colour-blind-safe palette: one theme override.
 
 ## Responsive without per-view hacks
 
 Use a media query inside a class (for example, bigger tap targets under 768 px) rather than building a separate mobile view for cosmetic differences. Layout differences still belong in container configuration; see {{lesson:persp-containers}}.
+## If you already build Perspective
+
+You have used classes. The harder problem is architecture: how many layers of variables, which layer owns which decision, and how to switch them safely at runtime.
+
+### Three tiers of tokens
+
+Declare variables in a derived custom theme (its \`index.css\`) in tiers, and let classes consume only the top tier:
+
+\`\`\`css
+:root {
+  /* 1. raw palette: names describe the colour, used only by tier 2 */
+  --pal-grey-90: #e6e6e6;
+  --pal-red-50: #c8102e;
+
+  /* 2. semantic tokens: names describe the job */
+  --hmi-surface: var(--pal-grey-90);
+  --hmi-alarm-critical: var(--pal-red-50);
+
+  /* 3. component tokens: only where a component needs its own */
+  --hmi-faceplate-border: var(--hmi-surface);
+}
+\`\`\`
+
+Style classes use \`var(--hmi-surface)\` and never a raw hex. A rebrand edits tier 1. A dark theme redefines tier 2 only. A component that must differ gets a tier 3 token and the rest are unaffected. The worked ISA-101 palette is in {{lesson:persp-hphmi}}.
+
+### Dark mode and runtime switching
+
+Make light and dark two derived themes that define the same token names with different values, and switch the session's theme from a single place (a user preference stored in a session custom prop, applied by a session startup script or a dropdown handler). Check the session properties for your version to see how the active theme is exposed and whether it can be set from a script. One switch, one writer. Test every faceplate in both themes, since a hardcoded colour is the first thing that fails.
+
+### The one-variable demo
+
+To convince a team, change one tier 2 token in the theme and reload a session. Every class that references it follows with no view edits. Do the same with an inline colour on a component: it does not move. That is the audit. Search views for inline \`backgroundColor\` and \`color\` keys that duplicate class work.
+
+### Typing variables into classes
+
+Put \`var(--hmi-surface)\` as the value in a class property field. The Designer preview may not resolve variables from a theme or stylesheet until the project is saved and reloaded, so verify in a real session before concluding anything is broken.
+
+### Class set design for a library
+
+| Layer | Examples | Rule |
+|---|---|---|
+| Base text and surface | \`hmi/text\`, \`hmi/surface\` | Set font and colour from tokens only |
+| State | \`hmi/state-run\`, \`hmi/state-fault\` | One property family each, no layout |
+| Priority | \`hmi/alarm-critical\` | Colour plus shape cue, see persp-hphmi |
+| Utility | \`text/truncate\`, \`layout/gap\` | Single purpose, no colour |
+
+Keep state classes free of layout, so adding a state does not change geometry. Because class order is not controlled by the order you list them, never rely on one class overriding another. Bind a single state class, not a list of overlapping ones.
+
+### Performance
+
+A theme or class change costs nothing per binding on the Gateway. The costs are bindings that compute style objects per component. Bind \`props.style.classes\` to a short expression or a map transform, and leave inline style for data-driven values such as a bar width.
+
 `,
 
   eli5: `
@@ -123,7 +175,7 @@ And paint labels like "school blue" are variables. Change what "school blue" mea
 
 **Where it breaks down.** Style class precedence is not fully controllable when several classes set the same property, and inline styles beat classes. So a stray inline \`color\` on one component silently defeats your class. Audit for inline styles that duplicate class work. Data-dependent values (a bar width, a rotation angle) should stay inline or bound, since a class cannot depend on a number.
 
-**What integrators argue about:** how many classes are too many. A small, strict set (around 20 to 40 for an HMI) is easier to keep consistent than a sprawling library with variants for every screen. Add a class when you have used the same look three times.
+**What integrators argue about:** how many classes are too many. A small, strict set is easier to keep consistent than a sprawling library with variants for every screen. Add a class when you have used the same look three times.
 `,
 
   history: `
@@ -214,13 +266,13 @@ Perspective was designed around web technology, so its styling model is a thin l
     },
     {
       q: "You define a class directly in the advanced stylesheet and it does not appear in the Designer dropdown. What do you do?",
-      options: ["It is broken, recreate it in the class editor", "Type its name (without the psc- prefix) into the component's classes field", "Restart the Gateway", "Prefix it with IA_"],
+      options: ["It is broken, recreate it in the class editor", "Type its name (without the psc- prefix) into the component's classes field", "Restart the Gateway", "Prefix it with ia_"],
       answer: 1,
       explain: [
         "It is not broken. Stylesheet-only classes just are not listed.",
         "Correct. Type the name. Perspective adds the psc- prefix on the page.",
         "A restart doesn't change what the dropdown lists.",
-        "IA_ is reserved for Perspective's built-in classes."
+        "ia_ is reserved for Perspective's built-in classes."
       ]
     },
     {

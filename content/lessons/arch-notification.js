@@ -36,7 +36,7 @@ Because the roster is filtered by schedule, the same pipeline reaches the day sh
 
 A pipeline starts with the alarm event and flows through blocks. The ones you use most:
 
-- **Notification block:** sends through a chosen profile to a chosen roster. Email can address many recipients at once. SMS and voice work through contacts one at a time, in roster order.
+- **Notification block:** sends through a chosen profile to a chosen roster. Email can address many recipients at once. SMS and voice work through contacts one at a time, in roster order (verify in the Notification block page for your version).
 - **Delay block:** holds the event for a set time. A typical use is "wait 5 minutes for someone to acknowledge before calling".
 - **Expression and Switch blocks:** branch on alarm properties such as priority, or on computed values.
 - **Set Property block:** stores values on the event, such as a counter, for use later in the pipeline.
@@ -58,7 +58,7 @@ Escalation is usually built with a counter, as in the manual's example:
 5. Notification block: voice call to the \`Supervisors\` roster, with a delay between messages.
 
 > [!example] Two-level escalation
-> High-high level alarm on Tank 3. Priority is Critical. Pipeline: email the shift group and SMS the operator on duty immediately. Wait 5 minutes. If still unacknowledged, voice-call the supervisor roster. After 15 more minutes, jump to \`PlantManagerEscalation\`. An acknowledgment at any point ends the chain.
+> High-high level alarm (LAHH-101 on LT101). Priority is Critical. Pipeline: email the shift group and SMS the operator on duty immediately. Wait 5 minutes. If still unacknowledged, voice-call the supervisor roster. After 15 more minutes, jump to \`PlantManagerEscalation\`. An acknowledgment at any point ends the chain.
 
 ## Email, SMS and voice
 
@@ -73,9 +73,10 @@ Escalation is usually built with a counter, as in the manual's example:
 Ignition has Twilio SMS and voice profile types. You need a Twilio account with the right capability, a phone number, and a Gateway with internet access to Twilio. For voice, Twilio must also reach your Gateway to deliver the interactive part, which has consequences:
 
 - **Acknowledgement by phone** needs the Gateway's public hostname configured, so Twilio can call back into it. Because that exposes an inbound path, treat the exposure as a security design item. See {{lesson:net-security}}.
-- **PIN authentication** can be required so a person has to enter a code to acknowledge. This defaults to on for voice in the manual.
+- **SMS acknowledgement** by reply works the same way in principle: the person's reply goes to Twilio, and Twilio must deliver it to the Gateway, which again needs an inbound path and a public hostname. Without that route, SMS is notify-only and the pipeline must escalate on a timer instead of waiting for a reply. Check the SMS profile page for your version for the exact reply format.
+- **PIN authentication** can be required so a person has to enter a code to acknowledge. The manual lists the default for voice; check the Twilio profile page for your version.
 - **Broadcast notifications** deliver the message without acknowledgment or PIN, which suits a plant with no inbound route. These calls are unauthenticated, so use them only for information.
-- A **delay between messages** setting exists on each profile type, and defaults to zero. The manual advises at least a second between calls for most phone systems. A very long delay can hold up other alarms waiting in the call queue.
+- A **delay between messages** setting exists on each profile type, and the manual gives the default and its advice for phone systems (check the Twilio profile page for your version). A very long delay can hold up other alarms waiting in the call queue.
 
 > [!note] In 8.1
 > The same block model applies. Check the 8.3 Twilio profile pages for current setting names before configuring.
@@ -114,7 +115,7 @@ The danger is a card that phones everyone for everything. If a loud noise trigge
 `,
 
   history: `
-The Alarm Notification module has been part of Ignition since the 7.x line (the 7.9 manual documents pipelines and escalation). Pipelines let you express a response process as a flowchart instead of a fixed contact list. Twilio SMS and voice profiles are available in 8.x.
+The Alarm Notification module predates 8.x (check the 7.9 manual if you maintain an old system). Pipelines let you express a response process as a flowchart instead of a fixed contact list. Twilio SMS and voice profiles are available in 8.x.
 `,
 
   examples: [
@@ -192,7 +193,7 @@ The Alarm Notification module has been part of Ignition since the 7.x line (the 
         "That scales the spam.",
         "Correct. One call about the root cause is more useful than 80 about its effects.",
         "Disabling it removes the notification entirely.",
-        "Zero delay is the default and makes queueing worse, not better."
+        "A very small or zero delay does not fix queueing and can overload the phone system, so it is not the answer here."
       ]
     },
     {

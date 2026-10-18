@@ -20,22 +20,22 @@ LC.lesson({
 
 The SFC module runs sequential function charts on the Gateway. You draw a flowchart of steps and transitions in the Designer, each step runs actions (write tags, run scripts, call other charts), and the chart advances when a transition's condition is true. Use it for multi-step procedures that are awkward as a pile of scripts: recipe downloads, batch-style sequences, startup routines, data collection routines and operator-guided procedures.
 
-It is related to, but not the same as, the SFC language in IEC 61131-3 PLCs (see {{lesson:plc-languages}}). Ignition's SFC runs in the Gateway's JVM on the order of tens or hundreds of milliseconds, not in a deterministic PLC scan.
+It is related to, but not the same as, the SFC language in IEC 61131-3 PLCs (see {{lesson:plc-languages}}). Ignition's SFC runs in the Gateway's JVM, not in a deterministic PLC scan. Its timing is not guaranteed and must be measured on the real system.
 
 ## Chart elements
 
 | Element | What it does |
 |---|---|
-| **Begin / End step** | Mark the start and finish. End steps can't be inside parallel sections |
-| **{{term:sfc-step|Action step}}** | Runs an action, usually a script, when entered. Can have a timeout, and can be set to run on start, on stop or on a timer |
-| **{{term:sfc-transition|Transition}}** | A boolean expression. The chart waits until it is true. When several transitions leave a step, the leftmost true one wins |
+| **Begin / End step** | Mark the start and finish. End steps can't be inside parallel sections (verify in the SFC manual for your version) |
+| **{{term:sfc-step|Action step}}** | Runs an action, usually a script, when entered. Can have a timeout, and can be set to run on start, on stop or on a timer (verify the options in the SFC manual for your version) |
+| **{{term:sfc-transition|Transition}}** | A boolean expression. The chart waits until it is true. When several transitions leave a step, the leftmost true one wins (verify in the manual) |
 | **Parallel** | Splits into branches that run together and wait at the sync until all finish. A cancel condition can stop the rest early |
 | **Branching** | Several transitions leaving one step choose a path |
 | **{{term:sfc-enclosing-step|Enclosing step}}** | Runs another chart on the same Gateway and waits for it to finish |
 
 {{diagram:chart}}
 
-Waiting is the job of a transition, not an action. A step that sits in \`time.sleep()\` blocks a thread and hides what the chart is waiting for. Put the wait in the transition: \`{[default]Tank1/Level} > 80\`.
+Waiting is the job of a transition, not an action. A step that sits in \`time.sleep()\` blocks a thread and hides what the chart is waiting for. Put the wait in the transition: \`{[default]Plant1/Area10/Line1/LT101/Level} > 3.5\`.
 
 ## Chart scope
 
@@ -45,7 +45,7 @@ There are also higher scopes. Parameters from an enclosing chart can be passed d
 
 ## Starting and monitoring charts
 
-Charts are started with a script or, for charts marked for it, from the gateway. In a script, the \`system.sfc\` functions start a chart by its path and a dictionary of start parameters, cancel it, pause it, and read its state. The Designer has a chart monitor view and an SFC status in the Gateway web page, showing which step each instance is on.
+Charts are started from a script. In a script, the \`system.sfc\` functions start a chart by its path and a dictionary of start parameters, cancel it, pause it, and read its state. The Designer has a chart monitor view and an SFC status in the Gateway web page, showing which step each instance is on.
 
 \`\`\`python
 # From a button in the client or a gateway event
@@ -57,7 +57,7 @@ Verify exact function names and signatures in the 8.3 \`system.sfc\` documentati
 
 ## What belongs in the PLC
 
-An Ignition SFC is a convenient place for sequencing, but it is not a safe place for control that protects people or equipment. Gateway sequencing depends on a computer, an OS, a JVM, a network and a database. A Gateway restart, a patch, a lost connection or a scripting error stops the chart. The equipment keeps doing whatever its last command was.
+An Ignition SFC is a convenient place for sequencing, but it is not a safe place for control that protects people or equipment. Gateway sequencing depends on a computer, an OS, a JVM, a network and a database. A Gateway restart, a patch, a lost connection or a scripting error stops the chart. A redundant-pair failover is a restart from the chart's point of view: the instance running on the failed node does not simply carry on at the same step on the other node, so design the chart to be restartable and check what your version restores (see {{lesson:arch-redundancy}}). The equipment keeps doing whatever its last command was.
 
 > [!warning] Safety and fast control stay in the PLC
 > Interlocks, permissives, e-stop handling, anything that has to stop a motor or close a valve within a scan or two, and any sequence where a half-completed run can hurt someone or break something, belong in the PLC. Use a safety-rated PLC where required (see {{lesson:plc-safety}}). The PLC should do the right thing if the Gateway disappears.
@@ -101,7 +101,7 @@ Now the important part. The person reading the card is the manager in the office
 
 **Why transitions do the waiting?** The chart engine can evaluate conditions efficiently and show you the blocking condition. A sleep inside a step hides it and ties up a thread. Operators and maintenance staff can read a transition expression and see why a batch is stuck.
 
-**Why keep safety logic out?** The Gateway is a general-purpose server on a general-purpose OS. It gets patched, restarted, and sometimes lags. A PLC scans on a known cycle and has deterministic behavior. Standards like IEC 62061 and ISO 13849 expect protective functions in suitably rated hardware. Beyond standards, there is the plain failure story: a sequence in the Gateway commands a valve open, the Gateway restarts, nothing commands it closed. Design so the default on loss of the Gateway is safe.
+**Why keep safety logic out?** The Gateway is a general-purpose server on a general-purpose OS. It gets patched, restarted, and sometimes lags. A PLC scans on a known cycle and has deterministic behavior. Standards like IEC 62061 and ISO 13849 expect protective functions to be implemented as a suitably rated safety function, not in a general-purpose Gateway. Beyond standards, there is the plain failure story: a sequence in the Gateway commands a valve open, the Gateway restarts, nothing commands it closed. Design so the default on loss of the Gateway is safe.
 
 **What integrators argue about.** How much sequencing the Gateway should own. Some build batch-style systems entirely in Ignition SFC with the PLC doing only equipment control. Others use the PLC for all sequencing (often with PackML or ISA-88 state models, see {{lesson:plc-isa88-packml}}) and use Ignition only to request and display. The safe middle: the PLC owns anything time-critical, safety-related or needed during a network outage, and the Gateway owns coordination, recipes and records.
 `,
@@ -117,7 +117,7 @@ Sequential function charts descend from the French Grafcet standard of the 1970s
     },
     {
       title: "Handshake with a PLC state machine",
-      body: `The chart writes \`Line1.Cmd.Run = 1\` and waits for \`Line1.Sts.Running = 1\` with a 20 second timeout. After the next transition it clears the command bit. If the timeout hits, it goes to a fault branch that raises an alarm and stops. The PLC alone decides whether starting is allowed.`
+      body: `The chart writes \`M101.Cmd.Start = 1\` (tag \`[default]Plant1/Area10/Line1/M101/Cmd/Start\`) and waits for \`M101.Sts.Running = 1\` with a 20 second timeout. After the next transition it clears the command bit. If the timeout hits, it goes to a fault branch that raises an alarm and stops. The PLC alone decides whether starting is allowed.`
     }
   ],
 

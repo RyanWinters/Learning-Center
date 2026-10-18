@@ -91,9 +91,12 @@
     }
 
     function finish() {
+      const lvBefore = LC.gamify.levelInfo(LC.store.get().xp);
+      LC.gamify.drainBadges();
       const r = LC.store.recordQuiz(id, answers, { testout: testout });
       const li = LC.store.lesson(id);
-      const nextId = (function () { const t = LC.graph.lessonsIn(m.track), i = t.indexOf(id); return i < t.length - 1 ? t[i + 1] : null; })();
+      const lv = LC.gamify.levelInfo(LC.store.get().xp), fresh = LC.gamify.drainBadges();
+      const nx = LC.graph.nextAfter(id), nextId = nx && nx.id;
       const missed = qs.map((q, i) => ({ q: q, i: i })).filter(x => !r.per[x.i]);
       const ok = r.passed;
       const head = testout ? (ok ? 'Tested out' : 'Not this time') : (ok ? 'Passed' : 'Not yet');
@@ -105,10 +108,14 @@
         '<ul class="result-stats">' + '<li><span class="eyebrow">XP earned</span><b class="num xp">+' + r.xp + '</b></li>' +
         '<li><span class="eyebrow">Best score</span><b class="num">' + li.bestScore + '%</b></li>' +
         '<li><span class="eyebrow">To review</span><b class="num">' + r.newCards + '</b></li></ul>' +
+        '<section class="result-level" aria-label="Level progress"><div class="rl-top"><span class="rl-n">' + lv.n + '</span><div class="grow"><p class="eyebrow">Level ' + lv.n + ' · ' + esc(lv.title) + (lv.n > lvBefore.n ? ' · <b class="lvl-up">Level up</b>' : '') + '</p>' +
+          '<div class="bar bar-xp" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(lv.pct * 100) + '" aria-label="XP to next level"><i style="width:' + (lv.pct * 100).toFixed(1) + '%"></i></div>' +
+          '<p class="small muted num">' + (lv.ceil ? lv.toNext.toLocaleString() + ' XP to ' + esc(lv.next) : 'Top level') + '</p></div></div></section>' +
+        (fresh.length ? '<section class="result-badges" aria-label="New badges"><p class="eyebrow">New badge' + (fresh.length > 1 ? 's' : '') + '</p>' + fresh.map(b => '<div class="rb">' + LC.gamify.badgeIcon(b, true) + '<span><b>' + esc(b.title) + '</b><span class="muted small">' + esc(b.desc) + '</span></span></div>').join('') + '</section>' : '') +
         (ok && !testout && !r.completed && !li.readAt ? '<div class="result-note">' + icon('note', 18) + '<span>Reading counts too. <button type="button" class="linkbtn" id="markread">Mark as read and complete</button></span></div>' : '') +
         (missed.length ? '<section class="missed"><h2 class="label">Review these</h2>' + missed.map(x => '<div class="missed-i"><p class="q-text">' + LC.md.inline(x.q.q) + '</p><p class="missed-a">' + icon('check', 16) + '<span>' + LC.md.inline(x.q.options[x.q.answer]) + '</span></p></div>').join('') + '</section>' : '') +
         '</div><div class="qfoot qfoot-r"><div class="result-actions">' +
-        (ok ? (nextId ? '<a class="btn btn-primary" href="#/lesson/' + nextId + '">Next lesson' + icon('right', 16) + '</a>' : '<a class="btn btn-primary" href="#/track/' + m.track + '">Back to track</a>') : '<a class="btn btn-primary" href="#/lesson/' + id + (testout ? '' : '/quiz') + '" id="retry">' + (testout ? 'Read the lesson' : 'Try again') + '</a>') +
+        (ok ? (nextId ? '<a class="btn btn-primary btn-next" href="#/lesson/' + nextId + '"><span class="btn-next-t"><span class="btn-next-k">Next: ' + esc(LC.index[nextId].title) + '</span><span class="btn-next-s">' + esc(nx.why) + '</span></span>' + icon('right', 16) + '</a>' : '<a class="btn btn-primary" href="#/track/' + m.track + '">Back to track</a>') : '<a class="btn btn-primary" href="#/lesson/' + id + (testout ? '' : '/quiz') + '" id="retry">' + (testout ? 'Read the lesson' : 'Try again') + '</a>') +
         '<a class="btn" href="#/lesson/' + id + '">Back to lesson</a>' + (r.newCards ? '<a class="btn btn-ghost" href="#/review">Review cards</a>' : '') + '</div></div>', false);
       LC.glossaryLink(root.querySelector('.missed'));
       const mr = root.querySelector('#markread');
