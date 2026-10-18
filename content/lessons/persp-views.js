@@ -89,7 +89,7 @@ rows.append({"name": "M101", "run": True})
 self.custom.rows = rows                # assign the whole value
 \`\`\`
 
-Datasets are a separate type, produced by queries and the Table component. Convert them with \`system.dataset.toPyDataSet\`, or build a list of dicts from the dataset\'s column names and rows, before heavy processing. Assign the finished list back to the property.
+Datasets are a separate type, produced by queries and the Table component. In 8.3 you can index and iterate a dataset directly (\`system.dataset.toPyDataSet\` is deprecated and no longer needed), or build a list of dicts from the dataset\'s column names and rows, before heavy processing. Assign the finished list back to the property.
 
 ## View parameters: the interface of a view
 
@@ -296,7 +296,7 @@ Perspective arrived with Ignition 8.0 as the module meant to replace Vision's Ja
         "Polling is a binding option and does nothing for a missing property change.",
         "Correct. Assigning a whole new value is a property write the platform can detect and propagate.",
         "props belongs to the component type. You cannot invent keys there.",
-        "There is no refresh call that substitutes for writing the property."
+        "system.perspective.refresh() only reloads the page. It does not substitute for writing the property."
       ]
     },
     {

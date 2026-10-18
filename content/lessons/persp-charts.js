@@ -139,7 +139,7 @@ A level trace alone does not say why it moved. Overlay events: alarm activations
 
 ### Quality is part of the data
 
-Bad-quality periods show as gaps or flat lines. Decide how they are drawn. A visible gap is honest. Draw a flat held value and the operator reads a stable process during a comm loss. For key pens, query a quality aggregate (for example PctGood, if listed on the 8.3 aggregates page) and flag windows below a limit your style guide sets.
+Bad-quality periods show as gaps or flat lines. Decide how they are drawn. A visible gap is honest. Draw a flat held value and the operator reads a stable process during a comm loss. For key pens, query a quality aggregate (for example PctGood, the time-weighted percentage of good values) and flag windows below a limit your style guide sets.
 
 ### Cost per refresh
 

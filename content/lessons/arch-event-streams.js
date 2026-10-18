@@ -20,7 +20,7 @@ LC.lesson({
 
 Plants generate events: a tag changes, a message arrives, a batch completes. Integration code that reacts to those events used to mean a pile of tag change scripts, each with its own error handling and its own bugs. **Event Streams**, new in Ignition 8.3, make that pipeline a first-class **project resource**. You describe where events come from, how they are cleaned up, and where they go. The Gateway handles queueing, batching and failure.
 
-An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full Gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) lists them as not supported on Ignition Edge (see {{lesson:arch-edge}}).
+An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full Gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) does not list Edge support, and the Kafka module is not available on Edge (see {{lesson:arch-edge}}).
 
 ## The pipeline
 
@@ -40,7 +40,7 @@ Every stream is the same shape.
 
 ### Sources
 
-The 8.3 manual lists these sources. Some need other modules.
+The 8.3 manual lists the first four sources below. Some need other modules.
 
 - **Tag Event**: reacts to a tag's value, quality or timestamp changing.
 - **HTTP Endpoint**: opens a URL that accepts POST and PUT. Needs the Web Dev module ({{lesson:arch-webdev}}).
@@ -237,7 +237,7 @@ Kafka was created at LinkedIn to move activity data between systems and was open
       answer: 1,
       explain: [
         "The issue is the feature, not the Designer.",
-        "Correct. The Inductive Automation 8.3 Event Streams documentation lists them as not supported on Edge.",
+        "Correct. Event streams need a full Gateway; the 8.3 manual also notes the Kafka module is not available on Edge.",
         "There is no such restriction. The module is simply not available.",
         "Event streams are a platform feature and are not tied to Vision."
       ]

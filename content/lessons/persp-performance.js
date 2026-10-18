@@ -62,7 +62,7 @@ Rules of thumb that senior integrators repeat:
 
 ## Named query caching
 
-{{term:named-query-cache|Caching}} on a named query lets the Gateway reuse a result for a set time instead of hitting the database. A reporting query behind a 30 second poll, with a cache lifetime of 30 seconds, hits the database once per half minute for everyone. Caching only helps when the data is identical for every caller. A query with a per-user parameter makes a separate cache entry for each distinct value. And a cache hides changes: if someone edits the table, viewers see the old data until the lifetime ends. The function \`system.db.clearNamedQueryCache\` clears a named query's cache when you need to force a refresh, so a save button can clear the cache for the data it just changed. From shared scope (tag event scripts, alarm pipelines) it also needs the project name, and the manual notes that each distinct parameter set makes its own cache entry.
+{{term:named-query-cache|Caching}} on a named query lets the Gateway reuse a result for a set time instead of hitting the database. A reporting query behind a 30 second poll, with a cache lifetime of 30 seconds, hits the database once per half minute for everyone. Caching only helps when the data is identical for every caller. A query with a per-user parameter makes a separate cache entry for each distinct value. And a cache hides changes: if someone edits the table, viewers see the old data until the lifetime ends. The function \`system.db.clearQueryCache(project, path)\` (8.1: \`clearNamedQueryCache\`) clears a named query's cache when you need to force a refresh, so a save button can clear the cache for the data it just changed. From shared scope (tag event scripts, alarm pipelines) it also needs the project name, and the manual notes that each distinct parameter set makes its own cache entry.
 
 ## Embedded views and repeaters
 
@@ -177,7 +177,7 @@ Vision scaled by pushing work to client PCs, which limited how many Gateway reso
   examples: [
     {
       title: "Replacing a polling query with a tag",
-      body: `A header banner shows "Open work orders: 14" using a named query polled every 2 seconds. With 120 operators that is 60 queries per second against the maintenance database. Replace it: a Gateway timer script runs the query every 30 seconds with \`system.db.execQuery("Maintenance/OpenWorkOrders", {})\` plus the project name, because Gateway scope has no calling project (in 8.1, \`system.db.runNamedQuery\`; the old call still runs in 8.3 but is deprecated), writes the count to a memory tag \`[default]Plant1/Maintenance/OpenWorkOrders\`, and the banner binds to that tag. Database load drops from 60 queries per second to about 0.03, and the number is at most 30 seconds old.`
+      body: `A header banner shows "Open work orders: 14" using a named query polled every 2 seconds. With 120 operators that is 60 queries per second against the maintenance database. Replace it: a Gateway timer script runs the query every 30 seconds with \`system.db.execQuery("Maintenance/OpenWorkOrders", {})\` plus \`project=\"Maintenance\"\` (by keyword, so Gateway scope doesn't fall back to the Gateway scripting project) (in 8.1, \`system.db.runNamedQuery\`; the old call still runs in 8.3 but is deprecated), writes the count to a memory tag \`[default]Plant1/Maintenance/OpenWorkOrders\`, and the banner binds to that tag. Database load drops from 60 queries per second to about 0.03, and the number is at most 30 seconds old.`
     },
     {
       title: "A reconnect storm",

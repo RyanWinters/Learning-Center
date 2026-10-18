@@ -42,16 +42,20 @@ The native app exposes hardware as **component actions** and **session events**.
 > A maintenance tech scans a QR code on a motor nameplate. The code contains the string \`[default]Plant1/Area10/Line1/M101\`. The barcode event script does this:
 >
 > \`\`\`python
-> def onBarcodeScanned(self, session, event):
->     path = event.value          # the scanned text
->     system.perspective.openPopup(
->         'motor-' + path,
->         'Library/Faceplates/Motor',
->         params={'tagPath': path},
->         title=path.split('/')[-1],
->         modal=False)
+> # Barcode session event (parameters: session, data, context)
+> path = data.text            # the scanned text
+> # Session events run in the Gateway scope, so name the session and page
+> info = [s for s in system.perspective.getSessionInfo() if s['id'] == session.props.id][0]
+> system.perspective.openPopup(
+>     'motor-' + path,
+>     'Library/Faceplates/Motor',
+>     params={'tagPath': path},
+>     title=path.split('/')[-1],
+>     modal=False,
+>     sessionId=session.props.id,
+>     pageId=info['pageIds'][0])
 > \`\`\`
-> One scan, no typing, no navigation tree. Validate the string before you use it: a barcode is user input. Check it starts with a known provider and exists as a tag, or someone will open a faceplate on a path you did not intend. The handler signature shown is illustrative. Confirm it on the session events page of the manual for your version.
+> One scan, no typing, no navigation tree. Validate the string before you use it: a barcode is user input. Check it starts with a known provider and exists as a tag, or someone will open a faceplate on a path you did not intend. The popup opens on the session's first open page; pass a page ID through the action's context if the app has several.
 
 Because these actions only exist in the app, guard them. In a browser the action is ignored, so give browser users a manual path (a text field to type the tag name) or the screen looks broken.
 

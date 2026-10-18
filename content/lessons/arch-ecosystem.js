@@ -49,7 +49,7 @@ Strategic Partners and Premier Technology Providers are recognized by Inductive 
 
 ## Installing a module
 
-A module is a file with the extension \`.modl\`. On the Gateway you install it from the Config section's module page. Installation needs a **module signature** and a **trusted certificate chain**, so Ignition can tell the file is authentic and unaltered. Unsigned or self-signed modules need an explicit step to accept the risk, and many policies forbid that on production Gateways.
+A module is a file with the extension \`.modl\`. On the Gateway you install it from **Platform > System > Modules** in the Gateway web interface. Installation needs a **module signature** and a **trusted certificate chain**, so Ignition can tell the file is authentic and unaltered. Unsigned or self-signed modules need an explicit step to accept the risk, and many policies forbid that on production Gateways.
 
 Things to check before you install:
 

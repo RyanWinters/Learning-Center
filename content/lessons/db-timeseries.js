@@ -48,7 +48,7 @@ The data tables are named \`sqlt_data_<driverId>_<year>_<month>\` for the defaul
 Two details trip people up:
 
 - \`t_stamp\` is **milliseconds since 1970-01-01 UTC** in a BIGINT, not a SQL timestamp. 1792195200000 is 2026-10-17 00:00 UTC.
-- The value goes in one of four typed columns, chosen by the tag's \`datatype\` in \`sqlth_te\`. The others are NULL. \`dataintegrity\` holds the quality code. The 192 shown above is an example from the older numbering, and Ignition 8 changed quality codes, so check the table reference for your version before relying on any number. In scripts and expressions never compare to 192. Use \`isGood()\` or \`.quality.isGood()\`.
+- The value goes in one of four typed columns, chosen by the tag's \`datatype\` in \`sqlth_te\`. The others are NULL. \`dataintegrity\` holds the quality code. 192 is the Good code (the manual's database table reference lists it as Good quality), but other good codes exist, so in scripts and expressions never compare to 192. Use \`isGood()\` or \`.quality.isGood()\`.
 
 ### Tag versions
 

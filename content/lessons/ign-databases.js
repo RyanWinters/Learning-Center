@@ -22,7 +22,7 @@ Ignition keeps live values in memory and forgets them on restart. Anything you w
 
 ## Connections, drivers and pools
 
-A database **connection** in the Gateway holds a JDBC URL, credentials and a driver. {{term:jdbc|JDBC}} is the Java standard for talking to SQL databases, and a **driver** is the library that speaks one vendor's wire protocol. Ignition bundles drivers for common engines (MySQL and MariaDB, PostgreSQL, Microsoft SQL Server, Oracle and others); you can add your own.
+A database **connection** in the Gateway holds a JDBC URL, credentials and a driver. {{term:jdbc|JDBC}} is the Java standard for talking to SQL databases, and a **driver** is the library that speaks one vendor's wire protocol. Ignition bundles drivers for common engines (MySQL and MariaDB, PostgreSQL, Microsoft SQL Server); others such as Oracle need the vendor's driver installed; you can add your own.
 
 Opening a connection is expensive (TCP, TLS, login). So Ignition keeps a {{term:connection-pool|connection pool}}, a set of already-open connections that queries borrow and return. Key pool settings are max active connections, max idle connections, and a validation query that checks a borrowed connection is still alive. A pool that is too small makes queries wait. A pool that is too large can overwhelm the database server. Start with the defaults and tune only with evidence from the connection status page.
 
@@ -55,21 +55,21 @@ rows = system.db.execQuery("Production/getLineLog",
 \`\`\`
 
 > [!note] In 8.1
-> The call is \`system.db.runNamedQuery(path, params)\`. In 8.3 it is deprecated but still runs. \`system.db.execQuery\` is for SELECT-type queries, \`execUpdate\` for INSERT/UPDATE/DELETE, and \`execScalar\` for a single value. Pass \`{}\`, not \`None\`, when a query has no parameters. From Gateway scope (timer scripts, tag change scripts, message handlers) there is no calling project to infer, so pass the project name explicitly; check the 8.3 manual for the argument name and position. See the 8.3 manual for full parameters.
+> The call is \`system.db.runNamedQuery(path, params)\`. In 8.3 it is deprecated but still runs. \`system.db.execQuery\` is for SELECT-type queries, \`execUpdate\` for INSERT/UPDATE/DELETE, and \`execScalar\` for a single value. Pass \`{}\`, not \`None\`, when a query has no parameters. From Gateway scope (timer scripts, tag change scripts, message handlers) pass the project name with the \`project\` keyword (for example \`project=\"Meridian\"\`); if you omit it, the Gateway falls back to an associated project or the Gateway scripting project, which may not hold your query. See the 8.3 manual for full parameters.
 
 In Perspective, you can bind a table straight to the named query with parameters from the page. The key properties:
 
-- **Parameters are typed** and become real JDBC prepared-statement parameters when used as values, so the database never confuses data with SQL. This defeats {{term:sql-injection|SQL injection}} for values. An *identifier* parameter (a table or column name) is validated, and a *query string* parameter is dropped in as raw text, so avoid that type for user input. Check the manual for how each parameter type is treated in your version.
+- **Parameters are typed** and become real JDBC prepared-statement parameters when used as values, so the database never confuses data with SQL. This defeats {{term:sql-injection|SQL injection}} for values. A *QueryString* parameter (the only type that can stand in for a table or column name) is dropped in as raw text and never sanitized, so avoid it for user input. A third type, *Database*, picks the connection at call time.
 - **Execution happens on the Gateway**. A client or browser sends only the name and parameters. The Gateway can apply **security**, restricting a query by user role or security zone, and the client never needs database credentials or network access to the database.
-- **Caching**: a query can cache results for a set time. Each distinct parameter set has its own cache, so an expensive "plant summary" query can serve 50 screens from one database hit. \`system.db.clearNamedQueryCache(path)\` clears all cached results for that query.
+- **Caching**: a query can cache results for a set time. Each distinct parameter set has its own cache, so an expensive "plant summary" query can serve 50 screens from one database hit. \`system.db.clearQueryCache(project, path)\` clears all cached results for that query (8.1: \`clearNamedQueryCache\`, deprecated in 8.3).
 - **Query types**: Query (rows), Scalar (one value), and Update (INSERT/UPDATE/DELETE, returning row count or generated keys).
 
 ### Why not system.db.runQuery from the client?
 
-\`system.db.runQuery("SELECT ... WHERE line='" + line + "'")\` builds SQL text from strings. If that string is influenced by a user, a text box or a URL parameter, someone can inject SQL. \`runPrepQuery\` binds values as parameters, so it is safe for values. The danger is any function fed a string you built from user input, and the habit of concatenating is the risk. The \`system.db.runQuery\` family is also on the 8.3 deprecated list. It still runs, and in 8.3 the replacements are \`system.db.execQuery\` (SELECT) and \`system.db.execUpdate\` (INSERT/UPDATE/DELETE) beside the named-query form shown above. With the legacy functions, the SQL itself is written in client scripts, so changing a table name means finding every screen. A named query is defined once, tested once, secured once and cached. The IA documentation itself recommends named queries over the standard statement functions where possible.
+\`system.db.runQuery("SELECT ... WHERE line='" + line + "'")\` builds SQL text from strings. If that string is influenced by a user, a text box or a URL parameter, someone can inject SQL. \`runPrepQuery\` binds values as parameters, so it is safe for values. The danger is any function fed a string you built from user input, and the habit of concatenating is the risk. \`system.db.runQuery\` (the non-prepared form) is also on the 8.3 deprecated list; \`runPrepQuery\` and \`runPrepUpdate\` are not. It still runs, and in 8.3 the replacements are \`system.db.execQuery\` (SELECT) and \`system.db.execUpdate\` (INSERT/UPDATE/DELETE) beside the named-query form shown above. With the legacy functions, the SQL itself is written in client scripts, so changing a table name means finding every screen. A named query is defined once, tested once, secured once and cached. The IA documentation itself recommends named queries over the standard statement functions where possible.
 
 > [!warning] Named queries are not magic
-> A Query String parameter inserts text directly into the SQL, with no protection. Use Value parameters for data. For dynamic table or column names use Identifier type, and validate against a fixed list in your script.
+> A Query String parameter inserts text directly into the SQL, with no protection. Use Value parameters for data. If a table or column name must vary, use a QueryString parameter and validate it against a fixed list in your script first.
 
 ## Transaction groups (SQL Bridge)
 
@@ -84,7 +84,7 @@ The **SQL Bridge (Transaction Groups)** module moves data between tags and datab
 
 ### Triggers, handshakes and schedule
 
-A group runs on a **schedule** (a tag group or fixed rate) and optionally a **trigger**: an expression or tag condition that must be true for the group to execute. Typical pattern: the PLC sets \`Area10_Mixing.BatchComplete\`. The group's trigger watches it and inserts one row. After the insert the group can write to a **handshake** tag (acknowledge) so the PLC knows it was recorded and can safely reset its data. That handshake is what prevents lost or duplicate records when two systems exchange data.
+A group runs on an **execution schedule** (a Timer at a fixed rate, or a Schedule of set times) and optionally a **trigger**: an expression or tag condition that must be true for the group to execute. Typical pattern: the PLC sets \`Area10_Mixing.BatchComplete\`. The group's trigger watches it and inserts one row. After the insert the group can write to a **handshake** tag (acknowledge) so the PLC knows it was recorded and can safely reset its data. That handshake is what prevents lost or duplicate records when two systems exchange data.
 
 {{diagram:handshake}}
 
@@ -96,15 +96,15 @@ Without a handshake the PLC does not know whether the insert occurred, so it eit
 
 When Ignition writes history, alarms journal rows or transaction group rows, it uses the {{term:store-and-forward|store-and-forward}} engine so a database outage or restart does not drop data. Records go first into a **memory buffer**, then to the **database sink**, which retries on failure. The **disk cache** persists records that cannot be delivered yet.
 
-- The memory buffer is fast but volatile. If the Gateway restarts, it is gone, and it cannot quarantine anything.
-- The disk cache holds data waiting to forward and has a maximum record count (configurable; check the store-and-forward page of the manual for your version's default and its advice on raising it, since the cache is short-term storage). The examples in this lesson assume a cache of 25,000 records. When full, new records are dropped.
-- The sink retries a failed batch record by record. A record that keeps failing, for example from a data type mismatch or a missing column, goes to **{{term:quarantine|quarantine}}** instead of blocking everything behind it.
+- The memory buffer is fast but volatile. If the Gateway restarts, it is gone.
+- The disk cache holds data waiting to forward and can be limited by record count, time or file size (in 8.3 the Primary Store Maintenance Value defaults to 0, meaning no limit; 8.1 called it Max Records). The examples in this lesson assume a limit of 25,000 records. When the limit is reached, new records are dropped by default, or the oldest are evicted if you choose that action.
+- A record that keeps failing, for example from a data type mismatch or a missing column, goes to **{{term:quarantine|quarantine}}** instead of blocking everything behind it.
 
 Check the **Store & Forward** status page and the system tags for quarantined and dropped counts. Quarantined data stays on disk until a person looks at it, fixes the cause (a table missing, a column too short) and releases or discards it. A non-zero quarantine count after commissioning is a real problem. Someone should be alerted.
 
 For a database that is down for four hours, the arithmetic is simple: records per second times 14,400 must fit in the cache. At 500 rows/s that is 7.2 million rows, far above a 25,000-record cache. Plan outage tolerance explicitly and size the cache or reduce the data rate.
 
-Transaction groups have a **Bypass Store and Forward** option for inserting groups. Then rows go straight to the database and errors are reported instead of cached. Use it when you must know immediately that a write failed, and accept that outages lose data.
+Transaction groups have a **Bypass Store and Forward System** option for inserting groups. Then rows go straight to the database and errors are reported instead of cached. Use it when you must know immediately that a write failed, and accept that outages lose data.
 
 > [!note] In 8.1
 > The same four group types and store-and-forward model apply. In 8.3 the new Core Historian writes directly to disk and does not use store-and-forward, but the SQL Historian, transaction groups and alarm journals still do.
@@ -141,7 +141,7 @@ SQL Bridge (transaction groups) is one of Ignition's earliest modules, built so 
     },
     {
       title: "Sizing a four-hour outage",
-      body: `Historian plus transaction groups produce about 40 rows/s. Four hours is 14,400 s × 40 = 576,000 rows. A disk cache of 25,000 records would drop most of them, and doubling it to 50,000 still isn't enough. Options: lower the data rate (wider deadbands), give the database high availability, or use a local database as a front buffer.`
+      body: `Historian plus transaction groups produce about 40 rows/s. Four hours is 14,400 s × 40 = 576,000 rows. A disk cache limited to 25,000 records would drop most of them, and doubling it to 50,000 still isn't enough. Options: lower the data rate (wider deadbands), give the database high availability, or use a local database as a front buffer.`
     }
   ],
 

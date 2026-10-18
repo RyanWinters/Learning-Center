@@ -55,7 +55,7 @@ Licensing a Gateway takes these steps:
 2. Activate. {{term:ign-license-activation|Online activation}} is done from the Gateway's Licensing page. For a Gateway that cannot reach the internet, use offline activation: generate an activation request file, process it through your account on another machine and upload the resulting license file.
 3. Check the Licensing page to confirm every module you expect shows as licensed.
 
-Current 8.3 documentation describes {{term:ign-leased-license|leased licensing}}: the Gateway checks in with the activation service on a schedule (hourly), and if check-ins fail for longer than the documented timeout, the Gateway reverts to trial mode. The timeout changed during 2026, so read the Leased Licensing page for the exact figure on your version. Maker Edition uses the same activation-token mechanism.
+Current 8.3 documentation describes {{term:ign-leased-license|leased licensing}}: the Gateway checks in with the activation service on a schedule (hourly), and if check-ins fail for longer than the documented timeout, the Gateway reverts to trial mode. The timeout depends on when the lease was generated: 48 hours for leases created up to July 19, 2026, and 72 hours for those created from July 20, 2026. Maker Edition uses the same activation-token mechanism.
 
 > [!tip] Plan for the license check
 > A production Gateway that loses its route to the activation service will, after the timeout, drop into trial mode and stop its modules every two hours. Put the activation service hostnames on the firewall allow list for the Gateway, or use offline activation where policy forbids outbound traffic. Add "license status" to your monitoring list.
@@ -114,7 +114,7 @@ If the license check-in stops working, the landlord puts a timer on the door tha
 `,
 
   history: `
-Ignition 8 licenses are activated against an online service, and the 8.3 documentation describes leased licensing with regular check-ins; the timeout figure was revised during 2026, so always read the current page. Cloud Edition is sold through cloud marketplaces, and a container version on AWS Marketplace is documented as added in 8.3.5. Maker Edition gives learners a free, capped license so that the two-hour trial timer is not the only way to practice at home.
+Ignition 8 licenses are activated against an online service, and the 8.3 documentation describes leased licensing with regular check-ins; the timeout is 48 hours for leases generated up to July 19, 2026 and 72 hours for leases generated after that. Cloud Edition is sold through cloud marketplaces, and a container version on AWS Marketplace is documented as added in 8.3.5. Maker Edition gives learners a free, capped license so that the two-hour trial timer is not the only way to practice at home.
 `,
 
   examples: [

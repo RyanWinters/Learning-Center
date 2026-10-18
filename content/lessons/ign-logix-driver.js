@@ -51,7 +51,7 @@ In the Gateway, create the device from the Config area under the device connecti
 
 The driver groups subscribed tags into read requests and sends them to the controller. Two settings shape that.
 
-- **{{term:ign-request-concurrency|Max Concurrent Requests}}** is how many requests Ignition keeps in flight to this one device. The default is 2 (see FACTS).
+- **{{term:ign-request-concurrency|Max Concurrent Requests}}** is how many requests Ignition keeps in flight to this one device. It is commonly left at 2 (the 8.3 settings page does not list a default).
 - **{{term:cip-connection|CIP Connection Size}}** is the buffer size negotiated when the connection opens. The default is 500. Larger values pack more tags per request; sizes above the standard limit need {{term:large-forward-open|Large Forward Open}}, which the forum reports not every controller supports.
 
 The documentation warns that raising concurrency too far can overwhelm the device. Forum reports disagree with each other: one user saw problems vanish moving from 2 to 4 concurrent requests; another saw overload rise. A report on a large L83 with about 14,500 subscribed tags dropped from 200 to 350 percent overload to about 2 percent by cutting concurrency from 6 to 1 and raising connection size from 500 to 4000. Another user found 4000 worse. These are anecdotes from different firmware and projects. The lesson is the method, not the numbers:

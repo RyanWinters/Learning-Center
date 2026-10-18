@@ -74,7 +74,7 @@ data/
         resource.json
 \`\`\`
 
-Each resource is a folder with its payload (\`view.json\`, \`code.py\`, \`config.json\` and so on) and a small \`resource.json\` that records metadata: scope, version, last modification, who changed it and file signatures. Gateway-scope resources such as database connections, device connections and tag provider configuration are under the config tree. This means you can version more than screens: the whole Gateway setup can sit in a repository.
+Each resource is a folder with its payload (\`view.json\`, \`code.py\`, \`config.json\` and so on) and a small \`resource.json\` that records metadata: scope, version, last modification (who and when), a modification signature and a list of the resource's data files. Gateway-scope resources such as database connections, device connections and tag provider configuration are under the config tree. This means you can version more than screens: the whole Gateway setup can sit in a repository.
 
 > [!note] In 8.1
 > Projects and Gateway settings are stored in the Gateway's internal database. There are no per-resource folders to commit, so teams used project exports, tag exports and the community \`ignition-git\` style tooling, or the Git module-based workflows, to get files. 8.3 makes the file layout native.
@@ -215,7 +215,7 @@ Ignition 7 and 8.0 stored projects inside the Gateway, and teams worked around t
     },
     {
       q: "In an 8.3 project on disk, what is the job of resource.json?",
-      options: ["It stores the resource's payload such as a view's layout", "It stores the Gateway password", "It holds historian data", "It stores metadata about the resource, like its scope, version and signatures"],
+      options: ["It stores the resource's payload such as a view's layout", "It stores the Gateway password", "It holds historian data", "It stores metadata about the resource, like its scope, version and last modification"],
       answer: 3,
       explain: [
         "The payload is in a separate file such as view.json.",
