@@ -47,11 +47,11 @@ Do not start I/O checkout until the construction check is signed off, whatever t
 
 ## The I/O list drives everything
 
-The I/O list is the master checklist. Each row is one point: the plant tag, a description, signal type, panel and terminal, PLC address, range and units, alarm limits. The checkout record is the same list with extra columns. Do not invent a second spreadsheet. Extend the first one so nothing can drift.
+The I/O list is the master checklist. Each row is one point: the plant tag, a description, signal type, panel and terminal, PLC address, range and units, alarm limits. Drawings and the I/O list keep the hyphen (`LT-101`). In the PLC and Ignition the same point is `LT101`, because hyphens are not valid in Logix tag names. The checkout record is the same list with extra columns. Do not invent a second spreadsheet. Extend the first one so nothing can drift.
 
 | Tag | Description | Type | Terminal | PLC address | Range | Wired OK | Signal OK | Scaled OK | Alarm OK | Initials / date |
 |---|---|---|---|---|---|---|---|---|---|---|
-| LT-101 | Tank 1 level | AI 4-20 mA | TB3-7/8 | Local:3:I.Ch0Data | 0-120 in | | | | | |
+| LT-101 | Tank 1 level | AI 4-20 mA | TB3-7/8 | Local:3:I.Ch0Data | 0-5.0 m | | | | | |
 | HS-201 | Pump 1 start PB | DI 24 V | TB4-1 | Local:1:I.Data.0 | n/a | | | | | |
 | XV-301 | Inlet valve | DO 24 V | TB5-3 | Local:2:O.Data.2 | n/a | | | | | |
 
@@ -76,7 +76,17 @@ A point-to-point (P2P) checkout proves the path from the field device to the con
 
 ### Analog inputs
 
-Test at least **three points**: 0 %, 50 % and 100 % of range. A 4-20 mA loop calibrator injects 4, 12 and 20 mA at the transmitter's terminals. Check the value arriving in the PLC and then in Ignition. A level transmitter ranged 0-120 in should read 0, 60 and 120. If it reads 0.5 in at 4.00 mA, the transmitter zero or the scaling is off. Also test a **wire break**: pull one lead and confirm the point goes to a bad or fault state, not to 0. A {{term:live-zero|live-zero}} signal makes this possible.
+Test at least **three points**: 0 %, 50 % and 100 % of range. A 4-20 mA loop calibrator injects 4, 12 and 20 mA at the transmitter's terminals. Check the value arriving in the PLC and then in Ignition. A level transmitter ranged 0-5.0 m (LT-101) should read 0, 2.5 and 5.0 m. If it reads 0.05 m at 4.00 mA, the transmitter zero or the scaling is off. Teaching card: on a 1769-IF4-style raw scale (0-21 mA to 0-32,767 counts), 4 mA is 6,242 counts and 20 mA is 31,208, so a Scale with Parameters (SCP) instruction takes In 6242-31208 to Out 0.0-5.0. Counts are module-specific. ControlLogix 1756/5069 analog modules usually scale to engineering units in the module.
+
+Also test a **wire break**: pull one lead and confirm the point goes to a bad or fault state, not to 0. A {{term:live-zero|live-zero}} signal makes this possible. Use the one NAMUR NE43 table for the thresholds:
+
+| Current | Meaning | Treat as |
+|---|---|---|
+| 3.8 to 20.5 mA | Measurement range (3.8-4 and 20-20.5 are slight under/over range) | Good, clamp for display |
+| 3.6 to 3.8 mA or 20.5 to 21 mA | Indeterminate | Uncertain quality, alarm after delay |
+| below 3.6 mA or above 21 mA | Device or loop failure | Bad quality, fail-safe action |
+
+A pulled lead gives about 0 mA, well below 3.6, so the point must go Bad. Inject 3.7 mA as well and confirm Uncertain.
 
 ### Analog outputs
 
@@ -115,7 +125,7 @@ Rules for forces on a live controller:
 - A bypass that defeats an interlock needs a named authorizer.
 
 > [!warning] Forces survive downloads
-> In Logix, I/O forces stay applied until removed, and they persist across power cycles in many configurations. A forgotten force on a high-level switch is a classic cause of an overflowed tank months later. Make "remove all forces, print the force list" a closing step of every session.
+> In Logix, I/O forces stay applied until removed. Check how forces behave across power cycles and downloads for your controller and firmware, and never assume they clear. A forgotten force on a high-level switch is a classic cause of an overflowed tank months later. Make "remove all forces, print the force list" a closing step of every session.
 
 ## Punch lists
 
@@ -137,7 +147,7 @@ Every tag should be **Good**. In the Designer, browse the tag tree and look for 
 
 \`\`\`python
 # Script Console. Paste the paths from your I/O list export, or build the list with system.tag.browse.
-paths = ["[Plant]Area1/Tank1/LT101/Value", "[Plant]Area1/Pump1/Sts/Running"]
+paths = ["[default]Plant1/Area10/Line1/LT101/Value", "[default]Plant1/Area10/Line1/M101/Sts/Running"]
 for p, qv in zip(paths, system.tag.readBlocking(paths)):
     if not qv.quality.isGood():
         print p, qv.quality
@@ -154,7 +164,7 @@ For each alarm on the alarm list, trigger the condition (using a simulation, or 
 - Acknowledge, shelve and clear work, and the journal records them.
 - Notification (email, SMS, call-out) goes to the right roster for the right priority.
 
-In Ignition 8.3 the tag diagnostics view shows each alarm's last state and a count of live events, which makes a quick check for alarms that never fire.
+The tag diagnostics pages in the 8.3 manual (see Resources) describe what Ignition reports per tag. Check what your version shows for alarms, because it is a quick way to find alarms that never fire.
 
 ### Historian check
 
@@ -183,13 +193,13 @@ In a {{term:brownfield|brownfield}} project the old system is running production
 
 ## Worked example: one pump, start to sign-off
 
-Pump P-101 has a start/stop, a run feedback, a motor overload contact, a discharge pressure transmitter PT-101 (0-100 psi) and a high-pressure alarm at 85 psi.
+Pump P-101 (PLC tag `P101`, type `UDT_Motor`) has a start/stop, a run feedback, a motor overload contact, a discharge pressure transmitter PT-101 (tag `PT101`, 0-100 psi) and a high-pressure alarm at 85 psi. The overload and E-stop are hardwired in the starter coil circuit. The PLC only monitors the overload auxiliary contact.
 
 - **Pre-comm**: motor megger-tested, overload set to nameplate amps, panel power on.
-- **DI checkout**: HS-101 (start) toggles \`P101.Cmd.StartPB\`. The overload contact is wired normally closed, and opening it drops \`P101.Sts.OverloadOK\` to 0 in Ignition within one second.
+- **DI checkout**: HS-101 (start pushbutton on a DI) sets the start request that the PLC maps to \`P101.Cmd.Start\`. The overload auxiliary contact is wired normally closed (fail-safe), and opening it sets \`P101.Alm.Overload\` to 1 in Ignition within one second.
 - **DO checkout**: the contactor pulls in when the output is forced. The motor is bumped, with rotation direction checked at the coupling, and the force is removed.
-- **AI loop check**: 4, 12, 20 mA gives 0, 50, 100 psi. Wire break shows bad quality, and the HMI shows the "Bad PV" state.
-- **Alarm**: injecting 17.6 mA (86 psi) raises "P-101 Discharge Pressure High", priority High. The alarm clears at 83 psi when the deadband is 2 psi.
+- **AI loop check**: 4, 12, 20 mA gives 0, 50, 100 psi. A wire break (below 3.6 mA) shows bad quality, and the HMI shows the "Bad PV" state.
+- **Alarm**: injecting 17.76 mA gives (17.76 - 4) / 16 x 100 = 86 psi, just over the 85 psi setpoint, and raises "P-101 Discharge Pressure High", priority High (17.6 mA is exactly 85 psi, on the threshold, so it proves nothing). With a 2 psi deadband the alarm clears at 83 psi, which is 17.28 mA.
 - **Ignition**: tag quality Good, historian stores the PV, faceplate shows the right units and the Start button writes with an audit entry.
 - **Record**: all boxes initialed, one B-level punch item (a tag label missing on the transmitter), closed after relabeling.
 `,
@@ -224,8 +234,8 @@ Loop checks and instrument loop folders come from process-plant construction pra
 
   examples: [
     {
-      title: "The level transmitter that read 0.5 inches at 4 mA",
-      body: `During a loop check on LT-101 the 4 mA injection showed 0.5 in on the HMI instead of 0. The technician first suspected the transmitter. A look at the PLC showed the analog module was configured for 0-20 mA while the scaling assumed a 4-20 mA range, so 4 mA landed above the scaled zero. Matching the module range and the scaling fixed it. The lesson is to look at both ends before swapping hardware.`
+      title: "The level transmitter that read 0.05 m at 4 mA",
+      body: `During a loop check on LT-101 (0-5.0 m) the 4 mA injection showed 0.05 m on the HMI instead of 0. The technician first suspected the transmitter. A look at the PLC showed the scaling instruction had a raw minimum of 6000 counts, typed from memory, instead of 6242 (the count for 4 mA on that module). Then 4 mA gives (6242 - 6000) / (31208 - 6000) x 5.0 = 0.048 m, and 20 mA still reads 5.0 m, so the error shrinks toward full scale. Correcting the constant fixed it. The lesson is to look at both ends before swapping hardware.`
     },
     {
       title: "Forgotten force",
@@ -314,11 +324,11 @@ Loop checks and instrument loop folders come from process-plant construction pra
 
   quiz: [
     {
-      q: "During a loop check you inject 12 mA at a 0-120 in level transmitter and the HMI shows 61.2 in. At 4 mA it shows 1.2 in and at 20 mA it shows 120.0 in. What does this pattern suggest?",
-      options: ["A zero offset of about 1 in that fades toward full scale, so check the transmitter zero or the scaling constants", "The wire is broken", "The HMI is in simulation mode", "The PLC scan time is too slow"],
+      q: "During a loop check you inject 4, 12 and 20 mA at a 0-5.0 m level transmitter and the HMI shows 0.05 m, 2.55 m and 5.05 m. What does this pattern suggest?",
+      options: ["A zero offset of about 0.05 m, constant across the range, so check the transmitter zero or the scaling constants", "The wire is broken", "The HMI is in simulation mode", "The PLC scan time is too slow"],
       answer: 0,
       explain: [
-        "Correct. A small error at the bottom and none at the top is an offset or span problem in the transmitter or the scaling, and the three-point test exposed it.",
+        "Correct. The same +0.05 m error at all three points is a constant zero offset (a span error would grow or shrink with the reading). The three-point test exposed it.",
         "A broken wire produces a bad or fault state, or a reading near 0 mA. It does not give a nearly correct value.",
         "A simulation would not respond to the injected current at all.",
         "Scan time delays an update. It cannot create a steady scaling error."
@@ -329,7 +339,7 @@ Loop checks and instrument loop folders come from process-plant construction pra
       options: ["To prove that a failure shows as bad or faulted rather than as a believable value", "To burn in the module", "Because the standard requires 12 mA", "To check the PLC firmware"],
       answer: 0,
       explain: [
-        "Correct. A 4-20 mA signal drops below 4 mA on a broken wire, and the logic should flag it. If it silently reads 0, an operator might act on a false level.",
+        "Correct. A broken wire takes a 4-20 mA signal to about 0 mA, below the NE43 failure limit of 3.6 mA, and the logic should flag it as bad quality. If it silently reads 0, an operator might act on a false level.",
         "Burn-in is not the purpose and pulling a wire does not do it.",
         "No standard dictates that. The test shows how the system reacts to failure.",
         "Firmware has nothing to do with wiring behavior."

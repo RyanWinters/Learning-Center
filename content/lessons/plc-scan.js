@@ -63,13 +63,13 @@ The three-stage model describes older PLCs (PLC-5, SLC-500) closely. **Logix I/O
 
 - I/O modules send their input data to the controller on their own schedule, set by the **{{term:rpi|RPI}} (Requested Packet Interval)** in the module properties, such as 20 ms. Data arrives **asynchronously**, independent of the program scan.
 - When a tag like \`Local:1:I.Data.0\` is read in a rung, the logic sees whatever value last arrived. It might change between two reads in the same scan. Rockwell's documentation says that I/O updates are asynchronous to the program.
-- Outputs are written to the module at the end of a task's scan and at the module's RPI. The module's output goes to the real terminal after that.
-- So reaction time depends on both the **RPI** and the **task period**. Rule of thumb for the RPI: the I/O's reaction time is about twice the RPI plus the task scan.
+- Output values are sent to the module on a similar schedule, tied to the task and the module's RPI (the exact update rules are in the I/O chapter of the Logix manuals for your controller). The module's output reaches the real terminal after that.
+- So reaction time depends on the **input filter**, the **RPI**, the **task scan** and the **output delay**. Add them up for the worst case, as in the worked example below. There is no safe shortcut multiplier.
 
 To keep a snapshot in your logic (for instance, when you need two rungs to agree on one input), **copy the input into an internal bit at the top of the routine** and use the copy. This is what the older model did for free.
 
 > [!tip] Choosing an RPI
-> The default RPI for a digital input card is often 20 ms. For a slow tank-level system 100 ms is fine and saves network and CPU load. For a fast machine 5 ms may be needed. Do not set every module to the minimum: a 1 ms RPI on 50 modules floods the controller with updates and causes problems of its own.
+> Check the default RPI in the module's properties. For a slow tank-level system 100 ms is fine and saves network and CPU load. For a fast machine 5 ms may be needed. Do not set every module to the minimum: a 1 ms RPI on 50 modules floods the controller with updates and causes problems of its own.
 
 ## Tasks: continuous and periodic
 
@@ -85,7 +85,7 @@ A controller may have only one continuous task. Periodic tasks have a **priority
 
 ### Scan time
 
-{{term:scan-time|Scan time}} is how long one pass of a task takes. Logix Designer shows it in *Task Properties* under the *Monitor* tab, with last, maximum and average values. For a periodic task, if the scan takes 4 ms and the period is 10 ms, the task has headroom. If the scan takes 12 ms against a 10 ms period, the task **overlaps**: it cannot finish before the next trigger. The controller counts overlaps and flags them.
+{{term:scan-time|Scan time}} is how long one pass of a task takes. Logix Designer shows it in *Task Properties* under the *Monitor* tab, with last and maximum values (and others, depending on the version). For a periodic task, if the scan takes 4 ms and the period is 10 ms, the task has headroom. If the scan takes 12 ms against a 10 ms period, the task **overlaps**: it cannot finish before the next trigger. The controller counts overlaps and flags them.
 
 Typical reasons for a long scan: a big program in one task, loops that process arrays (FOR loops in Structured Text), messaging, and interrupts from higher-priority tasks.
 

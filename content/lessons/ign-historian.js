@@ -18,9 +18,9 @@ LC.lesson({
   body: `
 ## What the Historian does
 
-A {{term:tag-historian|Tag Historian}} records tag values over time so you can trend them, report on them and analyze them later. You turn it on per tag: set **History Enabled**, pick a **history provider** (where it is stored) and choose when to record. Ignition then watches the tag and writes timestamped values. Later, trends and scripts such as \`system.tag.queryTagHistory\` read them back, with aggregation done for you.
+A {{term:tag-historian|Tag Historian}} records tag values over time so you can trend them, report on them and analyze them later. You turn it on per tag: set **History Enabled**, pick a **history provider** (where it is stored) and choose when to record. Ignition then watches the tag and writes timestamped values. Later, trends and scripts such as \`system.historian.queryRawPoints\` and \`system.historian.queryAggregatedPoints\` read them back, with aggregation done for you.
 
-In 8.3 the Historian module offers two storage back ends, called **history providers**:
+In 8.3 the Historian module offers two storage back ends, called **history providers**. (In 8.1 the history module is named Tag Historian and stores to SQL.)
 
 | Provider | Stores data in | Notes |
 |---|---|---|
@@ -28,7 +28,7 @@ In 8.3 the Historian module offers two storage back ends, called **history provi
 | **Core Historian** (new in 8.3) | A built-in {{term:questdb|QuestDB}} time-series store on the Gateway's disk | Needs no external database; writes via a write-ahead log, skipping store and forward |
 
 > [!note] In 8.1
-> 8.1 has the SQL Historian only, plus the older internal "embedded" historian option. The Core Historian name is new in 8.3 (it was previously called the internal historian based on QuestDB in early access). Everything below about sample modes and deadbands applies to both versions. The sqlth tables apply to the SQL provider in both.
+> 8.1 has the Tag Historian module, which stores to SQL, the same approach 8.3 calls the SQL Historian provider. The Core Historian provider is new in 8.3. Everything below about sample modes and deadbands applies to both versions. The sqlth tables apply to the SQL provider in both. {{lesson:ign-architecture}} lists the module naming across versions.
 
 ## How the SQL Historian stores data
 
@@ -45,10 +45,10 @@ The SQL Historian creates a small set of tables with the \`sqlth_\` prefix plus 
 Two ideas matter. First, the data table does not store tag paths. It stores a small integer \`tagid\` that points into \`sqlth_te\`. That makes rows narrow. Second, if you rename a tag, change its data type or move it, Ignition retires the old \`sqlth_te\` row and creates a new one. History of the old name can still be queried, but only if you ask for the old path or use history-aware renaming tools.
 
 \`\`\`sql
--- What is in the historian for tags under Line1?
+-- What is in the historian for tags under Plant1/Area10/Line1?
 SELECT id, tagpath, datatype, querymode, created, retired
 FROM sqlth_te
-WHERE tagpath LIKE 'line1/%'
+WHERE tagpath LIKE 'plant1/area10/line1/%'
 ORDER BY tagpath;
 \`\`\`
 
@@ -56,14 +56,14 @@ ORDER BY tagpath;
 
 ### Partitions and pruning
 
-If you put every row in one table, deleting old data means a huge, slow \`DELETE\` that bloats the table. Instead the Historian creates a new {{term:history-partition|partition}} table on a schedule, by default monthly. Queries consult \`sqlth_partitions\` to pick only the tables covering the requested time range. {{term:data-pruning|Pruning}} then deletes whole partitions older than the retention age (for example, 90 days). It is a drop, not a delete, so it is fast.
+If you put every row in one table, deleting old data means a huge, slow \`DELETE\` that bloats the table. Instead the Historian creates a new {{term:history-partition|partition}} table on a schedule you configure (monthly is typical; check the manual for the default in your version). Queries consult \`sqlth_partitions\` to pick only the tables covering the requested time range. {{term:data-pruning|Pruning}} then deletes whole partitions older than the retention age (for example, 90 days). It is a drop, not a delete, so it is fast.
 
 Rules that come from this design:
 
 - A partition is only removed when its **newest** row is older than the prune age. A monthly partition therefore lives a bit longer than the retention you set.
-- Enable pruning on **one** provider per database. Two pruners fighting over the same tables put the sink in a failed state.
+- Enable pruning on **one** provider per database. Two pruners working on the same tables can conflict, so keep a single owner.
 - **Never drop sqlt_data tables by hand** without also removing their rows in \`sqlth_partitions\`. Queries will then fail on a table that no longer exists.
-- Pre-processed partitions (optional) store summary blocks beside raw data so long-range trends read fewer rows. They only help when the query window is larger than the pre-process window (60 seconds by default).
+- Pre-processed partitions (optional) store summary blocks beside raw data so long-range trends read fewer rows. They only help when the query window is larger than the pre-process window (check the manual for the default in your version).
 
 ## When a value is recorded
 
@@ -109,13 +109,13 @@ Query modes decide the shape of the answer. You request a time range, a **return
 end = system.date.now()
 start = system.date.addHours(end, -24)
 ds = system.historian.queryAggregatedPoints(
-    paths=["[default]Line1/Tank/Temp"],
+    paths=["[default]Plant1/Area10/Line1/LT101"],
     startDate=start, endDate=end,
     returnSize=24, aggregates=["Average"])
 \`\`\`
 
 > [!note] In 8.1
-> The same query was \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=24, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Parameter names differ in the new functions, so check the 8.3 manual before porting. For raw, uncompressed values use \`system.historian.queryRawPoints\`.
+> The same query was \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=24, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Parameter names differ in the new functions, so check the 8.3 manual for the exact signature, including the keyword names used in the example above, before porting. For raw, uncompressed values use \`system.historian.queryRawPoints\`.
 
 Twenty-four hourly averages come back, no matter how many raw rows are underneath. Remember that an average hides spikes. Use MinMax or a max aggregate when the extremes matter, such as an over-temperature alarm review.
 
@@ -152,17 +152,17 @@ That is the historian: write only what matters, one notebook per period, throw a
 `,
 
   history: `
-Ignition's Tag Historian has stored data in SQL tables since the early 7.x releases, so any report tool could read history with ordinary queries. Version 8.3 added the Core Historian, built on the open-source QuestDB time-series database, to give new installs a zero-setup option with faster reads and writes.
+Ignition's Tag Historian has stored data in SQL tables for many Ignition versions, so any report tool could read history with ordinary queries. Version 8.3 added the Core Historian, built on the open-source QuestDB time-series database, to give new installs a zero-setup option with faster reads and writes.
 `,
 
   examples: [
     {
       title: "Choosing settings for three signals",
-      body: `**Pump run status (boolean):** On Change, discrete, deadband 0, max time between records 1 hour. **Tank level (0 to 100%, noisy by 0.2):** On Change, analog, deadband 0.5, max time 5 minutes. **Energy meter total (kWh, always rising):** Periodic every 60 s or a tag group, discrete. A change-triggered record would add a row every scan with little value.`
+      body: `**M101 \`Sts/Running\` (boolean):** On Change, discrete, deadband 0, max time between records 1 hour. **LT101 level (0 to 5.0 m, noise around 0.01 m):** On Change, analog, deadband 0.02, max time 5 minutes. **Energy meter total (kWh, always rising):** Periodic every 60 s or a tag group, discrete. A change-triggered record would add a row every scan with little value.`
     },
     {
       title: "Why the old trend vanished after a rename",
-      body: `A tag \`Mixer1/Temp\` is renamed to \`Mixer01/Temp\`. The Historian retires the old \`sqlth_te\` row and starts a new tag id. A trend bound to the new path starts empty. Add the old path as a second pen, or query both and join the results.`
+      body: `A tag \`Plant1/Area10/Line1/Mixer1/Temp\` is renamed to \`Plant1/Area10/Line1/Mixer01/Temp\`. The Historian retires the old \`sqlth_te\` row and starts a new tag id. A trend bound to the new path starts empty. Add the old path as a second pen, or query both and join the results.`
     }
   ],
 

@@ -24,8 +24,9 @@
     s = s.replace(/\{\{lesson:([\w-]+)\}\}/g, (m, id) => lessonRef(id));
     s = s.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/(^|[^*\w])\*([^*\s](?:[^*]*[^*\s])?)\*(?![*\w])/g, '$1<em>$2</em>');
-    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|#[^\s)]*|mailto:[^\s)]+)\)/g, (m, t, u) => {
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|#[^\s)]*|mailto:[^\s)]+|content\/files\/[^\s)]+)\)/g, (m, t, u) => {
       const ext = /^https?:/.test(u);
+      if (/^content\/files\//.test(u)) return '<a class="dl" href="' + u + '" download>' + LC.ui.icon('download', 15) + '<span>' + t + '</span></a>';
       return '<a href="' + u + '"' + (ext ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + t + '</a>';
     });
     return s.replace(/\u0001(\d+)\u0002/g, (m, i) => '<code>' + esc(codes[i]) + '</code>');
@@ -178,5 +179,21 @@
   function render(src, ctx) {
     return blocks(String(src == null ? '' : src).replace(/\r/g, '').split('\n'), ctx || {});
   }
-  LC.md = { render: render, inline: inline, highlight: highlight };
+  /* After insertion: wide tables get a keyboard-focusable scroll region and a visible cue. */
+  function enhance(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll('.tbl-wrap').forEach(w => {
+      if (!w.clientWidth) return;                       // hidden (collapsed details); measured when shown
+      const over = w.scrollWidth > w.clientWidth + 2, cue = w.nextElementSibling && w.nextElementSibling.classList.contains('scroll-cue') ? w.nextElementSibling : null;
+      w.classList.toggle('is-scroll', over);
+      if (over) {
+        w.tabIndex = 0; w.setAttribute('role', 'region'); w.setAttribute('aria-label', 'Table, scrolls sideways');
+        if (!cue) w.insertAdjacentHTML('afterend', '<p class="scroll-cue no-gloss">' + LC.ui.icon('right', 14) + 'Scroll sideways for more columns</p>');
+      } else {
+        w.removeAttribute('tabindex'); w.removeAttribute('role'); w.removeAttribute('aria-label');
+        if (cue) cue.remove();
+      }
+    });
+  }
+  LC.md = { render: render, inline: inline, highlight: highlight, enhance: enhance };
 })();

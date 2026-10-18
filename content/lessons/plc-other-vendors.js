@@ -105,17 +105,17 @@ Both are common in Asia and in machine builders' equipment. For an integrator, t
 |---|---|---|
 | Allen-Bradley Logix | Allen-Bradley Logix driver (EtherNet/IP) | Browses tags and UDTs |
 | Siemens S7-1200/1500 | Siemens driver (S7 protocol over TCP port 102) or OPC UA | Classic drivers use absolute addressing; a newer enhanced driver supports symbolic browsing |
-| Siemens with OPC UA server | Ignition OPC UA client connection | Cleanest option on S7-1500 with an OPC UA license enabled |
+| Siemens with OPC UA server | Ignition OPC UA client connection | A clean option on S7-1500 when the CPU's OPC UA server is enabled (check licensing for your CPU and firmware) |
 | Codesys / Wago / Beckhoff | OPC UA client, or Modbus TCP | Many have a built-in OPC UA server |
 | Omron NJ/NX | OPC UA, or EtherNet/IP | Sysmac supports both |
 | Mitsubishi | Modbus TCP or MC protocol via a third-party driver | Check the module in use |
 | Anything with MQTT | MQTT/Sparkplug through the Cirrus Link modules | See {{lesson:proto-sparkplug}} |
 
 > [!note] Siemens access settings
-> For the classic Siemens driver to read an S7-1200/1500 data block, the DB must be a global block with optimized access turned off, and the CPU must permit PUT/GET access. Docs for the driver describe these settings. If tags show bad quality on a new Siemens PLC, check these first.
+> For the classic Siemens driver to read an S7-1200/1500 data block, the DB generally needs optimized access turned off, and the CPU must permit PUT/GET access. The driver pages in the Ignition 8.3 manual (linked in the resources) give the exact requirements for your driver and CPU. If tags show bad quality on a new Siemens PLC, check these first.
 
 > [!example] Worked example: a skid with a Siemens PLC
-> A water treatment skid arrives with an S7-1200 at 192.168.10.20 and an HMI export showing \`DB10.DBD0\` as a tank level (REAL). In Ignition you add a Siemens device with that IP, port 102 and the CPU's rack and slot as the driver expects. You make a tag with address \`DB10.DBD0\`, data type Float4. If it reads Bad, you check that DB10 has optimized access off and PUT/GET is enabled. Then you ask the vendor for a symbolic list so the rest of the tags can be imported in bulk.
+> An OEM water treatment skid arrives at Plant 1 with an S7-1200 and an HMI export showing \`DB10.DBD0\` as a tank level (REAL). The skid's uplink is on VLAN 40 (OEM skid uplinks) with 1:1 NAT, so Ignition sees the PLC at \`10.20.40.21\` (the skid's own internal address is the builder's business). In Ignition you add a Siemens device with that IP, port 102 and the CPU's rack and slot as the driver expects. You make a tag with address \`DB10.DBD0\`, data type Float4. If it reads Bad, you check that DB10 has optimized access off and PUT/GET is enabled. Then you ask the vendor for a symbolic list so the rest of the tags can be imported in bulk.
 
 ## A practical approach for a new vendor
 
@@ -155,7 +155,7 @@ Siemens introduced its SIMATIC S7 line in the 1990s, and TIA Portal arrived arou
     },
     {
       title: "Getting data from a Wago PFC200",
-      body: `The builder gives you a Wago controller with an OPC UA server enabled at port 4840. In Ignition you add an OPC UA connection to \`opc.tcp://192.168.1.50:4840\`, browse the address space, and drag the variables from the GVL into the tag browser. Typed data comes through without register math.`
+      body: `The builder gives you a Wago controller on the VLAN 40 skid uplink (NAT address \`10.20.40.22\`) with an OPC UA server enabled at port 4840. In Ignition you add an OPC UA connection to \`opc.tcp://10.20.40.22:4840\`, browse the address space, and drag the variables from the GVL into the tag browser. Typed data comes through without register math.`
     }
   ],
 
@@ -252,7 +252,7 @@ Siemens introduced its SIMATIC S7 line in the 1990s, and TIA Portal arrived arou
       options: ["It imports and runs unchanged", "It will not import directly; the logic ideas carry over but the project must be rebuilt", "Only the HMI breaks", "Only timers fail"],
       answer: 1,
       explain: [
-        "The standard does not define a common file format for whole projects or hardware configuration.",
+        "PLCopen XML (IEC 61131-10) can exchange program units between tools that support it, but hardware configuration, tags and project settings do not move between vendors, and support varies by tool.",
         "Correct. Concepts transfer, files and I/O configuration do not.",
         "The issue is the controller project itself, not just the HMI.",
         "Timers are among the more portable parts, but the rest of the project is not."

@@ -178,9 +178,9 @@
       paintMenu();
     }
     paintMenu();
-    root.addEventListener('click', e => {
+    function onNav(e) {
       const j = e.target.closest('[data-jump]');
-      if (j) { e.preventDefault(); const sh = j.closest('.sheet-wrap'); const i = +j.dataset.jump; if (sh) { sh.querySelector('.sheet-backdrop').click(); setTimeout(() => jump(i), 200); } else jump(i); return; }
+      if (j) { e.preventDefault(); jump(+j.dataset.jump); return; }
       if (e.target.closest('[data-sections]')) {
         const sh = U.sheet('<h2 class="sheet-title">Sections</h2>' + menuHtml(true), { label: 'Sections in this lesson' });
         sh.el.addEventListener('click', ev => {
@@ -188,7 +188,9 @@
           ev.preventDefault(); const i = +a.dataset.jump; sh.close(); setTimeout(() => jump(i), 200);
         });
       }
-    });
+    }
+    root.querySelector('.lwrap').addEventListener('click', onNav);
+    root.querySelector('.lhead').addEventListener('click', onNav);
 
     /* ---- dynamic regions ---- */
     function refresh() {
@@ -219,7 +221,7 @@
       refresh();
       if (checklist.length && checkedCount() === checklist.length && !xp && LC.graph.status(id) !== 'complete') U.toast('<span class="toast-xp">All steps checked</span><span class="toast-sub">Pass the quiz to finish the lab</span>', 'info');
     });
-    root.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details')) LC.md.enhance(e.target); }, true);
+    root.querySelector('.lwrap').addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details')) LC.md.enhance(e.target); }, true);
 
     /* Reading progress and end-of-lesson detection */
     const bar = root.querySelector('.lprog i'), art = root.querySelector('.lesson');
