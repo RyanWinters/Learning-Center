@@ -29,7 +29,7 @@
 
   /* Desktop: x by depth, y by order within the depth (barycentre of parents). */
   function placeH(trackId, g) {
-    const W = 200, H = 58, CG = 68, RG = 16, pos = {};
+    const W = 200, H = 62, CG = 68, RG = 16, pos = {};
     g.cols.forEach((col, ci) => {
       if (ci > 0) {
         const bc = id => { const ps = parents(id, pos); return ps.length ? ps.reduce((a, p) => a + pos[p].row, 0) / ps.length : 99; };

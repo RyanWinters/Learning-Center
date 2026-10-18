@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-security",
   title: "Users, roles, identity providers and security zones",
-  track: "ignition",
+  track: "ign",
   minutes: 25,
   level: 3,
   prereqs: ["ign-architecture"],

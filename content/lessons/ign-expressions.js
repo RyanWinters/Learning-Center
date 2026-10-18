@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-expressions",
   title: "The expression language",
-  track: "ignition",
+  track: "ign",
   minutes: 20,
   level: 2,
   prereqs: ["ign-tags"],

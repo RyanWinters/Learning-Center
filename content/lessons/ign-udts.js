@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-udts",
   title: "UDTs in Ignition",
-  track: "ignition",
+  track: "ign",
   minutes: 30,
   level: 2,
   prereqs: ["ign-tags"],

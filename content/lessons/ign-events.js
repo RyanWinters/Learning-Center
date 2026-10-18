@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-events",
   title: "Events: tag change, gateway events, timers and messages",
-  track: "ignition",
+  track: "ign",
   minutes: 25,
   level: 3,
   prereqs: ["ign-scripting"],

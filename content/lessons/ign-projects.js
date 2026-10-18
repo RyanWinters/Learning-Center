@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-projects",
   title: "Projects, inheritance, and Vision vs Perspective",
-  track: "ignition",
+  track: "ign",
   minutes: 20,
   level: 2,
   prereqs: ["ign-architecture"],

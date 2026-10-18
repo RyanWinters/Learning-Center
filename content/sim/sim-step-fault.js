@@ -85,7 +85,7 @@ How the pieces fit:
 - **A deliberate reset.** Step 900 only leaves through \`Reset\`. If a fault cleared itself, a flickering sensor would go unnoticed. The Reset rung also clears the code so the next fault is not confused with an old one.
 - **Safe outputs by construction.** Every output rung is gated by its \`EQU\`, so in step 900 the valves and heater all drop with no extra logic.
 
-Timeouts should come from measured fill, heat and drain times plus margin, not guesses. In a real plant the timeout values would be configuration tags so they can be tuned without a program change. A tag can be the TON preset in Logix (\`TON(FillTmr,Fill_Timeout,0)\`).`,
+Timeouts should come from measured fill, heat and drain times plus margin, not guesses. In a real plant the timeout values would be configuration tags so they can be tuned without a program change. In Studio 5000 the TON Preset field takes a constant, so copy the tag in each scan with \`MOV(Fill_Timeout,FillTmr.PRE)\`. This simulator also accepts a tag directly in the Preset field as a shortcut.`,
   tips: [
     "Pick each timeout from the real step time plus a margin (here 8 s of work, 12 s timeout). Too tight and normal variation faults the machine, too loose and a stuck valve overflows the tank before you notice.",
     "Record why you faulted in a reason code (and the step it happened in) before you leave the failing step. A bare \"Fault\" lamp sends a technician searching.",

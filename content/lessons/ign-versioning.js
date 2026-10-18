@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-versioning",
   title: "Backups, exports and version control",
-  track: "ignition",
+  track: "ign",
   minutes: 20,
   level: 3,
   prereqs: ["ign-projects"],

@@ -153,7 +153,7 @@ Cycle_Run turns the blower on immediately (the TOF's DN is true as soon as its r
 
 ## Tips from the floor
 
-- Keep presets in a DINT tag you can edit from Ignition rather than hard-coded, and use the tag as the preset operand: \`TON(Belt_Delay,Belt_Preset,0)\`. If your version of the editor only accepts an immediate value there, copy the tag into \`Belt_Delay.PRE\` with a MOV or an ST assignment instead. A preset you can tune without downloading is worth a lot during commissioning.
+- Keep presets in a DINT tag you can edit from Ignition rather than hard-coded. In Logix ladder the Preset field of TON/TOF/RTO takes a constant only, so copy the tag into the timer each scan: \`MOV(Belt_Preset,Belt_Delay.PRE)\` on a rung above the timer (or \`Belt_Delay.PRE := Belt_Preset;\` in ST). The constant in the instruction is then just the download default. A preset you can tune without downloading is worth a lot during commissioning. (The simulator also accepts a tag in the Preset field as a shortcut; real Studio 5000 does not.)
 - Display a timer with \`ACC\` and \`PRE\` on the HMI as a sanity check. Operators trust a countdown.
 - Name timer tags after their purpose (\`Belt_Start_Delay\`), not their number (\`T4\`).
 - To work in seconds, make your own tag in seconds and multiply by 1000 with MUL when loading PRE.`,

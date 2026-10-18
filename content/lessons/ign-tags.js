@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-tags",
   title: "Tags and tag providers",
-  track: "ignition",
+  track: "ign",
   minutes: 25,
   level: 2,
   prereqs: ["ign-devices"],

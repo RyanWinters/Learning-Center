@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-alarming",
   title: "Alarming",
-  track: "ignition",
+  track: "ign",
   minutes: 25,
   level: 2,
   prereqs: ["ign-tags"],
@@ -63,7 +63,7 @@ These three settings fix different problems.
 - **Clear delay** fixes *flicker on the way out*. The condition must stay false for that many seconds before the alarm clears.
 
 > [!example] High tank level: working numbers (LT101)
-> Level transmitter LT-101 on the P&ID (tag `LT101` in Ignition), ranged 0 to 5.0 m, normal range 2.0 to 3.5 m. The alarm LAH-101 is Above Setpoint 4.25 m, priority High, deadband 0.15 m, active delay 10 s, ack Manual. Behavior: the level crosses 4.25 and stays above for 10 s, so the alarm goes active and unacknowledged. It falls to 4.20, and nothing happens (still inside the deadband). It falls below 4.10 and the condition clears, becoming clear and (if not yet acknowledged) clear-unacknowledged. The high-high alarm LAHH-101 and any overflow protection belong in the PLC or a hardwired circuit, not only in Ignition.
+> Level transmitter LT-101 on the P&ID (tag \`LT101\` in Ignition), ranged 0 to 5.0 m, normal range 2.0 to 3.5 m. The alarm LAH-101 is Above Setpoint 4.25 m, priority High, deadband 0.15 m, active delay 10 s, ack Manual. Behavior: the level crosses 4.25 and stays above for 10 s, so the alarm goes active and unacknowledged. It falls to 4.20, and nothing happens (still inside the deadband). It falls below 4.10 and the condition clears, becoming clear and (if not yet acknowledged) clear-unacknowledged. The high-high alarm LAHH-101 and any overflow protection belong in the PLC or a hardwired circuit, not only in Ignition.
 
 ## Alarm states and acknowledgement
 

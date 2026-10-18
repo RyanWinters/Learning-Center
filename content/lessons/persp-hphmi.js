@@ -88,19 +88,100 @@ At a glance the operator sees "near the high limit and climbing" without reading
 
 ## Applying it in Perspective
 
-1. **Set theme variables**: \`--hmi-bg\`, \`--hmi-equipment\`, \`--hmi-text\`, \`--hmi-alarm-low\`, \`--hmi-alarm-medium\`, \`--hmi-alarm-high\`.
-2. **Create meaning-named style classes**: \`hmi/value\`, \`hmi/value-alarm-high\`, \`hmi/equipment\`, \`hmi/equipment-abnormal\`.
-3. **Drive classes from state, not colors from scripts**: bind \`props.style.classes\` to an expression of the alarm state. No scripts.
-4. **Build the analog indicator once** as a parameterized embedded view (tag path, range, normal band, limits as params) and reuse it everywhere. Drive the band and limit positions from the tag's engineering and alarm configuration where possible, so the screen cannot disagree with the alarm system.
+1. **Set theme variables**: \`--hmi-bg\`, \`--hmi-equipment\`, \`--hmi-text\`, and one token per alarm priority (see the worked example).
+2. **Create meaning-named style classes**: \`hmi/value\`, \`hmi/alarm-high\`, \`hmi/equipment\`, \`hmi/abnormal\`.
+3. **Drive classes from state, not colors from scripts**: bind \`props.style.classes\` to an expression of the alarm state. No scripts on the symbol.
+4. **Build the analog indicator once** as a parameterized embedded view (tag path, range, normal band, limits as params) and reuse it everywhere. Drive the band and limit positions from the tag's engineering range and alarm setpoints where possible, so the screen cannot disagree with the alarm system.
 5. **Make level 1 reflect alarms**: an alarm summary at the top (a docked view, see {{lesson:persp-navigation}}) and area summaries that go from grey to colored on abnormal.
 6. **Keep animation out of normal operation**. Motion draws the eye, so spend it on abnormal states only.
 
-\`\`\`text
-// props.style.classes expression for a pump symbol
-if({[default]P101/Alarm/HighHigh}, "hmi/equipment-alarm-high",
- if({[default]P101/Alarm/High}, "hmi/equipment-alarm-medium",
-  "hmi/equipment"))
+The alarm-state expression for a symbol needs a real source, so the next section shows two and says which one this lesson assumes.
+
+## Worked example: ISA-101 theme, class set and a Level 2 unit display
+
+ISA-101 does not publish hex values. The palette below is an example style guide for Meridian Foods Plant 1, Area10. Your site's guide owns the real values.
+
+### 1. Theme tokens
+
+In a derived custom theme (see {{lesson:persp-styles}}), declare tokens in two tiers:
+
+\`\`\`css
+:root {
+  /* raw palette, used only by the semantic tokens */
+  --pal-grey-92: #ebebeb;
+  --pal-grey-70: #b3b3b3;
+  --pal-grey-35: #595959;
+  --pal-grey-15: #262626;
+  --pal-red:     #c8102e;
+  --pal-orange:  #e07000;
+  --pal-yellow:  #f2c500;
+  --pal-cyan:    #3aa7c4;
+
+  /* semantic tokens, the only ones classes may use */
+  --hmi-bg:            var(--pal-grey-92);
+  --hmi-equipment:     var(--pal-grey-35);
+  --hmi-text:          var(--pal-grey-15);
+  --hmi-text-muted:    var(--pal-grey-35);
+  --hmi-normal-band:   var(--pal-grey-70);
+  --hmi-alarm-critical: var(--pal-red);
+  --hmi-alarm-high:    var(--pal-orange);
+  --hmi-alarm-medium:  var(--pal-yellow);
+  --hmi-alarm-low:     var(--pal-cyan);
+}
 \`\`\`
+
+The night theme redefines only the semantic tokens (dark greys for \`--hmi-bg\`, lighter greys for text) and keeps the four alarm hues. Alarm hues stay in the same relative order in both themes.
+
+### 2. Named style classes
+
+| Group | Classes | Sets |
+|---|---|---|
+| Surface and text | \`hmi/surface\`, \`hmi/text\`, \`hmi/text-muted\`, \`hmi/value\` | Background, font, number alignment |
+| Equipment state | \`hmi/equipment\`, \`hmi/equipment-off\` | Line colour and fill only. Running is the normal case and gets the plain \`hmi/equipment\` |
+| Alarm priority | \`hmi/alarm-critical\`, \`hmi/alarm-high\`, \`hmi/alarm-medium\`, \`hmi/alarm-low\` | Colour from the matching token, plus a border style |
+| Abnormal (no alarm) | \`hmi/abnormal\` | Out of normal band or bad quality: outline and a cue glyph, not an alarm colour |
+| Quality | \`hmi/bad-quality\` | Dashed outline and muted text for a bad or stale value |
+
+Alarm priority names follow the priorities configured in the Ignition alarm pipeline (Critical, High, Medium, Low, Diagnostic by default in Ignition). Match your site's list. Each priority also gets a shape cue so colour is never the only signal: a number badge or glyph in the alarm indicator (for example 1, 2, 3 inside a distinct outline).
+
+### 3. Where the alarm state comes from
+
+Do not bind a class to a made-up member such as \`.../Alarm/HighHigh\`. A tag has no such member unless you built one. Two real mechanisms:
+
+- **Tag runtime alarm properties.** Every tag with alarms configured exposes read-only alarm metrics, for example whether it has an active alarm and how many active unacknowledged alarms it has. Bind to them as properties of the tag, such as \`{[default]Plant1/Area10/Line1/LT101.ActiveUnackCount}\`. The exact property names are in the tag alarm properties page of the manual, and some have changed between versions, so check them in the Designer's tag browser first. This is cheap (a subscription) and is **the mechanism this lesson assumes** for abnormal and unacknowledged cues.
+- **\`system.alarm.queryStatus\`.** Use it when you need the priority, the alarm name or the list. Call it from one script per screen (a view custom prop refreshed on a modest timer or on a message), filter on the source path of the unit, and store a small dict keyed by tag path. Symbols then bind to that dict. Do not query per symbol. Check the argument names in the 8.3 manual for \`queryStatus\`.
+
+A symbol then needs only two inputs: a \`custom.priority\` string on the symbol (bound from the per-screen dict, or empty) and the tag's own metric. The class expression is:
+
+\`\`\`text
+if({this.custom.priority} = "Critical", "hmi/alarm-critical",
+ if({this.custom.priority} = "High", "hmi/alarm-high",
+  if({[default]Plant1/Area10/Line1/LT101.ActiveUnackCount} > 0, "hmi/abnormal", "hmi/equipment")))
+\`\`\`
+
+In a library symbol the tag path comes from the \`tagPath\` param through an indirect binding, as in {{lesson:persp-embedding}}, not typed into the expression.
+
+### 4. A Level 2 layout for the Area10 mixing unit
+
+Root: flex column, fills the page. The north dock supplies the header (area name, alarm summary, acknowledge). Page body is a flex row with wrap, three regions:
+
+| Region | Contents | Container |
+|---|---|---|
+| Left, basis about 40 percent | Process graphic: mixer M101, tank with LT101, valve FV101, pump P101, in grey line art. Live values sit next to each item as \`hmi/value\` | Percent-mode coordinate container inside the flex row |
+| Centre | Analog indicators for LT101 (m, 0.0 to 5.0 range, normal band shaded, LAH-101 and LAHH-101 ticks from the alarm configuration), M101 speed, and temperature if present | Flex column of embedded indicator views, one \`tagPath\` param each |
+| Right | Controls for M101 and FV101 (Start, Stop, auto/manual), a 30-minute trend of level and speed, and the unit's active alarm list | Flex column with the controls, a time series chart, an alarm table |
+
+Controls call the faceplate popups keyed by tag path. Start and Stop write the \`Cmd\` bits. The motor protection stays hardwired, as in {{lesson:plc-udt}}.
+
+### 5. Colour-blind check procedure
+
+1. Capture each Level 1 and Level 2 display in four states: all normal, one of each alarm priority, an abnormal-no-alarm case, and a bad-quality case.
+2. View them with a colour-vision-deficiency simulator. The Chrome and Edge developer tools can emulate protanopia, deuteranopia, tritanopia and achromatopsia, and a greyscale filter works too.
+3. In every simulated view, check that each priority can still be told apart **without** colour, by its number, glyph, outline or position, and that "abnormal" is distinct from "alarm".
+4. Check text contrast against the background. WCAG 2.x sets 4.5:1 for normal text at level AA. Adopt a figure in your style guide and test the muted text tokens first, since they usually fail.
+5. Test under the room's lighting with the actual monitor, because glare changes what is visible.
+6. Have at least one operator walk the screens in the check states and name each one. Record the result in the style guide change record.
+7. Rerun the whole procedure whenever a palette token changes.
 
 ## How to win the argument
 
@@ -115,6 +196,36 @@ Operators who want bright colors are usually reacting to a real thing: the old s
 
 > [!why] The color budget
 > Think of color as a limited budget. Every non-alarm use of red or yellow spends it. When the screen is quiet, one red box is unmissable. When ten things are red as part of normal decoration, an alarm is lost in them.
+## If you already build Perspective
+
+You know classes and themes. The hard parts of an HP HMI are keeping the guide enforceable and making the alarm cues trustworthy.
+
+### Make the style guide executable
+
+A PDF style guide drifts. Put its rules where the project can check them:
+
+- Tokens live in the theme, and classes may only reference semantic tokens. A search for raw hex values in classes is the audit.
+- Components may not set \`props.style.backgroundColor\`, \`color\` or \`borderColor\` inline. Only data-driven geometry (bar width, rotation) may be inline. Search the exported views for those keys before each release.
+- The toolkit is a set of library views with a version (see {{lesson:persp-library}}). A screen built from toolkit parts cannot disagree with the guide, because the parts carry the classes.
+
+### Alarm cues must agree with the alarm system
+
+The display's colour for "critical" must be the same condition that raised the alarm in the pipeline and journal. Read priority and state from the alarm system (runtime metrics or \`system.alarm.queryStatus\`), never re-derive them by comparing the process value to a limit typed into the view. A limit duplicated in a view is a second alarm system. This ties into {{lesson:ign-alarming}} and the rationalisation work there.
+
+Decide how unacknowledged alarms are shown. A common compromise is a distinct cue (a bracket or outline) for unacknowledged, then a steady cue after acknowledgment. Avoid blinking in normal operation. If you use motion at all, keep it for unacknowledged critical.
+
+### Performance of quiet screens
+
+A Level 1 overview with 60 summary tiles must not hold 60 live alarm queries. Compute area summaries once (UDT expression tags, or one \`queryStatus\` call per screen stored in a view custom prop) and bind tiles to the result. Bind style classes through short expressions or a map transform, not per-symbol scripts.
+
+### Level 2 reuse across units
+
+Build the Level 2 layout as a template view with regions as embedded views, parameterised by the unit's base path (\`[default]Plant1/Area10/Line1\`). Packaging (Area20) then reuses the shell and swaps the regions. A unit that does not fit the template is the signal to talk to the operators, not to bend the template.
+
+### Test on operators, not on developers
+
+Record time to detection for a seeded abnormal condition on the old and new screens, with the same operators on a training system. Keep the raw times and the conditions. That record is what you show when someone asks to bring the colours back.
+
 `,
 
   eli5: `

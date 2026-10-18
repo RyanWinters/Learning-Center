@@ -1,7 +1,7 @@
 LC.lesson({
   id: "ign-databases",
   title: "Databases in Ignition: named queries, transaction groups, store & forward",
-  track: "ignition",
+  track: "ign",
   minutes: 30,
   level: 2,
   prereqs: ["ign-tags", "db-sql-select"],
