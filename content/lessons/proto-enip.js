@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-enip",
   title: "EtherNet/IP and CIP",
   track: "proto",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-vlan"],
   tags: ["ethernet-ip", "cip", "allen-bradley", "io", "rpi", "multicast"],
@@ -191,55 +191,55 @@ ODVA published the EtherNet/IP specification in 2000 (the group was formed in 19
     },
     {
       q: "A remote I/O block has an RPI of 10 ms. What does that mean?",
-      options: ["The block can respond to one MSG every 10 ms", "The controller and block exchange I/O data every 10 ms over an open connection", "The block sends data only when a value changes by more than 10 ms of travel", "The block takes 10 ms to boot"],
-      answer: 1,
+      options: ["The block can respond to one MSG every 10 ms", "The block sends data only when a value changes by more than 10 ms of travel", "The block takes 10 ms to boot", "The controller and block exchange I/O data every 10 ms over an open connection"],
+      answer: 3,
       explain: [
         "MSG instructions use explicit messaging and are not the RPI.",
-        "Correct. The RPI is the requested update rate of the connection.",
         "RPI is a time interval and has no connection to value deadbands.",
-        "RPI has nothing to do with boot time."
+        "RPI has nothing to do with boot time.",
+        "Correct. The RPI is the requested update rate of the connection."
       ]
     },
     {
       q: "After a laptop and a camera are plugged into the I/O switch, several I/O devices begin dropping out. The switch is unmanaged. What is the most likely cause and fix?",
-      options: ["The RPI is too long; shorten it", "Multicast I/O is flooding all ports; use a managed switch with IGMP snooping or a separate network", "The EDS file is the wrong revision; reinstall it", "TCP 44818 is blocked; open the port"],
-      answer: 1,
+      options: ["Multicast I/O is flooding all ports; use a managed switch with IGMP snooping or a separate network", "The RPI is too long; shorten it", "The EDS file is the wrong revision; reinstall it", "TCP 44818 is blocked; open the port"],
+      answer: 0,
       explain: [
-        "A shorter RPI would add more traffic, making the flooding worse.",
         "Correct. An unmanaged switch floods multicast to every port. IGMP snooping prunes it.",
+        "A shorter RPI would add more traffic, making the flooding worse.",
         "A wrong EDS revision shows up as a keying or configuration fault, not as a flood.",
         "Blocked TCP prevents connection setup. It does not match dropouts that start when other hosts join."
       ]
     },
     {
       q: "In CIP, what do class, instance and attribute describe?",
-      options: ["Three layers of the OSI model", "The kind of object, one copy of it, and one data item on it", "Three levels of access control", "The sender, receiver and checksum"],
-      answer: 1,
+      options: ["Three layers of the OSI model", "Three levels of access control", "The kind of object, one copy of it, and one data item on it", "The sender, receiver and checksum"],
+      answer: 2,
       explain: [
         "They are CIP's addressing hierarchy and not network layers.",
-        "Correct. For example: Identity (class), the first one (instance), product name (attribute).",
         "Access control is a separate security feature.",
+        "Correct. For example: Identity (class), the first one (instance), product name (attribute).",
         "Those are packet fields, not the object model."
       ]
     },
     {
       q: "You are adding a third-party drive. The vendor gave you an EDS file. What does it give you?",
-      options: ["A firewall exception", "A description of the device's connections, assemblies and parameters for your engineering tool", "A license for implicit messaging", "The device's IP address"],
-      answer: 1,
+      options: ["A description of the device's connections, assemblies and parameters for your engineering tool", "A firewall exception", "A license for implicit messaging", "The device's IP address"],
+      answer: 0,
       explain: [
-        "An EDS is a description file and has no network function.",
         "Correct. Tools use it to build the module profile so you do not have to type assembly sizes by hand.",
+        "An EDS is a description file and has no network function.",
         "There is no separate license for messaging in an EDS file.",
         "IP addresses are set on the device or through DHCP or BOOTP."
       ]
     },
     {
       q: "A controller starts rejecting new HMI sessions while I/O keeps running. What is a likely cause?",
-      options: ["The controller has run out of CIP connections", "The scan time is too short", "The RPI is set to zero", "The gateway's license expired"],
-      answer: 0,
+      options: ["The scan time is too short", "The controller has run out of CIP connections", "The RPI is set to zero", "The gateway's license expired"],
+      answer: 1,
       explain: [
-        "Correct. Existing connections stay open, and new ones fail when the limit is reached.",
         "A short scan time is not a cause of connection failures.",
+        "Correct. Existing connections stay open, and new ones fail when the limit is reached.",
         "An RPI cannot be zero, and it would affect I/O, not HMI sessions.",
         "A license problem would not leave the connection-limited symptoms on the controller."
       ]

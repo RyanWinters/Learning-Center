@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-ecosystem",
   title: "Third-party modules and the Ignition Exchange",
   track: "arch",
-  minutes: 10,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-architecture"],
   tags: ["modules", "third-party", "exchange", "sdk", "ecosystem", "risk"],
@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## A platform, not a closed product
 
-Ignition's open module architecture is the reason one gateway can be an HMI, a historian, an MES and an MQTT hub. Inductive Automation builds the core modules. Because the module API and SDK are public, other companies build modules too, and the community shares projects, scripts and components. As an integrator you will use this ecosystem on almost every job. You will also be the one blamed when a module you chose is abandoned, so learn to evaluate it.
+Ignition's open module architecture is the reason one Gateway can be an HMI, a historian, an MES and an MQTT hub. Inductive Automation builds the core modules. Because the module API and SDK are public, other companies build modules too, and the community shares projects, scripts and components. As an integrator you will use this ecosystem on almost every job. You will also be the one blamed when a module you chose is abandoned, so learn to evaluate it.
 
 {{diagram:layers}}
 
@@ -26,7 +26,7 @@ Ignition's open module architecture is the reason one gateway can be an HMI, a h
 
 | Name | What it is | Cost | Who vets it |
 |---|---|---|---|
-| **Inductive Automation modules** | Modules in the 8.3 manual: Perspective, Vision, SQL Bridge, Reporting, Alarm Notification, SFC, Web Dev, Event Streams and more | Licensed by module on the gateway | Inductive Automation builds and supports them |
+| **Inductive Automation modules** | Modules in the 8.3 manual: Perspective, Vision, SQL Bridge, Reporting, Alarm Notification, SFC, Web Dev, Event Streams and more | Licensed by module on the Gateway | Inductive Automation builds and supports them |
 | **Module Showcase** | A listing of third-party modules, mostly paid, with links to buy from the developer | Set by each vendor | Light. The developer requests a signing certificate from Inductive Automation, and IA can remove modules with known problems or risks |
 | **Ignition Exchange** | A library of community-shared resources: project templates, Perspective views, scripts, UDTs and sometimes free modules | Often free | Community. Read before you import |
 
@@ -49,13 +49,13 @@ Strategic Partners and Premier Technology Providers are recognized by Inductive 
 
 ## Installing a module
 
-A module is a file with the extension \`.modl\`. On the gateway you install it from the Config section's module page. Installation needs a **module signature** and a **trusted certificate chain**, so Ignition can tell the file is authentic and unaltered. Unsigned or self-signed modules need an explicit step to accept the risk, and many policies forbid that on production gateways.
+A module is a file with the extension \`.modl\`. On the Gateway you install it from the Config section's module page. Installation needs a **module signature** and a **trusted certificate chain**, so Ignition can tell the file is authentic and unaltered. Unsigned or self-signed modules need an explicit step to accept the risk, and many policies forbid that on production Gateways.
 
 Things to check before you install:
 
 1. **Version fit.** A module is built against a specific Ignition SDK version. An 8.1 module will not load on 8.3. The Java version the platform requires has also changed between major releases (check the upgrade guide for yours), which broke some third-party modules until they were rebuilt. See {{lesson:ign-versioning}}.
-2. **Trial mode.** Many commercial modules run in a time-limited demo so you can test before buying. Do that on a dev gateway, not production.
-3. **Licensing.** Some modules attach to the gateway's license, some use their own key. A gateway rebuild or a new container can invalidate a key, so record how to reactivate it.
+2. **Trial mode.** Many commercial modules run in a time-limited demo so you can test before buying. Do that on a dev Gateway, not production.
+3. **Licensing.** Some modules attach to the Gateway's license, some use their own key. A Gateway rebuild or a new container can invalidate a key, so record how to reactivate it.
 4. **Redundancy and upgrade behavior.** Find out whether it works on a redundant pair and what happens on an Ignition upgrade.
 
 ## Evaluating support and longevity
@@ -75,7 +75,7 @@ This is the main skill in this lesson. A module is a dependency of your customer
 
 ## Building your own: the Ignition SDK
 
-The **Ignition SDK** lets Java and Kotlin developers write modules. A module can add a new scripting function, an OPC UA driver, a Perspective component, a gateway service or a Designer tool. The SDK documentation and example modules are public, and the forum has a category for module developers.
+The **Ignition SDK** lets Java and Kotlin developers write modules. A module can add a new scripting function, an OPC UA driver, a Perspective component, a Gateway service or a Designer tool. The SDK documentation and example modules are public, and the forum has a category for module developers.
 
 Custom modules are justified when you must talk to hardware or software that no existing driver supports, or when a component is needed in many projects. They are rarely justified for something a script, a WebDev endpoint ({{lesson:arch-webdev}}) or a Perspective custom component can do. A custom module is code you must maintain through every Ignition major release, and it needs a signing certificate. Most integrators never write one. They still need to know the option exists so they can price it honestly.
 
@@ -101,7 +101,7 @@ Before you rely on an app for something important, you ask: who makes it, do the
   why: `
 **Why use third-party modules at all?** Because the alternative is writing and maintaining it yourself. A Sepasoft OEE module or Cirrus Link's MQTT stack represents years of work. Buying that is nearly always cheaper than scripting a lookalike. The risk is real but manageable if you choose deliberately.
 
-**Why evaluate longevity so carefully?** Plants run systems for a decade. Ignition does major releases that change platform pieces, such as the Java version, so modules need active maintenance. A module that lags a major release can leave a customer stuck on an old Ignition version, and a stuck module holds the whole gateway back, including security patches.
+**Why evaluate longevity so carefully?** Plants run systems for a decade. Ignition does major releases that change platform pieces, such as the Java version, so modules need active maintenance. A module that lags a major release can leave a customer stuck on an old Ignition version, and a stuck module holds the whole Gateway back, including security patches.
 
 **Why do some integrators avoid third-party modules entirely?** They want a single vendor to call. When a problem appears at the boundary between a module and the platform, each side can blame the other. Others accept that risk for functions IA does not offer. The pragmatic middle is to use well-known vendors for the big capabilities and avoid obscure modules for minor conveniences.
 
@@ -121,7 +121,7 @@ Ignition has been modular since its early releases, with the SDK public so outsi
     },
     {
       title: "An upgrade blocked by a module",
-      body: `A plant on 8.1 wants to move to 8.3. The audit lists 12 modules. Eleven have 8.3 builds. One niche label-printing module has no release, and its vendor does not answer on the forum. The team has three options: leave that function on a small 8.1 gateway for now, replace it with a script that sends ZPL to the printer, or pay the vendor for a rebuild. Without the audit, they would have found out mid-upgrade.`
+      body: `A plant on 8.1 wants to move to 8.3. The audit lists 12 modules. Eleven have 8.3 builds. One niche label-printing module has no release, and its vendor does not answer on the forum. The team has three options: leave that function on a small 8.1 Gateway for now, replace it with a script that sends ZPL to the printer, or pay the vendor for a rebuild. Without the audit, they would have found out mid-upgrade.`
     }
   ],
 
@@ -140,9 +140,9 @@ Ignition has been modular since its early releases, with the SDK public so outsi
 
   pitfalls: [
     "Designing the critical path around a module without checking how quickly the vendor follows Ignition releases.",
-    "Installing an unsigned or self-signed module on a production gateway.",
+    "Installing an unsigned or self-signed module on a production Gateway.",
     "Importing an Exchange resource without reading its scripts.",
-    "Losing the .modl file and the license key, then being unable to rebuild the gateway.",
+    "Losing the .modl file and the license key, then being unable to rebuild the Gateway.",
     "Assuming that a partner of Inductive Automation means Inductive Automation supports the module.",
     "Writing a custom module for something a script or WebDev endpoint could do."
   ],
@@ -152,33 +152,33 @@ Ignition has been modular since its early releases, with the SDK public so outsi
   quiz: [
     {
       q: "What best describes the Ignition Exchange?",
-      options: ["The official store where Inductive Automation sells its own modules", "A community library of shared projects, views, scripts and some modules, with light vetting", "A certification body for third-party vendors", "The module signing authority"],
-      answer: 1,
+      options: ["The official store where Inductive Automation sells its own modules", "A certification body for third-party vendors", "The module signing authority", "A community library of shared projects, views, scripts and some modules, with light vetting"],
+      answer: 3,
       explain: [
         "IA's own modules are licensed through Inductive Automation, not the Exchange.",
-        "Correct. It is community-shared material that you should review and then own.",
         "Certification of vendors is not what the Exchange does.",
-        "Signing certificates are requested from Inductive Automation, a separate process."
+        "Signing certificates are requested from Inductive Automation, a separate process.",
+        "Correct. It is community-shared material that you should review and then own."
       ]
     },
     {
       q: "A module vendor was a long-time partner of Inductive Automation. A bug appears at the module and platform boundary. Who supports the module?",
-      options: ["Inductive Automation, because they partner with the vendor", "The vendor, because the module is their product", "Nobody; partner modules are unsupported", "The integrator who installed it, always"],
-      answer: 1,
+      options: ["Inductive Automation, because they partner with the vendor", "Nobody; partner modules are unsupported", "The vendor, because the module is their product", "The integrator who installed it, always"],
+      answer: 2,
       explain: [
         "Partner status signals trust but does not move support responsibility.",
-        "Correct. The vendor builds and supports it, though you may need to coordinate both sides.",
         "Commercial modules normally come with vendor support.",
+        "Correct. The vendor builds and supports it, though you may need to coordinate both sides.",
         "You are the first contact, but the vendor still owns fixing their module."
       ]
     },
     {
       q: "You are upgrading from 8.1 to 8.3 and one third-party module has no 8.3 build. What is the sensible first step?",
-      options: ["Install the 8.1 module on 8.3 and hope it loads", "Ask the vendor for a timeline and plan alternatives such as keeping that function elsewhere or replacing it", "Skip the upgrade permanently", "Disable signature checks"],
-      answer: 1,
+      options: ["Ask the vendor for a timeline and plan alternatives such as keeping that function elsewhere or replacing it", "Install the 8.1 module on 8.3 and hope it loads", "Skip the upgrade permanently", "Disable signature checks"],
+      answer: 0,
       explain: [
-        "Modules are built against a specific SDK and Java version, so an 8.1 module will not simply load on 8.3.",
         "Correct. Find out the vendor's plan and prepare a workaround before the upgrade date.",
+        "Modules are built against a specific SDK and Java version, so an 8.1 module will not simply load on 8.3.",
         "Staying on old versions leaves you without patches and is rarely the right permanent answer.",
         "Disabling signature checks adds risk and does not make the module compatible."
       ]
@@ -196,13 +196,13 @@ Ignition has been modular since its early releases, with the SDK public so outsi
     },
     {
       q: "Which finding is the biggest red flag when vetting a niche module for a critical function?",
-      options: ["It has a free trial", "A single developer, no activity in the forum thread for a year and a private data format", "It is listed in the Module Showcase", "It requires a license key"],
-      answer: 1,
+      options: ["It has a free trial", "It is listed in the Module Showcase", "It requires a license key", "A single developer, no activity in the forum thread for a year and a private data format"],
+      answer: 3,
       explain: [
         "Trials are helpful and normal.",
-        "Correct. Weak continuity, low responsiveness and lock-in combine into a high longevity risk with no exit.",
         "The Showcase listing is normal, though it is only light vetting.",
-        "License keys are normal for commercial software."
+        "License keys are normal for commercial software.",
+        "Correct. Weak continuity, low responsiveness and lock-in combine into a high longevity risk with no exit."
       ]
     }
   ],

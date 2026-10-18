@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-expressions",
   title: "The expression language",
   track: "ign",
-  minutes: 20,
+  minutes: 10,
   level: 2,
   prereqs: ["ign-tags"],
   tags: ["ignition", "expressions", "bindings", "runscript", "polling"],
@@ -198,56 +198,56 @@ runScript is when your spreadsheet cell secretly phones a cook to read a recipe 
   quiz: [
     {
       q: "An expression tag uses runScript with a 30,000 ms poll rate. The tag belongs to a 1,000 ms tag group. How often does it evaluate?",
-      options: ["Every 30 seconds", "Every second, because the tag group limits the rate", "Never, the rates conflict", "Every 31 seconds"],
-      answer: 1,
+      options: ["Every second, because the tag group limits the rate", "Every 30 seconds", "Never, the rates conflict", "Every 31 seconds"],
+      answer: 0,
       explain: [
-        "The tag group, not the runScript argument, sets the minimum interval for an expression tag.",
         "Correct. The tag keeps evaluating on its group schedule. A 30 s poll needs a 30 s group.",
+        "The tag group, not the runScript argument, sets the minimum interval for an expression tag.",
         "Mismatched rates are legal. The faster group simply wins.",
         "Rates are not added together."
       ]
     },
     {
       q: "Which task should NOT be done in an expression?",
-      options: ["Converting units for display", "Choosing a colour from a state number", "Inserting a row into a database when a value changes", "Formatting a timestamp"],
-      answer: 2,
+      options: ["Converting units for display", "Inserting a row into a database when a value changes", "Choosing a colour from a state number", "Formatting a timestamp"],
+      answer: 1,
       explain: [
         "Pure conversions are the right use.",
-        "A switch or if on a state number is ideal.",
         "Correct. Expressions are re-evaluated unpredictably and cannot cause side effects. Use an event script.",
+        "A switch or if on a state number is ideal.",
         "dateFormat does this."
       ]
     },
     {
       q: "You need a Perspective label to show a tag chosen at runtime by a view parameter. Which expression feature do you reach for?",
-      options: ["The tag() function with a built path", "A constant braces reference", "now(0)", "A memory tag"],
-      answer: 0,
+      options: ["A constant braces reference", "now(0)", "A memory tag", "The tag() function with a built path"],
+      answer: 3,
       explain: [
-        "Correct. tag() reads a path that is constructed when the expression runs.",
         "A braces reference is fixed in the expression text.",
         "now(0) returns the time once and has nothing to do with tag selection.",
-        "A memory tag would still need something to choose which tag to mirror."
+        "A memory tag would still need something to choose which tag to mirror.",
+        "Correct. tag() reads a path that is constructed when the expression runs."
       ]
     },
     {
       q: "What does try(1 / {[.]Flow}, 0) do when Flow is 0?",
-      options: ["Returns infinity", "Returns 0", "Raises an error and stops the tag", "Returns null"],
-      answer: 1,
+      options: ["Returns infinity", "Raises an error and stops the tag", "Returns 0", "Returns null"],
+      answer: 2,
       explain: [
         "Division by zero is an error in the expression, which try() catches.",
-        "Correct. try() returns its second argument when the first expression fails.",
         "That is what would happen without try().",
+        "Correct. try() returns its second argument when the first expression fails.",
         "The fallback is 0, not null."
       ]
     },
     {
       q: "The same derived value is needed on 12 views and in an alarm. Best approach?",
-      options: ["Repeat the expression in each binding", "Create one expression tag and use it everywhere", "Use runScript in each view", "Write it in the PLC only"],
-      answer: 1,
+      options: ["Repeat the expression in each binding", "Use runScript in each view", "Create one expression tag and use it everywhere", "Write it in the PLC only"],
+      answer: 2,
       explain: [
         "Twelve copies will diverge, and each session evaluates its own.",
-        "Correct. An expression tag computes once for everyone and can carry alarms and history.",
         "This multiplies the cost and still repeats the logic.",
+        "Correct. An expression tag computes once for everyone and can carry alarms and history.",
         "The PLC is right for control values. Presentation values can reasonably live in Ignition."
       ]
     }

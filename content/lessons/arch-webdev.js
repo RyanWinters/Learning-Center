@@ -2,25 +2,25 @@ LC.lesson({
   id: "arch-webdev",
   title: "WebDev and REST APIs",
   track: "arch",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-scripting"],
   tags: ["webdev", "rest", "api", "json", "http", "integration"],
-  summary: "Turn a gateway into a web server with the WebDev module, call other systems with system.net.httpClient, and know when to use the built-in configuration API instead.",
+  summary: "Turn a Gateway into a web server with the WebDev module, call other systems with system.net.httpClient, and know when to use the built-in configuration API instead.",
   objectives: [
-    "Explain what the WebDev module adds to a gateway and how a Python resource maps to a URL",
+    "Explain what the WebDev module adds to a Gateway and how a Python resource maps to a URL",
     "Write a doGet and a doPost handler that return JSON",
     "Secure a WebDev endpoint and name the common ways it goes wrong",
-    "Call an external REST API from a gateway script with system.net.httpClient",
-    "Choose between a WebDev endpoint and the 8.3 gateway REST API for a given job"
+    "Call an external REST API from a Gateway script with system.net.httpClient",
+    "Choose between a WebDev endpoint and the 8.3 Gateway REST API for a given job"
   ],
 
   body: `
 ## What WebDev is
 
-Most systems you integrate with, such as an ERP, a WMS, a quality app or a customer portal, speak {{term:rest-api|REST}} over HTTP and trade JSON. The **Web Dev module** lets an Ignition gateway be one of those systems. You write small scripts, mount them at URLs, and anything that can send an HTTP request can read tags, query the historian or push a work order into your project.
+Most systems you integrate with, such as an ERP, a WMS, a quality app or a customer portal, speak {{term:rest-api|REST}} over HTTP and trade JSON. The **Web Dev module** lets an Ignition Gateway be one of those systems. You write small scripts, mount them at URLs, and anything that can send an HTTP request can read tags, query the historian or push a work order into your project.
 
-Without it, your only front door is Perspective or Vision. With it, the gateway also becomes a data service. This is the usual way a Level 3 or Level 4 system reaches Ignition, as you will see in {{lesson:mes-erp}}.
+Without it, your only front door is Perspective or Vision. With it, the Gateway also becomes a data service. This is the usual way a Level 3 or Level 4 system reaches Ignition, as you will see in {{lesson:mes-erp}}.
 
 ## Resources and URLs
 
@@ -39,7 +39,7 @@ Each handler receives a \`request\` dictionary. The parts you use most are \`par
 
 The handler returns a dictionary describing the response. Keys include \`json\`, \`html\`, \`bytes\`, \`file\` and \`response\`, plus an optional \`contentType\`. Returning a dictionary with none of those keys produces an HTTP 500.
 
-Resources live in your project, so they are versioned, copied and exported with it. The URL is built from the gateway address, the project name and the path of the resource you mounted. {{lesson:ign-scripting}} covers the Jython rules that apply here too: this is gateway-scope Python 2.7 syntax.
+Resources live in your project, so they are versioned, copied and exported with it. The URL is built from the Gateway address, the project name and the path of the resource you mounted. {{lesson:ign-scripting}} covers the Jython rules that apply here too: this is Gateway-scope Python 2.7 syntax.
 
 {{diagram:flow}}
 
@@ -85,7 +85,7 @@ def doPost(request, session):
 
 Notice the shape: validate input first, return a clear status code, write one request tag, check that the write actually succeeded and let the PLC sequence do the real work. Do not let a web call drive an output directly.
 
-The target \`Transfer/Request\` must be a **Document-type tag** (a memory tag with data type Document), because that is the tag type that holds a dictionary. A PLC cannot read a Document tag. In practice a gateway tag-change script, or separate scalar request tags, copies the validated values into the PLC's request registers, and the PLC sequence validates them again against its own permissives. Use plain scalar tags in the first place if your request has only a few fields.
+The target \`Transfer/Request\` must be a **Document-type tag** (a memory tag with data type Document), because that is the tag type that holds a dictionary. A PLC cannot read a Document tag. In practice a Gateway tag-change script, or separate scalar request tags, copies the validated values into the PLC's request registers, and the PLC sequence validates them again against its own permissives. Use plain scalar tags in the first place if your request has only a few fields.
 
 > [!warning] Content-Type matters
 > The module fills \`postData\` only for certain content types, such as \`application/json\` or \`text/*\`. Clients that send \`application/json;charset=UTF-8\` have caused a \`KeyError\` for some users. If \`postData\` is missing, read the raw bytes from \`servletRequest\` and parse them yourself.
@@ -94,11 +94,11 @@ The target \`Transfer/Request\` must be a **Document-type tag** (a memory tag wi
 
 A WebDev endpoint is a network door into your control system. Treat it like one.
 
-- **Authentication**: a resource can require authentication so the gateway checks the caller against a user source before your script runs. Use it. An unauthenticated endpoint that writes a tag is an open write path to the plant.
+- **Authentication**: a resource can require authentication so the Gateway checks the caller against a user source before your script runs. Use it. An unauthenticated endpoint that writes a tag is an open write path to the plant.
 - **Authorization**: inside the script, check roles. A caller who may read levels should not be able to post transfers.
 - **TLS**: only expose it over HTTPS (port 8043 in the house examples). Credentials in headers are plain text on HTTP.
 - **Input validation**: the body is untrusted. Check types and ranges. Never build SQL by joining strings from the request. Use named queries or prepared parameters ({{lesson:net-security}} covers the network side).
-- **Placement**: do not expose the control gateway to the internet. Put a reverse proxy or API gateway in the DMZ, or run a separate gateway for external access.
+- **Placement**: do not expose the control Gateway to the internet. Put a reverse proxy or API gateway in the DMZ, or run a separate Gateway for external access.
 - **CORS**: browsers block calls from another origin unless the response carries the right \`Access-Control-Allow-Origin\` header. Add it deliberately, to named origins, not \`*\` for everything.
 
 ## Calling out: system.net.httpClient
@@ -123,19 +123,19 @@ def getWeather():
 
 Rules that save grief:
 
-1. **Never call it on a GUI or UI-bound thread path that blocks.** Run it from a gateway timer, a message handler or a tag change script, with a timeout.
+1. **Never call it on a GUI or UI-bound thread path that blocks.** Run it from a Gateway timer, a message handler or a tag change script, with a timeout.
 2. **Reuse a client** when you make many calls. Creating one per call is expensive. Use a project library function and cache it.
 3. **Check the status code and handle failure.** Networks fail. Log, back off, and do not retry in a tight loop.
-4. **Keep secrets out of scripts.** Use the gateway's secrets management for tokens instead of hard-coding them. \`system.secrets.readSecretValue\` is documented as new in 8.3.1, so check your exact 8.3 patch version. The \`good\`, \`json\` and \`statusCode\` attributes on the response are shortcuts for \`isGood()\`, \`getJson()\` and \`getStatusCode()\` on the [httpClient manual page](https://www.docs.inductiveautomation.com/docs/8.3/appendix/scripting-functions/system-net/system-net-httpClient). \`json\` raises an error if the body is not valid JSON, so wrap it in try/except when the endpoint might return something else.
+4. **Keep secrets out of scripts.** Use the Gateway's secrets management for tokens instead of hard-coding them. \`system.secrets.readSecretValue\` is documented as new in 8.3.1, so check your exact 8.3 patch version. The \`good\`, \`json\` and \`statusCode\` attributes on the response are shortcuts for \`isGood()\`, \`getJson()\` and \`getStatusCode()\` on the [httpClient manual page](https://www.docs.inductiveautomation.com/docs/8.3/appendix/scripting-functions/system-net/system-net-httpClient). \`json\` raises an error if the body is not valid JSON, so wrap it in try/except when the endpoint might return something else.
 
 > [!note] In 8.1
 > In 8.1 you created a client with \`system.net.httpClient()\` and kept it in a variable, and the older \`system.net.httpGet\` / \`httpPost\` calls were the common approach. In 8.3 the httpClient function is also usable directly as an instance.
 
-## The built-in gateway REST API versus WebDev
+## The built-in Gateway REST API versus WebDev
 
-8.3 ships a gateway HTTP API of its own, documented on the gateway itself. The interactive page is at \`/openapi\` and the raw specification at \`/openapi.json\`. It is protected by **API keys**, created in the Gateway under Platform, Security, API Keys. Callers send the key in an \`X-Ignition-API-Token\` header. The routes cover gateway configuration, projects and tags, for example configuration resources under \`/data/api/v1/resources\`.
+8.3 ships a Gateway HTTP API of its own, documented on the Gateway itself. The interactive page is at \`/openapi\` and the raw specification at \`/openapi.json\`. It is protected by **API keys**, created in the Gateway under Platform, Security, API Keys. Callers send the key in an \`X-Ignition-API-Token\` header. The routes cover Gateway configuration, projects and tags, for example configuration resources under \`/data/api/v1/resources\`.
 
-| | Built-in gateway API | WebDev endpoint |
+| | Built-in Gateway API | WebDev endpoint |
 |---|---|---|
 | Purpose | Administer and configure Ignition | Serve your own data and actions |
 | You write code | No, the routes are fixed | Yes, you define the shape |
@@ -143,7 +143,7 @@ Rules that save grief:
 | Auth | API key with broad access | Your choice, per resource |
 | Example | Create a database connection from a deploy script | \`GET /orders/open\` returning JSON |
 
-An API key grants broad access to the API routes, including changing configuration, so guard it like an admin password. Use the built-in API to automate the gateway ({{lesson:arch-containers}}) and WebDev to expose business data. Do not hand an external partner an API key when a narrow WebDev endpoint would do.
+An API key grants broad access to the API routes, including changing configuration, so guard it like an admin password. Use the built-in API to automate the Gateway ({{lesson:arch-containers}}) and WebDev to expose business data. Do not hand an external partner an API key when a narrow WebDev endpoint would do.
 
 ## When REST is the wrong tool
 
@@ -151,7 +151,7 @@ REST is request/response. If a system needs to be told the instant something hap
 `,
 
   eli5: `
-Think of the gateway as a shop with a front counter. Normally only people who walk in (operators with screens) can ask for anything. WebDev cuts a serving window in the wall and hangs a menu beside it.
+Think of the Gateway as a shop with a front counter. Normally only people who walk in (operators with screens) can ask for anything. WebDev cuts a serving window in the wall and hangs a menu beside it.
 
 Someone outside the shop can now lean up to the window and say "What's the level in tank 2?" The clerk behind the counter looks it up and hands back a slip of paper with the answer written in a very tidy format. That tidy format is called JSON, and the window rules (which kinds of requests you can make) are called HTTP.
 
@@ -167,13 +167,13 @@ The shop also has a staff-only door, with its own key, for the people who run th
 
 **Why write requests, not outputs?** A POST that flips a valve directly puts an internet-shaped failure mode, like a retry storm or a malformed body, next to physical equipment. Writing a request tag that the PLC validates and sequences keeps the interlocks where they belong. Integrators argue about how much logic belongs in the endpoint. The safe rule is that the endpoint validates and records, and the controller decides.
 
-**Why a separate gateway for outside callers?** Putting WebDev on the control gateway is fast to build and simple to run. It also means a flood of external requests competes for the same threads as your tag engine and screens. Many sites run a front-end gateway in the DMZ that holds the WebDev endpoints and reaches the control gateway over the gateway network or a narrow API. It costs a license and some complexity. It buys isolation.
+**Why a separate Gateway for outside callers?** Putting WebDev on the control Gateway is fast to build and simple to run. It also means a flood of external requests competes for the same threads as your tag engine and screens. Many sites run a front-end Gateway in the DMZ that holds the WebDev endpoints and reaches the control Gateway over the Gateway Network or a narrow API. It costs a license and some complexity. It buys isolation.
 
 **Why API keys for deployment, not for apps?** The built-in API's keys are broad. That suits a pipeline that must create connections and projects. It is wrong for a mobile app that only needs to read three values.
 `,
 
   history: `
-Before WebDev, getting data out of Ignition for other systems meant a database in the middle or a custom OPC client. The Web Dev module is an add-on that lets integrators publish their own endpoints. Ignition 8.3 added a documented, key-protected gateway API for configuration as part of its move to file-based projects and resources, which is what made scripted deployments practical.
+Before WebDev, getting data out of Ignition for other systems meant a database in the middle or a custom OPC client. The Web Dev module is an add-on that lets integrators publish their own endpoints. Ignition 8.3 added a documented, key-protected Gateway API for configuration as part of its move to file-based projects and resources, which is what made scripted deployments practical.
 `,
 
   examples: [
@@ -183,7 +183,7 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
     },
     {
       title: "Posting a quality alert to a team chat",
-      body: `A gateway tag change script fires when \`Plant1/Area20/Line1/QualityFault\` goes true. It builds a small JSON payload and calls \`system.net.httpClient().post(url, data=json.dumps(payload), headers={'Content-Type':'application/json'})\`. A 200 means done. Anything else is logged with the status code, and the script does not retry more than three times, so a dead chat service cannot pile up threads.`
+      body: `A Gateway tag change script fires when \`Plant1/Area20/Line1/QualityFault\` goes true. It builds a small JSON payload and calls \`system.net.httpClient().post(url, data=json.dumps(payload), headers={'Content-Type':'application/json'})\`. A 200 means done. Anything else is logged with the status code, and the script does not retry more than three times, so a dead chat service cannot pile up threads.`
     }
   ],
 
@@ -196,7 +196,7 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
   <text class="dg-text dg-mid" x="90" y="60">Client</text>
   <text class="dg-text-sm dg-mid" x="90" y="82">ERP / app / script</text>
   <rect class="dg-box-accent" x="250" y="20" width="200" height="110" rx="6"/>
-  <text class="dg-title dg-mid" x="350" y="44">Ignition gateway</text>
+  <text class="dg-title dg-mid" x="350" y="44">Ignition Gateway</text>
   <text class="dg-text-sm dg-mid" x="350" y="68">WebDev resource</text>
   <text class="dg-text-mono dg-mid" x="350" y="90">doGet / doPost</text>
   <text class="dg-text-sm dg-mid" x="350" y="114">auth, validate, respond</text>
@@ -222,7 +222,7 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
     "Assuming postData is always populated. Odd Content-Type headers can leave it empty.",
     "Returning a dictionary with none of json, html, bytes, file or response, which produces a 500.",
     "Running a blocking httpClient call with no timeout on a thread that screens or tags depend on.",
-    "Handing out a gateway API key to an app that only needs three values. Keys grant broad access.",
+    "Handing out a Gateway API key to an app that only needs three values. Keys grant broad access.",
     "Changing a JSON field name without versioning the URL, which breaks every consumer silently."
   ],
 
@@ -231,56 +231,56 @@ Before WebDev, getting data out of Ignition for other systems meant a database i
   quiz: [
     {
       q: "An ERP system must read yesterday's production totals from Ignition. Which approach is the best fit?",
-      options: ["A WebDev doGet resource that queries the database and returns JSON", "Give the ERP an admin API key for the built-in gateway API", "Have the ERP poll the Perspective session for the numbers", "Write a doPost that the ERP calls with no authentication"],
-      answer: 0,
+      options: ["Give the ERP an admin API key for the built-in Gateway API", "A WebDev doGet resource that queries the database and returns JSON", "Have the ERP poll the Perspective session for the numbers", "Write a doPost that the ERP calls with no authentication"],
+      answer: 1,
       explain: [
+        "The built-in API is for administering the Gateway. Its keys are broad and would give far more access than the ERP needs.",
         "Correct. You define a narrow, read-only contract in your own vocabulary and can secure it per resource.",
-        "The built-in API is for administering the gateway. Its keys are broad and would give far more access than the ERP needs.",
         "Perspective sessions are a user interface, not a data service.",
         "A POST is the wrong verb for reading, and no authentication leaves the endpoint open to anyone who can reach it."
       ]
     },
     {
       q: "A client sends a POST with Content-Type 'application/json;charset=UTF-8' and your doPost throws a KeyError on request['postData']. What is the most likely cause and fix?",
-      options: ["The tag path is wrong; correct it", "postData was not populated for that content type; read and parse the raw body from servletRequest", "doPost cannot receive JSON; switch to doGet", "The gateway needs a restart after each script edit"],
-      answer: 1,
+      options: ["The tag path is wrong; correct it", "doPost cannot receive JSON; switch to doGet", "postData was not populated for that content type; read and parse the raw body from servletRequest", "The Gateway needs a restart after each script edit"],
+      answer: 2,
       explain: [
         "A bad tag path would give bad quality on a read, not a missing key in the request dictionary.",
-        "Correct. The module fills postData only for certain content types, so reading the raw bytes is the fallback.",
         "doPost is the normal handler for JSON bodies. GET has no body.",
-        "Project resources are saved and live without a gateway restart."
+        "Correct. The module fills postData only for certain content types, so reading the raw bytes is the fallback.",
+        "Project resources are saved and live without a Gateway restart."
       ]
     },
     {
       q: "Your doPost receives 'open valve V12' from a partner app. What is the safest design?",
-      options: ["Write directly to the valve output tag so it responds instantly", "Validate the request, check the caller's role, then write a request tag that the PLC sequence validates and acts on", "Skip validation because the partner is trusted", "Return 200 and ignore the request until an operator approves it"],
-      answer: 1,
+      options: ["Write directly to the valve output tag so it responds instantly", "Skip validation because the partner is trusted", "Return 200 and ignore the request until an operator approves it", "Validate the request, check the caller's role, then write a request tag that the PLC sequence validates and acts on"],
+      answer: 3,
       explain: [
         "That puts network failure modes, such as retries and malformed bodies, directly on physical equipment and bypasses interlocks.",
-        "Correct. The endpoint validates and records. The controller owns permissives and interlocks.",
         "Trusted partners still send bad data, and their credentials can be stolen.",
-        "Returning success while doing nothing misleads the caller. A clear status code is better."
+        "Returning success while doing nothing misleads the caller. A clear status code is better.",
+        "Correct. The endpoint validates and records. The controller owns permissives and interlocks."
       ]
     },
     {
-      q: "A deployment pipeline must create a database connection on a new gateway automatically. Which tool fits?",
-      options: ["A WebDev doPost resource written for the job", "system.net.httpClient on the gateway being configured", "The built-in gateway REST API with an API key sent in X-Ignition-API-Token", "A Perspective button an engineer clicks"],
-      answer: 2,
+      q: "A deployment pipeline must create a database connection on a new Gateway automatically. Which tool fits?",
+      options: ["The built-in Gateway REST API with an API key sent in X-Ignition-API-Token", "A WebDev doPost resource written for the job", "system.net.httpClient on the Gateway being configured", "A Perspective button an engineer clicks"],
+      answer: 0,
       explain: [
-        "You would have to write and secure custom code for something the platform already exposes.",
-        "httpClient makes outbound calls from a gateway. It does not configure another one by itself.",
         "Correct. The built-in API exists for configuration and provisioning, and API keys suit unattended callers.",
+        "You would have to write and secure custom code for something the platform already exposes.",
+        "httpClient makes outbound calls from a Gateway. It does not configure another one by itself.",
         "That is manual and not repeatable."
       ]
     },
     {
       q: "A downstream system needs to know within a second whenever a machine faults. Why is a WebDev doGet that it polls a weak choice?",
-      options: ["WebDev cannot return JSON", "Polling wastes requests and still adds up to a poll interval of delay; a push mechanism such as event streams or MQTT fits better", "doGet is limited to one call per hour", "HTTP is not allowed on gateways"],
-      answer: 1,
+      options: ["WebDev cannot return JSON", "doGet is limited to one call per hour", "Polling wastes requests and still adds up to a poll interval of delay; a push mechanism such as event streams or MQTT fits better", "HTTP is not allowed on Gateways"],
+      answer: 2,
       explain: [
         "WebDev returns JSON easily. That is its main use.",
-        "Correct. REST is request/response. For event notification, push the event when it happens.",
         "There is no such limit. The issue is design, not a cap.",
+        "Correct. REST is request/response. For event notification, push the event when it happens.",
         "Gateways serve and call HTTP routinely."
       ]
     }

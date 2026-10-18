@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-spc",
   title: "SPC: control charts and rules",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["mes-what"],
   tags: ["spc", "quality", "control-charts", "cpk", "sampling"],
@@ -217,13 +217,13 @@ Walter Shewhart developed the control chart at Bell Telephone Laboratories in th
   quiz: [
     {
       q: "A process has been stable for months, and every X-bar point is inside the control limits. Parts are still frequently rejected for being over the upper spec. What does this tell you?",
-      options: ["The control limits are calculated wrongly", "The chart should use spec limits instead", "A special cause is present in every point", "The process is in control but off-center or too wide for the spec, so Cpk is low"],
-      answer: 3,
+      options: ["The process is in control but off-center or too wide for the spec, so Cpk is low", "The control limits are calculated wrongly", "The chart should use spec limits instead", "A special cause is present in every point"],
+      answer: 0,
       explain: [
+        "Correct. Being in control means stable, not capable. You need to re-center or reduce variation.",
         "The limits come from the process's own data and can be perfectly correct while the process fails the spec.",
         "Spec limits are for judging parts. Using them on the chart would hide drift.",
-        "Special cause shows up as signals on the chart, which are absent here.",
-        "Correct. Being in control means stable, not capable. You need to re-center or reduce variation."
+        "Special cause shows up as signals on the chart, which are absent here."
       ]
     },
     {
@@ -250,13 +250,13 @@ Walter Shewhart developed the control chart at Bell Telephone Laboratories in th
     },
     {
       q: "On an X-bar chart nine consecutive averages sit above the center line but inside the limits. What is the right reaction?",
-      options: ["Nothing, all points are inside the limits", "Widen the control limits", "Treat it as a signal and investigate what changed", "Switch to spec limits"],
-      answer: 2,
+      options: ["Nothing, all points are inside the limits", "Widen the control limits", "Switch to spec limits", "Treat it as a signal and investigate what changed"],
+      answer: 3,
       explain: [
         "Staying inside the limits does not make a run of this length random.",
         "Widening limits to fit the data hides the shift.",
-        "Correct. A long run on one side is a run-rule violation, which indicates a shift of the mean.",
-        "Spec limits are unrelated to detecting a change in the process."
+        "Spec limits are unrelated to detecting a change in the process.",
+        "Correct. A long run on one side is a run-rule violation, which indicates a shift of the mean."
       ]
     },
     {
@@ -272,11 +272,11 @@ Walter Shewhart developed the control chart at Bell Telephone Laboratories in th
     },
     {
       q: "Adding more run rules to a chart generally does what?",
-      options: ["Detects smaller shifts sooner but raises the false alarm rate", "Lowers the false alarm rate", "Has no effect on detection", "Replaces the need for control limits"],
-      answer: 0,
+      options: ["Lowers the false alarm rate", "Detects smaller shifts sooner but raises the false alarm rate", "Has no effect on detection", "Replaces the need for control limits"],
+      answer: 1,
       explain: [
-        "Correct. Every additional rule is another chance to fire by luck, so the trade-off is real.",
         "More rules means more false alarms, not fewer.",
+        "Correct. Every additional rule is another chance to fire by luck, so the trade-off is real.",
         "Run rules exist because they detect patterns that single-point limits miss.",
         "Rules work with the limits and the zones calculated from them."
       ]

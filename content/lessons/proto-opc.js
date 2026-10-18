@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-opc",
   title: "From OPC Classic to OPC UA",
   track: "proto",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-routing"],
   tags: ["opc", "opc-ua", "opc-da", "security", "certificates", "subscriptions"],
@@ -184,24 +184,24 @@ The OPC Foundation was formed in 1996 by a group of automation vendors with Micr
   quiz: [
     {
       q: "What made OPC Classic notoriously hard to deploy across machines?",
-      options: ["It required Linux", "It relied on DCOM, whose security, account and callback requirements broke easily", "It only supported 8 tags per connection", "It had no support for writes"],
-      answer: 1,
+      options: ["It required Linux", "It only supported 8 tags per connection", "It relied on DCOM, whose security, account and callback requirements broke easily", "It had no support for writes"],
+      answer: 2,
       explain: [
         "It was Windows-only.",
-        "Correct. DCOM needs matching accounts, open RPC ports and working callbacks in both directions.",
         "There was no such low tag limit.",
+        "Correct. DCOM needs matching accounts, open RPC ports and working callbacks in both directions.",
         "OPC DA supported both reads and writes."
       ]
     },
     {
       q: "In an OPC UA subscription, what is the difference between the sampling interval and the publishing interval?",
-      options: ["They are the same setting under two names", "Sampling is how often the server checks the value, and publishing is how often it sends queued changes to the client", "Sampling is for writes and publishing is for reads", "Publishing is how often the client polls the server"],
-      answer: 1,
+      options: ["They are the same setting under two names", "Sampling is for writes and publishing is for reads", "Publishing is how often the client polls the server", "Sampling is how often the server checks the value, and publishing is how often it sends queued changes to the client"],
+      answer: 3,
       explain: [
         "They are separate settings that govern two stages.",
-        "Correct. The server samples items on one clock and delivers notifications on another.",
         "Both apply to data sent from the server to the client.",
-        "The client does not poll in a subscription. The server publishes."
+        "The client does not poll in a subscription. The server publishes.",
+        "Correct. The server samples items on one clock and delivers notifications on another."
       ]
     },
     {
@@ -217,35 +217,35 @@ The OPC Foundation was formed in 1996 by a group of automation vendors with Micr
     },
     {
       q: "Which security mode signs and encrypts messages?",
-      options: ["None", "Sign", "SignAndEncrypt", "Anonymous"],
-      answer: 2,
+      options: ["SignAndEncrypt", "None", "Sign", "Anonymous"],
+      answer: 0,
       explain: [
+        "Correct. This is the normal choice on a plant network.",
         "None does neither.",
         "Sign protects integrity but data stays readable.",
-        "Correct. This is the normal choice on a plant network.",
         "Anonymous is a user token type and not a message security mode."
       ]
     },
     {
       q: "A third-party OPC UA client needs to read data from Ignition. Which certificate list on the Gateway does the administrator manage?",
-      options: ["The Client tab, because the third party is a client", "The Server tab, because Ignition is acting as the server", "Neither, because Ignition trusts all clients", "The Gateway Network settings"],
-      answer: 1,
+      options: ["The Client tab, because the third party is a client", "Neither, because Ignition trusts all clients", "The Server tab, because Ignition is acting as the server", "The Gateway Network settings"],
+      answer: 2,
       explain: [
         "The Client tab holds certificates for when Ignition itself is the client.",
-        "Correct. For inbound connections, Ignition acts as the server, so the connecting client's certificate is trusted on the Server tab.",
         "Ignition does not automatically trust third-party certificates.",
+        "Correct. For inbound connections, Ignition acts as the server, so the connecting client's certificate is trusted on the Server tab.",
         "Gateway Network uses a separate certificate setup."
       ]
     },
     {
       q: "A monitored item samples a tank level every 1000 ms with the publishing interval at 5000 ms. What would a client see?",
-      options: ["Updates once a second", "Changes batched and delivered every five seconds, with up to five samples queued between deliveries", "No data, because publishing must be shorter than sampling", "A new value every 5000 ms regardless of the queue"],
-      answer: 1,
+      options: ["Updates once a second", "No data, because publishing must be shorter than sampling", "A new value every 5000 ms regardless of the queue", "Changes batched and delivered every five seconds, with up to five samples queued between deliveries"],
+      answer: 3,
       explain: [
         "Publishing at five seconds means the client hears about changes every five seconds.",
-        "Correct. The queue holds changed samples between publishes. A short queue can drop intermediate values.",
         "A publishing interval longer than sampling is legal and common for slow data.",
-        "Only changed samples are queued, and keep-alives are sent if there are none."
+        "Only changed samples are queued, and keep-alives are sent if there are none.",
+        "Correct. The queue holds changed samples between publishes. A short queue can drop intermediate values."
       ]
     }
   ],

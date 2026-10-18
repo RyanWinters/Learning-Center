@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-install",
   title: "Installing, commissioning and the Gateway web UI (8.3)",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-architecture"],
   tags: ["ignition", "install", "commissioning", "docker", "git", "rest-api", "ports", "backup"],
@@ -11,7 +11,7 @@ LC.lesson({
     "Choose between the installer, the zip distribution and Docker for a given environment",
     "Walk through Gateway commissioning and name the first settings to review",
     "Explain how 8.3 stores configuration as files and why that makes Git practical",
-    "Describe deployment modes and what the gateway REST API and API keys are for",
+    "Describe deployment modes and what the Gateway REST API and API keys are for",
     "Identify the default ports and what to firewall"
   ],
 
@@ -94,9 +94,9 @@ Practical rules from the version control guide: switch project encoding to XML s
 
 ## Deployment modes
 
-A **deployment mode** lets one set of configuration files contain variants, for example a \`dev\` and a \`prod\` mode, where device IPs or database URLs differ. The Gateway applies the resources for the mode it started in. The same repository can then deploy to both environments without hand editing. A system tag for the current mode did not exist as of the forum threads on it, but a script can read the active mode through the platform's configuration manager, and the gateway info API returns it.
+A **deployment mode** lets one set of configuration files contain variants, for example a \`dev\` and a \`prod\` mode, where device IPs or database URLs differ. The Gateway applies the resources for the mode it started in. The same repository can then deploy to both environments without hand editing. A system tag for the current mode did not exist as of the forum threads on it, but a script can read the active mode through the platform's configuration manager, and the Gateway info API returns it.
 
-## The gateway REST API
+## The Gateway REST API
 
 8.3 adds a REST API served by the Gateway itself. The Gateway publishes an interactive documentation page at \`/openapi\` and the raw spec at \`/openapi.json\`. Typical uses:
 
@@ -120,7 +120,7 @@ Before you hand the Gateway to anyone:
 1. **Name the Gateway** (system name). It appears in Designer, the Gateway Network and logs.
 2. **Enable HTTPS** with a real certificate and decide whether to redirect HTTP. Passwords on port 8088 over plain HTTP cross the network in the clear.
 3. **Replace the default admin approach.** Avoid shared admin logins. Connect an identity provider (see {{lesson:ign-security}}) and keep one local break-glass account.
-4. **Configure the database connection** and test it. Set up store and forward expectations for outages.
+4. **Configure the database connection** and test it. Set up store-and-forward expectations for outages.
 5. **Set the timezone and clock source** correctly. History and alarms are meaningless with a wrong clock. Use NTP on the host.
 6. **Review log and diagnostics retention** so a chatty script does not fill a disk.
 7. **Set a backup schedule** and prove a restore.
@@ -145,7 +145,7 @@ A backup is the photocopy you keep at your neighbor's house. It only counts once
   why: `
 **Why file-based configuration was worth a rewrite.** Plants run for decades, and the person who set a device IP in 2026 will not be there in 2036. Version control gives the system a memory: who changed what, when and why, and a way to undo it. It also makes the promise of dev, test and prod environments real, since a configuration you can diff is a configuration you can promote. A database blob cannot be reviewed.
 
-**Why you still keep gateway backups.** Git captures the files you commit. A backup captures the whole, consistent state, including things you excluded from Git (binary resources, secrets). They answer different questions. Git answers "what changed?" and a backup answers "can we get the plant back by 3 a.m.?"
+**Why you still keep Gateway backups.** Git captures the files you commit. A backup captures the whole, consistent state, including things you excluded from Git (binary resources, secrets). They answer different questions. Git answers "what changed?" and a backup answers "can we get the plant back by 3 a.m.?"
 
 **Why deployment modes exist.** The classic failure is copying production configuration to a dev Gateway and having the dev copy start writing to production PLCs. Modes let identical files hold different targets, but they also introduce a new way to be wrong: the Gateway started in the wrong mode. Teams argue about whether a mode should be set by the host, the container or a launch parameter. The safest answer is the one an operator cannot change from a web page.
 
@@ -163,7 +163,7 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
     },
     {
       title: "First-login 403 on the API",
-      body: `Your script calls the gateway info endpoint and gets 403. The API key exists, but its security level has no read access to the Gateway. Add a level that grants read access, rotate the key and retry. Do not widen the key to full access to make the error go away.`
+      body: `Your script calls the Gateway info endpoint and gets 403. The API key exists, but its security level has no read access to the Gateway. Add a level that grants read access, rotate the key and retry. Do not widen the key to full access to make the error go away.`
     }
   ],
 
@@ -207,34 +207,34 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
   quiz: [
     {
       q: "Why does 8.3's file-based configuration make Git practical where 8.1 did not?",
-      options: ["Configuration is plain files you can diff, review and sync", "Gateways no longer need backups", "Git runs inside the Gateway", "Configuration is now encrypted"],
-      answer: 0,
+      options: ["Gateways no longer need backups", "Git runs inside the Gateway", "Configuration is now encrypted", "Configuration is plain files you can diff, review and sync"],
+      answer: 3,
       explain: [
-        "Correct. Files give you diffs, history, review and promotion between environments.",
         "Backups remain valuable for state Git does not hold.",
         "Git is external. The Gateway just reads the files.",
-        "The change is about file storage, not encryption."
+        "The change is about file storage, not encryption.",
+        "Correct. Files give you diffs, history, review and promotion between environments."
       ]
     },
     {
       q: "You edit a device JSON file on disk while the Gateway runs. Nothing changes in the UI. What is the most likely reason?",
-      options: ["The Gateway has not scanned the file system", "JSON files are ignored", "The device is offline", "The Gateway needs a license reset"],
-      answer: 0,
+      options: ["JSON files are ignored", "The Gateway has not scanned the file system", "The device is offline", "The Gateway needs a license reset"],
+      answer: 1,
       explain: [
-        "Correct. A scan, triggered from the UI or API, makes the Gateway pick up on-disk changes.",
         "Configuration files are the source for resources.",
+        "Correct. A scan, triggered from the UI or API, makes the Gateway pick up on-disk changes.",
         "Device status does not control whether configuration is loaded.",
         "Licensing is unrelated."
       ]
     },
     {
       q: "A technician needs a script to monitor Gateway health through the REST API. What is the best practice?",
-      options: ["Create an API key with the narrowest security level that includes read access", "Share the admin password with the script", "Open the API with no authentication on the plant network", "Use a key with full access for convenience"],
-      answer: 0,
+      options: ["Share the admin password with the script", "Open the API with no authentication on the plant network", "Create an API key with the narrowest security level that includes read access", "Use a key with full access for convenience"],
+      answer: 2,
       explain: [
-        "Correct. Least privilege keeps a leaked key from being a catastrophe.",
         "Admin credentials in scripts are hard to rotate and audit.",
         "The configuration routes require API keys.",
+        "Correct. Least privilege keeps a leaked key from being a catastrophe.",
         "Convenience now means exposure later."
       ]
     },
@@ -251,13 +251,13 @@ Ignition 7 and 8.0/8.1 stored Gateway configuration in an internal database, wit
     },
     {
       q: "A clean install finds port 8088 already in use. What happens?",
-      options: ["The Gateway iterates to the next available port", "The install fails and deletes itself", "It silently shares 8088", "It switches to port 502"],
-      answer: 0,
+      options: ["The install fails and deletes itself", "It silently shares 8088", "It switches to port 502", "The Gateway iterates to the next available port"],
+      answer: 3,
       explain: [
-        "Correct. Clean installs check defaults and move up until a free port is found. Upgrades do not search and fault instead.",
         "The install does not fail on this.",
         "Two services cannot bind the same port.",
-        "Port 502 is Modbus TCP and unrelated."
+        "Port 502 is Modbus TCP and unrelated.",
+        "Correct. Clean installs check defaults and move up until a free port is found. Upgrades do not search and fault instead."
       ]
     }
   ],

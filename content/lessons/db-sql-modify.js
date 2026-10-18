@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-sql-modify",
   title: "SQL III: INSERT, UPDATE, DELETE and transactions",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["db-sql-select"],
   tags: ["sql", "insert", "update", "delete", "transaction", "acid", "sql injection", "named queries"],
@@ -322,16 +322,16 @@ Transactions were formalized in the late 1970s and early 1980s. Jim Gray's work 
     {
       q: "You split a 45-minute changeover into 30 minutes plus a 15-minute break using an UPDATE and an INSERT. Why wrap them in a transaction?",
       options: [
+        "If the INSERT fails, ROLLBACK undoes the UPDATE so the data is never half changed",
         "It makes the statements run faster",
         "Transactions are required for any INSERT",
-        "If the INSERT fails, ROLLBACK undoes the UPDATE so the data is never half changed",
         "It stops other users from ever reading the table"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. Atomicity means both changes happen or neither does, so downtime totals stay consistent.",
         "Transactions add overhead, they do not speed things up.",
         "Single statements are already atomic in autocommit mode.",
-        "Correct. Atomicity means both changes happen or neither does, so downtime totals stay consistent.",
         "Other sessions can still read. Under the default isolation they see the old values until you commit."
       ]
     },
@@ -339,31 +339,31 @@ Transactions were formalized in the late 1970s and early 1980s. Jim Gray's work 
       q: "A Perspective script builds SELECT ... WHERE part_no = '<scanned text>' by string concatenation. A part labeled O'Brien-7 throws a syntax error. What does this show, and what is the fix?",
       options: [
         "The barcode scanner is faulty; replace it",
-        "The apostrophe is being read as SQL syntax; pass the value as a bound parameter (Named Query)",
         "Part numbers must never contain apostrophes; reject them on the screen",
-        "The database needs a larger text column"
+        "The database needs a larger text column",
+        "The apostrophe is being read as SQL syntax; pass the value as a bound parameter (Named Query)"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "The scanner read the label correctly. The SQL string construction is the problem.",
-        "Correct. This is the same weakness that allows SQL injection. Bound parameters make the value data, never syntax.",
         "Blocking characters is a fragile patch. It does not fix the design and some inputs will slip through.",
-        "Column size would cause a truncation error, not a syntax error at the apostrophe."
+        "Column size would cause a truncation error, not a syntax error at the apostrophe.",
+        "Correct. This is the same weakness that allows SQL injection. Bound parameters make the value data, never syntax."
       ]
     },
     {
       q: "Which statement about placeholders in a parameterized query is true?",
       options: [
         "They can replace table and column names",
-        "They hold values, and the database never interprets those values as SQL",
         "They only work for numbers",
+        "They hold values, and the database never interprets those values as SQL",
         "They are only available in PostgreSQL"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "Identifiers cannot be bound. Use a fixed allow-list in code if a name must vary.",
-        "Correct. The statement is parsed first and the values are supplied separately.",
         "Text, dates and other types can all be bound.",
+        "Correct. The statement is parsed first and the values are supplied separately.",
         "Every major engine supports parameterized statements, and Ignition's Named Queries use them."
       ]
     },
@@ -371,15 +371,15 @@ Transactions were formalized in the late 1970s and early 1980s. Jim Gray's work 
       q: "Your SQL Server report runs at read committed. Which problem can still occur?",
       options: [
         "Reading uncommitted changes that are later rolled back",
-        "Reading the same row twice in one transaction and seeing a different value",
         "Losing committed data after a power failure",
+        "Reading the same row twice in one transaction and seeing a different value",
         "Reading a row that has never existed in any form"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "Read committed prevents dirty reads, so you only see committed data.",
-        "Correct. Another session can commit a change between your two reads. Repeatable read or snapshot isolation prevents it.",
         "Durability is separate from isolation. Committed data survives a crash.",
+        "Correct. Another session can commit a change between your two reads. Repeatable read or snapshot isolation prevents it.",
         "That is a dirty read of a rolled-back insert, which read committed prevents."
       ]
     },

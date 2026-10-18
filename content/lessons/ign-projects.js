@@ -2,27 +2,27 @@ LC.lesson({
   id: "ign-projects",
   title: "Projects, inheritance, and Vision vs Perspective",
   track: "ign",
-  minutes: 20,
+  minutes: 10,
   level: 2,
   prereqs: ["ign-architecture"],
   tags: ["projects", "inheritance", "vision", "perspective", "scripting"],
   summary: "A project is the container for everything users see and run. Inheritance lets many projects share one set of parts, and Vision and Perspective are the two ways to draw the screens.",
   objectives: [
-    "Explain what a project holds and what lives at gateway level instead",
+    "Explain what a project holds and what lives at Gateway level instead",
     "Use inheritance to share scripts, views and templates across projects",
     "Describe how overriding works and what it costs",
-    "Explain the gateway scripting project and why event scripts do not inherit",
+    "Explain the Gateway scripting project and why event scripts do not inherit",
     "Choose between Vision, Perspective or both for a given job"
   ],
 
   body: `
 ## What a project is
 
-An Ignition **project** is a named container of resources: screens, scripts, named queries, gateway events, alarm settings that belong to the project, and so on. Each Designer session opens one project. Each Perspective session or Vision client runs one project. A single gateway can host dozens.
+An Ignition **project** is a named container of resources: screens, scripts, named queries, Gateway events, alarm settings that belong to the project, and so on. Each Designer session opens one project. Each Perspective session or Vision client runs one project. A single Gateway can host dozens.
 
-Not everything is in a project. Devices, database connections, tag providers, user sources and identity providers are **gateway configuration**, shared by every project on that gateway. A useful rule: if a resource is a screen or logic that one app owns, it belongs to a project. If it is a connection to the outside world, it belongs to the gateway.
+Not everything is in a project. Devices, database connections, tag providers, user sources and identity providers are **Gateway configuration**, shared by every project on that Gateway. A useful rule: if a resource is a screen or logic that one app owns, it belongs to a project. If it is a connection to the outside world, it belongs to the Gateway.
 
-| Lives in a project | Lives on the gateway |
+| Lives in a project | Lives on the Gateway |
 |---|---|
 | Perspective views and Vision windows | Device connections |
 | Project library scripts | Database connections |
@@ -38,7 +38,7 @@ A project can **inherit** from a parent. The child sees everything the parent ha
 
 ### The base project pattern
 
-Most mature gateways have a project named something like \`Global\` or \`Base\` that holds only shared things:
+Most mature Gateways have a project named something like \`Global\` or \`Base\` that holds only shared things:
 
 - Utility script libraries (\`util.format\`, \`util.alarms\`, a database helper)
 - Perspective styles, shared views and standard popups
@@ -58,18 +58,18 @@ If a child defines a resource with the same path as one in the parent, the child
 
 Screens, scripts and templates inherit. **Gateway event scripts** (timers, tag change scripts, message handlers) run only in the project that defines them. Children that inherit the project do not run a copy, so a timer defined in \`Global\` does not run once for each child. The common pattern is to write the real logic as a library function in the base project and call it from a one-line event script in the leaf project.
 
-The gateway also has one **gateway scripting project** setting. It names the project whose script library is available to scripts that run outside any project, such as tag event scripts on tags and some gateway-wide scripting. Tag event scripts (see {{lesson:ign-events}}) depend on it. If your shared utilities live in \`Global\` and that is not designated, tag scripts cannot see them. A good habit is to designate the base scripting project early.
+The Gateway also has one **Gateway scripting project** setting. It names the project whose script library is available to scripts that run outside any project, such as tag event scripts on tags and some Gateway-wide scripting. Tag event scripts (see {{lesson:ign-events}}) depend on it. If your shared utilities live in \`Global\` and that is not designated, tag scripts cannot see them. A good habit is to designate the base scripting project early.
 
 ## Vision versus Perspective
 
-Both modules build screens on top of the same gateway, tags, historian and alarms. They differ in how the screen is drawn and run.
+Both modules build screens on top of the same Gateway, tags, historian and alarms. They differ in how the screen is drawn and run.
 
 | | Vision | Perspective |
 |---|---|---|
-| Runs as | Java Swing desktop client, launched from the gateway | Web app in a browser, built on React |
+| Runs as | Java Swing desktop client, launched from the Gateway | Web app in a browser, built on React |
 | Install on the operator side | Client launcher or Vision Client Launcher | None. A URL, or a native wrapper |
 | Layout | Pixel-based windows, absolute positioning | Responsive containers (flex, breakpoints, column) |
-| Scripting scope | Client scope and gateway scope | The scripts you write run in gateway scope (see the Perspective scripting pages for details) |
+| Scripting scope | Client scope and Gateway scope | The scripts you write run in Gateway scope (see the Perspective scripting pages for details) |
 | Mobile and tablets | Poor | Designed for it |
 | Heavy native integration | Strong (local files, printing, serial) | Limited by the browser |
 | Bindings | Property, expression, tag, SQL, with polling | Same ideas, plus transforms and a session model |
@@ -89,13 +89,13 @@ Both modules build screens on top of the same gateway, tags, historian and alarm
 
 ### Mixing both
 
-Nothing stops one gateway from hosting both. A common shape: operators on Vision HMIs in the control room, managers on Perspective dashboards on their phones. Share the tag provider, named queries and a base project of scripts. Keep UI resources in separate inheritable projects, because a Perspective view cannot be used in Vision and vice versa. Designer shows both in one project, so a project can contain both kinds of screens.
+Nothing stops one Gateway from hosting both. A common shape: operators on Vision HMIs in the control room, managers on Perspective dashboards on their phones. Share the tag provider, named queries and a base project of scripts. Keep UI resources in separate inheritable projects, because a Perspective view cannot be used in Vision and vice versa. Designer shows both in one project, so a project can contain both kinds of screens.
 
 > [!example] Worked example: one fix, three apps
 > A plant has projects \`Packaging\`, \`Utilities\` and \`Warehouse\`, all inheriting \`Global\`. \`Global\` has \`util.fmt.duration(seconds)\`, which formats seconds as \`2h 05m\`. Someone finds it prints \`2h 5m\`. The fix goes into \`Global\` once. All three apps get it on the next save. Had \`Utilities\` overridden the script with a local copy, it would still print \`2h 5m\`. Search for overrides when a shared fix does not take.
 
 > [!note] In 8.1
-> Inheritance, the gateway scripting project and Vision and Perspective work the same way in 8.1. The main difference is where things are stored. In 8.1 projects are saved in the gateway's internal storage and are imported and exported as files. In 8.3 they are real folders on disk. See {{lesson:ign-versioning}}.
+> Inheritance, the Gateway scripting project and Vision and Perspective work the same way in 8.1. The main difference is where things are stored. In 8.1 projects are saved in the Gateway's internal storage and are imported and exported as files. In 8.3 they are real folders on disk. See {{lesson:ign-versioning}}.
 `,
 
   eli5: `
@@ -109,29 +109,29 @@ Vision and Perspective are two ways to put up the poster. One is a big paper sig
 `,
 
   why: `
-**Why projects at all?** One gateway often serves several areas, owned by different people, with different users. Separate projects keep work from colliding. An engineer breaking the Packaging screens does not take down Utilities. It also gives you a natural unit for permissions, deployment and version control.
+**Why projects at all?** One Gateway often serves several areas, owned by different people, with different users. Separate projects keep work from colliding. An engineer breaking the Packaging screens does not take down Utilities. It also gives you a natural unit for permissions, deployment and version control.
 
-**Why inheritance instead of copy and paste?** Copies drift. Six months later you have six versions of the same formatting function and nobody knows which one is right. Inheritance gives one source of truth. The cost is coupling: a bad edit to the base project now breaks every child at once. Experienced integrators treat the base project like shared library code. Small changes, tested on a dev gateway, and a short list of people allowed to save it.
+**Why inheritance instead of copy and paste?** Copies drift. Six months later you have six versions of the same formatting function and nobody knows which one is right. Inheritance gives one source of truth. The cost is coupling: a bad edit to the base project now breaks every child at once. Experienced integrators treat the base project like shared library code. Small changes, tested on a dev Gateway, and a short list of people allowed to save it.
 
 **Why is overriding discouraged?** An override is a fork. It buys local freedom and costs shared fixes. A few overrides are healthy. Dozens mean the base project is the wrong shape and should be split.
 
-**Why do event scripts not inherit?** If a timer script ran once per child, a gateway with ten children would run it ten times. Writing the logic once in the base and calling it from the leaf keeps the behavior predictable.
+**Why do event scripts not inherit?** If a timer script ran once per child, a Gateway with ten children would run it ten times. Writing the logic once in the base and calling it from the leaf keeps the behavior predictable.
 
 **Vision or Perspective?** Integrators argue about this. The practical answer is that Perspective is the default for new work, and Vision stays where its strengths matter or where the cost of rewriting is not justified. Whichever you pick, put the logic in project scripts and named queries so the screens stay thin and a later migration is cheaper.
 `,
 
   history: `
-Vision was Ignition's original client technology, a Java Swing application launched from the gateway. Perspective arrived with Ignition 8.0 as a web-native module, built for browsers, phones and tablets. Inductive Automation has said it considers Perspective the future of its visualization, while continuing to support Vision. Project inheritance has existed since the Ignition 7 era.
+Vision was Ignition's original client technology, a Java Swing application launched from the Gateway. Perspective arrived with Ignition 8.0 as a web-native module, built for browsers, phones and tablets. Inductive Automation has said it considers Perspective the future of its visualization, while continuing to support Vision. Project inheritance has existed since the Ignition 7 era.
 `,
 
   examples: [
     {
       title: "Scripts that cannot find the library",
-      body: `A tag change script calls \`util.alarms.notify()\`, but the function lives in \`Global\`. It fails with a name error. The gateway scripting project was not set to \`Global\`, so scripts that run outside a project cannot see it. Designate \`Global\` as the gateway scripting project.`
+      body: `A tag change script calls \`util.alarms.notify()\`, but the function lives in \`Global\`. It fails with a name error. The Gateway scripting project was not set to \`Global\`, so scripts that run outside a project cannot see it. Designate \`Global\` as the Gateway scripting project.`
     },
     {
       title: "Where to put a message handler",
-      body: `You want a message handler named \`printLabel\` that every app can call. Put the real code in \`Global\` as \`labels.print(args)\`. In each leaf project create a one-line handler \`labels.print(payload)\`. The handler must exist in the leaf because gateway event resources do not run from an inherited parent.`
+      body: `You want a message handler named \`printLabel\` that every app can call. Put the real code in \`Global\` as \`labels.print(args)\`. In each leaf project create a one-line handler \`labels.print(payload)\`. The handler must exist in the leaf because Gateway event resources do not run from an inherited parent.`
     }
   ],
 
@@ -161,8 +161,8 @@ Vision was Ignition's original client technology, a Java Swing application launc
     "Putting plant-specific content in the base project, so it cannot be reused.",
     "Overriding shared scripts and forgetting, so later fixes never arrive.",
     "Expecting a timer or tag event script in a parent project to run for every child.",
-    "Not designating a gateway scripting project, then wondering why library calls fail from tag scripts.",
-    "Making a quick edit to the base project in production with no dev gateway test.",
+    "Not designating a Gateway scripting project, then wondering why library calls fail from tag scripts.",
+    "Making a quick edit to the base project in production with no dev Gateway test.",
     "Rewriting a large working Vision app to Perspective only because Perspective is newer."
   ],
 
@@ -170,56 +170,56 @@ Vision was Ignition's original client technology, a Java Swing application launc
 
   quiz: [
     {
-      q: "Which of these belongs to the gateway configuration, not to a project?",
+      q: "Which of these belongs to the Gateway configuration, not to a project?",
       options: ["A Perspective view", "A named query", "A device connection to a PLC", "A project library script"],
       answer: 2,
       explain: [
         "Views are project resources.",
         "Named queries live in projects.",
-        "Correct. Devices, databases and tag providers are shared by every project on the gateway.",
+        "Correct. Devices, databases and tag providers are shared by every project on the Gateway.",
         "Library scripts are project resources."
       ]
     },
     {
       q: "A bug in a shared formatting script is fixed in the Global project. Packaging and Warehouse pick it up, but Utilities still shows the bug. What is the likely cause?",
-      options: ["Utilities needs a gateway restart", "Utilities overrides the script locally", "Perspective caches scripts for a week", "Global can only change one child"],
-      answer: 1,
+      options: ["Utilities needs a Gateway restart", "Perspective caches scripts for a week", "Global can only change one child", "Utilities overrides the script locally"],
+      answer: 3,
       explain: [
         "Inherited changes do not need a restart.",
-        "Correct. A child's override wins over the parent's version, so the parent's fix does not reach it.",
         "There is no such cache rule.",
-        "A parent project affects every child that inherits from it."
+        "A parent project affects every child that inherits from it.",
+        "Correct. A child's override wins over the parent's version, so the parent's fix does not reach it."
       ]
     },
     {
       q: "A timer script is defined in the base project, and ten apps inherit from it. How many times does it run?",
-      options: ["Ten, once per child", "Once per session", "It does not run for inherited children, so put the call in the leaf project", "Zero, timers are not allowed in projects"],
-      answer: 2,
+      options: ["Ten, once per child", "It does not run for inherited children, so put the call in the leaf project", "Once per session", "Zero, timers are not allowed in projects"],
+      answer: 1,
       explain: [
         "Gateway event resources are not run once per inheriting child.",
-        "Sessions are a UI concept, not a timer trigger.",
         "Correct. Keep the logic in a base library function and call it from a small event script in the leaf project.",
-        "Timers are valid project gateway events."
+        "Sessions are a UI concept, not a timer trigger.",
+        "Timers are valid project Gateway events."
       ]
     },
     {
       q: "Which job is the best fit for Vision rather than Perspective?",
-      options: ["A phone dashboard for managers", "A browser view for remote contractors", "A fixed-resolution control room HMI that prints to a local label printer from client scripts", "A responsive page for tablets"],
-      answer: 2,
+      options: ["A fixed-resolution control room HMI that prints to a local label printer from client scripts", "A phone dashboard for managers", "A browser view for remote contractors", "A responsive page for tablets"],
+      answer: 0,
       explain: [
+        "Correct. Vision has client-scope scripting that reaches local devices, and fixed layouts suit control room screens.",
         "Phones are Perspective's strength.",
         "Remote browser access is Perspective's strength.",
-        "Correct. Vision has client-scope scripting that reaches local devices, and fixed layouts suit control room screens.",
         "Responsive layout for tablets favors Perspective."
       ]
     },
     {
       q: "Where do you set which project's scripts are available to tag event scripts that run outside any project?",
-      options: ["In each view's properties", "The gateway scripting project setting", "In the tag provider's name", "In the Vision client launcher"],
-      answer: 1,
+      options: ["The Gateway scripting project setting", "In each view's properties", "In the tag provider's name", "In the Vision client launcher"],
+      answer: 0,
       explain: [
+        "Correct. The Gateway designates one project as the scripting project for scripts outside project scope.",
         "Views only affect their own scripts.",
-        "Correct. The gateway designates one project as the scripting project for scripts outside project scope.",
         "A provider name has no effect on scripting.",
         "The launcher is client-side."
       ]

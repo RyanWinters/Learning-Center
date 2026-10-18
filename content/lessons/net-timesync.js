@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-timesync",
   title: "Time synchronization and sequence of events",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 3,
   prereqs: ["net-routing"],
   tags: ["ntp", "ptp", "cip-sync", "soe", "timestamps", "utc", "dst"],
@@ -30,7 +30,7 @@ The same event can carry several timestamps, from different clocks:
 | **Field input module** | Module clock, or system time from CIP Sync | Best case: stamped at the physical transition with a synchronized clock |
 | **PLC program** | Controller wall clock | You can read it in logic (in Logix with GSV from the WallClockTime object) and stamp your own events |
 | **Device driver / OPC UA server** | Source timestamp from the device or the server's own clock | OPC UA values carry a source and a server timestamp |
-| **Ignition gateway** | Gateway operating system clock | Stamps values received, and sets alarm times depending on the Timestamp Source setting |
+| **Ignition Gateway** | Gateway operating system clock | Stamps values received, and sets alarm times depending on the Timestamp Source setting |
 | **Database server** | SQL server clock | Rows can be stamped by the database as well as by Ignition |
 | **Browser / client** | Client clock and time zone | Only used for display |
 
@@ -92,7 +92,7 @@ The controller or Ignition then merges records from all modules and sorts by tim
 
 ## A worked example: alarms out of order
 
-At Meridian Plant 1, Area10 has two PLCs. PLC1 (\`10.20.10.10\`) has a good clock. PLC2 (\`10.20.10.11\`) was set by hand at commissioning and was never synced. A 20 ppm crystal gains about 1.7 seconds a day (20 × 10⁻⁶ × 86,400 s). After about a day and a half, PLC2 runs 2.4 seconds fast.
+At Meridian Foods Plant 1, Area10 has two PLCs. PLC1 (\`10.20.10.10\`) has a good clock. PLC2 (\`10.20.10.11\`) was set by hand at commissioning and was never synced. A 20 ppm crystal gains about 1.7 seconds a day (20 × 10⁻⁶ × 86,400 s). After about a day and a half, PLC2 runs 2.4 seconds fast.
 
 At true time 14:03:10.5 pump P101, on PLC2's I/O, trips on overload. Suction pressure falls and at 14:03:11.2 the low-low alarm on PLC1 fires. The alarms use the value timestamp as their source.
 
@@ -274,12 +274,12 @@ NTP is one of the oldest protocols still in use on the internet, developed by Da
     },
     {
       q: "A PLC with a 20 ppm clock error is never synced. Roughly how far off is it after ten days?",
-      options: ["About 0.2 seconds", "About 2 seconds", "About 17 seconds", "About 170 seconds"],
-      answer: 2,
+      options: ["About 0.2 seconds", "About 17 seconds", "About 2 seconds", "About 170 seconds"],
+      answer: 1,
       explain: [
         "That would be about 2 ppm over ten days.",
-        "At 20 ppm the clock gains close to 1.7 s per day, so ten days is more than 2 s.",
         "Correct. 20 ppm of 86,400 s is about 1.7 s per day, so ten days is about 17 s.",
+        "At 20 ppm the clock gains close to 1.7 s per day, so ten days is more than 2 s.",
         "That is ten times more drift than the 20 ppm figure gives."
       ]
     },

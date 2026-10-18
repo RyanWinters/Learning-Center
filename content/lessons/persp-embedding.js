@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-embedding",
   title: "Embedded views, parameters and flex repeaters",
   track: "persp",
-  minutes: 30,
+  minutes: 15,
   level: 3,
   prereqs: ["persp-bindings", "ign-udts"],
   tags: ["perspective", "embedded view", "flex repeater", "view canvas", "udt", "templates", "params"],
@@ -209,7 +209,7 @@ The trick that makes it work is handing the card only one clue, the machine's ad
 
 **Why templates beat copy-paste.** Copied views drift. After a year, "M101 screen" and "M102 screen" differ in five small ways nobody remembers. A template has a single definition, so a fix or a style change lands everywhere. For a plant with hundreds of assets this is the difference between a 10-view project and a 1,000-view project.
 
-**Why watch the instance count.** Each embedded instance is a view with bindings, subscriptions and a rendering cost. The architecture scales by reuse, not by being free. Seasoned integrators set a budget (bindings per tile times tiles per page) and test with the real gateway under real session load, then lazy-load content on tabs and use paging in repeaters for big lists.
+**Why watch the instance count.** Each embedded instance is a view with bindings, subscriptions and a rendering cost. The architecture scales by reuse, not by being free. Seasoned integrators set a budget (bindings per tile times tiles per page) and test with the real Gateway under real session load, then lazy-load content on tabs and use paging in repeaters for big lists.
 
 **Why input-only params for tile config.** Output and in/out params make a tile talk back, which is great for selection and validation, but each one is a coupling the parent must handle. Use outputs sparingly and name them as events ("selected"), not as mirrored state.
 `,
@@ -272,15 +272,15 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
     {
       q: "A motor tile needs Run, Speed, Fault and Name for any motor UDT instance. What is the cleanest interface?",
       options: [
-        "Four input params, one per value, bound by each caller",
         "One input param holding the instance path, with indirect tag bindings inside the tile",
+        "Four input params, one per value, bound by each caller",
         "A session prop that holds the current motor",
         "A bidirectional binding to the parent's label"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "It pushes plumbing to every caller and breaks every embedder when a value is added.",
         "Correct. The UDT guarantees the members, so one path is enough and the tile owns the bindings.",
+        "It pushes plumbing to every caller and breaks every embedder when a value is added.",
         "A session prop would make all tiles show the same motor.",
         "Bindings do not cross view boundaries, so there is no parent label to bind."
       ]
@@ -305,31 +305,31 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
       q: "How does a motor tile report 'I was clicked' to the page that holds it?",
       options: [
         "A property binding in the parent targeting the tile's label",
-        "An output (or in/out) param on the tile that the parent reads through the embedded view's params",
         "A tag binding to the child's custom props",
-        "It cannot; embedded views are isolated"
+        "It cannot; embedded views are isolated",
+        "An output (or in/out) param on the tile that the parent reads through the embedded view's params"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Property bindings cannot cross the view boundary.",
-        "Correct. Output params are the declared way for a view to expose values.",
         "Tag bindings read tags, not another view's properties.",
-        "They are isolated by default, and params are the controlled exception."
+        "They are isolated by default, and params are the controlled exception.",
+        "Correct. Output params are the declared way for a view to expose values."
       ]
     },
     {
       q: "When is a view canvas a better choice than a flex repeater?",
       options: [
         "When you need N copies of the same tile in a flowing grid",
-        "When you need different views at specific positions that can be added or moved at runtime",
         "When you want fewer bindings",
+        "When you need different views at specific positions that can be added or moved at runtime",
         "When you need output params"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "That is exactly the flex repeater's job.",
-        "Correct. The canvas places different views on a coordinate surface, with the list changeable at runtime.",
         "A canvas does not reduce bindings, and the hosted views keep theirs.",
+        "Correct. The canvas places different views on a coordinate surface, with the list changeable at runtime.",
         "Both can expose outputs through params."
       ]
     },
@@ -337,15 +337,15 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
       q: "A page with 400 motor tiles of 15 bindings each is slow for 50 users. What is the most effective first step?",
       options: [
         "Add more RAM to the client PCs",
-        "Cut the work: fewer tiles per page (paging or filtering), fewer bindings per tile, cheaper transforms",
         "Switch the tiles to coordinate containers",
+        "Cut the work: fewer tiles per page (paging or filtering), fewer bindings per tile, cheaper transforms",
         "Make all params in/out"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "Bindings run on the Gateway, so client RAM is not the bottleneck.",
-        "Correct. The work scales with instances times bindings times sessions, so reduce any factor.",
         "Container type does not change the number of live bindings.",
+        "Correct. The work scales with instances times bindings times sessions, so reduce any factor.",
         "Direction does not reduce load, and in/out adds coupling."
       ]
     }

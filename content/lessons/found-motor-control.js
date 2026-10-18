@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-motor-control",
   title: "Motor control circuits and output wiring",
   track: "found",
-  minutes: 25,
+  minutes: 20,
   level: 2,
   prereqs: ["found-devices", "found-signals"],
   tags: ["motor-control", "contactor", "wiring", "schematics", "stop-categories", "safety"],
@@ -19,7 +19,7 @@ LC.lesson({
   body: `
 ## What a motor circuit is
 
-A motor in Meridian Plant 1 (M101 in Area10) is not started by the PLC directly. A **{{term:motor-starter|motor starter}}** does the switching: a {{term:contactor|contactor}} that closes three power poles, plus an {{term:motor-overload|overload relay}} that watches the motor current. The PLC asks the starter to run through a small control circuit. If you understand that circuit, you understand why the PLC program has the shape it has, and you can read an electrician's drawing without guessing.
+A motor in Meridian Foods Plant 1 (M101 in Area10) is not started by the PLC directly. A **{{term:motor-starter|motor starter}}** does the switching: a {{term:contactor|contactor}} that closes three power poles, plus an {{term:motor-overload|overload relay}} that watches the motor current. The PLC asks the starter to run through a small control circuit. If you understand that circuit, you understand why the PLC program has the shape it has, and you can read an electrician's drawing without guessing.
 
 There are two circuits to keep apart. The **power circuit** carries motor current (say 480 V three-phase). The **control circuit** carries a few tenths of an amp to the contactor coil, at 120 VAC or 24 VDC. This lesson is about the control circuit and the PLC output that joins it.
 
@@ -73,11 +73,11 @@ The PLC does not trust the command it sent. It reads back what happened.
 
 \`\`\`st
 // Status comes from the field, not from our own output
-M101.Sts.Running  := M101_AuxIn;              // aux contact on the contactor
-M101.Alm.Overload := NOT M101_OLOK;           // NC OL status contact, 1 when healthy
+M101.Sts.Running  := M101_Aux;              // aux contact on the contactor
+M101.Alm.Overload := NOT M101_OL_OK;         // NC OL status contact, 1 when healthy
 
 // Fail-to-start: command is on but no feedback
-FailToStartTmr.IN := M101_RunCmd AND NOT M101_AuxIn;
+FailToStartTmr.IN := M101_RunCmd AND NOT M101_Aux;
 FailToStartTmr.PT := M101.Cfg.StartDelay;     // DINT, ms
 TON(FailToStartTmr);
 M101.Alm.FailToStart := FailToStartTmr.Q;
@@ -127,7 +127,7 @@ A motor circuit drawing is a ladder with power rails on the sides and one rung p
 - **Cross-references.** Under each coil, a small table lists the sheet and line where that coil's contacts are used (for example "M: 3, 3, 8"). Under each contact, the line of its coil. This is how you find "where is the other contact of CR101?" on a 40-sheet drawing.
 
 > [!example] Tracing a no-start on M101
-> The operator presses Start and nothing happens. The HMI shows \`M101.Alm.FailToStart\`. From the schematic: measure 120 V from wire 1 to X2 (control power OK). Measure from wire 2 to X2 (E-stop closed?) and wire 3 to X2 (Stop closed?). Wire 4 to X2 reads 120 V but wire 5 reads 0 V: the overload contact between them is open. The overload is tripped, but the PLC input \`M101_OLOK\` already told you that before anyone opened the panel. The measurements above are a task for a qualified person, not for you with the door open. The point for you is that the tag tells you which section of the schematic to hand over.
+> The operator presses Start and nothing happens. The HMI shows \`M101.Alm.FailToStart\`. From the schematic: measure 120 V from wire 1 to X2 (control power OK). Measure from wire 2 to X2 (E-stop closed?) and wire 3 to X2 (Stop closed?). Wire 4 to X2 reads 120 V but wire 5 reads 0 V: the overload contact between them is open. The overload is tripped, but the PLC input \`M101_OL_OK\` already told you that before anyone opened the panel. The measurements above are a task for a qualified person, not for you with the door open. The point for you is that the tag tells you which section of the schematic to hand over.
 `,
 
   eli5: `
@@ -268,57 +268,57 @@ Before PLCs, plants controlled motors with relay panels, with the start/stop sta
       ]
     },
     {
-      q: "The PLC output for M101 turns on and the operator hears nothing. M101_AuxIn stays off and M101_OLOK is off. What is most likely?",
-      options: ["The overload is tripped, which opened the coil path", "The PLC output module failed", "The seal-in is wired to the wrong side", "The motor is overheating but still running"],
-      answer: 0,
+      q: "The PLC output for M101 turns on and the operator hears nothing. M101_Aux stays off and M101_OL_OK is off. What is most likely?",
+      options: ["The PLC output module failed", "The seal-in is wired to the wrong side", "The overload is tripped, which opened the coil path", "The motor is overheating but still running"],
+      answer: 2,
       explain: [
-        "Correct. OLOK off means the NC OL status is open, and the coil path is open with it.",
         "A failed output would not explain an OL status input that is off.",
         "A seal-in problem would not turn off the OL status.",
+        "Correct. OLOK off means the NC OL status is open, and the coil path is open with it.",
         "If it were running, the aux input would be on."
       ]
     },
     {
       q: "You are driving a 120 VAC contactor coil with a 24 VDC sourcing output. What is the best design?",
-      options: ["Wire the coil to the output with a diode across it", "Use an interposing relay with a 24 VDC coil (and diode) whose contact switches the 120 VAC coil circuit", "Put the coil in series with the output and ground", "Use a sinking output so the voltage matches"],
-      answer: 1,
+      options: ["Use an interposing relay with a 24 VDC coil (and diode) whose contact switches the 120 VAC coil circuit", "Wire the coil to the output with a diode across it", "Put the coil in series with the output and ground", "Use a sinking output so the voltage matches"],
+      answer: 0,
       explain: [
-        "A DC output cannot switch an AC coil, and a diode does not work on AC.",
         "Correct. The relay isolates voltage levels and takes the inrush.",
+        "A DC output cannot switch an AC coil, and a diode does not work on AC.",
         "That does not apply the correct voltage.",
         "Sinking or sourcing does not convert DC to 120 VAC."
       ]
     },
     {
       q: "Why put a diode across a 24 VDC relay coil?",
-      options: ["To raise the pull-in voltage", "To make the relay slower to pull in", "To absorb the inductive voltage spike when the coil is switched off", "To allow AC operation"],
-      answer: 2,
+      options: ["To raise the pull-in voltage", "To absorb the inductive voltage spike when the coil is switched off", "To make the relay slower to pull in", "To allow AC operation"],
+      answer: 1,
       explain: [
         "The diode does not affect the pull-in voltage.",
-        "It affects drop-out, not pull-in.",
         "Correct. Current circulates through the diode as the field collapses, protecting the output and reducing noise.",
+        "It affects drop-out, not pull-in.",
         "A diode makes sense only on DC coils."
       ]
     },
     {
       q: "Which statement about stop categories is correct?",
-      options: ["Category 0 brakes under power and then removes power", "Category 1 removes power immediately", "Category 2 leaves power on the actuators after a controlled stop", "An E-stop must be category 2"],
-      answer: 2,
+      options: ["Category 2 leaves power on the actuators after a controlled stop", "Category 0 brakes under power and then removes power", "Category 1 removes power immediately", "An E-stop must be category 2"],
+      answer: 0,
       explain: [
+        "Correct. A normal production stop is typically category 2.",
         "That describes category 1.",
         "Category 1 is a controlled stop that removes power once at rest. Category 0 removes power immediately.",
-        "Correct. A normal production stop is typically category 2.",
         "E-stops must be category 0 or 1, per risk assessment."
       ]
     },
     {
       q: "On the schematic, wire number 4 reads 120 V to X2, but wire 5 reads 0 V. Which device is between them?",
-      options: ["The E-stop", "The overload (NC) contact", "The PLC interposing relay coil", "The Stop button"],
-      answer: 1,
+      options: ["The E-stop", "The PLC interposing relay coil", "The overload (NC) contact", "The Stop button"],
+      answer: 2,
       explain: [
         "The E-stop sits between wires 1 and 2.",
-        "Correct. Wire 4 enters the OL contact and wire 5 leaves it toward the coil, so an open OL explains voltage in and none out.",
         "The relay coil is on the PLC side and is not in this path.",
+        "Correct. Wire 4 enters the OL contact and wire 5 leaves it toward the coil, so an open OL explains voltage in and none out.",
         "The Stop button sits between wires 2 and 3."
       ]
     }

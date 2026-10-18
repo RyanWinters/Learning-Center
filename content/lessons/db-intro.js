@@ -66,7 +66,7 @@ Ignition does not ship with its own plant database. Instead, the Gateway holds *
 - The alarm journal and the audit log write to SQL.
 - Transaction Groups copy PLC values into rows, and back.
 - Named Queries run your own SQL from screens and scripts.
-- Store and forward, where it is enabled on the feature that writes (for example the Tag Historian), buffers writes to local disk when the database is unreachable and flushes them later. Check the manual for which features support it in your version.
+- Store-and-forward, where it is enabled on the feature that writes (for example the Tag Historian), buffers writes to local disk when the database is unreachable and flushes them later. Check the manual for which features support it in your version.
 
 So "how do I get this report" nearly always becomes "write a query". Ignition's historian leaves you tables with names starting \`sqlth_\` (metadata such as \`sqlth_te\`, the tag entries) and partitioned data tables named like \`sqlt_data_1_2026_03\`. The {{term:sqlth-tables|sqlth_ tables}} are system tables. Read them freely and never edit them by hand.
 
@@ -226,7 +226,7 @@ The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of 
     },
     {
       title: "Finding Ignition's own tables",
-      body: `Connect DBeaver to the database your Tag Historian uses and expand the table list. You will see \`sqlth_te\` (one row per historized tag, with its path), \`sqlth_drv\` and \`sqlth_scinfo\` (driver and scan class metadata) and monthly data tables such as \`sqlt_data_1_2026_03\`. Each data row holds a tag id, a value, a quality code and a timestamp stored as milliseconds since 1970 (epoch time). {{lesson:db-timeseries}} dissects them.`
+      body: `Connect DBeaver to the database your Tag Historian uses and expand the table list. You will see \`sqlth_te\` (one row per historized tag, with its path), \`sqlth_drv\` and \`sqlth_scinfo\` (driver and tag group metadata) and monthly data tables such as \`sqlt_data_1_2026_03\`. Each data row holds a tag id, a value, a quality code and a timestamp stored as milliseconds since 1970 (epoch time). {{lesson:db-timeseries}} dissects them.`
     }
   ],
 
@@ -310,28 +310,28 @@ The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of 
     },
     {
       q: "You need to store 50,000 temperature samples per minute and read back ranges by time. Which kind of store fits that workload best?",
-      options: ["A key-value cache such as Redis", "A time-series database or historian", "A spreadsheet", "A document database holding one JSON file per sample"],
-      answer: 1,
+      options: ["A key-value cache such as Redis", "A spreadsheet", "A document database holding one JSON file per sample", "A time-series database or historian"],
+      answer: 3,
       explain: [
         "Key-value stores are fast for lookup by key, not for range queries over time.",
-        "Correct. Time-series stores and historians are built for high-rate time-ordered writes and time-range reads with compression.",
         "A spreadsheet cannot take that write rate or share it safely.",
-        "That would work poorly. One document per sample wastes space and makes range queries slow."
+        "That would work poorly. One document per sample wastes space and makes range queries slow.",
+        "Correct. Time-series stores and historians are built for high-rate time-ordered writes and time-range reads with compression."
       ]
     },
     {
       q: "Why does Ignition rely on external SQL databases for so many features?",
-      options: ["It cannot store any data itself", "SQL databases are already backed up, secured and read by other plant and IT tools", "Only SQL databases support timestamps", "Ignition licensing requires it"],
-      answer: 1,
+      options: ["SQL databases are already backed up, secured and read by other plant and IT tools", "It cannot store any data itself", "Only SQL databases support timestamps", "Ignition licensing requires it"],
+      answer: 0,
       explain: [
-        "Ignition keeps its own configuration internally. It uses SQL for history, alarm journal, audit and your records.",
         "Correct. Using a standard engine lets IT use their usual backup and reporting tools, and lets other software read the same data.",
+        "Ignition keeps its own configuration internally. It uses SQL for history, alarm journal, audit and your records.",
         "Many stores support timestamps. This is not the reason.",
         "Licensing does not require it. The design does."
       ]
     },
     {
-      q: "A colleague wants to use SQLite for the Tag Historian on a busy production gateway. What is the strongest objection?",
+      q: "A colleague wants to use SQLite for the Tag Historian on a busy production Gateway. What is the strongest objection?",
       options: ["SQLite cannot store numbers", "Ignition does not include a SQLite driver", "SQLite allows only one connection at a time and lacks server-grade features", "SQLite stores data in the cloud"],
       answer: 2,
       explain: [
@@ -354,13 +354,13 @@ The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of 
     },
     {
       q: "Which statement about the engines Ignition connects to is accurate?",
-      options: ["Only SQL Server is supported", "MariaDB, MySQL, SQL Server, PostgreSQL and SQLite are listed as tested, and others work through a vendor JDBC driver", "PostgreSQL requires the Tag Historian module to be removed", "NoSQL stores such as MongoDB are the default"],
-      answer: 1,
+      options: ["Only SQL Server is supported", "PostgreSQL requires the Tag Historian module to be removed", "NoSQL stores such as MongoDB are the default", "MariaDB, MySQL, SQL Server, PostgreSQL and SQLite are listed as tested, and others work through a vendor JDBC driver"],
+      answer: 3,
       explain: [
         "Several engines are supported, not just one.",
-        "Correct. The 8.3 manual lists these as tested, and you can add other engines by installing their JDBC driver, with some features possibly unavailable.",
         "Nothing like that is required.",
-        "Ignition's records and history use relational SQL databases."
+        "Ignition's records and history use relational SQL databases.",
+        "Correct. The 8.3 manual lists these as tested, and you can add other engines by installing their JDBC driver, with some features possibly unavailable."
       ]
     }
   ],

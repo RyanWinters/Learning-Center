@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-what",
   title: "What MES is: ISA-95 Part 3",
   track: "mes",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["found-purdue"],
   tags: ["mes", "isa-95", "level-3", "mesa", "scope"],
@@ -205,57 +205,57 @@ MESA International published its list of eleven MES functions in the 1990s, and 
   quiz: [
     {
       q: "An operator needs to see the next work order for Line1 on a screen when the previous one completes. Which ISA-95 activity is this?",
-      options: ["Definition management", "Dispatching", "Tracking", "Performance analysis"],
-      answer: 1,
+      options: ["Dispatching", "Definition management", "Tracking", "Performance analysis"],
+      answer: 0,
       explain: [
-        "Definition management holds the product and recipe, not the release of work to a resource.",
         "Correct. Dispatching releases specific work to a resource at the right time.",
+        "Definition management holds the product and recipe, not the release of work to a resource.",
         "Tracking records where things are and what happened to them, after the fact.",
         "Analysis measures results. It does not release work."
       ]
     },
     {
       q: "A customer wants MES to open a valve when a tank reaches 80 percent so the process stays safe. What is the best response?",
-      options: ["Put it in ERP","Put it in the historian","Build it in MES, since MES has the data","Keep that logic in the PLC and have MES supply recipe and targets only"],
-      answer: 3,
+      options: ["Put it in ERP","Keep that logic in the PLC and have MES supply recipe and targets only","Put it in the historian","Build it in MES, since MES has the data"],
+      answer: 1,
       explain: [
         "ERP is the planning layer and is even further from real time.",
+        "Correct. The PLC owns control and interlocks. MES passes intent and receives status.",
         "A historian stores data. It does not run logic.",
-        "MES works in shift and order time and is not a deterministic controller. Safety and process logic do not belong there.",
-        "Correct. The PLC owns control and interlocks. MES passes intent and receives status."
+        "MES works in shift and order time and is not a deterministic controller. Safety and process logic do not belong there."
       ]
     },
     {
       q: "Which statement best separates MES from a historian?",
-      options: ["A historian stores time series per tag; MES records events tied to orders, lots and equipment states", "MES stores data faster", "Historians cannot store production counts", "MES replaces the need for tags"],
-      answer: 0,
+      options: ["MES stores data faster", "Historians cannot store production counts", "A historian stores time series per tag; MES records events tied to orders, lots and equipment states", "MES replaces the need for tags"],
+      answer: 2,
       explain: [
-        "Correct. The historian is organized by tag and time. MES is organized by order, lot, equipment and event, and often reads the historian.",
         "Speed is not the difference. They answer different questions.",
         "A historian can store any tag, including counts.",
+        "Correct. The historian is organized by tag and time. MES is organized by order, lot, equipment and event, and often reads the historian.",
         "MES still reads values from tags."
       ]
     },
     {
       q: "Why do integrators use MESA-11 during scoping even though ISA-95 Part 3 is more formal?",
-      options: ["It reads like a checklist customers recognize, so it is good for deciding which functions are wanted","It defines the database schema","It is required for compliance","It is newer than ISA-95"],
-      answer: 0,
+      options: ["It defines the database schema","It is required for compliance","It is newer than ISA-95","It reads like a checklist customers recognize, so it is good for deciding which functions are wanted"],
+      answer: 3,
       explain: [
-        "Correct. It is easy to discuss in a meeting. Part 3 is better for deciding which system owns each activity.",
         "Neither MESA-11 nor Part 3 defines a database schema.",
         "It is a scoping aid, not a compliance requirement.",
-        "MESA-11 is the older view."
+        "MESA-11 is the older view.",
+        "Correct. It is easy to discuss in a meeting. Part 3 is better for deciding which system owns each activity."
       ]
     },
     {
       q: "A plant wants quick wins on a first MES project with little master data prepared. Where is the most sensible place to start?",
-      options: ["Replacing ERP planning","Detailed finite scheduling across all lines","Data collection and performance analysis (OEE and downtime) on one line","Full genealogy for every product"],
-      answer: 2,
+      options: ["Replacing ERP planning","Detailed finite scheduling across all lines","Full genealogy for every product","Data collection and performance analysis (OEE and downtime) on one line"],
+      answer: 3,
       explain: [
         "MES supplements ERP and does not replace it.",
         "Scheduling needs clean routings, capacities and master data that are not ready yet.",
-        "Correct. OEE and downtime need the least master data and show value quickly.",
-        "Genealogy needs reliable lot identification and scanning, which takes more setup."
+        "Genealogy needs reliable lot identification and scanning, which takes more setup.",
+        "Correct. OEE and downtime need the least master data and show value quickly."
       ]
     },
     {

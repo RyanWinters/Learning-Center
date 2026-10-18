@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-alarm-mgmt",
   title: "Alarm management in practice (ISA-18.2)",
   track: "int",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["ign-alarming", "int-standards"],
   tags: ["alarms", "ISA-18.2", "EEMUA 191", "rationalization", "shelving", "operators"],
@@ -224,12 +224,12 @@ Alarm lists in early control rooms were annunciator panels with a lamp and a hor
   quiz: [
     {
       q: "During rationalization you find a 'Pump P-205 running' alarm that needs no operator response. What is the correct disposition?",
-      options: ["Set it to Low priority", "Keep it but silence the horn", "Remove it from the alarm list and show it as a status or event", "Shelve it permanently"],
-      answer: 2,
+      options: ["Remove it from the alarm list and show it as a status or event", "Set it to Low priority", "Keep it but silence the horn", "Shelve it permanently"],
+      answer: 0,
       explain: [
+        "Correct. An alarm requires an abnormal condition and an operator action. A running status is information.",
         "A Low priority alarm still demands attention and adds to the load. With no action, it is not an alarm.",
         "Silencing the horn still leaves it in the list, adding noise.",
-        "Correct. An alarm requires an abnormal condition and an operator action. A running status is information.",
         "Permanent shelving hides the problem in a way the standard tries to avoid. The right fix is to remove it through change control."
       ]
     },
@@ -257,35 +257,35 @@ Alarm lists in early control rooms were annunciator panels with a lamp and a hor
     },
     {
       q: "Which of these is a typical ISA-18.2 style definition of an alarm flood?",
-      options: ["More than 10 alarms in 10 minutes for one operator", "Any alarm that stays active more than a day", "An alarm that repeats three times in a minute", "Any High priority alarm"],
-      answer: 0,
+      options: ["Any alarm that stays active more than a day", "An alarm that repeats three times in a minute", "Any High priority alarm", "More than 10 alarms in 10 minutes for one operator"],
+      answer: 3,
       explain: [
-        "Correct. The commonly quoted definition is more than 10 alarms in a 10-minute window per operator.",
         "That describes a stale (standing) alarm.",
         "That is the chattering alarm description.",
-        "Priority has no bearing on whether a flood occurs."
+        "Priority has no bearing on whether a flood occurs.",
+        "Correct. The commonly quoted definition is more than 10 alarms in a 10-minute window per operator."
       ]
     },
     {
       q: "In Ignition, where would you get data to compute alarms per hour and the top 10 most frequent alarms?",
-      options: ["The alarm journal, through the Alarm Journal Table or journal queries", "The Gateway's Wrapper log", "The Alarm Status Table alone", "The OPC UA server's browse tree"],
-      answer: 0,
+      options: ["The Gateway's Wrapper log", "The Alarm Status Table alone", "The alarm journal, through the Alarm Journal Table or journal queries", "The OPC UA server's browse tree"],
+      answer: 2,
       explain: [
-        "Correct. The journal stores one record per alarm state change, and is the source for KPIs.",
         "The wrapper log records Gateway process messages, not alarm history.",
         "The Status Table shows live alarms and cannot give trends over a month.",
+        "Correct. The journal stores one record per alarm state change, and is the source for KPIs.",
         "The browse tree lists tags and nodes, and holds no alarm history."
       ]
     },
     {
       q: "A site's operators shelve the same ten alarms every shift. What does this most likely indicate?",
-      options: ["The shelving feature is working as intended", "The journal is misconfigured", "The alarms are too low in priority", "Rationalization or tuning was not completed, so nuisance alarms remain"],
-      answer: 3,
+      options: ["The shelving feature is working as intended", "Rationalization or tuning was not completed, so nuisance alarms remain", "The journal is misconfigured", "The alarms are too low in priority"],
+      answer: 1,
       explain: [
         "Shelving is for occasional, temporary relief. Routine use is a warning sign.",
+        "Correct. Repeated shelving points to alarms that need fixing, retuning or removal.",
         "Nothing suggests a journal fault. The journal is just recording the shelving.",
-        "Priority is not the driver. The alarms are annoying regardless of priority.",
-        "Correct. Repeated shelving points to alarms that need fixing, retuning or removal."
+        "Priority is not the driver. The alarms are annoying regardless of priority."
       ]
     }
   ],

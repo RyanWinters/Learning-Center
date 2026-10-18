@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-standards",
   title: "Standards cheat-sheet",
   track: "int",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["found-purdue"],
   tags: ["standards", "ISA", "IEC", "NFPA", "UL", "reference"],
@@ -175,34 +175,34 @@ Industrial standards do the same thing for factories. One agreement says how to 
   quiz: [
     {
       q: "A customer wants phases, units and recipes so one reactor can make five products. Which standard supplies that vocabulary?",
-      options: ["ISA-95", "ISA-101", "ISA-88", "NFPA 79"],
-      answer: 2,
+      options: ["ISA-95", "ISA-88", "ISA-101", "NFPA 79"],
+      answer: 1,
       explain: [
         "ISA-95 covers enterprise to control integration and MES objects, not recipe and phase models.",
-        "ISA-101 covers HMI design.",
         "Correct. ISA-88 defines the physical and procedural models, with phases and recipes separate from equipment.",
+        "ISA-101 covers HMI design.",
         "NFPA 79 is an electrical standard for machinery."
       ]
     },
     {
       q: "Which pair is correctly matched?",
-      options: ["UL 508A and alarm priority rules", "IEC 61131-3 and PLC programming languages", "ISA-18.2 and panel short-circuit rating", "ISA-5.1 and network zones and conduits"],
-      answer: 1,
+      options: ["IEC 61131-3 and PLC programming languages", "UL 508A and alarm priority rules", "ISA-18.2 and panel short-circuit rating", "ISA-5.1 and network zones and conduits"],
+      answer: 0,
       explain: [
-        "UL 508A lists industrial control panels. Alarm rules are in ISA-18.2.",
         "Correct. IEC 61131-3 defines LD, FBD, ST, SFC and the software model.",
+        "UL 508A lists industrial control panels. Alarm rules are in ISA-18.2.",
         "Short-circuit rating belongs to panel standards like UL 508A.",
         "Zones and conduits are from ISA/IEC 62443. ISA-5.1 covers instrument symbols and tags."
       ]
     },
     {
       q: "A flow instrument is tagged FIC-205. What does ISA-5.1 say it is?",
-      options: ["Flow indicating controller", "Frequency input converter", "Field instrument cabinet", "Fire inspection check"],
-      answer: 0,
+      options: ["Frequency input converter", "Field instrument cabinet", "Flow indicating controller", "Fire inspection check"],
+      answer: 2,
       explain: [
-        "Correct. F is flow, I is indicate, C is controller.",
         "F is the measured variable flow, not frequency. An input converter would not be named with a loop number and the C of a controller.",
         "ISA-5.1 letters describe the measured variable and function (flow, indicate, control), not a cabinet.",
+        "Correct. F is flow, I is indicate, C is controller.",
         "No ISA-5.1 letter means fire inspection. F here is flow."
       ]
     },
@@ -219,11 +219,11 @@ Industrial standards do the same thing for factories. One agreement says how to 
     },
     {
       q: "Why does a UL 508A panel's SCCR matter on the RFQ?",
-      options: ["The panel must be rated for at least the available fault current where it is installed", "It controls how fast the PLC scans", "It sets the Ethernet speed", "It applies only to HMI screens"],
-      answer: 0,
+      options: ["It controls how fast the PLC scans", "The panel must be rated for at least the available fault current where it is installed", "It sets the Ethernet speed", "It applies only to HMI screens"],
+      answer: 1,
       explain: [
-        "Correct. Too low an SCCR means a fault could damage the panel, so inspectors can reject it.",
         "SCCR is an electrical rating, unrelated to scan time.",
+        "Correct. Too low an SCCR means a fault could damage the panel, so inspectors can reject it.",
         "Ethernet speed has nothing to do with SCCR.",
         "SCCR applies to the electrical assembly."
       ]

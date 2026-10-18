@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-sepasoft",
   title: "The Sepasoft MES modules",
   track: "mes",
-  minutes: 35,
+  minutes: 20,
   level: 3,
   prereqs: ["mes-oee", "mes-track-trace", "ign-databases"],
   tags: ["sepasoft", "mes", "oee", "track-trace", "batch", "spc", "modules"],
@@ -248,33 +248,33 @@ Sepasoft's MES modules for Ignition have been through several platform generatio
   quiz: [
     {
       q: "A packaging line has 80 products, each needing about 400 setpoints and no sequence of steps. Which Sepasoft module fits best?",
-      options: ["Batch Procedure", "Settings & Changeover", "Track & Trace", "Web Services"],
-      answer: 1,
+      options: ["Batch Procedure", "Track & Trace", "Web Services", "Settings & Changeover"],
+      answer: 3,
       explain: [
         "Batch Procedure is designed for recipes with a procedure, not for large static parameter sets.",
-        "Correct. Settings & Changeover handles setpoint-style recipes at scale and tracks variances to the targets.",
         "Track & Trace follows lots and genealogy. It doesn't download settings.",
-        "Web Services connects to external APIs. It doesn't manage recipes."
+        "Web Services connects to external APIs. It doesn't manage recipes.",
+        "Correct. Settings & Changeover handles setpoint-style recipes at scale and tracks variances to the targets."
       ]
     },
     {
       q: "What is the production model for?",
-      options: ["A 3D drawing of the plant", "A shared equipment hierarchy that every MES module attaches to", "A list of customers", "The PLC program structure"],
-      answer: 1,
+      options: ["A 3D drawing of the plant", "A list of customers", "A shared equipment hierarchy that every MES module attaches to", "The PLC program structure"],
+      answer: 2,
       explain: [
         "It's a logical tree of equipment, not a drawing.",
-        "Correct. Sharing it is what lets OEE, SPC, lots and settings refer to the same line.",
         "Customers and orders are separate data.",
+        "Correct. Sharing it is what lets OEE, SPC, lots and settings refer to the same line.",
         "PLC organization is independent. The model can be mapped to PLC tags, but it is not the PLC structure."
       ]
     },
     {
       q: "You see a forum post about Sepasoft 'Recipe & Changeover'. What is the best interpretation?",
-      options: ["It's a different product that was discontinued", "It is the earlier name of the Settings & Changeover module", "It's the Batch Procedure module", "It's part of Ignition's core"],
-      answer: 1,
+      options: ["It is the earlier name of the Settings & Changeover module", "It's a different product that was discontinued", "It's the Batch Procedure module", "It's part of Ignition's core"],
+      answer: 0,
       explain: [
-        "It wasn't discontinued, it was renamed.",
         "Correct. The module was renamed, so older material still uses the old name.",
+        "It wasn't discontinued, it was renamed.",
         "Batch Procedure is a separate module for ISA-88 procedures.",
         "It's a Sepasoft module, not part of Ignition's core."
       ]
@@ -292,24 +292,24 @@ Sepasoft's MES modules for Ignition have been through several platform generatio
     },
     {
       q: "A customer wants downtime visibility on one filler line within a month. What is the best plan?",
-      options: ["Deploy all modules across the plant at once", "OEE Downtime on that line, with a production model designed for later growth", "Build a custom SQL database and skip the production model", "Start with Document Management"],
-      answer: 1,
+      options: ["Deploy all modules across the plant at once", "Build a custom SQL database and skip the production model", "OEE Downtime on that line, with a production model designed for later growth", "Start with Document Management"],
+      answer: 2,
       explain: [
         "A wide rollout risks delivering nothing well in the time available.",
-        "Correct. Start narrow, get trustworthy numbers, then replicate the model to other lines.",
         "Skipping the model removes the shared structure that the modules rely on.",
+        "Correct. Start narrow, get trustworthy numbers, then replicate the model to other lines.",
         "Document Management doesn't produce downtime data."
       ]
     },
     {
       q: "Which pair of modules is used to connect the MES to other systems such as ERP?",
-      options: ["Barcode Scanner and SPC", "Business Connector and Web Services", "Batch Procedure and Track & Trace", "Document Management and OEE Downtime"],
-      answer: 1,
+      options: ["Barcode Scanner and SPC", "Batch Procedure and Track & Trace", "Document Management and OEE Downtime", "Business Connector and Web Services"],
+      answer: 3,
       explain: [
         "Barcode Scanner decodes input and SPC handles quality charts. Neither integrates enterprise systems.",
-        "Correct. Business Connector exchanges data with enterprise systems, and Web Services talks REST and SOAP.",
         "These handle recipes and genealogy inside the MES.",
-        "These handle forms and downtime within the plant."
+        "These handle forms and downtime within the plant.",
+        "Correct. Business Connector exchanges data with enterprise systems, and Web Services talks REST and SOAP."
       ]
     }
   ],

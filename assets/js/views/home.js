@@ -33,7 +33,7 @@
     } else {
       const m = LC.index[first], skips = LC.graph.skipsText(first);
       contHtml = '<a class="continue continue-new" href="#/lesson/' + first + '"><span class="eyebrow">' + (fresh ? 'Start here' : 'Next lesson') + '</span>' +
-        '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + (skips ? 'Nothing in progress. Starting here ' + skips + '; you can read it anyway.' : fresh ? 'The ten tracks run from signals and networks to MES architecture. Begin with the story so far.' : 'Nothing in progress. This is the next open lesson.') + '</span><span class="continue-go">' + (skips ? 'Read anyway' : 'Begin') + icon('right', 18) + '</span></a>';
+        '<span class="continue-title">' + esc(m.title) + '</span><span class="continue-sub">' + (skips ? 'Nothing in progress. Starting here ' + skips + '; you can read it anyway.' : fresh ? 'The eleven tracks run from signals and networks to MES architecture. Begin with the story so far.' : 'Nothing in progress. This is the next open lesson.') + '</span><span class="continue-go">' + (skips ? 'Read anyway' : 'Begin') + icon('right', 18) + '</span></a>';
     }
 
     const reviewHtml = due

@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-timeseries",
   title: "Time-series data in SQL and historian tables",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["db-indexes", "ign-historian"],
   tags: ["historian", "time-series", "partitioning", "sqlth", "storage"],
@@ -29,7 +29,7 @@ When you enable history on tags, the module creates a set of tables in your conn
 
 | Table | Role | Key columns |
 |---|---|---|
-| \`sqlth_drv\` | One row per historian "driver": which gateway and tag provider wrote the data | \`id\`, \`name\`, \`provider\` |
+| \`sqlth_drv\` | One row per historian "driver": which Gateway and tag provider wrote the data | \`id\`, \`name\`, \`provider\` |
 | \`sqlth_scinfo\` | Scan class (tag group) info, linked to a driver | \`id\`, \`drvid\`, \`scname\` |
 | \`sqlth_te\` | **Tag entries**: one row per historical tag configuration | \`id\`, \`tagpath\`, \`scid\`, \`datatype\`, \`created\`, \`retired\` |
 | \`sqlth_partitions\` | A map from time ranges to data tables | \`pname\`, \`drvid\`, \`start_time\`, \`end_time\` |
@@ -77,7 +77,7 @@ ORDER BY d.t_stamp;
 
 {{diagram:join}}
 
-That works for one day inside one month. Cross a month boundary and you need a second table name in a UNION, built dynamically. Query "last 90 days" and you may touch four tables. Tag path matching also has quirks (the stored path is normalized, typically to lowercase, and provider handling differs between historian setups, so check what \`sqlth_te\` actually holds), and the gateway tracks the table names so the query does not have to.
+That works for one day inside one month. Cross a month boundary and you need a second table name in a UNION, built dynamically. Query "last 90 days" and you may touch four tables. Tag path matching also has quirks (the stored path is normalized, typically to lowercase, and provider handling differs between historian setups, so check what \`sqlth_te\` actually holds), and the Gateway tracks the table names so the query does not have to.
 
 ## Partitioning and pruning
 
@@ -119,7 +119,7 @@ What the API does for you:
 - Resolves tag paths to the right \`sqlth_te\` ids, across retired versions.
 - Finds and queries only the partitions covering your window.
 - Handles aggregation (average, min, max, the right number of points per pixel), interpolation, gaps and quality filtering.
-- Works with other history providers, including remote gateways and non-SQL stores, with the same call.
+- Works with other history providers, including remote Gateways and non-SQL stores, with the same call.
 - Survives internal schema changes between versions, which raw SQL does not.
 
 Use raw SQL against these tables for administration: counting rows per partition, finding the biggest tags, checking for gaps. Never write application logic that depends on them, and never INSERT or UPDATE them directly. Inductive Automation's guidance is to use the provided functions for reads and the historian store functions for writes. In 8.3 those live in \`system.historian\` (look for \`storeDataPoints\` on the 8.3 \`system.historian\` page); in 8.1 the call is \`system.tag.storeTagHistory\`.
@@ -225,23 +225,23 @@ Process historians date from the 1980s, when vendors such as OSIsoft (PI) built 
   quiz: [
     {
       q: "Which historian table tells the system which monthly data table covers a given time range?",
-      options: ["sqlth_te", "sqlth_partitions", "sqlth_scinfo", "sqlth_drv"],
-      answer: 1,
+      options: ["sqlth_te", "sqlth_scinfo", "sqlth_drv", "sqlth_partitions"],
+      answer: 3,
       explain: [
         "sqlth_te holds tag entries (path, datatype, id), not time ranges.",
-        "Correct. sqlth_partitions maps start and end times to the name of the sqlt_data table.",
-        "sqlth_scinfo stores scan class information.",
-        "sqlth_drv identifies the gateway and provider that wrote the data."
+        "sqlth_scinfo stores tag group (scan class) information.",
+        "sqlth_drv identifies the Gateway and provider that wrote the data.",
+        "Correct. sqlth_partitions maps start and end times to the name of the sqlt_data table."
       ]
     },
     {
       q: "A row in sqlt_data_1_2026_10 has t_stamp = 1792195260000. What is that value?",
-      options: ["A SQL DATETIME", "Seconds since the start of the month", "Milliseconds since 1970-01-01 UTC", "A tag id"],
-      answer: 2,
+      options: ["Milliseconds since 1970-01-01 UTC", "A SQL DATETIME", "Seconds since the start of the month", "A tag id"],
+      answer: 0,
       explain: [
+        "Correct. Convert it to a date in your query or let the historian API do it.",
         "The column is a BIGINT, not a SQL date type.",
         "It is epoch-based, not relative to the month.",
-        "Correct. Convert it to a date in your query or let the historian API do it.",
         "The tag id is in the tagid column."
       ]
     },
@@ -258,33 +258,33 @@ Process historians date from the 1980s, when vendors such as OSIsoft (PI) built 
     },
     {
       q: "Why is a narrow (tagid, value, t_stamp) layout a good fit for a historian of thousands of tags?",
-      options: ["It uses fewer bytes per value than any wide table", "Adding a tag needs no schema change and only changed values are stored", "It makes cross-tag queries at one instant trivial", "It avoids needing indexes"],
-      answer: 1,
+      options: ["It uses fewer bytes per value than any wide table", "It makes cross-tag queries at one instant trivial", "Adding a tag needs no schema change and only changed values are stored", "It avoids needing indexes"],
+      answer: 2,
       explain: [
         "It usually uses more bytes per value because the tag id and timestamp repeat on every row.",
-        "Correct. New tags are new rows in sqlth_te, and each tag writes only when it changes.",
         "All-tags-at-one-instant is the case a wide table handles better, since a narrow table needs a pivot.",
+        "Correct. New tags are new rows in sqlth_te, and each tag writes only when it changes.",
         "It needs indexes on tag id and time to be fast."
       ]
     },
     {
       q: "A teammate wants a custom report that SELECTs from sqlt_data_1_2026_10 joined to sqlth_te. What is the strongest argument for using the historian API instead?",
-      options: ["SQL cannot join those tables", "The API handles tag renames, partition boundaries, aggregation and quality for you and survives layout changes", "The API is always faster than any SQL", "The tables are encrypted"],
-      answer: 1,
+      options: ["SQL cannot join those tables", "The API is always faster than any SQL", "The API handles tag renames, partition boundaries, aggregation and quality for you and survives layout changes", "The tables are encrypted"],
+      answer: 2,
       explain: [
         "SQL can join them, as shown in the lesson.",
-        "Correct. The raw query only covers one partition, one tag version and no aggregation. The API deals with those cases.",
         "Speed isn't the main reason, and hand-tuned SQL can be fast for narrow cases.",
+        "Correct. The raw query only covers one partition, one tag version and no aggregation. The API deals with those cases.",
         "The tables are ordinary and readable with SQL."
       ]
     },
     {
       q: "2,000 historized tags each change about once every 4 seconds. Roughly how many rows per day does the historian write?",
-      options: ["About 4.3 million", "About 43 million", "About 430 million", "About 4.3 billion"],
-      answer: 1,
+      options: ["About 43 million", "About 4.3 million", "About 430 million", "About 4.3 billion"],
+      answer: 0,
       explain: [
-        "That would be about 50 rows per second, too low. 2,000 / 4 = 500 rows per second.",
         "Correct. 500 rows per second x 86,400 seconds is 43.2 million per day.",
+        "That would be about 50 rows per second, too low. 2,000 / 4 = 500 rows per second.",
         "That would need about 5,000 rows per second.",
         "That would need about 50,000 rows per second."
       ]

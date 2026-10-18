@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-sealin",
   title: "Seal-in circuits, start/stop and latches",
   track: "plc",
-  minutes: 20,
+  minutes: 25,
   level: 2,
   prereqs: ["plc-ladder-basics"],
   tags: ["ladder", "seal-in", "start-stop", "OTL", "OTU", "latch", "motor-control"],
@@ -110,7 +110,7 @@ If a latched bit must not survive a restart, clear it on the first scan after po
 
 ## Worked example: transfer pump motor M101
 
-Pump motor M101 (Meridian Plant 1, Area10) has a local start pushbutton, a normally-closed local stop, HMI Start and Stop bits in the \`M101.Cmd\` structure of its {{term:udt|UDT_Motor}}, an overload relay and a contactor auxiliary contact. The overload NC contact is **wired in the coil circuit**, and a second contact of the same relay goes to a digital input as \`M101_OL_OK\`. The contactor aux goes to \`M101_Aux\`.
+Pump motor M101 (Meridian Foods Plant 1, Area10) has a local start pushbutton, a normally-closed local stop, HMI Start and Stop bits in the \`M101.Cmd\` structure of its {{term:udt|UDT_Motor}}, an overload relay and a contactor auxiliary contact. The overload NC contact is **wired in the coil circuit**, and a second contact of the same relay goes to a digital input as \`M101_OL_OK\`. The contactor aux goes to \`M101_Aux\`.
 
 \`\`\`ladder
 [XIC(Local_Start_PB) ,XIC(M101.Cmd.Start) ,XIC(M101_RunCmd)] XIC(Local_Stop_OK) XIO(M101.Cmd.Stop) XIC(M101_OL_OK) XIC(Tank_Not_Low) OTE(M101_RunCmd)
@@ -264,11 +264,11 @@ The special part is what happens when the lights go out. The helper is only hold
     },
     {
       q: "Which is the best reason to wire a Stop pushbutton normally-closed?",
-      options: ["NC contacts last longer", "A broken wire looks like a Stop press, so the failure is safe", "The PLC input cards only accept NC contacts", "It saves one rung of logic"],
-      answer: 1,
+      options: ["A broken wire looks like a Stop press, so the failure is safe", "NC contacts last longer", "The PLC input cards only accept NC contacts", "It saves one rung of logic"],
+      answer: 0,
       explain: [
-        "Contact life is not the reason.",
         "Correct. Wire failure drops the input to 0 which stops the motor.",
+        "Contact life is not the reason.",
         "Input cards accept either type.",
         "The logic is the same size either way, just inverted."
       ]
@@ -286,44 +286,44 @@ The special part is what happens when the lights go out. The helper is only hold
     },
     {
       q: "An OTL and an OTU for the same bit are both true in one scan. What is the final value?",
-      options: ["Always 1", "Always 0", "The instruction scanned last wins", "The controller faults"],
-      answer: 2,
+      options: ["Always 1", "Always 0", "The controller faults", "The instruction scanned last wins"],
+      answer: 3,
       explain: [
         "OTL does not take priority.",
         "OTU does not take priority either.",
-        "Correct. Each writes in turn, so rung order decides.",
-        "Neither instruction faults."
+        "Neither instruction faults.",
+        "Correct. Each writes in turn, so rung order decides."
       ]
     },
     {
       q: "Which use of OTL is a good fit?",
-      options: ["Holding a conveyor run command", "Remembering that a trip happened until the operator acknowledges it", "Seal-in for a pump", "Replacing XIC on a stop button"],
-      answer: 1,
+      options: ["Holding a conveyor run command", "Seal-in for a pump", "Remembering that a trip happened until the operator acknowledges it", "Replacing XIC on a stop button"],
+      answer: 2,
       explain: [
         "That is the dangerous case.",
-        "Correct. Alarms need to be remembered and acknowledged.",
         "Use a seal-in for a pump.",
+        "Correct. Alarms need to be remembered and acknowledged.",
         "OTL is an output, not an input contact."
       ]
     },
     {
       q: "Where should the stop and overload contacts go in a seal-in rung?",
-      options: ["In series after the Start/seal-in branch", "In parallel with Start", "Only in a separate OTU rung", "Before the output on its own rung"],
-      answer: 0,
+      options: ["In parallel with Start", "In series after the Start/seal-in branch", "Only in a separate OTU rung", "Before the output on its own rung"],
+      answer: 1,
       explain: [
-        "Correct. Series conditions can always break the rung, so Stop dominates.",
         "A parallel stop would act like a start.",
+        "Correct. Series conditions can always break the rung, so Stop dominates.",
         "That is the latch method, with its drawbacks.",
         "The rung needs them in line with the output so they can break it."
       ]
     },
     {
       q: "A pump overload relay trips. Where must its protective contact act?",
-      options: ["Only as an XIC in the seal-in rung, since the PLC sees it faster than a relay", "Hardwired in series with the starter coil, with the PLC monitoring a status contact", "In an OTL rung that sets a fault bit", "Wired to the HMI so the operator can stop the pump"],
-      answer: 1,
+      options: ["Hardwired in series with the starter coil, with the PLC monitoring a status contact", "Only as an XIC in the seal-in rung, since the PLC sees it faster than a relay", "In an OTL rung that sets a fault bit", "Wired to the HMI so the operator can stop the pump"],
+      answer: 0,
       explain: [
-        "A rung can be bypassed by a program fault, a force or a welded output relay, leaving the motor energized and overheating.",
         "Correct. The hardwired contact cuts the coil whatever the software does. The PLC reads the status to alarm and to drop its own run command.",
+        "A rung can be bypassed by a program fault, a force or a welded output relay, leaving the motor energized and overheating.",
         "A fault latch is useful for the operator but protects nothing.",
         "Protection must not depend on a person or a screen."
       ]

@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-naming",
   title: "Tag naming and system-wide standards",
   track: "int",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["plc-udt", "ign-udts"],
   tags: ["naming", "standards", "isa-5.1", "isa-95", "tag-paths", "uns", "udt", "database"],
@@ -186,7 +186,7 @@ Write it as a short document, not a manual. Put it where the team works and unde
 
 - **PLC programmer uses \`Pump1\`, drawing says \`P-101\`.** The drawing wins; the PLC tag becomes \`P101\`. Rename in the PLC while the project is small.
 - **The OEM skid has its own tag names.** Wrap the OEM tags in your UDT or alias, and keep the OEM name in the description. Do not rename the skid's internal program.
-- **A site already has a convention.** Adopt it if it is coherent, and document the translation to the enterprise convention at the boundary (gateway network or UNS).
+- **A site already has a convention.** Adopt it if it is coherent, and document the translation to the enterprise convention at the boundary (Gateway Network or UNS).
 - **Several plants, different old names.** Standardize the enterprise names and site codes first (\`Plant1\`, \`Plant2\`, \`Plant3\`). The site folder is the first level, and everything beneath can be migrated plant by plant.
 
 ## Renaming safely
@@ -216,7 +216,7 @@ A factory has the same problem with machines. A pump shows up on the drawings, i
 
 **Why UDT member names are a public API.** Once a historian query, a report and a faceplate refer to \`Sts.Running\`, renaming is a project. Pick a shared vocabulary across types, as in {{lesson:plc-udt}}, and treat changes like interface changes.
 
-**Where integrators disagree.** Some prefer flat names with prefixes (\`CHI_MIX_P101\`) because they survive being copied into logs and filenames. Others prefer deep folder trees because they navigate well and map to ISA-95. A related argument is whether the Ignition tree should mirror the physical plant (area/line/cell) or the equipment type (all pumps in one folder). The usual answer is the plant hierarchy for tags, because operators think in places and the equipment type is already captured in the UDT definition. A third argument is whether to include the site in every path when each site has its own gateway. Include it. The day you merge sites into a central gateway or a UNS, you will be glad it is already there.
+**Where integrators disagree.** Some prefer flat names with prefixes (\`CHI_MIX_P101\`) because they survive being copied into logs and filenames. Others prefer deep folder trees because they navigate well and map to ISA-95. A related argument is whether the Ignition tree should mirror the physical plant (area/line/cell) or the equipment type (all pumps in one folder). The usual answer is the plant hierarchy for tags, because operators think in places and the equipment type is already captured in the UDT definition. A third argument is whether to include the site in every path when each site has its own Gateway. Include it. The day you merge sites into a central Gateway or a UNS, you will be glad it is already there.
 
 **The cost of a bad standard** is usually paid at integration time: the day a second site is added, the day MES is connected, the day a UNS is rolled out. A convention that cannot grow with the hierarchy has to be rewritten at that point, and every dependent system with it.
 `,
@@ -316,51 +316,51 @@ The ISA-5.1 tag-numbering scheme for instruments (function letters plus a loop n
     },
     {
       q: "Why are MQTT UNS topics usually lowercased by a naming standard when Ignition tag paths use PascalCase?",
-      options: ["MQTT topics are case sensitive, so one canonical form avoids missed subscriptions", "Ignition cannot read lowercase", "Sparkplug rejects uppercase letters", "Lowercase topics are faster"],
-      answer: 0,
+      options: ["Ignition cannot read lowercase", "MQTT topics are case sensitive, so one canonical form avoids missed subscriptions", "Sparkplug rejects uppercase letters", "Lowercase topics are faster"],
+      answer: 1,
       explain: [
-        "Correct. A subscriber to the wrong case receives nothing, so a single canonical form per layer prevents silent failures.",
         "Ignition handles both. The standard chooses a form for consistency.",
+        "Correct. A subscriber to the wrong case receives nothing, so a single canonical form per layer prevents silent failures.",
         "Sparkplug has no such rule. The reason is predictability, not a protocol restriction.",
         "Case has no effect on speed."
       ]
     },
     {
       q: "Instances of the UDT definition Equipment/Motor already exist across the plant. A team wants to rename the definition to Equipment/Drive. What should they expect?",
-      options: ["Orphaned instances unless the change is planned and migrated", "Instances update automatically with no side effects", "Only history is affected", "Nothing, because UDTs are only for the PLC"],
-      answer: 0,
+      options: ["Instances update automatically with no side effects", "Only history is affected", "Nothing, because UDTs are only for the PLC", "Orphaned instances unless the change is planned and migrated"],
+      answer: 3,
       explain: [
-        "Correct. The manual warns that renaming a definition after instances exist orphans them, so treat the name as an interface.",
         "Automatic update is not the behavior. Instances reference the type by name.",
         "Tags, views and scripts all depend on it, not just history.",
-        "Ignition UDT definitions are Ignition objects, not PLC objects."
+        "Ignition UDT definitions are Ignition objects, not PLC objects.",
+        "Correct. The manual warns that renaming a definition after instances exist orphans them, so treat the name as an interface."
       ]
     },
     {
       q: "Which database design best follows a system-wide naming standard?",
-      options: ["Store equipment_id = 'M101' (with site_id) and look up the display label from an equipment table", "Store the display label as the key", "Store a new random number for each plant", "Store the full Ignition tag path in every column name"],
-      answer: 0,
+      options: ["Store the display label as the key", "Store a new random number for each plant", "Store equipment_id = 'M101' (with site_id) and look up the display label from an equipment table", "Store the full Ignition tag path in every column name"],
+      answer: 2,
       explain: [
-        "Correct. A stable key shared with the PLC and Ignition joins everywhere, and labels can change without breaking data.",
         "Labels change for cosmetic reasons and would break joins.",
         "A random number discards the shared identity.",
+        "Correct. A stable key shared with the PLC and Ignition joins everywhere, and labels can change without breaking data.",
         "Columns should be attributes. Paths belong in values and may change when equipment moves."
       ]
     },
     {
       q: "An OEM skid arrives with its own internal tag names that do not match your standard. What is the best practice?",
-      options: ["Wrap or alias the OEM tags in your UDT and keep the OEM name in the description", "Rewrite the OEM's program with your names", "Ignore your standard for that skid", "Rename the P&ID to match the OEM"],
-      answer: 0,
+      options: ["Rewrite the OEM's program with your names", "Ignore your standard for that skid", "Rename the P&ID to match the OEM", "Wrap or alias the OEM tags in your UDT and keep the OEM name in the description"],
+      answer: 3,
       explain: [
-        "Correct. Your layers stay consistent and you keep a record of the OEM name for support calls.",
         "Rewriting an OEM program can void support and introduce bugs.",
         "One exception becomes a dozen and weakens the standard.",
-        "The drawing is the root of identity for the plant, not the vendor's internal naming."
+        "The drawing is the root of identity for the plant, not the vendor's internal naming.",
+        "Correct. Your layers stay consistent and you keep a record of the OEM name for support calls."
       ]
     },
     {
       q: "Which choice puts the hierarchy in the right place?",
-      options: ["Site, area and line as folders; short stable equipment names as leaves", "All attributes in one long leaf name", "Equipment type as the top folder and nothing else", "No hierarchy, because folders slow the gateway"],
+      options: ["Site, area and line as folders; short stable equipment names as leaves", "All attributes in one long leaf name", "Equipment type as the top folder and nothing else", "No hierarchy, because folders slow the Gateway"],
       answer: 0,
       explain: [
         "Correct. Folders carry place, leaves carry identity, and a move changes the path but not the identity.",

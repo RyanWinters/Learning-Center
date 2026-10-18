@@ -2,9 +2,9 @@ LC.lesson({
   id: "int-career",
   title: "Certifications and career path",
   track: "int",
-  minutes: 10,
+  minutes: 15,
   level: 1,
-  prereqs: ["int-lifecycle"],
+  prereqs: ["found-roles"],
   tags: ["career", "certification", "inductive-university", "isa", "csia", "pe", "portfolio", "home-lab"],
   summary: "Which credentials exist, what each one proves, and a capstone-style plan for what to build, using the Build Labs, so a hiring manager believes your skill.",
   objectives: [
@@ -151,7 +151,7 @@ ISA created its certification programs to give automation practitioners a recogn
     },
     {
       title: "One portfolio project, summarized",
-      body: `Project: Meridian Plant 1, Line 1 OEE demo ({{lesson:build-oee}}). Stack: Ignition Maker Edition, PostgreSQL and a PLC simulator. Deliverables: UDT-based tag tree (\`[default]Plant1/Area10/Line1/M101\`) following a written naming standard, a Perspective dashboard, a downtime reason table, a screen recording, a one-page decision log explaining why history is stored in PostgreSQL and not in memory, and a commissioning checklist with a sample completed I/O list.`
+      body: `Project: Meridian Foods Plant 1, Line 1 OEE demo ({{lesson:build-oee}}). Stack: Ignition Maker Edition, PostgreSQL and a PLC simulator. Deliverables: UDT-based tag tree (\`[default]Plant1/Area10/Line1/M101\`) following a written naming standard, a Perspective dashboard, a downtime reason table, a screen recording, a one-page decision log explaining why history is stored in PostgreSQL and not in memory, and a commissioning checklist with a sample completed I/O list.`
     }
   ],
 
@@ -194,13 +194,13 @@ ISA created its certification programs to give automation practitioners a recogn
   quiz: [
     {
       q: "What is the difference between an Inductive University credential and an Ignition certification?",
-      options: ["A credential records completed training and challenges; certification is earned by passing a separate test", "They are the same thing with different names", "Certification is free and credentials are paid", "Credentials last forever and certification never expires"],
-      answer: 0,
+      options: ["They are the same thing with different names", "Certification is free and credentials are paid", "Credentials last forever and certification never expires", "A credential records completed training and challenges; certification is earned by passing a separate test"],
+      answer: 3,
       explain: [
-        "Correct. IU credentials come from courses and challenges for a version, and certifications such as Core and Gold come from tests.",
         "They are separate. Integrator program tiers treat them differently.",
         "IU is free to use, and certification tests are paid.",
-        "Credentials are tied to a version, and certifications expire and must be renewed."
+        "Credentials are tied to a version, and certifications expire and must be renewed.",
+        "Correct. IU credentials come from courses and challenges for a version, and certifications such as Core and Gold come from tests."
       ]
     },
     {
@@ -216,35 +216,35 @@ ISA created its certification programs to give automation practitioners a recogn
     },
     {
       q: "A technician who calibrates instruments and troubleshoots loops wants a recognized credential. Which fits best?",
-      options: ["ISA CCST", "ISA CAP", "PE in Control Systems", "CSIA certification"],
-      answer: 0,
+      options: ["ISA CAP", "ISA CCST", "PE in Control Systems", "CSIA certification"],
+      answer: 1,
       explain: [
-        "Correct. CCST targets technicians who calibrate, document and troubleshoot instrumentation.",
         "CAP targets people who design and deploy automation systems.",
+        "Correct. CCST targets technicians who calibrate, document and troubleshoot instrumentation.",
         "A PE is a legal license for engineers who sign and seal designs.",
         "CSIA certifies integrator companies, not individuals."
       ]
     },
     {
       q: "An integrator wants to move from Certified to Gold in the Ignition Integrator Program. What must change?",
-      options: ["At least one employee must hold a current Gold certification, and the sales threshold must be met", "They need a PE license", "They need CSIA certification", "They must pay for a new Maker license"],
-      answer: 0,
+      options: ["They need a PE license", "They need CSIA certification", "At least one employee must hold a current Gold certification, and the sales threshold must be met", "They must pay for a new Maker license"],
+      answer: 2,
       explain: [
-        "Correct. Gold needs a Gold-certified employee plus meeting the sales threshold. Check the current tier rules for the details.",
         "A PE is unrelated to program tiers.",
         "CSIA is a separate company audit, not a requirement of the Ignition program.",
+        "Correct. Gold needs a Gold-certified employee plus meeting the sales threshold. Check the current tier rules for the details.",
         "Maker Edition is free for personal use and has no role in tiers."
       ]
     },
     {
       q: "You want to build a portfolio demo using Ignition at home. Which is appropriate?",
-      options: ["Use Maker Edition for personal learning projects and show screenshots and exports you own", "Use Maker Edition to run a paying customer's pilot", "Post a client's screens as examples", "Skip documentation, since screenshots are enough"],
-      answer: 0,
+      options: ["Use Maker Edition to run a paying customer's pilot", "Post a client's screens as examples", "Skip documentation, since screenshots are enough", "Use Maker Edition for personal learning projects and show screenshots and exports you own"],
+      answer: 3,
       explain: [
-        "Correct. Maker Edition is for personal, non-commercial and educational use.",
         "Paid or business use needs a commercial license.",
         "Client material needs written permission and is usually confidential.",
-        "Documentation such as a decision log is what separates a portfolio from a screenshot collection."
+        "Documentation such as a decision log is what separates a portfolio from a screenshot collection.",
+        "Correct. Maker Edition is for personal, non-commercial and educational use."
       ]
     }
   ],

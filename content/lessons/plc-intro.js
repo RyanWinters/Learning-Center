@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-intro",
   title: "What a PLC is and the Allen-Bradley family",
   track: "plc",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["found-devices"],
   tags: ["plc", "allen-bradley", "controllogix", "compactlogix", "hardware"],
@@ -199,13 +199,13 @@ The programmable controller was proposed in 1968 by General Motors Hydramatic, w
     },
     {
       q: "A site has an old PLC-5 whose addresses look like N7:0 and B3:0/1. What does that tell you?",
-      options: ["It stores data in numbered files, not named tags", "It is a ControlLogix 5580", "Its program cannot be ladder", "It must be using Ethernet only"],
-      answer: 0,
+      options: ["It is a ControlLogix 5580", "Its program cannot be ladder", "It must be using Ethernet only", "It stores data in numbered files, not named tags"],
+      answer: 3,
       explain: [
-        "Correct. Legacy platforms address data by file type, file number and element.",
         "ControlLogix uses named tags like Motor_Run.",
         "Legacy PLCs are programmed in ladder, which is what makes the address style so familiar to old-timers.",
-        "Communication method is unrelated to the address style."
+        "Communication method is unrelated to the address style.",
+        "Correct. Legacy platforms address data by file type, file number and element."
       ]
     },
     {

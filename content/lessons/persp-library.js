@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-library",
   title: "Building a reusable faceplate library",
   track: "persp",
-  minutes: 35,
+  minutes: 20,
   level: 4,
   prereqs: ["persp-embedding", "persp-hphmi"],
   tags: ["perspective", "faceplate", "library", "udt", "inheritance", "style-classes", "versioning", "capstone"],
@@ -143,7 +143,7 @@ The library is shared infrastructure, so releases need the same discipline as an
 - **Keep the version visible.** Store it in a project resource or a tag and show it in an About popup, so a technician can say "site B is on 2.3.1."
 - **Release by export.** Export the library project, tag it in source control and archive the file with release notes. Projects are stored as files on the Gateway, so Gateway projects can live in version control.
 - **Staging before production.** Roll each release to a test Gateway first. Do not edit the production library directly.
-- **One library, or one per site?** A single shared library on each site's Gateway means a site picks up a change by importing a new release. A library on a central Gateway shared over the Gateway network changes every site at once, which is convenient and dangerous. Most integrators release per site, on a schedule agreed with the plant.
+- **One library, or one per site?** A single shared library on each site's Gateway means a site picks up a change by importing a new release. A library on a central Gateway shared over the Gateway Networkk changes every site at once, which is convenient and dangerous. Most integrators release per site, on a schedule agreed with the plant.
 - **Deprecate, do not delete.** Keep the old view for one major version with a note in its description, then remove it.
 
 ## Documenting it
@@ -287,33 +287,33 @@ Reusable symbol libraries predate HMI software: P&ID standards define symbols so
   quiz: [
     {
       q: "A Motor faceplate takes tagPath, description, units, highLimit and motorType as five parameters. What is the better design?",
-      options: ["Keep all five for flexibility", "Pass only tagPath and read description, units and limits from the UDT's members", "Pass a JSON blob of all five", "Make the operator type them in"],
-      answer: 1,
+      options: ["Keep all five for flexibility", "Pass a JSON blob of all five", "Make the operator type them in", "Pass only tagPath and read description, units and limits from the UDT's members"],
+      answer: 3,
       explain: [
         "More parameters mean more places for a wrong value, especially during commissioning.",
-        "Correct. The UDT already carries the data, so one path derives everything and cannot be mismatched.",
         "A blob is still five values that can be wrong or out of date.",
-        "Typing invites mistakes and makes the screen unusable."
+        "Typing invites mistakes and makes the screen unusable.",
+        "Correct. The UDT already carries the data, so one path derives everything and cannot be mismatched."
       ]
     },
     {
       q: "You rename the UDT member Sts/Running to Sts/IsRunning to match a new naming standard. What is the consequence for the library?",
-      options: ["None; bindings update automatically", "Every faceplate binding to Sts/Running breaks, so it needs a major version bump and migration", "Only popups are affected", "Only style classes are affected"],
-      answer: 1,
+      options: ["None; bindings update automatically", "Only popups are affected", "Every faceplate binding to Sts/Running breaks, so it needs a major version bump and migration", "Only style classes are affected"],
+      answer: 2,
       explain: [
         "Indirect bindings use the string path. They do not follow renames.",
-        "Correct. UDT member names are the library's API, so changing one is a breaking change.",
         "Any binding to that member is affected, popup or not.",
+        "Correct. UDT member names are the library's API, so changing one is a breaking change.",
         "Style classes do not reference tag members."
       ]
     },
     {
       q: "Why open a faceplate as a popup with an id built from the tag path?",
-      options: ["Popups are required for faceplates", "A stable id gives one handle per device, so you avoid stacking duplicate windows, and bindings are released on close", "It makes the faceplate read-only", "It avoids needing a view"],
-      answer: 1,
+      options: ["A stable id gives one handle per device, so you avoid stacking duplicate windows, and bindings are released on close", "Popups are required for faceplates", "It makes the faceplate read-only", "It avoids needing a view"],
+      answer: 0,
       explain: [
-        "They are a good pattern, not a requirement.",
         "Correct. A stable id gives one handle per device and prevents duplicate windows, and closing releases the popup's bindings.",
+        "They are a good pattern, not a requirement.",
         "Popups can write if the view and user permissions allow.",
         "A popup still opens a view."
       ]
@@ -331,23 +331,23 @@ Reusable symbol libraries predate HMI software: P&ID standards define symbols so
     },
     {
       q: "You add an optional Maintenance indicator that only appears if the UDT has the new member. Which version bump is right under semantic versioning?",
-      options: ["Major", "Minor", "Patch", "No bump"],
-      answer: 1,
+      options: ["Major", "Patch", "No bump", "Minor"],
+      answer: 3,
       explain: [
         "Major is for breaking changes. This is backward compatible.",
-        "Correct. New optional functionality that keeps old UDTs working is a minor release.",
         "Patch is for bug fixes with no new function.",
-        "Any shipped change needs a version so sites can tell what they have."
+        "Any shipped change needs a version so sites can tell what they have.",
+        "Correct. New optional functionality that keeps old UDTs working is a minor release."
       ]
     },
     {
       q: "You download an Exchange project and import it at the Gateway into your live project, which has a view of the same name. What can happen?",
-      options: ["Nothing; imports are always merged", "The same-named resources are overwritten, so back up first or import selected resources through the Designer", "Only styles are overwritten", "The Gateway rejects the import"],
-      answer: 1,
+      options: ["Nothing; imports are always merged", "Only styles are overwritten", "The same-named resources are overwritten, so back up first or import selected resources through the Designer", "The Gateway rejects the import"],
+      answer: 2,
       explain: [
         "Gateway import does not merge differing resources by content.",
-        "Correct. Same-named resources in the target project are overwritten. Back up and prefer selective Designer import.",
         "Views and other resources are affected too.",
+        "Correct. Same-named resources in the target project are overwritten. Back up and prefer selective Designer import.",
         "The Gateway accepts the package and applies it."
       ]
     }

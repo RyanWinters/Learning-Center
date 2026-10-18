@@ -102,7 +102,7 @@
        ['medal', 'Levels', 'XP fills your level, from Apprentice up to Systems Architect. Lessons have their own difficulty, shown as L1 to L4.'],
        ['flame', 'Streak', 'Earn any XP on a day to keep your streak. The ring on Home tracks your daily goal.'],
        ['review', 'Review queue', 'Every quiz question you miss comes back after 1, 2, 4, 8 and 16 days until it sticks.'],
-       ['skip', 'Skipping and test-out', 'Locks are only suggestions. Mark a lesson as known, or Test out with a cold quiz (80% or more) to earn XP and unlock what follows.'],
+       ['skip', 'Skipping and test-out', 'Locks are only suggestions. "I already know this" opens what follows but earns no XP. Test out with a cold quiz (80% or more) to earn XP and count the lesson as done.'],
        ['book', 'Glossary taps', 'Underlined words open a plain-language definition. Tap one anywhere.']
       ].map(r => '<div><dt>' + icon(r[0], 18) + r[1] + '</dt><dd>' + r[2] + '</dd></div>').join('') + '</dl>' +
       '<div class="sheet-actions"><button type="button" class="btn btn-primary" data-close>Got it</button></div>', { label: 'Welcome', onClose: () => { if (!force) LC.store.setting('welcomeSeen', true); } });

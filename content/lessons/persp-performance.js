@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-performance",
   title: "Performance and scale",
   track: "persp",
-  minutes: 25,
+  minutes: 20,
   level: 4,
   prereqs: ["persp-embedding", "persp-events"],
   tags: ["perspective", "performance", "scale", "gateway", "bindings", "diagnostics", "load-testing"],
@@ -50,7 +50,7 @@ The three that cause most trouble in the field:
 A **tag binding** asks the Gateway to subscribe once and push updates when a value changes. Many sessions on the same tag share one subscription. A **polling** binding asks again and again whether or not anything changed.
 
 > [!tip] Move data into tags, then bind
-> If forty views need "number of open work orders", do not query the database forty times. Run one Gateway script on a timer or a gateway event, write the count to a memory tag, and bind every view to that tag. The database sees one query. Sessions see a cheap push.
+> If forty views need "number of open work orders", do not query the database forty times. Run one Gateway script on a timer or a Gateway event, write the count to a memory tag, and bind every view to that tag. The database sees one query. Sessions see a cheap push.
 
 Rules of thumb that senior integrators repeat:
 
@@ -177,7 +177,7 @@ Vision scaled by pushing work to client PCs, which limited how many Gateway reso
   examples: [
     {
       title: "Replacing a polling query with a tag",
-      body: `A header banner shows "Open work orders: 14" using a named query polled every 2 seconds. With 120 operators that is 60 queries per second against the maintenance database. Replace it: a Gateway timer script runs the query every 30 seconds with \`system.db.execQuery("Maintenance/OpenWorkOrders", {})\` (in 8.1, \`system.db.runNamedQuery\`; the old call still runs in 8.3 but is deprecated), writes the count to a memory tag \`[default]Plant1/Maintenance/OpenWorkOrders\`, and the banner binds to that tag. Database load drops from 60 queries per second to about 0.03, and the number is at most 30 seconds old.`
+      body: `A header banner shows "Open work orders: 14" using a named query polled every 2 seconds. With 120 operators that is 60 queries per second against the maintenance database. Replace it: a Gateway timer script runs the query every 30 seconds with \`system.db.execQuery("Maintenance/OpenWorkOrders", {})\` plus the project name, because Gateway scope has no calling project (in 8.1, \`system.db.runNamedQuery\`; the old call still runs in 8.3 but is deprecated), writes the count to a memory tag \`[default]Plant1/Maintenance/OpenWorkOrders\`, and the banner binds to that tag. Database load drops from 60 queries per second to about 0.03, and the number is at most 30 seconds old.`
     },
     {
       title: "A reconnect storm",
@@ -243,56 +243,56 @@ Vision scaled by pushing work to client PCs, which limited how many Gateway reso
     },
     {
       q: "Where does a Perspective script transform execute?",
-      options: ["In the viewer's browser", "On the Gateway, in each session's context", "On the database server", "On the PLC"],
-      answer: 1,
+      options: ["In the viewer's browser", "On the database server", "On the Gateway, in each session's context", "On the PLC"],
+      answer: 2,
       explain: [
         "The browser draws the result. It does not run Jython.",
-        "Correct. All Perspective scripting runs on the Gateway, so cost scales with sessions.",
         "The database only runs the SQL you send it.",
+        "Correct. All Perspective scripting runs on the Gateway, so cost scales with sessions.",
         "The PLC runs its own logic only."
       ]
     },
     {
       q: "CPU is at 80% and users complain. Which first step gives the most reliable information?",
-      options: ["Rewrite the biggest screen", "Take two or three thread dumps a few seconds apart and see what the busy threads are doing", "Restart the Gateway nightly", "Reduce the number of tags"],
-      answer: 1,
+      options: ["Rewrite the biggest screen", "Restart the Gateway nightly", "Reduce the number of tags", "Take two or three thread dumps a few seconds apart and see what the busy threads are doing"],
+      answer: 3,
       explain: [
         "That is a guess and may fix nothing.",
-        "Correct. Threads that show up repeatedly identify the hot function or query.",
         "A restart hides the problem temporarily.",
-        "Tag count is rarely the cause and reducing it is a large change."
+        "Tag count is rarely the cause and reducing it is a large change.",
+        "Correct. Threads that show up repeatedly identify the hot function or query."
       ]
     },
     {
       q: "Why does caching a named query that takes a per-user parameter often save little?",
-      options: ["Caches only work with SELECT *", "Each distinct parameter value creates its own cache entry", "Caching is disabled for parameters", "The cache is cleared every second"],
-      answer: 1,
+      options: ["Each distinct parameter value creates its own cache entry", "Caches only work with SELECT *", "Caching is disabled for parameters", "The cache is cleared every second"],
+      answer: 0,
       explain: [
-        "Caching works with any query the feature supports.",
         "Correct. The cache is keyed by the parameters, so unique values rarely get reused.",
+        "Caching works with any query the feature supports.",
         "Parameters are allowed. They just divide the cache.",
         "Lifetime is set by you, not fixed at one second."
       ]
     },
     {
       q: "A 120-row repeater uses runScript in each row's label expression. What is the likely problem?",
-      options: ["Repeaters do not allow expressions", "Each row calls Jython whenever its inputs change, multiplying interpreter calls per session", "runScript is blocked in the browser", "It breaks tag subscriptions"],
-      answer: 1,
+      options: ["Repeaters do not allow expressions", "runScript is blocked in the browser", "It breaks tag subscriptions", "Each row calls Jython whenever its inputs change, multiplying interpreter calls per session"],
+      answer: 3,
       explain: [
         "Repeaters allow expressions in their instances.",
-        "Correct. The calls multiply by rows and by sessions and hold Gateway threads.",
         "runScript runs on the Gateway.",
-        "It does not break subscriptions. It adds CPU cost."
+        "It does not break subscriptions. It adds CPU cost.",
+        "Correct. The calls multiply by rows and by sessions and hold Gateway threads."
       ]
     },
     {
       q: "Your load test passes a steady 150-session ramp. What did it probably miss?",
-      options: ["Nothing; steady state is the worst case", "A soak period and a reconnect storm after a Gateway or database restart", "The color theme", "Browser caching"],
-      answer: 1,
+      options: ["Nothing; steady state is the worst case", "The color theme", "A soak period and a reconnect storm after a Gateway or database restart", "Browser caching"],
+      answer: 2,
       explain: [
         "Peaks usually come from events like shift change or restarts.",
-        "Correct. Leaks appear over hours, and mass reconnects are often the true peak.",
         "Colors do not affect load.",
+        "Correct. Leaks appear over hours, and mass reconnects are often the true peak.",
         "Client caching is not the main risk for Gateway capacity."
       ]
     }

@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-devices",
   title: "Field devices: sensors, transmitters, actuators, drives",
   track: "found",
-  minutes: 20,
+  minutes: 15,
   level: 1,
   prereqs: ["found-purdue"],
   tags: ["sensors", "transmitters", "actuators", "valves", "vfd", "motor-control", "level-0"],
@@ -194,67 +194,67 @@ Pneumatic 3-15 psi signals dominated process control until the 1950s and 1960s, 
   quiz: [
     {
       q: "What does a transmitter do that a bare sensor does not?",
-      options: ["It senses a physical quantity", "It controls a valve", "It stores history", "It conditions the sensor's output into a standard signal such as 4-20 mA"],
-      answer: 3,
+      options: ["It conditions the sensor's output into a standard signal such as 4-20 mA", "It senses a physical quantity", "It controls a valve", "It stores history"],
+      answer: 0,
       explain: [
+        "Correct. The electronics turn a raw effect into a standardized signal the PLC can read.",
         "Both sense; the sensor element does the detecting.",
         "Valves are moved by actuators.",
-        "Historian software stores history, not a transmitter.",
-        "Correct. The electronics turn a raw effect into a standardized signal the PLC can read."
+        "Historian software stores history, not a transmitter."
       ]
     },
     {
       q: "A part is white plastic and the background is shiny metal. Which photo-eye style is most likely to misread?",
-      options: ["Diffuse", "Through-beam", "Both equally", "None, color does not matter"],
-      answer: 0,
+      options: ["Through-beam", "Diffuse", "Both equally", "None, color does not matter"],
+      answer: 1,
       explain: [
-        "Correct. A diffuse sensor relies on reflection from the target and can be fooled by surface and background.",
         "A through-beam is blocked by any opaque object regardless of color.",
+        "Correct. A diffuse sensor relies on reflection from the target and can be fooled by surface and background.",
         "Through-beam is far more tolerant.",
         "Color and surface affect diffuse sensors strongly."
       ]
     },
     {
       q: "What does a valve positioner do?",
-      options: ["Reports flow rate", "Drives air until the actual stem position matches the commanded position", "Protects the motor from overload", "Converts AC to DC"],
-      answer: 1,
+      options: ["Reports flow rate", "Protects the motor from overload", "Drives air until the actual stem position matches the commanded position", "Converts AC to DC"],
+      answer: 2,
       explain: [
         "That is a flow meter.",
-        "Correct. It closes the loop on stem position.",
         "That is an overload relay.",
+        "Correct. It closes the loop on stem position.",
         "That is a power supply or rectifier."
       ]
     },
     {
       q: "A cooling-water valve for a reactor loses instrument air. What should its fail position usually be?",
-      options: ["Closed", "Open", "Wherever it was", "It does not matter"],
-      answer: 1,
+      options: ["Closed", "Wherever it was", "It does not matter", "Open"],
+      answer: 3,
       explain: [
         "Closing would remove cooling at the worst moment.",
-        "Correct. Choose the failure state that makes the process safe; cooling usually fails open.",
         "Fail-in-place is a valid design for some valves, but not the usual choice for cooling.",
-        "It is a safety decision and always matters."
+        "It is a safety decision and always matters.",
+        "Correct. Choose the failure state that makes the process safe; cooling usually fails open."
       ]
     },
     {
       q: "In a standard motor starter, which device protects against a slow sustained overcurrent?",
-      options: ["Contactor", "Breaker only", "Overload relay", "VFD enclosure"],
-      answer: 2,
+      options: ["Contactor", "Breaker only", "VFD enclosure", "Overload relay"],
+      answer: 3,
       explain: [
         "A contactor is a switch.",
         "A breaker is sized for short-circuit protection and would not follow a motor's thermal curve.",
-        "Correct. The overload relay models heating and trips on sustained excess current.",
-        "An enclosure protects against environment, not current."
+        "An enclosure protects against environment, not current.",
+        "Correct. The overload relay models heating and trips on sustained excess current."
       ]
     },
     {
       q: "Why do pumps on VFDs often save energy compared with throttling a valve?",
-      options: ["VFDs are more efficient motors", "Power falls steeply with speed for centrifugal loads, so slowing down saves far more than throttling", "Throttle valves are illegal", "VFDs remove friction"],
-      answer: 1,
+      options: ["VFDs are more efficient motors", "Throttle valves are illegal", "Power falls steeply with speed for centrifugal loads, so slowing down saves far more than throttling", "VFDs remove friction"],
+      answer: 2,
       explain: [
         "The motor is the same; what changes is how speed is controlled.",
-        "Correct. Power roughly follows the cube of speed for centrifugal loads, so a small speed reduction gives a big saving.",
         "Throttle valves are widely used.",
+        "Correct. Power roughly follows the cube of speed for centrifugal loads, so a small speed reduction gives a big saving.",
         "Friction is unrelated."
       ]
     }

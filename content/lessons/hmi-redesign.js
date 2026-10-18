@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-redesign",
   title: "Workshop: redesigning a bad screen",
   track: "hmi",
-  minutes: 40,
+  minutes: 20,
   level: 4,
   prereqs: ["hmi-process", "hmi-dataviz", "hmi-abnormal"],
   tags: ["hmi", "workshop", "redesign", "critique", "checklist", "capstone", "isa-101"],
@@ -354,29 +354,29 @@ Bad screens were not made by bad people. Early graphics packages offered cheap c
       options: [
         "A larger dial with a thicker needle",
         "A digital readout with four decimals",
-        "A horizontal bar with the unit, a normal band and a pointer for the current value",
-        "Remove the flow measurement from the screen entirely"
+        "Remove the flow measurement from the screen entirely",
+        "A horizontal bar with the unit, a normal band and a pointer for the current value"
       ],
-      answer: 2,
+      answer: 3,
       explain: [
         "A bigger dial still gives no context and takes more space.",
         "More digits give more precision than the operator needs and no sense of normal.",
-        "Correct. A bar shows range, band and position in a small space, and the value is stated with its unit.",
-        "FT101 supports a task (feed rate), so it stays, in a better form."
+        "FT101 supports a task (feed rate), so it stays, in a better form.",
+        "Correct. A bar shows range, band and position in a small space, and the value is stated with its unit."
       ]
     },
     {
       q: "The after screen has color on only two objects. A colleague wants to color all running equipment green so that operators can see it is OK. What is the best response?",
       options: [
-        "Agree, since green is the usual color for running",
         "Decline, because added color would compete with the alarm banner and the value box, and the state is already written in words",
+        "Agree, since green is the usual color for running",
         "Agree, but only for motors",
         "Use blue instead, so it does not look like a stop"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "Convention is not a reason when the aim is for the abnormal to stand out.",
         "Correct. The normal state should be quiet. Color is saved for abnormal conditions, and the word 'Running' carries the state.",
+        "Convention is not a reason when the aim is for the abnormal to stand out.",
         "Partial color is still noise and creates inconsistency across equipment types.",
         "Any added color for normal operation takes attention from the abnormal one."
       ]
@@ -385,15 +385,15 @@ Bad screens were not made by bad people. Early graphics packages offered cheap c
       q: "In the after screen, M101 shows 'Open faceplate' instead of Start and Stop buttons. What is the main reason?",
       options: [
         "There was no room for buttons",
-        "A status object should not also be a command, and commands belong on the faceplate where the equipment name, mode and interlock reasons are shown",
         "Operators are not allowed to start motors",
+        "A status object should not also be a command, and commands belong on the faceplate where the equipment name, mode and interlock reasons are shown",
         "Perspective cannot place buttons on an overview"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "Space is not the reason. The design separates command from status on purpose.",
-        "Correct. The faceplate is the select step, and it shows permissives and feedback before an action.",
         "Operators can command from the faceplate with the right role. This is a design choice, not a ban.",
+        "Correct. The faceplate is the select step, and it shows permissives and feedback before an action.",
         "Perspective can place any component anywhere. The choice is about error prevention."
       ]
     },
@@ -417,16 +417,16 @@ Bad screens were not made by bad people. Early graphics packages offered cheap c
       q: "During review you find that the alarm banner shows tag and description but not the value, limit or acknowledgement state. Which checklist group does this fall under, and what is the fix?",
       options: [
         "Layout: move the banner",
-        "Abnormal states: add value with unit, limit, priority, time and ack state so the operator can act from the banner",
         "Navigation: add a link to the alarm page",
-        "Testing: remove the banner until tested"
+        "Testing: remove the banner until tested",
+        "Abnormal states: add value with unit, limit, priority, time and ack state so the operator can act from the banner"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Position may be fine. The content is incomplete.",
-        "Correct. The banner must let the operator see what is wrong, how bad, how urgent and whether it has been acknowledged.",
         "A link helps, but the banner should be enough to start acting.",
-        "Removing an alarm indicator for testing is the opposite of the aim."
+        "Removing an alarm indicator for testing is the opposite of the aim.",
+        "Correct. The banner must let the operator see what is wrong, how bad, how urgent and whether it has been acknowledged."
       ]
     },
     {

@@ -41,7 +41,7 @@ LC.lesson({
     "Adding a fourth path to custom.motors adds a fourth tile"
   ],
   "eli5": "\nA restaurant has one menu card design. You do not paint a new menu for each table. You print the same card and write the table number at the top.\n\nThe faceplate is that menu card. It has blank spaces for the motor's name, whether it is running, how fast it is going, and buttons. The one thing you write at the top is the motor's address, the `tagPath`. Everything else on the card finds its answer by adding something to that address, like \"address plus /Speed.\"\n\nThe repeater is the person who prints the same card for every table at once. If you change the card design, every table's card changes the next time it is printed.\n",
-  "why": "\n**Why one parameter?** Every extra parameter is a chance for a mismatch between members of different motors. With `tagPath` alone, the faceplate cannot be pointed at the speed of one motor and the status of another. It also keeps the interface the same for the person embedding it. Some integrators pass the whole path and derive the rest, as here. Others pass named parameters for flexibility. The single path wins when equipment follows a UDT, because the UDT guarantees the members exist.\n\n**Why indirect bindings and not a script?** Bindings are subscribed by the gateway and updated on change. A script that reads tags in a loop polls, costs more, and is harder to read. Indirect bindings also fail visibly: a wrong path turns the component's quality bad.\n\n**Why a derived `state` property?** If color is bound to Running and the text to Fault, there will be a moment where they disagree and the screen lies. One expression that picks the state in priority order (comm lost, then fault, then running) makes the screen consistent. The priority order is a design decision worth writing into the FDS.\n\n**Why gray for normal?** In a plant with hundreds of green lights, nobody sees the one that matters. High-performance HMI practice keeps normal quiet so abnormal stands out. Not every customer accepts this, so many integrators offer it as an option and agree it in the style guide.\n\n**Why not trust the Start button's enabled state?** Disabling a button is a usability aid. A second client, a script or a mistaken write can still set the bit. The PLC must decide whether starting is allowed.\n",
+  "why": "\n**Why one parameter?** Every extra parameter is a chance for a mismatch between members of different motors. With `tagPath` alone, the faceplate cannot be pointed at the speed of one motor and the status of another. It also keeps the interface the same for the person embedding it. Some integrators pass the whole path and derive the rest, as here. Others pass named parameters for flexibility. The single path wins when equipment follows a UDT, because the UDT guarantees the members exist.\n\n**Why indirect bindings and not a script?** Bindings are subscribed by the Gateway and updated on change. A script that reads tags in a loop polls, costs more, and is harder to read. Indirect bindings also fail visibly: a wrong path turns the component's quality bad.\n\n**Why a derived `state` property?** If color is bound to Running and the text to Fault, there will be a moment where they disagree and the screen lies. One expression that picks the state in priority order (comm lost, then fault, then running) makes the screen consistent. The priority order is a design decision worth writing into the FDS.\n\n**Why gray for normal?** In a plant with hundreds of green lights, nobody sees the one that matters. High-performance HMI practice keeps normal quiet so abnormal stands out. Not every customer accepts this, so many integrators offer it as an option and agree it in the style guide.\n\n**Why not trust the Start button's enabled state?** Disabling a button is a usability aid. A second client, a script or a mistaken write can still set the bit. The PLC must decide whether starting is allowed.\n",
   "diagrams": {
     "flow": "<svg viewBox=\"0 0 640 230\" role=\"img\" aria-label=\"A list of tag paths feeds a flex repeater, which creates one Motor faceplate per path; each faceplate builds indirect bindings from its tagPath\"><defs><marker id=\"build-faceplate-ah\" markerWidth=\"10\" markerHeight=\"8\" refX=\"9\" refY=\"4\" orient=\"auto\"><path class=\"dg-fill-line\" d=\"M0,0 L10,4 L0,8 z\"/></marker></defs><rect class=\"dg-box\" x=\"20\" y=\"60\" width=\"170\" height=\"100\" rx=\"6\"/><text class=\"dg-title\" x=\"34\" y=\"84\">custom.motors</text><text class=\"dg-text-mono\" x=\"34\" y=\"110\">.../M101</text><text class=\"dg-text-mono\" x=\"34\" y=\"130\">.../M102</text><text class=\"dg-text-mono\" x=\"34\" y=\"150\">.../M103</text><rect class=\"dg-box-accent\" x=\"240\" y=\"60\" width=\"150\" height=\"100\" rx=\"6\"/><text class=\"dg-title\" x=\"256\" y=\"96\">Flex Repeater</text><text class=\"dg-text-sm\" x=\"256\" y=\"120\">instances:</text><text class=\"dg-text-mono\" x=\"256\" y=\"140\">{tagPath: ...}</text><rect class=\"dg-box\" x=\"440\" y=\"20\" width=\"180\" height=\"56\" rx=\"4\"/><text class=\"dg-text-sm\" x=\"452\" y=\"44\">Faceplates/Motor</text><text class=\"dg-text-mono\" x=\"452\" y=\"64\">{1}/Sts/Running</text><rect class=\"dg-box\" x=\"440\" y=\"88\" width=\"180\" height=\"56\" rx=\"4\"/><text class=\"dg-text-sm\" x=\"452\" y=\"112\">Faceplates/Motor</text><text class=\"dg-text-mono\" x=\"452\" y=\"132\">{1}/Sts/Running</text><rect class=\"dg-box\" x=\"440\" y=\"156\" width=\"180\" height=\"56\" rx=\"4\"/><text class=\"dg-text-sm\" x=\"452\" y=\"180\">Faceplates/Motor</text><text class=\"dg-text-mono\" x=\"452\" y=\"200\">{1}/Sts/Running</text><line class=\"dg-line\" x1=\"190\" y1=\"110\" x2=\"238\" y2=\"110\" marker-end=\"url(#build-faceplate-ah)\"/><line class=\"dg-line\" x1=\"390\" y1=\"110\" x2=\"438\" y2=\"110\" marker-end=\"url(#build-faceplate-ah)\"/></svg>"
   },
@@ -68,30 +68,30 @@ LC.lesson({
       "q": "Every tile in your repeater shows M101's data. What is the most likely cause?",
       "options": [
         "The repeater is limited to one tile",
-        "The instance objects use a key that does not exactly match the view parameter name",
         "The historian is off",
+        "The instance objects use a key that does not exactly match the view parameter name",
         "Style classes are missing"
       ],
-      "answer": 1,
+      "answer": 2,
       "explain": [
         "The repeater makes one tile per instance.",
-        "Correct. A mismatched key (tagpath vs tagPath) leaves the param at its default, which is M101.",
         "History has no effect on live bindings.",
+        "Correct. A mismatched key (tagpath vs tagPath) leaves the param at its default, which is M101.",
         "Styles change looks, not data."
       ]
     },
     {
       "q": "Why derive one state property and not bind color and text to separate booleans?",
       "options": [
-        "Expressions run faster",
         "So color and text can never disagree, and priority between conditions is decided in one place",
+        "Expressions run faster",
         "Perspective only allows one binding per component",
         "Booleans cannot be bound to styles"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "Speed is not the driver.",
         "Correct. A single priority-ordered expression gives one answer for every consumer.",
+        "Speed is not the driver.",
         "Components can have many bindings.",
         "Booleans can be used. They just invite contradictions."
       ]
@@ -116,30 +116,30 @@ LC.lesson({
       "q": "The Start button is disabled when Ready is false. Does this make the motor safe against an unwanted start?",
       "options": [
         "Yes, the HMI is the last line of defense",
-        "No, it is a usability aid. The PLC and the hardwired circuit must enforce permissives and protection",
         "Yes, if the user role is Operator",
-        "Only if the button is hidden"
+        "Only if the button is hidden",
+        "No, it is a usability aid. The PLC and the hardwired circuit must enforce permissives and protection"
       ],
-      "answer": 1,
+      "answer": 3,
       "explain": [
         "The HMI can never be the only protection.",
-        "Correct. Anyone or any script that can write the bit bypasses the button.",
         "Roles limit who clicks, not what the PLC accepts.",
-        "Hiding does not stop a write."
+        "Hiding does not stop a write.",
+        "Correct. Anyone or any script that can write the bit bypasses the button."
       ]
     },
     {
       "q": "Why does the faceplate take tagPath instead of separate params for speed, state and command?",
       "options": [
-        "Perspective cannot take more than one param",
         "One path guarantees all members belong to the same motor because the UDT guarantees the members exist",
+        "Perspective cannot take more than one param",
         "Separate params are not allowed in embedded views",
         "It makes the view smaller on disk"
       ],
-      "answer": 1,
+      "answer": 0,
       "explain": [
-        "Views can take many params.",
         "Correct. Members are derived from one identity, so mismatches cannot occur.",
+        "Views can take many params.",
         "They are allowed. They are just riskier.",
         "Disk size is not the reason."
       ]

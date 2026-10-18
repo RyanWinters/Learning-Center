@@ -269,45 +269,45 @@ Ladder logic comes straight from relay control diagrams, which were drawn with p
     },
     {
       q: "Which rung runs the Motor when Start OR Jog is on? (Reminder: \`[A ,B]\` means A and B are in parallel legs of a branch, and anything written in a row is in series.)",
-      options: ["XIC(Start) XIC(Jog) OTE(Motor)", "[XIC(Start) ,XIC(Jog)] OTE(Motor)", "XIO(Start) XIO(Jog) OTE(Motor)", "XIC(Start) OTE(Motor) XIC(Jog)"],
-      answer: 1,
+      options: ["[XIC(Start) ,XIC(Jog)] OTE(Motor)", "XIC(Start) XIC(Jog) OTE(Motor)", "XIO(Start) XIO(Jog) OTE(Motor)", "XIC(Start) OTE(Motor) XIC(Jog)"],
+      answer: 0,
       explain: [
-        "Two contacts in series is AND. Both must be on.",
         "Correct. Contacts in parallel branches make OR.",
+        "Two contacts in series is AND. Both must be on.",
         "That would run only when both are off.",
         "An output belongs at the end of the rung."
       ]
     },
     {
       q: "A stop button is wired normally closed (its contact is closed until pressed), so the 24 V supply reaches the input when the button is not pressed. Which instruction lets the motor run when the button is released?",
-      options: ["XIC(Stop_PB)", "XIO(Stop_PB)", "OTE(Stop_PB)", "Either one works"],
-      answer: 0,
+      options: ["XIO(Stop_PB)", "XIC(Stop_PB)", "OTE(Stop_PB)", "Either one works"],
+      answer: 1,
       explain: [
-        "Correct. Released means the bit is 1, and XIC passes power on a 1.",
         "The bit is 1 when released. XIO passes power only when the bit is 0, so the motor could only run while Stop is pressed.",
+        "Correct. Released means the bit is 1, and XIC passes power on a 1.",
         "OTE is an output, not a condition.",
         "They behave opposite to each other here."
       ]
     },
     {
       q: "What happens with \`XIC(A) OTE(Out)\` on rung 1 and \`XIC(B) OTE(Out)\` on rung 2 when A is 1 and B is 0?",
-      options: ["Out is 1", "The controller faults", "The last-written value, 0, because rung 2 overwrites rung 1", "Out toggles each scan"],
-      answer: 2,
+      options: ["Out is 1", "The controller faults", "Out toggles each scan", "The last-written value, 0, because rung 2 overwrites rung 1"],
+      answer: 3,
       explain: [
         "Rung 1 sets it to 1, but rung 2 runs after it.",
         "Studio 5000 allows this and may only warn.",
-        "Correct. The last OTE to execute decides the bit's final state.",
-        "The result is steady, not toggling."
+        "The result is steady, not toggling.",
+        "Correct. The last OTE to execute decides the bit's final state."
       ]
     },
     {
       q: "In the rung \`XIC(Run) XIO(Fault) OTE(Pump)\`, when does the pump bit go to 1?",
-      options: ["Run = 1 and Fault = 1", "Run = 1 and Fault = 0", "Run = 0 and Fault = 0", "Run = 0 and Fault = 1"],
-      answer: 1,
+      options: ["Run = 1 and Fault = 1", "Run = 0 and Fault = 0", "Run = 1 and Fault = 0", "Run = 0 and Fault = 1"],
+      answer: 2,
       explain: [
         "XIO needs Fault to be 0.",
-        "Correct. XIC needs Run at 1 and XIO needs Fault at 0.",
         "Run must be 1.",
+        "Correct. XIC needs Run at 1 and XIO needs Fault at 0.",
         "Both contacts would be false."
       ]
     }

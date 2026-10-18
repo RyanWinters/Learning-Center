@@ -151,35 +151,35 @@ Control system integration as a business grew out of the 1970s and 80s, as PLCs 
   quiz: [
     {
       q: "Which party typically builds the same machine many times and keeps its control code as intellectual property?",
-      options: ["End user", "OEM", "Distributor", "Consultant"],
-      answer: 1,
+      options: ["OEM", "End user", "Distributor", "Consultant"],
+      answer: 0,
       explain: [
-        "End users own and operate the plant. They usually buy machines rather than build them.",
         "Correct. An OEM designs a repeatable machine or skid and ships it with its own controls.",
+        "End users own and operate the plant. They usually buy machines rather than build them.",
         "Distributors sell and support vendor products. They do not design machines.",
         "Consultants advise and specify. They typically do not build or ship machines."
       ]
     },
     {
       q: "What does the CSIA certification audit?",
-      options: ["Each engineer's programming skill", "An integrator's business and project-management practices", "The quality of the vendor's products", "The end user's plant safety"],
-      answer: 1,
+      options: ["Each engineer's programming skill", "The quality of the vendor's products", "An integrator's business and project-management practices", "The end user's plant safety"],
+      answer: 2,
       explain: [
         "Individual skill is covered by vendor certifications such as Ignition Core and Gold.",
-        "Correct. CSIA's certification is an independent audit of company-level practices.",
         "CSIA is an integrator association, not a product tester.",
+        "Correct. CSIA's certification is an independent audit of company-level practices.",
         "Plant safety audits are done by other bodies."
       ]
     },
     {
       q: "During a fixed-price job the plant manager asks for an extra weekly OEE report that is not in the SOW. What should the integrator do?",
-      options: ["Build it quietly and eat the cost", "Refuse all further changes", "Issue a change order covering cost and schedule, then build it", "Wait until handover and send a larger invoice"],
-      answer: 2,
+      options: ["Build it quietly and eat the cost", "Refuse all further changes", "Wait until handover and send a larger invoice", "Issue a change order covering cost and schedule, then build it"],
+      answer: 3,
       explain: [
         "Absorbing the cost sets a precedent and erodes margin.",
         "Refusing everything damages the relationship. Changes are normal if priced.",
-        "Correct. A written change order records the agreement before the work happens.",
-        "Billing surprise work after the fact is how disputes start."
+        "Billing surprise work after the fact is how disputes start.",
+        "Correct. A written change order records the agreement before the work happens."
       ]
     },
     {
@@ -195,12 +195,12 @@ Control system integration as a business grew out of the 1970s and 80s, as PLCs 
     },
     {
       q: "Compared with an in-house controls engineer, what is a defining feature of the integrator role?",
-      options: ["Supporting a single plant for years", "Working on a new customer, site and platform every few months, billed against project budgets", "Never travelling to site", "Avoiding documentation"],
-      answer: 1,
+      options: ["Supporting a single plant for years", "Never travelling to site", "Working on a new customer, site and platform every few months, billed against project budgets", "Avoiding documentation"],
+      answer: 2,
       explain: [
         "That describes the end user seat.",
-        "Correct. Variety, billable hours and customer-facing deliverables are the integrator's trade.",
         "Integrators travel for site surveys, FAT, SAT and start-up.",
+        "Correct. Variety, billable hours and customer-facing deliverables are the integrator's trade.",
         "Documentation is a contractual deliverable for integrators."
       ]
     }

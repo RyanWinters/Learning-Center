@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-best-practices",
   title: "Structuring a Logix project like an integrator",
   track: "plc",
-  minutes: 30,
+  minutes: 20,
   level: 4,
   prereqs: ["plc-aoi", "plc-state-machines", "plc-faults"],
   tags: ["best-practices", "project-structure", "naming", "udt", "aoi", "io-mapping", "source-control", "code-review"],
@@ -285,35 +285,35 @@ Early PLC programs were a single ladder file with absolute addresses like \`N7:1
   quiz: [
     {
       q: "A customer replaces an input card with a different model in a different slot. In a well-structured project, what changes?",
-      options: ["Only the input mapping routine", "Every rung that used the old address", "The Ignition UDT definitions", "The task period"],
-      answer: 0,
+      options: ["Every rung that used the old address", "The Ignition UDT definitions", "Only the input mapping routine", "The task period"],
+      answer: 2,
       explain: [
-        "Correct. Physical addresses appear only in the mapping routine, so logic and HMI tags are untouched.",
         "That is what happens when raw addresses are scattered through logic. The structure here avoids it.",
         "Ignition reads named PLC tags. As long as names do not change, its UDTs do not.",
+        "Correct. Physical addresses appear only in the mapping routine, so logic and HMI tags are untouched.",
         "The card model does not affect the task period."
       ]
     },
     {
       q: "Rung A: XIC(Auto) OTE(P101_RunOut). Rung B, later in the scan: XIC(Manual) XIC(P101.Cmd.Start) OTE(P101_RunOut). Auto is true, Manual is false. What is the output state at the end of the scan?",
-      options: ["On, because Rung A is true", "Off, because Rung B is scanned last and writes false", "Undefined; the controller faults", "On, because OTE latches"],
-      answer: 1,
+      options: ["On, because Rung A is true", "Undefined; the controller faults", "On, because OTE latches", "Off, because Rung B is scanned last and writes false"],
+      answer: 3,
       explain: [
         "Rung A turns it on, but Rung B runs after and turns it off again.",
-        "Correct. Each OTE writes its rung result every scan, so the last one scanned wins. Use one writer per bit.",
         "Logix does not fault on duplicate OTEs. It only gives a warning at verify time in some cases.",
-        "OTE does not latch. It follows rung condition every scan."
+        "OTE does not latch. It follows rung condition every scan.",
+        "Correct. Each OTE writes its rung result every scan, so the last one scanned wins. Use one writer per bit."
       ]
     },
     {
       q: "Which design is best for a Start button on an Ignition screen?",
-      options: ["The button writes directly to the physical output tag", "The button writes to a Cfg member", "The button writes Sts.Running so the screen looks right", "The button writes Cmd.Start, and PLC logic checks interlocks, acts, and clears it"],
-      answer: 3,
+      options: ["The button writes directly to the physical output tag", "The button writes Cmd.Start, and PLC logic checks interlocks, acts, and clears it", "The button writes to a Cfg member", "The button writes Sts.Running so the screen looks right"],
+      answer: 1,
       explain: [
         "That bypasses interlocks and modes, and any client could force the output.",
+        "Correct. Commands are requests. The PLC decides, and clearing the bit prevents a stuck command.",
         "Cfg holds rarely changed settings, not momentary commands.",
-        "Status is output from the PLC. Writing it from the HMI hides the real state.",
-        "Correct. Commands are requests. The PLC decides, and clearing the bit prevents a stuck command."
+        "Status is output from the PLC. Writing it from the HMI hides the real state."
       ]
     },
     {
@@ -340,11 +340,11 @@ Early PLC programs were a single ladder file with absolute addresses like \`N7:1
     },
     {
       q: "Why export L5X files to Git instead of committing only the ACD file?",
-      options: ["L5X files run faster", "L5X is text, so changes between versions can be compared line by line", "ACD files cannot be opened offline", "L5X removes the need to upload from the PLC"],
-      answer: 1,
+      options: ["L5X is text, so changes between versions can be compared line by line", "L5X files run faster", "ACD files cannot be opened offline", "L5X removes the need to upload from the PLC"],
+      answer: 0,
       explain: [
-        "Speed is unrelated. L5X is an interchange file.",
         "Correct. XML text gives diffs, history and blame. The binary ACD does not.",
+        "Speed is unrelated. L5X is an interchange file.",
         "ACD opens fine offline. It simply cannot be diffed in Git.",
         "You still need to upload from the controller to capture field changes before exporting."
       ]

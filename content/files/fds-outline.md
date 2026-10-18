@@ -1,4 +1,4 @@
-# Functional design specification outline: Meridian Plant 1, Area10, Line1
+# Functional design specification outline: Meridian Foods Plant 1, Area10, Line1
 
 Use this as a skeleton for the motor and line you build in the labs. Replace the bracketed text. Keep each requirement testable (one "shall" per line, numbered).
 
@@ -11,7 +11,7 @@ Title, revision, author, reviewer, date, change log.
 - Reference documents: P&ID, I/O list (io-list-template.csv), naming sheet (meridian-naming-sheet.md).
 
 ## 3. System architecture
-- Ignition gateway (Level 3), PLC1 (Level 1), database `meridian_db`.
+- Ignition Gateway (Level 3), PLC1 (Level 1), database `meridian_db`.
 - Network and ports (see naming sheet).
 - Tag provider `default`, project `Meridian`.
 

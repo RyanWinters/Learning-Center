@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-indexes",
   title: "Indexes and query performance",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["db-schema"],
   tags: ["index", "b-tree", "performance", "execution-plan", "sql"],
@@ -204,34 +204,34 @@ The B-tree was invented by Rudolf Bayer and Edward McCreight at Boeing in 1970 a
   quiz: [
     {
       q: "A table has an index on (machine_id, start_time). Which query can NOT use that index efficiently?",
-      options: ["WHERE machine_id = 7", "WHERE machine_id = 7 AND start_time >= '2026-03-01'", "WHERE start_time >= '2026-03-01'", "WHERE machine_id = 7 ORDER BY start_time"],
-      answer: 2,
+      options: ["WHERE start_time >= '2026-03-01'", "WHERE machine_id = 7", "WHERE machine_id = 7 AND start_time >= '2026-03-01'", "WHERE machine_id = 7 ORDER BY start_time"],
+      answer: 0,
       explain: [
+        "Correct. start_time is not the leftmost column, so the index cannot be used for an efficient seek. A separate (start_time) index would help.",
         "machine_id is the leftmost column, so this uses the index.",
         "Both columns match from the left, which is the best case.",
-        "Correct. start_time is not the leftmost column, so the index cannot be used for an efficient seek. A separate (start_time) index would help.",
         "The index returns rows already sorted by start_time within a machine, so no sort is needed."
       ]
     },
     {
       q: "Why does a B-tree index on 50 million rows take only a few page reads to find one row?",
-      options: ["It stores a copy of the table in memory", "Each node holds many sorted keys, so the tree stays only a few levels deep", "It hashes the key to a direct location", "It only indexes the most recent rows"],
-      answer: 1,
+      options: ["It stores a copy of the table in memory", "It hashes the key to a direct location", "It only indexes the most recent rows", "Each node holds many sorted keys, so the tree stays only a few levels deep"],
+      answer: 3,
       explain: [
         "Indexes live on disk and are cached like other pages. They don't require the whole table in memory.",
-        "Correct. Wide nodes mean a very shallow tree, so a lookup touches one node per level.",
         "Hash indexes work that way. B-trees narrow down by comparing sorted keys, which is also why they support ranges.",
-        "A standard index covers every row."
+        "A standard index covers every row.",
+        "Correct. Wide nodes mean a very shallow tree, so a lookup touches one node per level."
       ]
     },
     {
       q: "A query is slow and the plan says 'Seq Scan ... Rows Removed by Filter: 29,999,952' with 48 rows returned. What's the best first step?",
-      options: ["Add RAM to the database server", "Create an index matching the WHERE columns, then re-check the plan", "Rewrite the app to fetch all rows and filter in Ignition", "Drop the primary key"],
-      answer: 1,
+      options: ["Add RAM to the database server", "Rewrite the app to fetch all rows and filter in Ignition", "Create an index matching the WHERE columns, then re-check the plan", "Drop the primary key"],
+      answer: 2,
       explain: [
         "More RAM may hide it briefly, but the query still reads 30 million rows.",
+        "That moves the full scan and network transfer to the Gateway, which is worse.",
         "Correct. The plan shows nearly all rows read and discarded. An index on the filter columns lets the database read about 48 rows.",
-        "That moves the full scan and network transfer to the gateway, which is worse.",
         "The primary key is usually the clustered index and supports lookups. Removing it harms performance."
       ]
     },
@@ -248,22 +248,22 @@ The B-tree was invented by Rudolf Bayer and Edward McCreight at Boeing in 1970 a
     },
     {
       q: "A logger inserts 2,000 rows per second into a table with 12 indexes. Inserts lag and store-and-forward is buffering. What is the likeliest cause and fix?",
-      options: ["Indexes only help reads, so they are harmless to writes", "Each insert updates 12 indexes, so drop the ones no real query uses", "The primary key is too small", "The B-tree is too shallow"],
-      answer: 1,
+      options: ["Indexes only help reads, so they are harmless to writes", "The primary key is too small", "Each insert updates 12 indexes, so drop the ones no real query uses", "The B-tree is too shallow"],
+      answer: 2,
       explain: [
         "Every INSERT must also add an entry to every index on the table.",
-        "Correct. Write cost scales with index count. Review index usage statistics and keep only the ones serving real queries.",
         "Compact integer keys are good for performance.",
+        "Correct. Write cost scales with index count. Review index usage statistics and keep only the ones serving real queries.",
         "Shallow trees are a strength. They mean fewer reads per lookup."
       ]
     },
     {
       q: "Your query uses WHERE DATE(start_time) = '2026-03-02' and ignores an index on start_time. What fix lets the index be used?",
-      options: ["Add another index on DATE(start_time) using a different column name", "Rewrite as start_time >= '2026-03-02' AND start_time < '2026-03-03'", "Convert start_time to text", "Add ORDER BY start_time"],
-      answer: 1,
+      options: ["Rewrite as start_time >= '2026-03-02' AND start_time < '2026-03-03'", "Add another index on DATE(start_time) using a different column name", "Convert start_time to text", "Add ORDER BY start_time"],
+      answer: 0,
       explain: [
-        "Some databases support functional indexes, but the simpler range rewrite needs no new index.",
         "Correct. A range on the bare column lets the optimizer seek into the index.",
+        "Some databases support functional indexes, but the simpler range rewrite needs no new index.",
         "Text comparisons would make date handling worse and still hide the original column type.",
         "Sorting doesn't change whether the filter can use the index."
       ]

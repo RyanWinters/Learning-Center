@@ -2,7 +2,7 @@ LC.lesson({
   id: "found-jargon",
   title: "Jargon survival guide",
   track: "found",
-  minutes: 10,
+  minutes: 15,
   level: 1,
   prereqs: ["found-purdue"],
   tags: ["jargon", "glossary", "vocabulary", "field-guide"],
@@ -158,45 +158,45 @@ You do not need to memorize them. You need a cheat sheet taped next to your desk
   quiz: [
     {
       q: "A cabinet holds a controller, a 16-point input card and a power supply, all plugged into a shared housing with slots. What is that housing called?",
-      options: ["Marshalling cabinet", "Chassis (rack)", "Junction box", "MCC"],
-      answer: 1,
+      options: ["Marshalling cabinet", "Junction box", "MCC", "Chassis (rack)"],
+      answer: 3,
       explain: [
         "A marshalling cabinet is a patch field for field cables. It does not hold the cards.",
-        "Correct. The chassis or rack has slots and a backplane to connect the modules.",
         "A junction box is a field enclosure for joining cables.",
-        "An MCC houses motor starters, not PLC modules."
+        "An MCC houses motor starters, not PLC modules.",
+        "Correct. The chassis or rack has slots and a backplane to connect the modules."
       ]
     },
     {
       q: "Which of these sits at ISA-95 level 3 and tracks production orders, genealogy and downtime?",
-      options: ["ERP", "MES", "PLC", "VFD"],
-      answer: 1,
+      options: ["MES", "ERP", "PLC", "VFD"],
+      answer: 0,
       explain: [
-        "ERP runs the business at level 4: orders, finance and purchasing.",
         "Correct. MES manages and records what is made, how well and why it stopped.",
+        "ERP runs the business at level 4: orders, finance and purchasing.",
         "A PLC is level 1, executing control logic.",
         "A VFD is power electronics that run a motor."
       ]
     },
     {
       q: "A line had 400 productive minutes out of 480 scheduled, ran at 90 percent of ideal speed and made 95 percent good product. About what is the OEE?",
-      options: ["95 percent", "83 percent", "71 percent", "62 percent"],
-      answer: 2,
+      options: ["95 percent", "71 percent", "83 percent", "62 percent"],
+      answer: 1,
       explain: [
         "That is only the quality factor.",
-        "That is availability alone (400 / 480).",
         "Correct. 0.833 x 0.90 x 0.95 is about 0.71.",
+        "That is availability alone (400 / 480).",
         "That would need worse factors than described."
       ]
     },
     {
       q: "What is the difference between FAT and SAT?",
-      options: ["FAT is at the builder's facility before shipping; SAT is on site after installation", "FAT is software; SAT is hardware", "They are the same test with different names", "FAT is for end users only; SAT is for OEMs only"],
-      answer: 0,
+      options: ["FAT is software; SAT is hardware", "They are the same test with different names", "FAT is at the builder's facility before shipping; SAT is on site after installation", "FAT is for end users only; SAT is for OEMs only"],
+      answer: 2,
       explain: [
-        "Correct. Both are formal tests, in different places and at different times.",
         "Both tests cover the whole system, hardware and software together.",
         "They are separate milestones with separate documents.",
+        "Correct. Both are formal tests, in different places and at different times.",
         "Both are usually witnessed by the customer and run by the builder or integrator."
       ]
     },
@@ -213,12 +213,12 @@ You do not need to memorize them. You need a cheat sheet taped next to your desk
     },
     {
       q: "Which statement about interlocks and E-stops is right?",
-      options: ["They are the same thing", "An interlock is normal control logic; an E-stop is a hard-wired safety function that works independent of PLC logic", "An E-stop is a software permissive", "Interlocks are only used on safety PLCs"],
-      answer: 1,
+      options: ["They are the same thing", "An E-stop is a software permissive", "An interlock is normal control logic; an E-stop is a hard-wired safety function that works independent of PLC logic", "Interlocks are only used on safety PLCs"],
+      answer: 2,
       explain: [
         "They differ in design, wiring and testing requirements.",
-        "Correct. Bypassing a control interlock and defeating a safety circuit are very different acts.",
         "E-stops are designed so they work even if software fails.",
+        "Correct. Bypassing a control interlock and defeating a safety circuit are very different acts.",
         "Standard PLCs use interlocks all the time."
       ]
     }

@@ -2,7 +2,7 @@ LC.lesson({
   id: "db-sql-select",
   title: "SQL I: SELECT, WHERE and ORDER BY",
   track: "db",
-  minutes: 25,
+  minutes: 15,
   level: 1,
   prereqs: ["db-intro"],
   tags: ["sql", "select", "where", "order by", "null", "timestamps", "dialects"],
@@ -287,7 +287,7 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
     "Using BETWEEN with '23:59:59' as an end-of-day bound, which misses fractional seconds.",
     "Relying on row order without ORDER BY.",
     "Using TOP without ORDER BY (or LIMIT without ORDER BY) and getting arbitrary rows.",
-    "Comparing a UTC column to a local-time literal, or ignoring the gateway's time zone and daylight saving shifts.",
+    "Comparing a UTC column to a local-time literal, or ignoring the Gateway's time zone and daylight saving shifts.",
     "Copying a TOP query to PostgreSQL or a LIMIT query to SQL Server without changing the syntax."
   ],
 
@@ -296,28 +296,28 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
   quiz: [
     {
       q: "Which WHERE clause finds machines that are not assigned to any line?",
-      options: ["WHERE line_id = NULL", "WHERE line_id = 0", "WHERE line_id IS NULL", "WHERE line_id <> 1"],
-      answer: 2,
+      options: ["WHERE line_id IS NULL", "WHERE line_id = NULL", "WHERE line_id = 0", "WHERE line_id <> 1"],
+      answer: 0,
       explain: [
+        "Correct. IS NULL is the only way to test for a missing value.",
         "Comparing anything to NULL with = is never true, so this returns no rows.",
         "A line_id of 0 is a real value that does not exist here. The machine has no value at all.",
-        "Correct. IS NULL is the only way to test for a missing value.",
         "<> 1 skips NULL rows entirely, so the unassigned machine would not appear."
       ]
     },
     {
       q: "You want the machine_name and machine_type of every machine on line 2. Which statement does that?",
       options: [
-        "SELECT machine_name, machine_type FROM machine WHERE line_id = 2;",
         "SELECT machine_name, machine_type FROM line WHERE line_id = 2;",
         "WHERE line_id = 2 SELECT machine_name, machine_type FROM machine;",
+        "SELECT machine_name, machine_type FROM machine WHERE line_id = 2;",
         "SELECT line_id = 2 FROM machine;"
       ],
-      answer: 0,
+      answer: 2,
       explain: [
-        "Correct. SELECT picks the columns, FROM names the table that holds them, and WHERE keeps only the rows for line 2.",
         "The machine names live in the machine table, not the line table.",
         "The clauses must be written in the order SELECT, FROM, WHERE.",
+        "Correct. SELECT picks the columns, FROM names the table that holds them, and WHERE keeps only the rows for line 2.",
         "That returns a true/false value for every machine instead of filtering rows and picking columns."
       ]
     },
@@ -356,15 +356,15 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
     {
       q: "Which clause lists the reasons that were actually used, with no repeats?",
       options: [
-        "SELECT DISTINCT reason_id FROM downtime_event",
         "SELECT reason_id FROM downtime_event WHERE reason_id IS NULL",
+        "SELECT DISTINCT reason_id FROM downtime_event",
         "SELECT reason_id FROM downtime_event ORDER BY reason_id",
         "SELECT UNIQUE FROM downtime_event"
       ],
-      answer: 0,
+      answer: 1,
       explain: [
-        "Correct. DISTINCT removes duplicate result rows, so each reason appears once.",
         "That finds events with no reason, which is a different question.",
+        "Correct. DISTINCT removes duplicate result rows, so each reason appears once.",
         "ORDER BY sorts the rows but keeps every duplicate.",
         "That is not valid SQL."
       ]
@@ -372,16 +372,16 @@ SQL began as SEQUEL at IBM in the 1970s, based on E. F. Codd's relational model,
     {
       q: "A query returns 3 of the 7 machines for WHERE line_id <> 1 when you expected 4. What most likely happened?",
       options: [
+        "One machine has a NULL line_id and NULL <> 1 is not true",
         "DISTINCT removed a row",
         "ORDER BY dropped a row",
-        "One machine has a NULL line_id and NULL <> 1 is not true",
         "The engine limits results to 3 rows"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. NULL compared with anything is unknown, so WHERE drops that row. Add OR line_id IS NULL.",
         "No DISTINCT is in the query, and it would only remove exact duplicates.",
         "ORDER BY sorts. It never removes rows.",
-        "Correct. NULL compared with anything is unknown, so WHERE drops that row. Add OR line_id IS NULL.",
         "No engine has such a limit unless you wrote TOP or LIMIT."
       ]
     }

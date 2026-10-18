@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-ot-monitoring",
   title: "OT monitoring, asset inventory and data diodes",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 4,
   prereqs: ["net-security"],
   tags: ["ot-security", "monitoring", "asset-inventory", "data-diode", "ids", "62443", "incident-response"],
@@ -200,13 +200,13 @@ The ISA/IEC 62443 series, written by the ISA99 committee and the IEC, supplies t
   quiz: [
     {
       q: "Why is passive discovery usually the first choice in an OT network?",
-      options: ["It finds every device including powered-off ones", "It adds no load to fragile devices, at the cost of seeing only devices that are talking", "It gives exact firmware versions for every device", "It replaces the need for an inventory"],
-      answer: 1,
+      options: ["It finds every device including powered-off ones", "It gives exact firmware versions for every device", "It replaces the need for an inventory", "It adds no load to fragile devices, at the cost of seeing only devices that are talking"],
+      answer: 3,
       explain: [
         "Passive only sees devices that are active on the mirrored links.",
-        "Correct. Listening costs the devices nothing; combine with careful active methods or walk-downs for quiet assets.",
         "Detail depends on what appears in traffic, and passive often has less detail than active queries.",
-        "Passive discovery feeds the inventory but does not replace maintaining it."
+        "Passive discovery feeds the inventory but does not replace maintaining it.",
+        "Correct. Listening costs the devices nothing; combine with careful active methods or walk-downs for quiet assets."
       ]
     },
     {
@@ -222,44 +222,44 @@ The ISA/IEC 62443 series, written by the ISA99 committee and the IEC, supplies t
     },
     {
       q: "A unidirectional gateway sits at the Level 3 to 3.5 boundary. What do corporate users query?",
-      options: ["The Level 3 historian directly through the diode", "A replica of the historian in the DMZ", "The PLCs, through a proxy", "Nothing; replication is not possible"],
-      answer: 1,
+      options: ["The Level 3 historian directly through the diode", "The PLCs, through a proxy", "A replica of the historian in the DMZ", "Nothing; replication is not possible"],
+      answer: 2,
       explain: [
         "A diode cannot carry a two-way query session back to Level 3.",
-        "Correct. Software copies data one way into a replica and users read the replica.",
         "Direct PLC access from the enterprise would break the zone model.",
+        "Correct. Software copies data one way into a replica and users read the replica.",
         "Historian replication is the most common use of these gateways."
       ]
     },
     {
       q: "Which statement about SPAN ports and TAPs is accurate?",
-      options: ["A SPAN port never drops frames", "A TAP copies traffic with hardware and does not load the switch, while a SPAN uses switch resources", "Both require the sensor to transmit on the control network", "A TAP changes IP addresses"],
-      answer: 1,
+      options: ["A TAP copies traffic with hardware and does not load the switch, while a SPAN uses switch resources", "A SPAN port never drops frames", "Both require the sensor to transmit on the control network", "A TAP changes IP addresses"],
+      answer: 0,
       explain: [
-        "SPAN can drop frames under load.",
         "Correct. TAPs are more reliable but cost money and need a maintenance window.",
+        "SPAN can drop frames under load.",
         "The sensor's capture side should be receive-only.",
         "TAPs are passive copies and do not alter addresses."
       ]
     },
     {
       q: "A suspected compromise is found on the DMZ jump host. What is the most OT-appropriate first containment step?",
-      options: ["Power down all PLCs immediately", "Isolate the jump host at the conduit (disable the rule or unplug the uplink) while operations keeps the process safe", "Delete the logs", "Reinstall Ignition"],
-      answer: 1,
+      options: ["Power down all PLCs immediately", "Delete the logs", "Isolate the jump host at the conduit (disable the rule or unplug the uplink) while operations keeps the process safe", "Reinstall Ignition"],
+      answer: 2,
       explain: [
         "Stopping controllers can leave the process in an unsafe state.",
-        "Correct. Contain at the boundary, preserve evidence and let operations control the process.",
         "Deleting logs destroys evidence.",
+        "Correct. Contain at the boundary, preserve evidence and let operations control the process.",
         "Reinstalling before preserving evidence loses information and does not address the cause."
       ]
     },
     {
       q: "In IEC 62443 terms, what does monitoring help you show?",
-      options: ["That the target security level was set correctly", "That the achieved security level of zones and conduits matches the target", "That every device is certified", "That no incident can occur"],
-      answer: 1,
+      options: ["That the achieved security level of zones and conduits matches the target", "That the target security level was set correctly", "That every device is certified", "That no incident can occur"],
+      answer: 0,
       explain: [
-        "The target comes from risk assessment, not from monitoring.",
         "Correct. Monitoring supplies evidence about SL-A against SL-T.",
+        "The target comes from risk assessment, not from monitoring.",
         "Certification is a product property.",
         "Monitoring detects events but does not guarantee none occur."
       ]

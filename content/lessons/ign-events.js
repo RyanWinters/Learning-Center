@@ -1,14 +1,14 @@
 LC.lesson({
   id: "ign-events",
-  title: "Events: tag change, gateway events, timers and messages",
+  title: "Events: tag change, Gateway events, timers and messages",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 3,
-  prereqs: ["ign-scripting"],
+  prereqs: ["ign-scripting", "ign-udts"],
   tags: ["ignition", "events", "timer", "gateway", "scripting", "threads"],
-  summary: "Where Ignition runs your Python on the Gateway without a screen open: tag events, gateway events, timers and messages, and the shared queues that make slow scripts dangerous.",
+  summary: "Where Ignition runs your Python on the Gateway without a screen open: tag events, Gateway events, timers and messages, and the shared queues that make slow scripts dangerous.",
   objectives: [
-    "Choose between a tag event script and a gateway tag change script for a given job",
+    "Choose between a tag event script and a Gateway tag change script for a given job",
     "Explain fixed delay vs fixed rate and shared vs dedicated timer threading",
     "Use message handlers and system.util.sendMessage to decouple work",
     "Describe how event queues back up and why a slow script hurts the whole Gateway",
@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## Why events matter
 
-Screens run only while someone is looking at them. A plant runs all night. Anything that must happen without an operator, like logging a batch when a PLC bit goes high, sending an email when a pump trips or resetting a counter at midnight, has to be triggered on the Gateway. Ignition gives you three families of Gateway-side triggers: **tag events**, **gateway events** (startup, shutdown, timer, tag change, scheduled, message handlers), and, covered elsewhere, alarm pipelines. This lesson is about the first two and the shared machinery under them.
+Screens run only while someone is looking at them. A plant runs all night. Anything that must happen without an operator, like logging a batch when a PLC bit goes high, sending an email when a pump trips or resetting a counter at midnight, has to be triggered on the Gateway. Ignition gives you three families of Gateway-side triggers: **tag events**, **Gateway events** (startup, shutdown, timer, tag change, scheduled, message handlers), and, covered elsewhere, alarm pipelines. This lesson is about the first two and the shared machinery under them.
 
 All of them run Python (Jython) in the Gateway scope you met in {{lesson:ign-scripting}}. That means no \`self\`, no component and no client. You get \`system.*\` functions, the Gateway's resources and nothing else.
 
@@ -51,7 +51,7 @@ except Exception, e:
 
 ## Gateway tag change scripts
 
-A **gateway tag change script** lives in a project, under Gateway Events in the Designer. You list one or more tag paths and choose which of **value, quality and timestamp** changes should fire it. It receives the tag path, old and new values and an \`initialChange\` flag, and it runs once per change event no matter how many of the three triggers changed.
+A **Gateway tag change script** lives in a project, under Gateway Events in the Designer. You list one or more tag paths and choose which of **value, quality and timestamp** changes should fire it. It receives the tag path, old and new values and an \`initialChange\` flag, and it runs once per change event no matter how many of the three triggers changed.
 
 | | Tag event script | Gateway tag change script |
 |---|---|---|
@@ -61,7 +61,7 @@ A **gateway tag change script** lives in a project, under Gateway Events in the 
 | Travels with | Tag export and UDT | Project export |
 | Good for | Behavior that is part of the thing (a motor UDT logs its own runs) | Application logic (when any line starts, create an order record) |
 
-The rule of thumb integrators use: if the behavior belongs to the equipment, put it on the UDT. If it belongs to the application and calls project script libraries, use a gateway tag change script. Beware mixing the two for the same job. Two scripts reacting to the same change is a debugging puzzle waiting to happen.
+The rule of thumb integrators use: if the behavior belongs to the equipment, put it on the UDT. If it belongs to the application and calls project script libraries, use a Gateway tag change script. Beware mixing the two for the same job. Two scripts reacting to the same change is a debugging puzzle waiting to happen.
 
 ## Startup and shutdown scripts
 
@@ -113,7 +113,7 @@ Because tag event workers are **shared across all tags**, one slow script does n
 ## A decision guide
 
 1. Behavior of a device, per instance: **tag event script on the UDT**.
-2. Application logic reacting to a tag: **gateway tag change script**.
+2. Application logic reacting to a tag: **Gateway tag change script**.
 3. Periodic polling, aggregation or housekeeping: **timer script** (fixed delay, shared if short, dedicated if blocking).
 4. Wall-clock jobs: **scheduled script**.
 5. Anything slow triggered by anything else: **send a message** and let a handler do it.
@@ -132,7 +132,7 @@ The smart way is for the cook to put the pot on a timer, write "check pot at 7:1
 `,
 
   why: `
-**Why are there two kinds of tag change script?** History. Tag event scripts are part of the tag system and travel with the tag, which makes them ideal for UDTs. Gateway tag change scripts were the project-level feature, and they have access to the project's script library and sit with other application logic. Integrators argue about which to use as the default. A common compromise is to put only tiny, generic behavior in the tag (setting a timestamp, calling one library function) and keep real logic in project script libraries that both call. A tag event script can reach a project library only after that project is designated as the gateway scripting project (see {{lesson:ign-projects}}), so set that up first.
+**Why are there two kinds of tag change script?** History. Tag event scripts are part of the tag system and travel with the tag, which makes them ideal for UDTs. Gateway tag change scripts were the project-level feature, and they have access to the project's script library and sit with other application logic. Integrators argue about which to use as the default. A common compromise is to put only tiny, generic behavior in the tag (setting a timestamp, calling one library function) and keep real logic in project script libraries that both call. A tag event script can reach a project library only after that project is designated as the Gateway scripting project (see {{lesson:ign-projects}}), so set that up first.
 
 **Why shared queues?** A Gateway can carry hundreds of thousands of tags. Giving each its own thread would exhaust memory, so Ignition uses a bounded pool. That is efficient until one script abuses it. The failure is hard to diagnose because the symptom (tags updating late, alarms delayed, screens stale) appears far from the cause (one script blocking on a database).
 
@@ -144,7 +144,7 @@ The smart way is for the cook to put the pot on a timer, write "check pot at 7:1
 `,
 
   history: `
-Early Ignition (7.x) had separate "client event scripts" and "gateway event scripts" in the Designer, and tag change scripts were their own category. The 8.0 rewrite of the tag system made tag event scripts first-class and queue-based, which is why \`initialChange\` and \`missedEvents\` appear in their signature. The gateway event model of timer, startup, shutdown, tag change and message handler scripts has stayed recognizable ever since.
+Early Ignition (7.x) had separate "client event scripts" and "Gateway event scripts" in the Designer, and tag change scripts were their own category. The 8.0 rewrite of the tag system made tag event scripts first-class and queue-based, which is why \`initialChange\` and \`missedEvents\` appear in their signature. The Gateway event model of timer, startup, shutdown, tag change and message handler scripts has stayed recognizable ever since.
 `,
 
   examples: [
@@ -212,7 +212,7 @@ Early Ignition (7.x) had separate "client event scripts" and "gateway event scri
     "Running a slow database or HTTP call in a shared timer, delaying every other shared timer in the Gateway.",
     "Using fixed rate with a script that can run longer than its period.",
     "Using a 24-hour timer for a wall-clock job instead of a scheduled script.",
-    "Putting the same logic in both a UDT tag event and a gateway tag change script, so it fires twice."
+    "Putting the same logic in both a UDT tag event and a Gateway tag change script, so it fires twice."
   ],
 
   keyTerms: ["tag-event-script", "gateway-event-script", "timer-script", "fixed-delay", "fixed-rate", "gateway-message-handler", "event-thread-pool"],
@@ -242,44 +242,44 @@ Early Ignition (7.x) had separate "client event scripts" and "gateway event scri
     },
     {
       q: "You need to build a report on a PLC 'batch done' bit. It takes 8 seconds and queries a slow database. What is the best design?",
-      options: ["Run it inside the tag event script", "Put it in a shared 1-second timer", "The tag event sends a message to a dedicated-thread handler that builds the report", "Use a Vision client button"],
-      answer: 2,
+      options: ["Run it inside the tag event script", "Put it in a shared 1-second timer", "Use a Vision client button", "The tag event sends a message to a dedicated-thread handler that builds the report"],
+      answer: 3,
       explain: [
         "That blocks a shared tag event worker for eight seconds.",
         "A shared timer would block every other shared timer for the same time.",
-        "Correct. The trigger returns immediately and the slow work runs on its own thread.",
-        "A client may not be open, and the job must run unattended."
+        "A client may not be open, and the job must run unattended.",
+        "Correct. The trigger returns immediately and the slow work runs on its own thread."
       ]
     },
     {
       q: "Which is the right tool for 'roll the shift counter at 06:00 every day'?",
-      options: ["A timer script with a 86,400,000 ms delay", "A scheduled script", "A tag event script on the clock tag", "A startup script"],
-      answer: 1,
+      options: ["A timer script with a 86,400,000 ms delay", "A tag event script on the clock tag", "A scheduled script", "A startup script"],
+      answer: 2,
       explain: [
         "It drifts by the run time and starts over at each Gateway restart.",
-        "Correct. Scheduled scripts follow the wall clock.",
         "That would run on every clock tick change, not once a day.",
+        "Correct. Scheduled scripts follow the wall clock.",
         "Startup runs only when the project starts."
       ]
     },
     {
       q: "What does missedEvents = True tell a valueChanged script?",
-      options: ["The tag has bad quality", "Some changes were dropped because the event queue overflowed", "The previous script run raised an exception", "The Gateway clock jumped"],
-      answer: 1,
+      options: ["Some changes were dropped because the event queue overflowed", "The tag has bad quality", "The previous script run raised an exception", "The Gateway clock jumped"],
+      answer: 0,
       explain: [
-        "Quality is reported separately.",
         "Correct. It is a signal that your scripts cannot keep up with the rate of change.",
+        "Quality is reported separately.",
         "Errors go to the Gateway log, not this flag.",
         "Clock changes are unrelated."
       ]
     },
     {
       q: "A motor UDT should log each run to history. Where is the cleanest place to attach that behavior?",
-      options: ["A tag event script on the UDT definition", "A separate gateway tag change script listing all 300 motor paths", "A Perspective view script", "A client timer"],
-      answer: 0,
+      options: ["A separate Gateway tag change script listing all 300 motor paths", "A tag event script on the UDT definition", "A Perspective view script", "A client timer"],
+      answer: 1,
       explain: [
-        "Correct. Each instance inherits the behavior, and new motors need no extra setup.",
         "That works but must be edited for every new motor.",
+        "Correct. Each instance inherits the behavior, and new motors need no extra setup.",
         "Views only run while open.",
         "Clients are not guaranteed to be running."
       ]

@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-oee",
   title: "OEE",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["mes-what"],
   tags: ["oee", "availability", "performance", "quality", "tpm", "metrics"],
@@ -215,12 +215,12 @@ OEE is attributed to Seiichi Nakajima, who developed it as part of Total Product
     },
     {
       q: "Which of the six big losses reduces the Performance factor?",
-      options: ["Equipment failure", "Setup and adjustment", "Idling and minor stops", "Process defects"],
-      answer: 2,
+      options: ["Idling and minor stops", "Equipment failure", "Setup and adjustment", "Process defects"],
+      answer: 0,
       explain: [
+        "Correct. Minor stops and reduced speed both hit Performance.",
         "Equipment failure is a long stop and lands in Availability.",
         "Setup and changeover are stops, so Availability.",
-        "Correct. Minor stops and reduced speed both hit Performance.",
         "Defects land in Quality."
       ]
     },
@@ -248,22 +248,22 @@ OEE is attributed to Seiichi Nakajima, who developed it as part of Total Product
     },
     {
       q: "A plant runs one 8-hour shift and has an OEE of 80 percent. What does TEEP show that OEE does not?",
-      options: ["How much of the calendar time the asset is used at all","The scrap rate","The mean time between failures","How well the machine runs when scheduled"],
-      answer: 0,
+      options: ["The scrap rate","The mean time between failures","How well the machine runs when scheduled","How much of the calendar time the asset is used at all"],
+      answer: 3,
       explain: [
-        "Correct. TEEP multiplies OEE by loading (planned time over calendar time), exposing unused capacity.",
         "Scrap is in the Quality factor of both.",
         "MTBF is a separate reliability metric.",
-        "That is what OEE already shows."
+        "That is what OEE already shows.",
+        "Correct. TEEP multiplies OEE by loading (planned time over calendar time), exposing unused capacity."
       ]
     },
     {
       q: "Why is it better to store state intervals and counts than only the OEE percentage?",
-      options: ["You can recompute any window or corrected definition later, and sum correctly across lines","Operators prefer raw data","ERP requires it","Percentages take more storage"],
-      answer: 0,
+      options: ["Operators prefer raw data","You can recompute any window or corrected definition later, and sum correctly across lines","ERP requires it","Percentages take more storage"],
+      answer: 1,
       explain: [
-        "Correct. Percentages cannot be re-aggregated or recalculated after a definition changes.",
         "Operator preference is not the reason.",
+        "Correct. Percentages cannot be re-aggregated or recalculated after a definition changes.",
         "ERP does not require it.",
         "Storage is not the issue."
       ]

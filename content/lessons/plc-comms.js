@@ -2,9 +2,9 @@ LC.lesson({
   id: "plc-comms",
   title: "Produced/consumed tags, MSG and remote I/O",
   track: "plc",
-  minutes: 25,
+  minutes: 15,
   level: 3,
-  prereqs: ["plc-organization", "proto-enip"],
+  prereqs: ["plc-organization", "proto-enip", "plc-udt"],
   tags: ["produced-consumed", "msg", "rpi", "remote-io", "cip", "connections"],
   summary: "The three ways Logix controllers move data: shared tags between controllers, MSG for one-off reads and writes, and remote I/O over EtherNet/IP.",
   objectives: [
@@ -206,23 +206,23 @@ PLC-5 and SLC controllers used message instructions with file addresses like N7:
   quiz: [
     {
       q: "Line 1 needs to give Line 2 a status block every 100 ms, without any ladder logic to move it. What do you use?",
-      options: ["A MSG fired every scan", "Produced and consumed tags", "An Ignition script", "A GSV instruction"],
-      answer: 1,
+      options: ["A MSG fired every scan", "An Ignition script", "A GSV instruction", "Produced and consumed tags"],
+      answer: 3,
       explain: [
         "A MSG every scan loads the message queue and is polling in disguise.",
-        "Correct. The controller schedules it at the RPI with no logic.",
         "That puts a server in the middle of a PLC interlock path.",
-        "GSV reads local system data, not another controller's tags."
+        "GSV reads local system data, not another controller's tags.",
+        "Correct. The controller schedules it at the RPI with no logic."
       ]
     },
     {
       q: "Why do many integrators prefer read MSGs to write MSGs where possible?",
-      options: ["Reads are faster on the wire", "The controller that needs the data owns the timing and sees errors", "Writes cannot be connected", "Reads do not use connections"],
-      answer: 1,
+      options: ["Reads are faster on the wire", "Writes cannot be connected", "The controller that needs the data owns the timing and sees errors", "Reads do not use connections"],
+      answer: 2,
       explain: [
         "Speed is similar. The reason is ownership of the result.",
-        "Correct. The reader sees its own error bits and can fall back to a safe value.",
         "Writes can be connected.",
+        "Correct. The reader sees its own error bits and can fall back to a safe value.",
         "Connected reads do use a connection."
       ]
     },
@@ -250,13 +250,13 @@ PLC-5 and SLC controllers used message instructions with file addresses like N7:
     },
     {
       q: "Ignition needs to read 400 tags from a ControlLogix. Which approach loads the PLC's MSG queue the least?",
-      options: ["Have the PLC MSG each value to Ignition", "Use Ignition's Logix driver to read tags directly", "Use one MSG per tag", "Produce each tag to Ignition"],
-      answer: 1,
+      options: ["Have the PLC MSG each value to Ignition", "Use one MSG per tag", "Produce each tag to Ignition", "Use Ignition's Logix driver to read tags directly"],
+      answer: 3,
       explain: [
         "Ignition is not a Logix target for MSG, and the messages would consume the queue.",
-        "Correct. The driver opens connections and reads many tags per packet without using MSG.",
         "That would flood the controller's message queue and waste connections.",
-        "Produced tags are for controllers, not for an HMI driver."
+        "Produced tags are for controllers, not for an HMI driver.",
+        "Correct. The driver opens connections and reads many tags per packet without using MSG."
       ]
     }
   ],

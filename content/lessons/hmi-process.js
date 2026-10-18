@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-process",
   title: "Designing with operators: task analysis, style guides and testing",
   track: "hmi",
-  minutes: 30,
+  minutes: 20,
   level: 3,
   prereqs: ["hmi-interaction", "persp-hphmi"],
   tags: ["hmi", "process", "task analysis", "style guide", "usability testing", "heuristic evaluation", "isa-101", "operators"],
@@ -150,7 +150,7 @@ ISA-101's lifecycle runs past commissioning. ISA's description of ISA-TR101.02 m
 
 ## Worked example: five operators, one screen
 
-At Meridian Plant 1, you redesign the Area10 mixing overview. You shadow day and night crews for two shifts each. You discover: operators check LT101 and the discharge valve FV101 every few minutes during a charge and write the level on a paper log. A tablet in the corner shows the Packaging line status and nobody uses it. You write a persona for Maria and Luis, and a task analysis for "charge T101". You draw a paper layout that puts T101, FV101, P101 and M101 on one screen with a 30 minute trend. Three operators run a paper scenario ("level high, who do you call?"). The layout moves the alarm banner to the top after two of them look in the wrong place. You build one Level 2 view in Perspective and test five operators on the simulator with a stuck FV101. Time to detect is measured. You write the style guide and commit it to the repo with the library.
+At Meridian Foods Plant 1, you redesign the Area10 mixing overview. You shadow day and night crews for two shifts each. You discover: operators check LT101 and the discharge valve FV101 every few minutes during a charge and write the level on a paper log. A tablet in the corner shows the Packaging line status and nobody uses it. You write a persona for Maria and Luis, and a task analysis for "charge T101". You draw a paper layout that puts T101, FV101, P101 and M101 on one screen with a 30 minute trend. Three operators run a paper scenario ("level high, who do you call?"). The layout moves the alarm banner to the top after two of them look in the wrong place. You build one Level 2 view in Perspective and test five operators on the simulator with a stuck FV101. Time to detect is measured. You write the style guide and commit it to the repo with the library.
 
 ## If you already build Perspective
 
@@ -275,15 +275,15 @@ Human-centered methods such as contextual inquiry and task analysis come from hu
     {
       q: "You have one day before design starts. Which activity gives the most useful input for a new Area10 overview?",
       options: [
-        "Review competitors' HMI screenshots",
         "Shadow the night and day crews, ask about the last time something went wrong, and photograph the workspace",
+        "Review competitors' HMI screenshots",
         "Send operators a survey asking which colors they prefer",
         "Draw three layouts and let the supervisor choose"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "Screenshots show style, not what your operators decide and do.",
         "Correct. Observing real work in context exposes workarounds and tasks nobody mentions in a meeting.",
+        "Screenshots show style, not what your operators decide and do.",
         "Color preference is the least important input, and a survey will not show behavior.",
         "A supervisor is not the operator, and options drawn without task knowledge are guesses."
       ]
@@ -325,30 +325,30 @@ Human-centered methods such as contextual inquiry and task analysis come from hu
       options: [
         "Ask five operators if they like it",
         "Tell operators to open the trend and describe what they see",
-        "Inject a stuck-valve scenario on the simulator, ask operators to think aloud, and time how long until they notice, diagnose and act",
-        "Measure how long operators stay on the overview screen"
+        "Measure how long operators stay on the overview screen",
+        "Inject a stuck-valve scenario on the simulator, ask operators to think aloud, and time how long until they notice, diagnose and act"
       ],
-      answer: 2,
+      answer: 3,
       explain: [
         "Opinion is not performance, and operators may like something that slows them down.",
         "Instructing the path removes the thing you want to test: whether they find it unaided.",
-        "Correct. A scenario with measured stages tests the claim directly and gives comments about why.",
-        "Time on a screen does not tell you whether an abnormal condition was detected."
+        "Time on a screen does not tell you whether an abnormal condition was detected.",
+        "Correct. A scenario with measured stages tests the claim directly and gives comments about why."
       ]
     },
     {
       q: "During a heuristic evaluation you find that a disabled Start button gives no reason. Which heuristic does this most directly violate?",
       options: [
+        "Help users recognize, diagnose, and recover from errors, and visibility of system status",
         "Aesthetic and minimalist design",
         "Match between system and the real world",
-        "Help users recognize, diagnose, and recover from errors, and visibility of system status",
         "Flexibility and efficiency of use"
       ],
-      answer: 2,
+      answer: 0,
       explain: [
+        "Correct. The operator cannot tell why the action is blocked or what to fix.",
         "Adding a reason line does not make the screen less minimal; the missing reason is the issue.",
         "Labels may be fine. The problem is lack of explanation.",
-        "Correct. The operator cannot tell why the action is blocked or what to fix.",
         "Shortcuts for experts are not the issue."
       ]
     },

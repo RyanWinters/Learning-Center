@@ -120,7 +120,7 @@ Key dates, in order: GM Hydra-Matic's standard machine controller specification 
   examples: [
     {
       title: "Walking into a legacy plant",
-      body: `A packaging plant has SLC 5/05 PLCs, a Windows XP box running an old HMI package, and OPC Classic between them. You can place it at steps 2 through 5. Expect a single-point-of-failure PC, no historian, DCOM settings that nobody documented, and a flat network. A reasonable migration pitches an Ignition gateway, an OPC UA driver for the PLCs, and a segmented network, not a rip-and-replace of the controllers.`
+      body: `A packaging plant has SLC 5/05 PLCs, a Windows XP box running an old HMI package, and OPC Classic between them. You can place it at steps 2 through 5. Expect a single-point-of-failure PC, no historian, DCOM settings that nobody documented, and a flat network. A reasonable migration pitches an Ignition Gateway, an OPC UA driver for the PLCs, and a segmented network, not a rip-and-replace of the controllers.`
     },
     {
       title: "Why the license model changes the proposal",
@@ -182,68 +182,68 @@ Key dates, in order: GM Hydra-Matic's standard machine controller specification 
   quiz: [
     {
       q: "What was the main business reason the PLC replaced relay panels?",
-      options: ["Relays could not switch motors", "Changing logic required rewiring, which meant long downtime", "Relays were illegal in new plants", "PLCs were cheaper per I/O point from day one"],
-      answer: 1,
+      options: ["Changing logic required rewiring, which meant long downtime", "Relays could not switch motors", "Relays were illegal in new plants", "PLCs were cheaper per I/O point from day one"],
+      answer: 0,
       explain: [
-        "Relays and contactors still switch motors in every plant today.",
         "Correct. A software change replaced a wiring change, which made model changeovers faster and cheaper.",
+        "Relays and contactors still switch motors in every plant today.",
         "Relays were never banned; they are still used in safety and power circuits.",
         "Early PLCs were not cheaper per point. The saving came from flexibility and maintenance."
       ]
     },
     {
       q: "Why does ladder logic look like electrical drawings?",
-      options: ["It was easy to render on early printers", "The IEC standard requires it", "It runs faster than other languages", "The people maintaining plants were electricians who read relay diagrams"],
-      answer: 3,
+      options: ["It was easy to render on early printers", "The IEC standard requires it", "The people maintaining plants were electricians who read relay diagrams", "It runs faster than other languages"],
+      answer: 2,
       explain: [
         "The look came from the audience, not from printers.",
         "The IEC standard came much later and includes other languages.",
-        "Speed is unrelated to how the language looks.",
-        "Correct. Adoption depended on making plant electricians productive."
+        "Correct. Adoption depended on making plant electricians productive.",
+        "Speed is unrelated to how the language looks."
       ]
     },
     {
       q: "A refinery has 800 PID loops, centralized alarming, and wants one vendor responsible for everything. Which lineage fits best?",
-      options: ["Relay panel", "Standalone PLCs with a PC HMI", "DCS", "MQTT broker"],
-      answer: 2,
+      options: ["Relay panel", "Standalone PLCs with a PC HMI", "MQTT broker", "DCS"],
+      answer: 3,
       explain: [
         "A relay panel cannot do analog loop control at this scale.",
         "This can work, but the DCS lineage was built around exactly this loop-heavy case.",
-        "Correct. A DCS bundles controllers, operator stations and a shared database for continuous processes.",
-        "MQTT is a transport for data, not a control system."
+        "MQTT is a transport for data, not a control system.",
+        "Correct. A DCS bundles controllers, operator stations and a shared database for continuous processes."
       ]
     },
     {
       q: "What problem was OPC (1996) created to solve?",
-      options: ["Every HMI vendor writing its own driver for every PLC", "Insecure remote access", "Slow Ethernet speeds", "Lack of SQL databases in SCADA"],
-      answer: 0,
+      options: ["Insecure remote access", "Every HMI vendor writing its own driver for every PLC", "Slow Ethernet speeds", "Lack of SQL databases in SCADA"],
+      answer: 1,
       explain: [
-        "Correct. One OPC server per device lets any OPC client read it.",
         "Security was a later concern, and OPC Classic was not secure.",
+        "Correct. One OPC server per device lets any OPC client read it.",
         "Ethernet speed was not the issue OPC addressed.",
         "Databases were not part of the OPC problem."
       ]
     },
     {
       q: "Why did MQTT with Sparkplug gain traction in the 2010s for plant data?",
-      options: ["It can control motors directly", "It replaced PLCs", "It lets many consumers get changes from a broker without each polling every device", "It requires no network"],
-      answer: 2,
+      options: ["It lets many consumers get changes from a broker without each polling every device", "It can control motors directly", "It replaced PLCs", "It requires no network"],
+      answer: 0,
       explain: [
+        "Correct. Publish/subscribe decouples producers from consumers, which scales to enterprise and cloud use.",
         "MQTT carries data. Control stays in PLCs.",
         "PLCs still run the machines.",
-        "Correct. Publish/subscribe decouples producers from consumers, which scales to enterprise and cloud use.",
         "MQTT needs a TCP/IP network and a broker."
       ]
     },
     {
       q: "You find a plant with PLC-5 controllers, an HMI PC running Windows 7, and OPC Classic between them. What is the most likely first risk to raise?",
-      options: ["The PLC scan time", "A single aging PC and undocumented DCOM configuration as points of failure", "Too many analog inputs", "The use of ladder logic"],
-      answer: 1,
+      options: ["The PLC scan time", "Too many analog inputs", "The use of ladder logic", "A single aging PC and undocumented DCOM configuration as points of failure"],
+      answer: 3,
       explain: [
         "Scan time is rarely the problem on a stable legacy line.",
-        "Correct. The PC, OS age and DCOM setup are the fragile parts of this generation.",
         "The number of analog inputs is not a risk factor by itself.",
-        "Ladder is fine and is still the dominant language."
+        "Ladder is fine and is still the dominant language.",
+        "Correct. The PC, OS age and DCOM setup are the fragile parts of this generation."
       ]
     }
   ],

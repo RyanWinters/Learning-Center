@@ -2,11 +2,11 @@ LC.lesson({
   id: "arch-sfc",
   title: "The SFC module",
   track: "arch",
-  minutes: 20,
+  minutes: 10,
   level: 3,
   prereqs: ["ign-scripting", "plc-state-machines"],
   tags: ["sfc", "sequencing", "batch", "state-machine", "safety"],
-  summary: "Graphical sequences that run on the Gateway, and the line you must not cross between gateway sequencing and PLC control.",
+  summary: "Graphical sequences that run on the Gateway, and the line you must not cross between Gateway sequencing and PLC control.",
   objectives: [
     "Describe steps, transitions, parallel branches and enclosing steps",
     "Explain chart scope and how a chart receives start parameters",
@@ -60,7 +60,7 @@ Verify exact function names and signatures in the 8.3 \`system.sfc\` documentati
 An Ignition SFC is a convenient place for sequencing, but it is not a safe place for control that protects people or equipment. Gateway sequencing depends on a computer, an OS, a JVM, a network and a database. A Gateway restart, a patch, a lost connection or a scripting error stops the chart. A redundant-pair failover is a restart from the chart's point of view: the instance running on the failed node does not simply carry on at the same step on the other node, so design the chart to be restartable and check what your version restores (see {{lesson:arch-redundancy}}). The equipment keeps doing whatever its last command was.
 
 > [!warning] Safety and fast control stay in the PLC
-> Interlocks, permissives, e-stop handling, anything that has to stop a motor or close a valve within a scan or two, and any sequence where a half-completed run can hurt someone or break something, belong in the PLC. Use a safety-rated PLC where required (see {{lesson:plc-safety}}). The PLC should do the right thing if the Gateway disappears.
+> Interlocks, permissives, E-stop handling, anything that has to stop a motor or close a valve within a scan or two, and any sequence where a half-completed run can hurt someone or break something, belong in the PLC. Use a safety-rated PLC where required (see {{lesson:plc-safety}}). The PLC should do the right thing if the Gateway disappears.
 
 A practical split:
 
@@ -163,33 +163,33 @@ Sequential function charts descend from the French Grafcet standard of the 1970s
   quiz: [
     {
       q: "A chart must wait until a tank level exceeds 80 percent. Where does that wait belong?",
-      options: ["A sleep loop in an action step", "A transition expression on the level tag, ideally with a timeout path", "A tag change script that starts the next chart", "The begin step"],
-      answer: 1,
+      options: ["A sleep loop in an action step", "A tag change script that starts the next chart", "A transition expression on the level tag, ideally with a timeout path", "The begin step"],
+      answer: 2,
       explain: [
         "That blocks a thread and hides what the chart is waiting for.",
-        "Correct. Transitions are the waiting mechanism and are visible in the monitor.",
         "That scatters the sequence and loses the single chart view.",
+        "Correct. Transitions are the waiting mechanism and are visible in the monitor.",
         "The begin step only initializes."
       ]
     },
     {
       q: "Which belongs in the PLC rather than in a Gateway SFC?",
-      options: ["Selecting a recipe and downloading values", "An interlock that must stop a motor if a guard opens", "Writing a batch record to a database", "Prompting an operator to confirm a step"],
-      answer: 1,
+      options: ["Selecting a recipe and downloading values", "Writing a batch record to a database", "Prompting an operator to confirm a step", "An interlock that must stop a motor if a guard opens"],
+      answer: 3,
       explain: [
         "Recipe handling is a good Gateway task.",
-        "Correct. Protective and fast control stays in PLC hardware that keeps working if the Gateway goes away.",
         "Records are a Gateway job.",
-        "Operator prompts are Gateway work."
+        "Operator prompts are Gateway work.",
+        "Correct. Protective and fast control stays in PLC hardware that keeps working if the Gateway goes away."
       ]
     },
     {
       q: "What do the parallel sync lines at the bottom of a parallel element do?",
-      options: ["Start every branch", "Wait until all branches finish before continuing", "Pick the fastest branch", "Run branches one at a time"],
-      answer: 1,
+      options: ["Wait until all branches finish before continuing", "Start every branch", "Pick the fastest branch", "Run branches one at a time"],
+      answer: 0,
       explain: [
-        "The branch lines at the top start them.",
         "Correct. The chart continues once all branches are done, or sooner if a cancel condition fires.",
+        "The branch lines at the top start them.",
         "It waits for all, not the fastest.",
         "Branches run together."
       ]
@@ -207,11 +207,11 @@ Sequential function charts descend from the French Grafcet standard of the 1970s
     },
     {
       q: "The Gateway restarts mid-sequence while the chart had just commanded a pump to run. What design prevents harm?",
-      options: ["A longer chart timeout", "The PLC owns the pump's interlocks and safe state, and the chart only requests actions", "A second chart that polls the first", "Increasing the Gateway memory"],
-      answer: 1,
+      options: ["The PLC owns the pump's interlocks and safe state, and the chart only requests actions", "A longer chart timeout", "A second chart that polls the first", "Increasing the Gateway memory"],
+      answer: 0,
       explain: [
-        "A timeout runs on the Gateway that just died.",
         "Correct. The PLC must do the right thing without the Gateway.",
+        "A timeout runs on the Gateway that just died.",
         "A second Gateway chart has the same dependency.",
         "Memory doesn't help a restart."
       ]

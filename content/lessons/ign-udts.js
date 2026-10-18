@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-udts",
   title: "UDTs in Ignition",
   track: "ign",
-  minutes: 30,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-tags"],
   tags: ["ignition", "udt", "parameters", "templates", "design"],
@@ -203,34 +203,34 @@ The idea came from the PLC world, where user-defined structures became the norma
   quiz: [
     {
       q: "You change the high-alarm setpoint on the Tank UDT definition. What happens?",
-      options: ["Nothing, definitions are only templates for new instances", "Every existing instance updates, except where that property is overridden", "Only instances created after the change update", "The Gateway must be restarted first"],
-      answer: 1,
+      options: ["Nothing, definitions are only templates for new instances", "Only instances created after the change update", "Every existing instance updates, except where that property is overridden", "The Gateway must be restarted first"],
+      answer: 2,
       explain: [
         "Instances remain linked to the definition, so changes propagate.",
-        "Correct. Instances inherit live from the definition, and overridden properties keep their own value.",
         "Existing instances stay linked and also update.",
+        "Correct. Instances inherit live from the definition, and overridden properties keep their own value.",
         "No restart is needed. The tag system picks up the change."
       ]
     },
     {
       q: "M101 shows Bad_NotFound on every member but M102 is fine. Both use ns=1;s=[{PLC}]{InstanceName}.Sts.Running. What is the most probable cause?",
-      options: ["The definition lost its alarm", "The M101 instance's PLC parameter or its PLC tag name does not match", "History is not enabled", "The tag group rate is too slow"],
-      answer: 1,
+      options: ["The definition lost its alarm", "History is not enabled", "The tag group rate is too slow", "The M101 instance's PLC parameter or its PLC tag name does not match"],
+      answer: 3,
       explain: [
         "Alarms don't affect OPC item resolution.",
-        "Correct. The path is built from the instance name and parameters. A typo in either leaves the OPC server unable to find the item.",
         "History has nothing to do with whether the item can be read.",
-        "A slow rate gives slow updates, not NotFound."
+        "A slow rate gives slow updates, not NotFound.",
+        "Correct. The path is built from the instance name and parameters. A typo in either leaves the OPC server unable to find the item."
       ]
     },
     {
       q: "What can an instance NOT do?",
-      options: ["Override a member's alarm setpoint", "Set its own parameter values", "Add a new member that the definition lacks", "Be a nested member of another UDT"],
-      answer: 2,
+      options: ["Add a new member that the definition lacks", "Override a member's alarm setpoint", "Set its own parameter values", "Be a nested member of another UDT"],
+      answer: 0,
       explain: [
+        "Correct. Structure comes from the definition, which guarantees that every instance has the same members.",
         "Overriding property values is allowed.",
         "Parameter values are set per instance, which is their purpose.",
-        "Correct. Structure comes from the definition, which guarantees that every instance has the same members.",
         "Nesting UDT instances is supported."
       ]
     },
@@ -247,13 +247,13 @@ The idea came from the PLC world, where user-defined structures became the norma
     },
     {
       q: "The controls engineer renames Logix member Sts.Fault to Sts.Faulted and downloads. Nothing was changed in Ignition. What do you see?",
-      options: ["Fault alarms continue to work", "Sts/Fault members go Bad_NotFound on every instance", "Ignition renames the members automatically", "Only new instances fail"],
-      answer: 1,
+      options: ["Fault alarms continue to work", "Ignition renames the members automatically", "Only new instances fail", "Sts/Fault members go Bad_NotFound on every instance"],
+      answer: 3,
       explain: [
         "The item path points at a name that no longer exists in the PLC.",
-        "Correct. The definition still requests the old name, so each instance shows a bad-quality tag and the alarm cannot evaluate.",
         "Ignition does not follow PLC edits. Names are matched by text.",
-        "All instances use the same definition, so all fail."
+        "All instances use the same definition, so all fail.",
+        "Correct. The definition still requests the old name, so each instance shows a bad-quality tag and the alarm cannot evaluate."
       ]
     }
   ],

@@ -1,5 +1,25 @@
 # Learning Center — Project Plan
 
+> **This is the original plan, kept as written.** The app has since grown past it. Read the "What changed since" section just below for the
+> current shape, and `README.md`, `docs/APP_SPEC.md` and `docs/SIM_SPEC.md` for how it works now.
+
+## What changed since this plan
+
+| Plan said | Now |
+|---|---|
+| ~95 lessons across 10 tracks | 141 lessons: 136 in 11 tracks (T0 to T9, plus HD, HMI & Screen Design) and 5 hands-on Build Labs (LB). Lessons per track: T0 10, T1 12, T2 9, T3 22, T4 17, T5 12, T6 14, T7 11, T8 12, T9 8, HD 9, LB 5 |
+| Glossary in one `content/glossary.js` | 47 files in `content/glossary/` (about 800 terms), loaded after first paint and listed in `LC_GLOSSARY_FILES` |
+| Simulator: ~10 core challenges, `instructions.js`, `challenges.js` | 26 challenges in `content/sim/` (plus the sandbox). Files are `parser.js`, `engine.js`, `render.js`, `io.js`, `editor.js`. Logix-style module I/O tags (`Local:1:I.Data.0`) and tag-valued timer presets are supported |
+| Views: home, tracks, skill tree, lesson, quiz, review, profile, glossary, lab | Also `search`, `readiness` (Integrator readiness) and the `map` view; `store.js` holds progress only, XP and badges are in `gamify.js`, grading and the review queue in `quiz.js` |
+| `tools/check-links.js` | Never built. Tools are `validate.js`, `sim-test.js`, `test-merge.js` and `test_server.py` |
+| Google-hosted fonts | Fonts are self-hosted in `assets/fonts/` and declared in `assets/css/fonts.css`. The app needs no internet |
+| Server listens on the LAN, or Tailscale by name | `server.py` binds to 127.0.0.1; use `tailscale serve --bg 8080` for the phone. It serves an allowlist only (`index.html`, `assets/`, `content/`), needs an `X-LC: 1` header on the API, keeps one `progress.json.bak`, uses HTTP/1.1 keep-alive and a 128-connection listen queue |
+| Downloads | `content/files/` holds the FDS outline, HMI checklist, I/O list template and naming sheet |
+| XP not specified | Lesson XP by difficulty (L1 40, L2 60, L3 90, L4 130), 10 per first-correct quiz answer, 25 perfect bonus, 30 test-out, 5 per review card, 20 to 60 per sim. Ten levels from 0 to 17,000 XP. 31 badges |
+| Reviews and fixes | See `docs/IMPROVEMENT_PLAN.md` and `docs/reviews/` for the persona reviews, the fix passes and the audits. `docs/HOUSE_STANDARD.md` and `docs/FACTS.md` now govern all examples |
+
+The rest of this file is the plan as first written, including its estimates and track lists.
+
 A self-paced, offline-first learning platform that takes a process control engineer from
 "I can build a Perspective screen" to "I can architect a plant-to-enterprise system as an integrator."
 Focus: Inductive Automation Ignition (8.3, with 8.1 notes where they differ), Allen-Bradley/Logix PLCs,

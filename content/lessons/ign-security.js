@@ -2,17 +2,17 @@ LC.lesson({
   id: "ign-security",
   title: "Users, roles, identity providers and security zones",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["ign-architecture"],
   tags: ["security", "users", "roles", "identity-provider", "zones", "hardening"],
-  summary: "Who is allowed to do what in Ignition, where that answer is stored, and how to lock a gateway down without locking out the plant.",
+  summary: "Who is allowed to do what in Ignition, where that answer is stored, and how to lock a Gateway down without locking out the plant.",
   objectives: [
     "Name the user source types and say when each fits",
     "Explain how 8.3 splits authentication into the Classic and Identity Provider strategies",
     "Describe how roles, security levels and security zones combine to gate a Perspective view",
     "Apply least privilege to operators, engineers and integrators",
-    "List the first gateway hardening steps: HTTPS, default accounts and audit logging"
+    "List the first Gateway hardening steps: HTTPS, default accounts and audit logging"
   ],
 
   body: `
@@ -32,32 +32,32 @@ Ignition 8.3 separates authentication into two strategies on the Gateway.
 The Designer always logs in through the Classic strategy, even if your whole system is Perspective. So you need a user source for engineers and an IdP for operators. They can point at the same directory, but they are configured separately.
 
 > [!note] In 8.1
-> Perspective also used user sources, selected per project. 8.3 moves Perspective to identity providers, and IdPs are not carried over by simply importing an 8.1 export, so plan to recreate them during an upgrade. Service security settings (who may call a gateway service) also moved into security zone configuration. Confirm both points in the 8.1 to 8.3 upgrade guide for your build.
+> Perspective also used user sources, selected per project. 8.3 moves Perspective to identity providers, and IdPs are not carried over by simply importing an 8.1 export, so plan to recreate them during an upgrade. Service security settings (who may call a Gateway service) also moved into security zone configuration. Confirm both points in the 8.1 to 8.3 upgrade guide for your build.
 
 ### User sources (Classic)
 
 A user source is a list of users, their passwords or credentials, and their roles.
 
-- **Internal**: users stored in the gateway itself. Fine for a small site, a lab or the one emergency admin account. Every user is managed by hand.
+- **Internal**: users stored in the Gateway itself. Fine for a small site, a lab or the one emergency admin account. Every user is managed by hand.
 - **Database**: users and roles come from tables you map. Useful when HR or a plant application already owns the data.
-- **Active Directory / LDAP**: the gateway checks credentials against the corporate directory and can map AD groups to roles. Users leave the company once and lose access everywhere.
+- **Active Directory / LDAP**: the Gateway checks credentials against the corporate directory and can map AD groups to roles. Users leave the company once and lose access everywhere.
 - **Hybrid**: AD for passwords, with internal role assignments, or a fallback internal source in case the domain controller is unreachable.
 
 ### Identity providers (Perspective)
 
 An IdP tells Perspective "this person is who they say they are" and passes back attributes such as group membership.
 
-- **Internal**: the gateway keeps the users, like an internal user source.
+- **Internal**: the Gateway keeps the users, like an internal user source.
 - **SAML**: browser redirect to a corporate single sign-on page.
 - **OpenID Connect (OIDC)**: the same idea built on OAuth 2.0. Okta, Azure AD (now Microsoft Entra ID) and Keycloak all speak OIDC.
 
-With SAML or OIDC the gateway never sees the password. The operator logs in at the company's single sign-on page and comes back with a token. That gives you multi-factor authentication and instant account disablement without any Ignition work.
+With SAML or OIDC the Gateway never sees the password. The operator logs in at the company's single sign-on page and comes back with a token. That gives you multi-factor authentication and instant account disablement without any Ignition work.
 
 ## Roles, security levels and zones
 
 Pre-8.3 Ignition used flat **roles**: Operator, Supervisor, Engineer. 8.3 organizes access around **security levels**, a tree of named levels such as \`Authenticated/Roles/Operator\` (check the security level pages for the exact node names in your version). Roles from the IdP map onto nodes in that tree. A reserved \`SecurityZones\` node holds the levels that come from your zones.
 
-A **security zone** is a named group of gateways, computers or IP addresses/hostnames. A user inside the zone "Control Room" gets an extra security level automatically. You can then require both:
+A **security zone** is a named group of Gateways, computers or IP addresses/hostnames. A user inside the zone "Control Room" gets an extra security level automatically. You can then require both:
 
 \`\`\`text
 Role: Supervisor     (what you are)
@@ -77,7 +77,7 @@ A supervisor on a phone in the parking lot has the role but not the zone, so the
 | Component or binding | Hide or disable by role through a binding or script |
 | Tag | Read and write permissions per tag or folder |
 | Designer | Who may open the project or edit it |
-| Gateway Network and services | Which remote gateways may connect or call services |
+| Gateway Network and services | Which remote Gateways may connect or call services |
 
 > [!example] Worked example: a motor speed limit
 > Tag \`[default]Plant1/Area10/Line1/M101/Cfg/SpeedHigh\` has write permission set to security level \`Roles/Supervisor\`. The Perspective numeric entry is bound to it. Any operator can see the value. The write succeeds only when the session carries Supervisor and the zone rule says the client is on the \`10.20.20.0/24\` HMI VLAN (VLAN 20). The Ignition servers live on a different subnet (\`10.20.30.0/24\`), so do not use that range for a client zone. From a laptop on guest Wi-Fi the same supervisor gets a rejected write, and with auditing on, the attempt is logged.
@@ -88,17 +88,17 @@ A supervisor on a phone in the parking lot has the role but not the zone, so the
 
 - **Operators**: view screens, acknowledge alarms, write the handful of tags they run the process with. No Designer access.
 - **Supervisors**: operators plus setpoint and recipe changes within limits.
-- **Engineers**: Designer access to specific projects, not every project, and no gateway config.
+- **Engineers**: Designer access to specific projects, not every project, and no Gateway config.
 - **Integrators and vendors**: named accounts, time-limited, removed at handover. Never a shared "vendor" login.
 - **Services**: a database account with only the tables Ignition needs, not \`sa\`.
 
-## Hardening the gateway
+## Hardening the Gateway
 
 1. **Turn on HTTPS.** A new Gateway's secure port normally starts with a self-signed certificate. Install a certificate your clients trust and redirect HTTP to HTTPS, so passwords and session tokens never cross the plant network in clear text.
 2. **Remove defaults.** Change or delete the initial admin account made at commissioning. Give the Gateway Web Interface its own named engineers.
-3. **Segment the network.** Only the gateway should reach PLC ports. Only engineers should reach port 8088/8043, and office users should reach Perspective through the DMZ reverse proxy (\`10.20.250.10\`) rather than the Level 3 Gateway at \`10.20.30.10\`. See {{lesson:net-security}}.
-4. **Enable audit logging.** Create an audit profile (a database table) and assign it to the gateway and to projects. Actions such as tag writes and logins are then recorded with user and time (check the audit log page for exactly which events your version captures). After a restore, verify that audit profiles are enabled, because they can come back disabled.
-5. **Restrict OPC UA and service access.** Use security zones to limit which remote gateways may connect.
+3. **Segment the network.** Only the Gateway should reach PLC ports. Only engineers should reach port 8088/8043, and office users should reach Perspective through the DMZ reverse proxy (\`10.20.250.10\`) rather than the Level 3 Gateway at \`10.20.30.10\`. See {{lesson:net-security}}.
+4. **Enable audit logging.** Create an audit profile (a database table) and assign it to the Gateway and to projects. Actions such as tag writes and logins are then recorded with user and time (check the audit log page for exactly which events your version captures). After a restore, verify that audit profiles are enabled, because they can come back disabled.
+5. **Restrict OPC UA and service access.** Use security zones to limit which remote Gateways may connect.
 6. **Patch.** Ignition publishes security fixes in new versions. Stay on a supported release.
 
 > [!warning] Locked out
@@ -171,7 +171,7 @@ Early Ignition versions used simple user sources with roles, which carried throu
     "Using a directory user source with no internal break-glass administrator.",
     "Assuming Perspective uses the same user source as the Designer in 8.3. Configure both.",
     "Securing a view but not the tag behind it, so a script or another view can still write.",
-    "Running the gateway on plain HTTP across the plant network.",
+    "Running the Gateway on plain HTTP across the plant network.",
     "Sharing one 'vendor' or 'operator' login, which makes the audit log useless."
   ],
 
@@ -180,13 +180,13 @@ Early Ignition versions used simple user sources with roles, which carried throu
   quiz: [
     {
       q: "In Ignition 8.3, an engineer opens the Designer and an operator opens a Perspective session. Where is each authenticated?",
-      options: ["Designer through a user source (Classic), Perspective through an identity provider", "Both through the same user source", "Both through identity providers", "Designer needs no login on the gateway machine"],
+      options: ["Designer through a user source (Classic), Perspective through an identity provider", "Both through the same user source", "Both through identity providers", "Designer needs no login on the Gateway machine"],
       answer: 0,
       explain: [
         "Correct. 8.3 uses the Classic strategy (user sources) for Designer and Vision, and the Identity Provider strategy for Perspective.",
         "That was close to the 8.1 model for Perspective. In 8.3 they are configured separately.",
         "The Designer uses the Classic strategy, which relies on user sources.",
-        "The Designer always authenticates against the gateway."
+        "The Designer always authenticates against the Gateway."
       ]
     },
     {
@@ -202,39 +202,39 @@ Early Ignition versions used simple user sources with roles, which carried throu
     },
     {
       q: "What is the main benefit of SAML or OIDC for Perspective logins?",
-      options: ["Faster page loads", "The gateway never handles the password, and the company can enforce MFA and disable accounts centrally", "It removes the need for roles", "It encrypts the PLC connection"],
-      answer: 1,
+      options: ["Faster page loads", "It removes the need for roles", "The Gateway never handles the password, and the company can enforce MFA and disable accounts centrally", "It encrypts the PLC connection"],
+      answer: 2,
       explain: [
         "Login method has little to do with page speed.",
-        "Correct. The user authenticates at the corporate provider and the gateway receives a token and attributes.",
         "You still map IdP groups or attributes to roles and security levels.",
+        "Correct. The user authenticates at the corporate provider and the Gateway receives a token and attributes.",
         "PLC traffic is separate and is not affected by the IdP."
       ]
     },
     {
       q: "A contractor needs two weeks of access to tune one loop. What follows least privilege?",
-      options: ["Share the engineer login", "Give them the admin account and ask them to be careful", "A named, expiring account limited to the one project", "Disable security for the project during the tuning"],
-      answer: 2,
+      options: ["Share the engineer login", "Give them the admin account and ask them to be careful", "Disable security for the project during the tuning", "A named, expiring account limited to the one project"],
+      answer: 3,
       explain: [
         "Shared logins destroy accountability.",
         "Admin access is far more than the job needs.",
-        "Correct. Named, scoped and expiring access gives the least access that still lets the work happen.",
-        "Turning security off is the opposite of least privilege."
+        "Turning security off is the opposite of least privilege.",
+        "Correct. Named, scoped and expiring access gives the least access that still lets the work happen."
       ]
     },
     {
-      q: "You restore a gateway backup onto a new server. After the restore, auditing is not recording. What is the likely cause?",
-      options: ["Audit profiles come back disabled and need to be re-enabled", "Backups cannot contain security settings", "The audit database must be MySQL", "Auditing only works on the original hardware"],
-      answer: 0,
+      q: "You restore a Gateway backup onto a new server. After the restore, auditing is not recording. What is the likely cause?",
+      options: ["Backups cannot contain security settings", "The audit database must be MySQL", "Auditing only works on the original hardware", "Audit profiles come back disabled and need to be re-enabled"],
+      answer: 3,
       explain: [
-        "Correct. Restored audit profiles are among the resources that come back disabled, so you turn them on again.",
         "Security settings are part of a backup.",
         "Audit profiles write to a database table, but not only MySQL is supported.",
-        "Auditing has no hardware tie."
+        "Auditing has no hardware tie.",
+        "Correct. Restored audit profiles are among the resources that come back disabled, so you turn them on again."
       ]
     },
     {
-      q: "Which is the best first step to harden a new gateway used across the plant network?",
+      q: "Which is the best first step to harden a new Gateway used across the plant network?",
       options: ["Install a trusted certificate and use HTTPS", "Add more Perspective views", "Raise the tag scan rate", "Disable the historian"],
       answer: 0,
       explain: [

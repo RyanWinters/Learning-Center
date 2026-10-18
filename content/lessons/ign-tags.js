@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-tags",
   title: "Tags and tag providers",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-devices"],
   tags: ["ignition", "tags", "tag-groups", "quality", "providers"],
@@ -54,7 +54,7 @@ The tag's **Value Source** property sets its type.
 
 A memory tag is the default type. It is also the right place for operator-entered values that no PLC needs to know about. A reference tag is the cheapest way to give one value a second name. A derived tag is a reference tag that also converts: its read expression uses \`{source}\` and its write expression uses \`{value}\`, so an operator who types a Celsius setpoint writes Fahrenheit to the source.
 
-Memory tags forget their value on a Gateway restart unless you give them an initial value or enable the retain behavior. If a screen setpoint must survive a restart, keep it in the PLC or in a database.
+A value written to a memory tag is saved with the tag's configuration, so it normally survives a Gateway restart (check the 8.3 manual's Memory Tags page for your version). That doesn't make memory tags the right home for process setpoints: the PLC can't see them, they live on one Gateway, and a tag import or project restore can overwrite them. Keep setpoints the process depends on in the PLC, or in a database when they need history or approval.
 
 ## Tag groups decide what everything costs
 
@@ -207,67 +207,67 @@ Early SCADA systems tied every tag to a licensed point count, so tags were scarc
   quiz: [
     {
       q: "A screen shows M101 at a speed of 1480 rpm and it has not moved for ten minutes, but the PLC power is off. The tag quality is Bad_NotConnected. What does the 1480 represent?",
-      options: ["The current speed read a moment ago", "The last value the Gateway received before the connection dropped", "A default initial value", "The scaled engineering high limit"],
-      answer: 1,
+      options: ["The current speed read a moment ago", "A default initial value", "The last value the Gateway received before the connection dropped", "The scaled engineering high limit"],
+      answer: 2,
       explain: [
         "The connection is down, so nothing has been read recently.",
-        "Correct. A bad-quality tag keeps its last known value, which is why you must check quality before trusting a number.",
         "Defaults apply to memory tags without a source, not to a dropped OPC connection.",
+        "Correct. A bad-quality tag keeps its last known value, which is why you must check quality before trusting a number.",
         "Scaling limits don't become the displayed value when quality is bad."
       ]
     },
     {
       q: "An operator should type a setpoint in degrees C, but the PLC holds degrees F. Which tag type fits best?",
-      options: ["Memory tag", "Query tag", "Derived tag", "Expression tag"],
-      answer: 2,
+      options: ["Memory tag", "Derived tag", "Query tag", "Expression tag"],
+      answer: 1,
       explain: [
         "A memory tag would not write to the PLC.",
-        "A query tag reads from a SQL database, which is not the need here.",
         "Correct. A derived tag has both a read and a write expression, so a value written in C is converted and sent to the source in F.",
+        "A query tag reads from a SQL database, which is not the need here.",
         "An expression tag is read-only. It cannot write the converted value back to the source."
       ]
     },
     {
       q: "Two thousand OPC tags are only interesting while a detail screen is open. Which tag group mode reduces PLC load the most without losing responsiveness?",
-      options: ["Direct at 100 ms", "Driven by a screen-open flag in a memory tag only", "Leased with a slow base rate and a fast leased rate", "Disable the tags"],
-      answer: 2,
+      options: ["Leased with a slow base rate and a fast leased rate", "Direct at 100 ms", "Driven by a screen-open flag in a memory tag only", "Disable the tags"],
+      answer: 0,
       explain: [
+        "Correct. Leased groups run slowly until a client is actually using the tag, then speed up.",
         "That polls 2000 tags every 100 ms at all times.",
         "A driven group depends on a condition you maintain. It would work only if something sets the flag, which is more work and error-prone.",
-        "Correct. Leased groups run slowly until a client is actually using the tag, then speed up.",
         "Disabled tags give Bad_Disabled quality and no value at all."
       ]
     },
     {
       q: "A steady PLC value is read every second by a 1000 ms tag group. How often does the tag's Value Changed script run?",
-      options: ["Every second", "Every time the group executes and the quality is good", "Only when the value, quality or timestamp meets the change rules", "Once at startup only"],
-      answer: 2,
+      options: ["Every second", "Every time the group executes and the quality is good", "Once at startup only", "Only when the value, quality or timestamp meets the change rules"],
+      answer: 3,
       explain: [
         "That would be execution, not change.",
         "Execution happens every second. The change event does not.",
-        "Correct. Executing and changing are different. A steady value executes continually but triggers no change event.",
-        "It also runs on genuine changes after startup."
+        "It also runs on genuine changes after startup.",
+        "Correct. Executing and changing are different. A steady value executes continually but triggers no change event."
       ]
     },
     {
-      q: "Which tag path is the most robust to put in a gateway script?",
-      options: ["M101/Sts/Speed", "[.]Speed", "[default]Plant1/Area10/Line1/M101/Sts/Speed", "Plant1.Area10.Line1.M101.Sts.Speed"],
-      answer: 2,
+      q: "Which tag path is the most robust to put in a Gateway script?",
+      options: ["M101/Sts/Speed", "[default]Plant1/Area10/Line1/M101/Sts/Speed", "[.]Speed", "Plant1.Area10.Line1.M101.Sts.Speed"],
+      answer: 1,
       explain: [
         "Without the provider, the target depends on what the caller assumes.",
-        "A relative path needs a containing tag to resolve against, and a script has none.",
         "Correct. A fully qualified path names the provider, folders and tag.",
+        "A relative path needs a containing tag to resolve against, and a script has none.",
         "Dots are not the folder separator in tag paths."
       ]
     },
     {
       q: "You need to create the same 40 motor structures with six members each. What is the best approach?",
-      options: ["Create 240 tags by hand", "Export, replicate in a spreadsheet, import", "Define a UDT once and create 40 instances", "Create one expression tag per pump"],
-      answer: 2,
+      options: ["Define a UDT once and create 40 instances", "Create 240 tags by hand", "Export, replicate in a spreadsheet, import", "Create one expression tag per pump"],
+      answer: 0,
       explain: [
+        "Correct. A UDT keeps the structure in one definition and instances inherit from it.",
         "That is slow and any later change has to be made 40 times.",
         "It works once, but every later change must be repeated across copies.",
-        "Correct. A UDT keeps the structure in one definition and instances inherit from it.",
         "Expression tags compute values. They are not a way to replicate a structure."
       ]
     }

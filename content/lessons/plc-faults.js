@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-faults",
   title: "Faults, fault routines and diagnostics",
   track: "plc",
-  minutes: 20,
+  minutes: 10,
   level: 3,
   prereqs: ["plc-organization"],
   tags: ["faults", "gsv", "ssv", "diagnostics", "fault-handler", "io-status"],
@@ -179,23 +179,23 @@ The PLC-5 and SLC 500 had a fixed status file (S:) with bits like S:1/13 for maj
   quiz: [
     {
       q: "A major fault occurs in a routine that has a program fault routine and the controller fault handler. In what order do they run?",
-      options: ["Controller fault handler, then program fault routine", "Program fault routine, then controller fault handler if not cleared", "Both at once", "Power-up handler first"],
-      answer: 1,
+      options: ["Controller fault handler, then program fault routine", "Both at once", "Program fault routine, then controller fault handler if not cleared", "Power-up handler first"],
+      answer: 2,
       explain: [
         "The program-level routine is tried first.",
-        "Correct. If neither clears the fault the controller stops.",
         "They run in sequence, not in parallel.",
+        "Correct. If neither clears the fault the controller stops.",
         "The power-up handler runs at power up, not on a runtime fault."
       ]
     },
     {
       q: "Which is a minor fault?",
-      options: ["Watchdog timeout", "Array subscript out of range", "Arithmetic overflow flagged without stopping the controller", "Jump to a missing label"],
-      answer: 2,
+      options: ["Arithmetic overflow flagged without stopping the controller", "Watchdog timeout", "Array subscript out of range", "Jump to a missing label"],
+      answer: 0,
       explain: [
+        "Correct. Minor faults are recorded while the controller keeps running.",
         "A watchdog timeout is a major fault.",
         "Out-of-range subscripts are major faults.",
-        "Correct. Minor faults are recorded while the controller keeps running.",
         "That is a major fault."
       ]
     },
@@ -212,23 +212,23 @@ The PLC-5 and SLC 500 had a fixed status file (S:) with bits like S:1/13 for maj
     },
     {
       q: "A GSV on WallClockTime LocalDateTime needs which destination?",
-      options: ["A single DINT", "A BOOL", "An array of at least seven DINTs", "A STRING"],
-      answer: 2,
+      options: ["A single DINT", "A BOOL", "A STRING", "An array of at least seven DINTs"],
+      answer: 3,
       explain: [
         "One DINT is too small for seven values.",
         "A BOOL cannot hold the date and time.",
-        "Correct. Year, month, day, hour, minute, second and microsecond need seven elements.",
-        "The attribute returns numbers, not a string."
+        "The attribute returns numbers, not a string.",
+        "Correct. Year, month, day, hour, minute, second and microsecond need seven elements."
       ]
     },
     {
       q: "What is the best way to avoid a type 4 code 20 fault from an HMI recipe number?",
-      options: ["A fault routine that clears every fault", "Range-check the index before it indexes the array", "Make the array bigger", "Turn off the watchdog"],
-      answer: 1,
+      options: ["A fault routine that clears every fault", "Make the array bigger", "Range-check the index before it indexes the array", "Turn off the watchdog"],
+      answer: 2,
       explain: [
         "That hides problems and lets bad data continue.",
-        "Correct. A bounds check prevents the fault, and the fault routine remains as a net.",
         "A bigger array only moves the limit.",
+        "Correct. A bounds check prevents the fault, and the fault routine remains as a net.",
         "The watchdog is unrelated to subscript errors."
       ]
     }

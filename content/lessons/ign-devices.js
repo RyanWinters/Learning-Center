@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-devices",
   title: "Device connections and the OPC UA server",
   track: "ign",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-install", "proto-opc"],
   tags: ["ignition", "devices", "opc-ua", "logix", "kepware", "drivers", "diagnostics"],
@@ -112,11 +112,11 @@ An OPC UA subscription gives the driver a list of items and rates. The driver gr
 
 - **Logix**: the driver packs many tag reads into one CIP request up to the connection size. Contiguous structures help.
 - **Modbus**: it groups neighboring registers into one function code request.
-- **Everything**: slower scan classes mean fewer requests. Not every tag needs 100 ms. Status flags can be 1 s, and analog trends 1 to 5 s.
+- **Everything**: slower tag groups mean fewer requests. Not every tag needs 100 ms. Status flags can be 1 s, and analog trends 1 to 5 s.
 
 Practical habits:
 
-1. Put tags on appropriate **tag groups / scan classes**. Reserve fast rates for things people watch.
+1. Put tags on appropriate **tag groups**. Reserve fast rates for things people watch.
 2. Use **separate device connections** for separate PLCs, and consider several connections to one very large PLC to increase concurrency (a forum-recommended technique).
 3. Read the connection's response time and the PLC comms load together. If either is high, remove load before tuning.
 4. Subscribe only what you need. Opening a screen that binds 5,000 tags creates subscriptions for all of them.
@@ -215,46 +215,46 @@ Before Ignition, PLC data usually reached SCADA through OPC DA servers, then thr
     },
     {
       q: "Which is the best reason to use a third-party OPC UA server such as Kepware with Ignition?",
-      options: ["Ignition has no driver for a device, or other systems also need that device data", "It is always faster than a native driver", "Ignition cannot act as an OPC UA client", "It removes the need for tags"],
-      answer: 0,
+      options: ["It is always faster than a native driver", "Ignition cannot act as an OPC UA client", "It removes the need for tags", "Ignition has no driver for a device, or other systems also need that device data"],
+      answer: 3,
       explain: [
-        "Correct. Coverage and plant-wide standards justify the extra hop and license.",
         "It adds a hop, so it is not inherently faster.",
         "Ignition can connect to OPC UA servers as a client.",
-        "Tags are still needed in Ignition."
+        "Tags are still needed in Ignition.",
+        "Correct. Coverage and plant-wide standards justify the extra hop and license."
       ]
     },
     {
       q: "A controller has 2,000 individually defined base tags that Ignition reads. Which change helps polling efficiency the most?",
-      options: ["Group related data into UDTs and arrays so reads combine", "Increase every tag's scan rate", "Disable the OPC UA server", "Move all tags to program scope"],
-      answer: 0,
+      options: ["Increase every tag's scan rate", "Group related data into UDTs and arrays so reads combine", "Disable the OPC UA server", "Move all tags to program scope"],
+      answer: 1,
       explain: [
-        "Correct. Structured data lets the driver read more per request, reducing PLC load.",
         "Faster scan rates add load.",
+        "Correct. Structured data lets the driver read more per request, reducing PLC load.",
         "The OPC UA server is part of the data path.",
         "Scope does not change how many requests are needed."
       ]
     },
     {
       q: "You raise Max Concurrent Requests from 2 to 20 and the PLC's comms load climbs near 100%. What is the right conclusion?",
-      options: ["The setting is too high for that controller, so back it off and reduce load", "Increase it further", "The Gateway is faulty", "Disable External Access"],
-      answer: 0,
+      options: ["Increase it further", "The Gateway is faulty", "The setting is too high for that controller, so back it off and reduce load", "Disable External Access"],
+      answer: 2,
       explain: [
-        "Correct. Concurrency helps only until the controller's communications capacity is saturated.",
         "More concurrency would worsen the overload.",
         "The Gateway is doing what you asked.",
+        "Correct. Concurrency helps only until the controller's communications capacity is saturated.",
         "External Access is unrelated to throughput."
       ]
     },
     {
       q: "How does a tag in Ignition normally get PLC data?",
-      options: ["A device driver publishes into the built-in OPC UA server and the tag references that item", "The tag talks directly to the PLC with no driver", "Perspective polls the PLC", "The database sends it to the tag"],
-      answer: 0,
+      options: ["The tag talks directly to the PLC with no driver", "Perspective polls the PLC", "The database sends it to the tag", "A device driver publishes into the built-in OPC UA server and the tag references that item"],
+      answer: 3,
       explain: [
-        "Correct. The driver feeds Ignition's OPC UA server, and OPC tags read from it as a client.",
         "Tags do not bypass the driver and server.",
         "Perspective reads tags from the Gateway, not PLCs.",
-        "The database stores history and does not feed live values."
+        "The database stores history and does not feed live values.",
+        "Correct. The driver feeds Ignition's OPC UA server, and OPC tags read from it as a client."
       ]
     },
     {

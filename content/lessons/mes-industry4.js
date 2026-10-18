@@ -2,8 +2,8 @@ LC.lesson({
   id: "mes-industry4",
   title: "IT/OT convergence and Industry 4.0",
   track: "mes",
-  minutes: 20,
-  level: 3,
+  minutes: 15,
+  level: 4,
   prereqs: ["mes-uns"],
   tags: ["industry-4-0", "it-ot", "digital-twin", "predictive-maintenance", "ai", "security"],
   summary: "What the buzzwords mean, what they need before they work, and where integrators actually deliver value.",
@@ -68,7 +68,7 @@ Each level needs more data and more engineering. A useful rule: ask what decisio
 5. **An owner for the alert.** A prediction that nobody acts on has no value.
 
 > [!example] A modest win
-> A packaging plant tracks gearbox temperature on 40 conveyors. A gateway script compares each to its own 30-day baseline at the same speed. When one runs 10 degrees C above its norm for four hours, it opens a CMMS ticket. No ML, no cloud, three weeks of work. It catches lubrication problems early, which is what the plant actually needed.
+> A packaging plant tracks gearbox temperature on 40 conveyors. A Gateway script compares each to its own 30-day baseline at the same speed. When one runs 10 degrees C above its norm for four hours, it opens a CMMS ticket. No ML, no cloud, three weeks of work. It catches lubrication problems early, which is what the plant actually needed.
 
 Inductive Automation's community material includes customer sessions where plants collect motor data and alert maintenance to likely failing assets. These are encouraging but are conference talks, and the outcomes are self-reported.
 
@@ -209,13 +209,13 @@ The term "Industrie 4.0" was introduced in Germany around 2011 as part of a high
   quiz: [
     {
       q: "A customer wants ML to predict bearing failures but has only flow sensors and two recorded failures. What's the best first step?",
-      options: ["Train a deep-learning model anyway", "Move all data to the cloud", "Wait for the vendor's next release", "Add sensors that can see the failure mode, improve failure records, and use thresholds meanwhile"],
-      answer: 3,
+      options: ["Add sensors that can see the failure mode, improve failure records, and use thresholds meanwhile", "Train a deep-learning model anyway", "Move all data to the cloud", "Wait for the vendor's next release"],
+      answer: 0,
       explain: [
+        "Correct. Measure what matters, record failures properly, and use simple condition monitoring in the meantime.",
         "Two examples and no sensor on the failure mode give a model nothing to learn.",
         "Location of storage isn't the limiting factor.",
-        "Vendor releases don't fix missing data.",
-        "Correct. Measure what matters, record failures properly, and use simple condition monitoring in the meantime."]
+        "Vendor releases don't fix missing data."]
     },
     {
       q: "Which is the most accurate description of Industry 4.0?",
@@ -229,43 +229,43 @@ The term "Industrie 4.0" was introduced in Germany around 2011 as part of a high
     },
     {
       q: "IT wants to patch a server on Tuesday that the batch system depends on. What's the integrator's most useful move?",
-      options: ["Refuse any patching", "Let IT patch whenever they like", "Agree a patch window with production, test on a non-production copy first, and document owners", "Disconnect the server from the network"],
-      answer: 2,
+      options: ["Refuse any patching", "Let IT patch whenever they like", "Disconnect the server from the network", "Agree a patch window with production, test on a non-production copy first, and document owners"],
+      answer: 3,
       explain: [
         "Never patching leaves known vulnerabilities in place.",
         "Unscheduled patching can interrupt a running batch.",
-        "Correct. A scheduled window, a test environment and clear ownership respect both availability and security.",
-        "That breaks the system and solves nothing."]
+        "That breaks the system and solves nothing.",
+        "Correct. A scheduled window, a test environment and clear ownership respect both availability and security."]
     },
     {
       q: "Where should an integrator expect most of the effort in a data-driven project?",
-      options: ["Making tags reliable, contextualized and stored", "Choosing the neural network", "Designing the logo for dashboards", "Buying more broker licenses"],
-      answer: 0,
+      options: ["Choosing the neural network", "Designing the logo for dashboards", "Making tags reliable, contextualized and stored", "Buying more broker licenses"],
+      answer: 2,
       explain: [
-        "Correct. Reliability, context and history are the foundation and take the most work.",
         "Model choice is a small part when inputs are poor.",
         "Presentation doesn't fix data issues.",
+        "Correct. Reliability, context and history are the foundation and take the most work.",
         "Capacity is rarely the constraint."]
     },
     {
       q: "Which cloud connection design is generally preferred for a plant?",
-      options: ["Inbound connection from the internet to the PLC network", "Outbound-only connection from a DMZ with read-only access by default", "A flat network shared with office laptops", "A direct VPN to every PLC"],
-      answer: 1,
+      options: ["Inbound connection from the internet to the PLC network", "A flat network shared with office laptops", "Outbound-only connection from a DMZ with read-only access by default", "A direct VPN to every PLC"],
+      answer: 2,
       explain: [
         "Inbound paths expose the control network.",
-        "Correct. Outbound-only through a DMZ limits exposure and keeps control networks isolated.",
         "A flat network lets a single infection reach the process.",
+        "Correct. Outbound-only through a DMZ limits exposure and keeps control networks isolated.",
         "Direct access to every PLC multiplies the attack surface."]
     },
     {
       q: "Which of these is typically the most reliable payoff from Industry 4.0 style projects?",
-      options: ["Fully autonomous plants", "Generic AI that optimizes everything", "Replacing all operators", "Trustworthy live OEE, downtime reasons and production visibility"],
-      answer: 3,
+      options: ["Fully autonomous plants", "Trustworthy live OEE, downtime reasons and production visibility", "Generic AI that optimizes everything", "Replacing all operators"],
+      answer: 1,
       explain: [
         "Autonomous plants remain rare and mostly pilot projects.",
+        "Correct. Visibility and discipline are consistent winners and also form the base for later analytics.",
         "Unfocused AI usually lacks a defined problem and data.",
-        "Operators remain central to running plants.",
-        "Correct. Visibility and discipline are consistent winners and also form the base for later analytics."]
+        "Operators remain central to running plants."]
     }
   ],
 

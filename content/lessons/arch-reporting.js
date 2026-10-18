@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-reporting",
   title: "The Reporting module",
   track: "arch",
-  minutes: 25,
+  minutes: 10,
   level: 2,
   prereqs: ["ign-databases"],
   tags: ["reporting", "pdf", "schedules", "named-queries", "perspective"],
@@ -53,8 +53,8 @@ Tables, charts and text boxes repeat across the page for each row of their data 
 
 A {{term:report-schedule|report schedule}} uses a cron-style expression and runs on the Gateway, so it uses the Gateway's local time. A schedule can have several actions at once:
 
-- **Email:** send to addresses or to users by role, with the subject, body and attachment name driven by expressions. Needs an SMTP profile on the gateway.
-- **Save:** write the file to a path on the gateway's file system (a network share is common).
+- **Email:** send to addresses or to users by role, with the subject, body and attachment name driven by expressions. Needs an SMTP profile on the Gateway.
+- **Save:** write the file to a path on the Gateway's file system (a network share is common).
 - **FTP:** upload to a server, with the filename built by an expression.
 - **Print:** send to a printer, with options such as copies, duplex and orientation.
 - **Run Script:** call a script with the finished report so you can post-process it, for example to upload it somewhere custom.
@@ -78,7 +78,7 @@ Perspective can show a report in a **Report Viewer** component, which displays t
 - **Cache heavy data.** If five reports use the same expensive query, compute it once into a summary table on a schedule.
 - **Avoid scripts for big loops.** Python over tens of thousands of rows is slower than the same logic in SQL.
 - **Stagger schedules.** Twenty reports at 6:00:00 each hit the database at once. Offset them by a few minutes.
-- **Mind the gateway.** Generating large PDFs uses memory. Heavy reporting at the end of a shift can slow screens if the gateway is small. Move reports to a separate gateway on large systems (see {{lesson:arch-patterns}} for splitting workloads).
+- **Mind the Gateway.** Generating large PDFs uses memory. Heavy reporting at the end of a shift can slow screens if the Gateway is small. Move reports to a separate Gateway on large systems (see {{lesson:arch-patterns}} for splitting workloads).
 `,
 
   eli5: `
@@ -94,7 +94,7 @@ The template is the design. The gradebook and the student list are the data sour
 
 **Why named queries?** A report that builds SQL by concatenating a parameter into a string is open to injection and breaks on odd characters. Named queries bind parameters properly, can be tested alone, and are shared by screens and reports, so the numbers agree everywhere. When two places report different totals for the same shift, the cause is usually two hand-written queries.
 
-**Why compute in SQL?** The database is built to aggregate. The gateway is not. Reports that look fast in testing with a day of data become the slowest thing on the system after a year of production data.
+**Why compute in SQL?** The database is built to aggregate. The Gateway is not. Reports that look fast in testing with a day of data become the slowest thing on the system after a year of production data.
 
 **Why schedule on the Gateway?** Reports then run with no client open, at a defined time and under a defined identity. The tradeoff is that the schedule uses the Gateway's clock and time zone. Plants with multiple time zones should note which clock a report follows and say so in the report header.
 
@@ -156,23 +156,23 @@ The Reporting module has been part of Ignition since the 7.x line (the 7.9 manua
   quiz: [
     {
       q: "A monthly report takes minutes because a script data source sums 2 million rows in Python. Best fix?",
-      options: ["Add more report components", "Aggregate in the SQL query so the report receives a few hundred rows", "Print it instead of emailing", "Schedule it at midnight"],
-      answer: 1,
+      options: ["Aggregate in the SQL query so the report receives a few hundred rows", "Add more report components", "Print it instead of emailing", "Schedule it at midnight"],
+      answer: 0,
       explain: [
-        "More components don't speed anything up.",
         "Correct. Databases aggregate efficiently, and the report only formats the result.",
+        "More components don't speed anything up.",
         "Delivery isn't the bottleneck.",
         "Midnight hides the problem but doesn't fix it."
       ]
     },
     {
       q: "Which actions can a report schedule run after generating a report?",
-      options: ["Only email", "Print, FTP, Save, Email and Run Script", "Only save to a file", "Only open it in Perspective"],
-      answer: 1,
+      options: ["Only email", "Only save to a file", "Print, FTP, Save, Email and Run Script", "Only open it in Perspective"],
+      answer: 2,
       explain: [
         "Several actions can be attached to one schedule.",
-        "Correct. You can combine them, for example email and save.",
         "Save is only one of the actions.",
+        "Correct. You can combine them, for example email and save.",
         "On-demand viewing is separate from scheduled delivery."
       ]
     },
@@ -189,24 +189,24 @@ The Reporting module has been part of Ignition since the 7.x line (the 7.9 manua
     },
     {
       q: "A report scheduled for 06:00 arrives at 07:00 for the east-coast plant, but the Gateway is in the central time zone. Why?",
-      options: ["Reports always run an hour late", "Schedules use the Gateway's local time", "The email server is slow", "PDFs take an hour to generate"],
-      answer: 1,
+      options: ["Reports always run an hour late", "The email server is slow", "PDFs take an hour to generate", "Schedules use the Gateway's local time"],
+      answer: 3,
       explain: [
         "There is no built-in delay.",
-        "Correct. Schedule against the Gateway's clock or adjust the cron expression.",
         "A slow mail server rarely shifts delivery by exactly an hour.",
-        "Generation time is seconds to minutes, not a fixed hour."
+        "Generation time is seconds to minutes, not a fixed hour.",
+        "Correct. Schedule against the Gateway's clock or adjust the cron expression."
       ]
     },
     {
       q: "Operators need a PDF of the current shift on a Perspective screen, chosen with a date picker. What do you use?",
-      options: ["A schedule that emails the report", "A Report Viewer bound to the report path and parameters", "A Vision-only print button", "An external BI tool only"],
-      answer: 1,
+      options: ["A schedule that emails the report", "A Vision-only print button", "An external BI tool only", "A Report Viewer bound to the report path and parameters"],
+      answer: 3,
       explain: [
         "Scheduling is for unattended delivery, not interactive choice.",
-        "Correct. Bind the parameters to screen inputs and display the PDF.",
         "Perspective has its own viewer; no Vision is needed.",
-        "The module can do this natively."
+        "The module can do this natively.",
+        "Correct. Bind the parameters to screen inputs and display the PDF."
       ]
     }
   ],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "arch-event-streams",
   title: "Event Streams and Kafka (8.3)",
   track: "arch",
-  minutes: 20,
+  minutes: 15,
   level: 4,
   prereqs: ["arch-webdev", "proto-mqtt"],
   tags: ["event-streams", "kafka", "mqtt", "pipeline", "8.3", "integration"],
@@ -12,15 +12,15 @@ LC.lesson({
     "Name the main sources and handlers and the module each depends on",
     "Explain why an event-driven pipeline beats polling for integration traffic",
     "Explain Kafka topics, partitions and consumer groups well enough to size a design",
-    "Choose between an event stream, a gateway script and a WebDev endpoint for a job"
+    "Choose between an event stream, a Gateway script and a WebDev endpoint for a job"
   ],
 
   body: `
 ## What an event stream is
 
-Plants generate events: a tag changes, a message arrives, a batch completes. Integration code that reacts to those events used to mean a pile of tag change scripts, each with its own error handling and its own bugs. **Event Streams**, new in Ignition 8.3, make that pipeline a first-class **project resource**. You describe where events come from, how they are cleaned up, and where they go. The gateway handles queueing, batching and failure.
+Plants generate events: a tag changes, a message arrives, a batch completes. Integration code that reacts to those events used to mean a pile of tag change scripts, each with its own error handling and its own bugs. **Event Streams**, new in Ignition 8.3, make that pipeline a first-class **project resource**. You describe where events come from, how they are cleaned up, and where they go. The Gateway handles queueing, batching and failure.
 
-An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) lists them as not supported on Ignition Edge (see {{lesson:arch-edge}}).
+An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full Gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) lists them as not supported on Ignition Edge (see {{lesson:arch-edge}}).
 
 ## The pipeline
 
@@ -45,7 +45,7 @@ The 8.3 manual lists these sources. Some need other modules.
 - **Tag Event**: reacts to a tag's value, quality or timestamp changing.
 - **HTTP Endpoint**: opens a URL that accepts POST and PUT. Needs the Web Dev module ({{lesson:arch-webdev}}).
 - **Kafka**: consumes a topic. Needs the Kafka module (one of the Cloud Connector modules).
-- **Event Listener**: receives events raised inside the gateway.
+- **Event Listener**: receives events raised inside the Gateway.
 - **MQTT**: Cirrus Link's MQTT Transmission and MQTT Engine modules add event stream sources and handlers for raw MQTT messages, and Engine also for Sparkplug ({{lesson:proto-sparkplug}}).
 
 ### Handlers
@@ -187,11 +187,11 @@ Kafka was created at LinkedIn to move activity data between systems and was open
   },
 
   pitfalls: [
-    "Trusting the in-memory buffer as durable storage. A gateway restart loses what it holds.",
+    "Trusting the in-memory buffer as durable storage. A Gateway restart loses what it holds.",
     "Assuming a batch timer of 0 means 'immediately'. Test what your version does.",
     "Setting the error strategy to ignore and then seeing a healthy stream that delivers nothing.",
     "Picking a Kafka key without thinking about ordering, then discovering related events landed on different partitions.",
-    "Planning an event stream for an Ignition Edge gateway. It is not supported there.",
+    "Planning an event stream for an Ignition Edge Gateway. It is not supported there.",
     "Forgetting the module dependencies: Kafka needs the Kafka module, HTTP source needs Web Dev, the database handler needs SQL Bridge."
   ],
 
@@ -200,40 +200,40 @@ Kafka was created at LinkedIn to move activity data between systems and was open
   quiz: [
     {
       q: "A PLC reboot makes 8,000 tags change at once and your stream inserts each change into a database one by one. Which stage is the right fix?",
-      options: ["Filter, by dropping all events", "Buffer, by batching events with debounce and max wait before the database handler", "Source, by switching to polling", "Encoder, by changing the format"],
-      answer: 1,
+      options: ["Buffer, by batching events with debounce and max wait before the database handler", "Filter, by dropping all events", "Source, by switching to polling", "Encoder, by changing the format"],
+      answer: 0,
       explain: [
-        "Dropping everything loses real data. A filter should remove only unwanted events.",
         "Correct. The buffer groups events so a burst becomes a few database writes, at the cost of a little latency.",
+        "Dropping everything loses real data. A filter should remove only unwanted events.",
         "Polling does more work, not less, and loses the event-driven benefits.",
         "The encoder decodes incoming data. It does not control write frequency."
       ]
     },
     {
       q: "Four consumers in the same consumer group read a topic that has two partitions. What happens?",
-      options: ["All four share the load equally", "Two are active, two sit idle, because each partition is read by one consumer in a group", "Kafka rejects the extra consumers permanently", "Each consumer gets all records twice"],
-      answer: 1,
+      options: ["All four share the load equally", "Kafka rejects the extra consumers permanently", "Two are active, two sit idle, because each partition is read by one consumer in a group", "Each consumer gets all records twice"],
+      answer: 2,
       explain: [
         "A partition is assigned to one consumer in the group, so parallelism is capped at the partition count.",
-        "Correct. Throughput scales with consumers only up to the number of partitions.",
         "They are allowed. They simply wait and take over if another fails.",
+        "Correct. Throughput scales with consumers only up to the number of partitions.",
         "Within one group each record is delivered to one consumer. A different group would see its own copy."
       ]
     },
     {
       q: "You need ordered processing of all events for each production line. What should you do in Kafka?",
-      options: ["Use one consumer per record", "Use the line ID as the record key so a line's events share a partition", "Randomize the key for even spread", "Turn off partitions"],
-      answer: 1,
+      options: ["Use one consumer per record", "Randomize the key for even spread", "Turn off partitions", "Use the line ID as the record key so a line's events share a partition"],
+      answer: 3,
       explain: [
         "Order is guaranteed per partition, so this does not help and would be extremely slow.",
-        "Correct. Records with the same key go to the same partition, where order is preserved.",
         "Random keys spread one line's events across partitions and lose ordering.",
-        "Every topic has at least one partition, and a single partition limits throughput."
+        "Every topic has at least one partition, and a single partition limits throughput.",
+        "Correct. Records with the same key go to the same partition, where order is preserved."
       ]
     },
     {
       q: "A site wants to deploy event streams on Ignition Edge panels at each machine. What is the problem?",
-      options: ["Edge has no Designer", "Event streams are not available on Ignition Edge, so a full gateway is needed", "Edge only supports Kafka sources", "Event streams require Vision"],
+      options: ["Edge has no Designer", "Event streams are not available on Ignition Edge, so a full Gateway is needed", "Edge only supports Kafka sources", "Event streams require Vision"],
       answer: 1,
       explain: [
         "The issue is the feature, not the Designer.",
@@ -244,11 +244,11 @@ Kafka was created at LinkedIn to move activity data between systems and was open
     },
     {
       q: "An outside system asks 'what is the current level of tank 4?' on demand. Which Ignition feature fits best?",
-      options: ["An event stream with a tag event source", "A WebDev doGet resource", "A Kafka consumer group", "A database handler"],
-      answer: 1,
+      options: ["A WebDev doGet resource", "An event stream with a tag event source", "A Kafka consumer group", "A database handler"],
+      answer: 0,
       explain: [
-        "Event streams push events when things change. They are not built to answer ad hoc questions.",
         "Correct. On-demand request/response is exactly what a WebDev endpoint is for.",
+        "Event streams push events when things change. They are not built to answer ad hoc questions.",
         "Kafka is a durable log for streams of records, not an on-demand query tool.",
         "A database handler writes events into a table. It does not serve requests."
       ]

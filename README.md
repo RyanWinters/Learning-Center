@@ -1,8 +1,9 @@
 # Learning Center
 
-A self-hosted course for becoming an Ignition and controls integrator. It has 136 lessons across 11 tracks (including HMI & Screen Design) plus 5 hands-on Ignition Build Labs, from field
+A self-hosted course for becoming an Ignition and controls integrator. It has 141 lessons: 136 in 11 tracks (T0–T9 plus HMI & Screen Design) and 5 hands-on Ignition Build Labs, from field
 devices and 4–20 mA up to MES, the Unified Namespace and multi-site architecture. There's also a ladder-logic simulator with 26 graded
-challenges, a tap-anywhere glossary, quizzes, a review queue, and XP, streaks and badges.
+challenges (Logix-style module I/O tags such as `Local:1:I.Data.0`), a tap-anywhere glossary of about 800 terms, quizzes, a review queue,
+an Integrator readiness page, and XP, streaks and badges.
 
 Your progress is stored on the PC that runs the server, so your phone and PC always show the same progress.
 
@@ -17,7 +18,9 @@ python server.py
 Then open http://localhost:8080 on the PC.
 
 Use `--port 9000` to change the port. Progress is saved to `data/progress.json`, with the previous version kept in
-`progress.json.bak`. That folder is ignored by git. Copy it if you want a backup.
+`data/progress.json.bak`. That folder is ignored by git. Copy it if you want a backup.
+
+The server only serves `index.html`, `assets/` and `content/`. `docs/`, `tools/`, `server.py`, `data/` and dotfiles return 404.
 
 ## Use it from your phone with Tailscale
 
@@ -49,15 +52,16 @@ anyone on that network could change your progress.
 
 | Path | What it is |
 |---|---|
-| `index.html`, `assets/` | The app: plain HTML, CSS and JavaScript, with no build step |
+| `index.html`, `assets/` | The app: plain HTML, CSS and JavaScript, with no build step. Fonts are self-hosted in `assets/fonts/` (declared in `assets/css/fonts.css`), so it works with no internet |
 | `content/curriculum.js` | Tracks, lesson order and prerequisites |
 | `content/lessons/*.js` | One file per lesson: reading, ELI5, why, history, diagrams, quiz, sources |
-| `content/glossary/*.js` | About 720 industry terms. They are linked automatically wherever they appear |
-| `content/sim/*.js` | Ladder simulator challenges |
-| `server.py` | Static file server plus the progress API |
+| `content/glossary/*.js` | About 800 industry terms. They are linked automatically wherever they appear |
+| `content/sim/*.js` | Ladder simulator challenges (`index.js` lists them) |
+| `content/files/` | Downloads linked from lessons: FDS outline, HMI checklist, I/O list template, naming sheet |
+| `server.py` | Static file server plus the progress API (`/api/progress`, which needs an `X-LC: 1` header) |
 | `tools/validate.js` | Checks every lesson, quiz, diagram and glossary reference |
 | `tools/sim-test.js` | Runs every simulator challenge's solution against its tests |
-| `docs/` | The plan, specs, writer guide and verified-facts list used to build this |
+| `docs/` | The original plan, specs, writer guide, house standard and verified-facts list used to build this. `docs/reviews/` holds the review and audit notes |
 
 ## Accuracy
 

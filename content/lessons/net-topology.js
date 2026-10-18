@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-topology",
   title: "Industrial topologies, rings and DLR",
   track: "net",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["net-vlan"],
   tags: ["topology", "ring", "dlr", "rstp", "redundancy", "cpwe", "switching"],
@@ -197,22 +197,22 @@ Spanning tree was invented by Radia Perlman at DEC in the 1980s and standardized
   quiz: [
     {
       q: "A drive's I/O connection has a 20 ms packet interval and a timeout multiplier of 4. A cable break occurs in an RSTP ring that recovers in 1 second. What happens?",
-      options: ["Nothing, RSTP is fast enough", "The connection times out and the drive faults", "RSTP waits for the drive to reconnect", "The controller buffers the missed packets"],
-      answer: 1,
+      options: ["Nothing, RSTP is fast enough", "RSTP waits for the drive to reconnect", "The connection times out and the drive faults", "The controller buffers the missed packets"],
+      answer: 2,
       explain: [
         "The connection dies after about 80 ms of silence. One second is far longer.",
-        "Correct. The network heals after about a second, but the I/O connection has already timed out.",
         "RSTP has no awareness of application connections.",
+        "Correct. The network heals after about a second, but the I/O connection has already timed out.",
         "Missed implicit I/O packets are lost, not buffered."
       ]
     },
     {
       q: "What is the job of the DLR ring supervisor?",
-      options: ["Assign IP addresses to ring nodes", "Block one port in normal operation, send beacons, and open the path when a fault occurs", "Route traffic to the enterprise network", "Encrypt ring traffic"],
-      answer: 1,
+      options: ["Block one port in normal operation, send beacons, and open the path when a fault occurs", "Assign IP addresses to ring nodes", "Route traffic to the enterprise network", "Encrypt ring traffic"],
+      answer: 0,
       explain: [
-        "IP assignment is done by BOOTP/DHCP, not the ring protocol.",
         "Correct. Blocking prevents the loop, and beacons detect breaks.",
+        "IP assignment is done by BOOTP/DHCP, not the ring protocol.",
         "Routing is a layer 3 function outside DLR.",
         "DLR provides redundancy, not encryption."
       ]
@@ -230,22 +230,22 @@ Spanning tree was invented by Radia Perlman at DEC in the 1980s and standardized
     },
     {
       q: "A ring has run for six months with one broken cable and nobody noticed. What does this show?",
-      options: ["The ring is oversized", "Redundancy hides faults, so ring status must be monitored and alarmed", "The cable was not needed", "DLR is unreliable"],
-      answer: 1,
+      options: ["The ring is oversized", "The cable was not needed", "DLR is unreliable", "Redundancy hides faults, so ring status must be monitored and alarmed"],
+      answer: 3,
       explain: [
         "Size is unrelated.",
-        "Correct. The ring is now a line, and the next fault will stop the line unless the first was alarmed.",
         "The ring used the other path, but the redundancy was gone.",
-        "DLR did exactly what it should. The monitoring was missing."
+        "DLR did exactly what it should. The monitoring was missing.",
+        "Correct. The ring is now a line, and the next fault will stop the line unless the first was alarmed."
       ]
     },
     {
       q: "Which protocol suits a daisy chain of EtherNet/IP drives, each with two ports, with no extra switches?",
-      options: ["STP", "DLR", "Spanning tree with BPDU guard", "VLAN trunking"],
-      answer: 1,
+      options: ["DLR", "STP", "Spanning tree with BPDU guard", "VLAN trunking"],
+      answer: 0,
       explain: [
-        "STP is too slow for real-time I/O, and it needs switch logic the devices lack.",
         "Correct. DLR was designed for devices with embedded two-port switches.",
+        "STP is too slow for real-time I/O, and it needs switch logic the devices lack.",
         "This is a protection feature, not a ring protocol.",
         "Trunking is about VLAN tagging and has nothing to do with redundancy."
       ]

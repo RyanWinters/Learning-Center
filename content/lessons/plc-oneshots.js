@@ -191,46 +191,46 @@ The "note to self" is the storage bit. Two doorbells cannot share one note, or e
     },
     {
       q: "Two one-shot rungs both use the storage bit Edge_OS. What happens?",
-      options: ["Nothing, storage bits can be shared", "Each overwrites the other's memory, so edges fire or vanish unpredictably", "The controller faults", "The second rung is ignored at download"],
-      answer: 1,
+      options: ["Each overwrites the other's memory, so edges fire or vanish unpredictably", "Nothing, storage bits can be shared", "The controller faults", "The second rung is ignored at download"],
+      answer: 0,
       explain: [
-        "Sharing is the classic bug.",
         "Correct. Each sees what the other left behind.",
+        "Sharing is the classic bug.",
         "No fault is generated, just wrong behavior.",
         "Logix does not check for this."
       ]
     },
     {
       q: "Which instruction detects that a part has just left a photo-eye?",
-      options: ["OSR on the sensor", "OSF on the sensor", "XIC with no one-shot", "CTU"],
-      answer: 1,
+      options: ["OSR on the sensor", "XIC with no one-shot", "CTU", "OSF on the sensor"],
+      answer: 3,
       explain: [
         "OSR fires when the part arrives.",
-        "Correct. The sensor goes true to false as the part leaves.",
         "A plain contact is true the whole time the part is present.",
-        "A counter accumulates, it does not give a one-scan pulse."
+        "A counter accumulates, it does not give a one-scan pulse.",
+        "Correct. The sensor goes true to false as the part leaves."
       ]
     },
     {
       q: "In the toggle rung, why is the Run_Cmd branch written with XIO(Toggle_Edge) in the second leg?",
-      options: ["To stop the seal-in from holding Run_Cmd on during the scan of the second press", "To save a contact", "To make the rung scan faster", "Because OSR requires it"],
-      answer: 0,
+      options: ["To save a contact", "To make the rung scan faster", "To stop the seal-in from holding Run_Cmd on during the scan of the second press", "Because OSR requires it"],
+      answer: 2,
       explain: [
-        "Correct. On the second press both Edge and Run are 1, and the second leg must be false for Run_Cmd to turn off.",
         "It adds a contact rather than saving one.",
         "Scan time is unaffected.",
+        "Correct. On the second press both Edge and Run are 1, and the second leg must be false for Run_Cmd to turn off.",
         "OSR has no such requirement."
       ]
     },
     {
       q: "An ONS sits in the middle of a rung with a false permissive to its right when the button first goes true. What happens?",
-      options: ["The pulse is saved until the permissive is true", "The pulse is lost and the rung fires only after the button drops and rises again", "The ONS bypasses the permissive", "The controller sets a minor fault"],
-      answer: 1,
+      options: ["The pulse is saved until the permissive is true", "The ONS bypasses the permissive", "The controller sets a minor fault", "The pulse is lost and the rung fires only after the button drops and rises again"],
+      answer: 3,
       explain: [
         "ONS does not queue pulses.",
-        "Correct. The ONS consumed the edge and cannot fire again until re-armed.",
         "Series conditions always apply.",
-        "No fault is raised."
+        "No fault is raised.",
+        "Correct. The ONS consumed the edge and cannot fire again until re-armed."
       ]
     }
   ],

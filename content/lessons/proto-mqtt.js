@@ -2,7 +2,7 @@ LC.lesson({
   id: "proto-mqtt",
   title: "MQTT: publish/subscribe for industry",
   track: "proto",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["net-routing"],
   tags: ["mqtt", "pub-sub", "broker", "qos", "iiot"],
@@ -187,16 +187,16 @@ Andy Stanford-Clark of IBM and Arlen Nipper, then at Arcom (now part of Eurotech
       q: "A historian, an MES and a cloud tool all need the same 500 tags from a gateway that has limited CPU. What does MQTT change?",
       options: [
         "Each consumer still connects to the gateway, but with less overhead",
-        "The gateway publishes once to the broker and the broker fans out to all three",
         "The tags must be duplicated on three topics",
-        "The consumers must poll the broker for changes"
+        "The consumers must poll the broker for changes",
+        "The gateway publishes once to the broker and the broker fans out to all three"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Consumers never connect to the publisher in pub/sub.",
-        "Correct. The producer does the work once and the broker handles the fan-out.",
         "One topic can have any number of subscribers.",
-        "Subscribers are pushed messages over their open connection. They don't poll."
+        "Subscribers are pushed messages over their open connection. They don't poll.",
+        "Correct. The producer does the work once and the broker handles the fan-out."
       ]
     },
     {
@@ -214,25 +214,25 @@ Andy Stanford-Clark of IBM and Arlen Nipper, then at Arcom (now part of Eurotech
       q: "A publisher sends QoS 1 and a subscriber is offline with a clean session. When it reconnects, what happens?",
       options: [
         "It receives everything it missed because QoS 1 guarantees delivery",
-        "It receives only the retained message, if one exists, and the messages it missed are gone",
         "The broker rejects the reconnection",
+        "It receives only the retained message, if one exists, and the messages it missed are gone",
         "The publisher resends automatically"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "QoS 1 guarantees delivery only to the broker, then to a currently subscribed session.",
-        "Correct. A clean session discards subscriptions and queued messages on disconnect. Only retained messages are delivered on new subscription.",
         "The broker accepts the connection normally.",
+        "Correct. A clean session discards subscriptions and queued messages on disconnect. Only retained messages are delivered on new subscription.",
         "The publisher's responsibility ended when the broker acknowledged."
       ]
     },
     {
       q: "A status topic shows 'online' hours after a gateway lost power. What was most likely missing?",
-      options: ["A higher QoS", "A Last Will and Testament message set to offline", "A persistent session", "Port 8883"],
-      answer: 1,
+      options: ["A Last Will and Testament message set to offline", "A higher QoS", "A persistent session", "Port 8883"],
+      answer: 0,
       explain: [
-        "QoS does not announce a dead client.",
         "Correct. The will is published by the broker when the client vanishes without a clean disconnect. Without one, nothing updates the topic.",
+        "QoS does not announce a dead client.",
         "A persistent session keeps subscriptions and queued messages. It does not publish status.",
         "TLS secures the connection and does not report failure."
       ]
@@ -240,27 +240,27 @@ Andy Stanford-Clark of IBM and Arlen Nipper, then at Arcom (now part of Eurotech
     {
       q: "A new dashboard connects and shows blank values for slow-changing tags until they change. What fixes it?",
       options: [
-        "Publish with the retain flag",
         "Change the broker port",
+        "Publish with the retain flag",
         "Switch to QoS 0",
         "Add a + wildcard to the subscription"
       ],
-      answer: 0,
+      answer: 1,
       explain: [
-        "Correct. The broker stores the last retained value per topic and delivers it to each new subscriber.",
         "Ports have nothing to do with message content.",
+        "Correct. The broker stores the last retained value per topic and delivers it to each new subscriber.",
         "QoS 0 reduces delivery guarantees and does not store anything.",
         "Wildcards control which topics match, not whether stored values are delivered."
       ]
     },
     {
       q: "Which port should an MQTT client use to reach a broker across the public internet?",
-      options: ["1883", "502", "8883 with TLS", "4840"],
-      answer: 2,
+      options: ["1883", "8883 with TLS", "502", "4840"],
+      answer: 1,
       explain: [
         "1883 is plain text, so credentials and data are visible.",
-        "502 is Modbus TCP.",
         "Correct. 8883 is the registered port for MQTT over TLS.",
+        "502 is Modbus TCP.",
         "4840 is the default OPC UA port."
       ]
     }

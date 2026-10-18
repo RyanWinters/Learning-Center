@@ -59,7 +59,7 @@
 
     function statusBlock() {
       const st = LC.graph.status(id), r = LC.store.lesson(id);
-      return U.chip(st) + (st === 'skipped' ? ' <button type="button" class="linkbtn" data-unskip>Undo skip</button>' : '') +
+      return U.chip(st) + (st === 'skipped' ? ' <button type="button" class="linkbtn" data-unskip>Undo</button>' : '') +
         (st === 'tested-out' ? '<span class="muted small"> Scored ' + r.bestScore + '% cold</span>' : '');
     }
     function actionsBlock() {

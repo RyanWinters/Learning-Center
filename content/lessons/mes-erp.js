@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-erp",
   title: "ERP integration, B2MML and ISA-95 Part 2",
   track: "mes",
-  minutes: 25,
+  minutes: 15,
   level: 4,
   prereqs: ["mes-what", "arch-webdev"],
   tags: ["erp", "isa-95", "b2mml", "integration", "sap", "rest"],
@@ -110,7 +110,7 @@ For ERP traffic, the dominant concern is **not losing a confirmation**. An ERP t
 
 ## Where Ignition and Sepasoft fit
 
-Plain Ignition can do all of the above with its Python-based (Jython) scripting: \`system.net.httpClient\` for REST calls, file handling for drops, Named Queries for staging tables, and the gateway's web development tools for receiving calls (see {{lesson:arch-webdev}}). It's fully custom, so you own the mapping, retries and error screens. For inbound calls, authenticate the middleware as its own service account or with an API key issued for that one integration, sent over HTTPS, and never reuse a person's login. Check your Ignition version's web-development security options. The middleware sits in the DMZ and reaches the gateway only through the DMZ reverse proxy (see {{lesson:arch-remote-services}}).
+Plain Ignition can do all of the above with its Python-based (Jython) scripting: \`system.net.httpClient\` for REST calls, file handling for drops, Named Queries for staging tables, and the Gateway's web development tools for receiving calls (see {{lesson:arch-webdev}}). It's fully custom, so you own the mapping, retries and error screens. For inbound calls, authenticate the middleware as its own service account or with an API key issued for that one integration, sent over HTTPS, and never reuse a person's login. Check your Ignition version's web-development security options. The middleware sits in the DMZ and reaches the Gateway only through the DMZ reverse proxy (see {{lesson:arch-remote-services}}).
 
 Sepasoft provides products aimed at this job:
 
@@ -135,8 +135,8 @@ Do not promise "we can connect to SAP" without knowing the version, the object (
 
 A food plant. ERP releases production order 1001234 for 5,000 cases of MARINARA-12PK.
 
-1. Middleware delivers a ProductionSchedule message to the gateway's REST endpoint.
-2. The gateway validates it, writes a \`work_order\` row with status "Released", and raises it on the scheduler screen.
+1. Middleware delivers a ProductionSchedule message to the Gateway's REST endpoint.
+2. The Gateway validates it, writes a \`work_order\` row with status "Released", and raises it on the scheduler screen.
 3. The operator starts the order. Status changes to "Running" and the MES posts status back.
 4. The line runs. The MES accumulates good count, scrap and consumed tomato paste by lot.
 5. On completion, the MES builds a ProductionPerformance message: order 1001234, 4,980 good, 20 scrap, tomato paste lot T-4410 312 kg, with a unique confirmation ID.
@@ -176,7 +176,7 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
     },
     {
       title: "File drop with a safe handoff",
-      body: `ERP writes \`orders_20261017.xml.tmp\`, then renames it to \`orders_20261017.xml\` when complete. A gateway timer script only reads files that end in \`.xml\`, moves each to \`/processed\` after success or \`/error\` on failure. The rename trick avoids reading half-written files, the most common file-drop bug.`
+      body: `ERP writes \`orders_20261017.xml.tmp\`, then renames it to \`orders_20261017.xml\` when complete. A Gateway timer script only reads files that end in \`.xml\`, moves each to \`/processed\` after success or \`/error\` on failure. The rename trick avoids reading half-written files, the most common file-drop bug.`
     }
   ],
 
@@ -215,23 +215,23 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
   quiz: [
     {
       q: "Which two ISA-95 Part 2 object models carry the main daily traffic between ERP and MES?",
-      options: ["Personnel and equipment capability", "Production schedule (down) and production performance (up)", "Process segment and capability", "Material class and personnel class"],
-      answer: 1,
+      options: ["Personnel and equipment capability", "Process segment and capability", "Material class and personnel class", "Production schedule (down) and production performance (up)"],
+      answer: 3,
       explain: [
         "These are real models but they change slowly and are not the daily flow.",
-        "Correct. Orders go down as a production schedule and results come back as production performance.",
         "These describe reusable steps and what the plant could do, not what is happening today.",
-        "Classes describe definitions and change rarely."]
+        "Classes describe definitions and change rarely.",
+        "Correct. Orders go down as a production schedule and results come back as production performance."]
     },
     {
       q: "What is B2MML?",
-      options: ["A network protocol like MQTT", "A Sepasoft database", "A SAP message format", "An XML implementation of the ISA-95 object models"],
-      answer: 3,
+      options: ["A network protocol like MQTT", "A Sepasoft database", "An XML implementation of the ISA-95 object models", "A SAP message format"],
+      answer: 2,
       explain: [
         "B2MML is a message format, not a transport protocol.",
         "It's a standard schema, not a product-specific database.",
-        "It's maintained by MESA and isn't specific to SAP, though SAP integrations may use or map to it.",
-        "Correct. It defines the XML shapes for ISA-95 data, and you choose how to transport it."]
+        "Correct. It defines the XML shapes for ISA-95 data, and you choose how to transport it.",
+        "It's maintained by MESA and isn't specific to SAP, though SAP integrations may use or map to it."]
     },
     {
       q: "The MES sends a production confirmation, the network drops the reply, and the MES retries. How do you avoid double inventory?",
@@ -245,33 +245,33 @@ ISA-95 grew out of the Purdue Reference Model and work in the 1990s to define th
     },
     {
       q: "A plant wants to keep running during ERP maintenance windows. Which design fits best?",
-      options: ["Each start button waits for a live ERP response", "Disable order tracking during the window", "Buffer released orders locally and queue confirmations until ERP is reachable", "Run ERP on the plant network"],
-      answer: 2,
+      options: ["Each start button waits for a live ERP response", "Buffer released orders locally and queue confirmations until ERP is reachable", "Disable order tracking during the window", "Run ERP on the plant network"],
+      answer: 1,
       explain: [
         "That makes an ERP outage a production outage.",
-        "Losing tracking leaves gaps in the records.",
         "Correct. Local buffering decouples the line from the back office.",
+        "Losing tracking leaves gaps in the records.",
         "ERP location doesn't remove the dependency, and it is not usually possible."]
     },
     {
       q: "A customer says, 'Just connect us to SAP.' What should you do first?",
-      options: ["Quote a fixed price", "Install the Business Connector and test", "Write the B2MML schema from scratch", "Find out the SAP product and version, which objects are needed, and who owns the SAP configuration"],
-      answer: 3,
+      options: ["Quote a fixed price", "Install the Business Connector and test", "Find out the SAP product and version, which objects are needed, and who owns the SAP configuration", "Write the B2MML schema from scratch"],
+      answer: 2,
       explain: [
         "Pricing before scoping is how integrations go over budget.",
         "Tools come after you know the interface and the objects.",
-        "B2MML is published. You don't write the schema, you agree on a profile.",
-        "Correct. SAP ERP, S/4HANA and other products expose different interfaces, and SAP-side work needs SAP staff."]
+        "Correct. SAP ERP, S/4HANA and other products expose different interfaces, and SAP-side work needs SAP staff.",
+        "B2MML is published. You don't write the schema, you agree on a profile."]
     },
     {
       q: "Which integration pattern most easily produces half-read data if you are careless?",
-      options: ["REST call", "File drop in a shared folder", "Message queue", "Middleware hub"],
-      answer: 1,
+      options: ["REST call", "Message queue", "Middleware hub", "File drop in a shared folder"],
+      answer: 3,
       explain: [
         "A REST call delivers a complete request or fails.",
-        "Correct. A poller can pick up a file the writer hasn't finished. Write to a temporary name and rename when complete.",
         "Queues deliver whole messages.",
-        "Middleware normally deals in whole messages."]
+        "Middleware normally deals in whole messages.",
+        "Correct. A poller can pick up a file the writer hasn't finished. Write to a temporary name and rename when complete."]
     }
   ],
 

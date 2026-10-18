@@ -2,7 +2,7 @@ LC.lesson({
   id: "ign-scripting",
   title: "Python scripting and scopes",
   track: "ign",
-  minutes: 30,
+  minutes: 15,
   level: 2,
   prereqs: ["ign-expressions"],
   tags: ["ignition", "scripting", "python", "jython", "scopes", "system-library"],
@@ -11,7 +11,7 @@ LC.lesson({
     "Say what Jython 2.7 means for the syntax and libraries you can use",
     "Name the four scopes and the system.* functions each can call",
     "Read and write tags, query databases and call the Perspective API from the right scope",
-    "Organize reusable code in the project script library and the gateway scripting project",
+    "Organize reusable code in the project script library and the Gateway scripting project",
     "Log with system.util.getLogger instead of print",
     "Recognise blocking calls and the one-tag-at-a-time anti-pattern"
   ],
@@ -37,8 +37,8 @@ A **scope** is the process and thread context in which a script executes. It dec
 
 | Scope | Runs in | Typical places | Library notes |
 |---|---|---|---|
-| Gateway | The Gateway JVM, shared by everyone | Tag event scripts, gateway timer and message events, alarm pipelines, WebDev, startup/shutdown | Has \`system.tag\`, \`system.db\`, \`system.util\`, \`system.net\`. No client GUI functions |
-| Perspective session | The Gateway JVM, on behalf of one browser session | Component events, view and session events, binding transforms and script transforms | Adds \`system.perspective\`. Runs on gateway threads, so there are no popups through \`system.gui\` |
+| Gateway | The Gateway JVM, shared by everyone | Tag event scripts, Gateway timer and message events, alarm pipelines, WebDev, startup/shutdown | Has \`system.tag\`, \`system.db\`, \`system.util\`, \`system.net\`. No client GUI functions |
+| Perspective session | The Gateway JVM, on behalf of one browser session | Component events, view and session events, binding transforms and script transforms | Adds \`system.perspective\`. Runs on Gateway threads, so there are no popups through \`system.gui\` |
 | Vision client | The client's own JVM on the operator's PC | Vision component events, client scripts | Adds \`system.gui\`, \`system.nav\`, \`system.printing\`. Calls to tags and databases travel to the Gateway over the network |
 | Designer | The Designer's JVM | The Script Console, project tooling | Close to client scope. Great for tests. Not representative of production timing |
 
@@ -85,7 +85,7 @@ Always bind values through \`?\` placeholders (the prepared forms \`runPrepQuery
 
 ### system.perspective
 
-Perspective-only helpers: \`navigate\`, \`openPopup\`/\`closePopup\`, \`sendMessage\`, \`getSessionInfo\`, \`print\`, \`download\`, \`refreshBinding\`. They need a session, so they fail in a gateway timer script that has no session.
+Perspective-only helpers: \`navigate\`, \`openPopup\`/\`closePopup\`, \`sendMessage\`, \`getSessionInfo\`, \`print\`, \`download\`, \`refreshBinding\`. They need a session, so they fail in a Gateway timer script that has no session.
 
 ## Where code lives: the project script library
 
@@ -101,10 +101,10 @@ def startMotor(path):
 
 # in a Perspective button's onActionPerformed
 if shared.motors.startMotor(self.view.params.tagPath):   # [default]Plant1/Area10/Line1/M101
-    system.perspective.print("Start sent")
+    system.util.getLogger("shared.motors").info("Start sent")
 \`\`\`
 
-Libraries are inherited between projects, so a "global" parent project can carry the shared code for all child projects. Tag event scripts differ: they can only call functions defined in the **Gateway Script Project**, the project designated for gateway-level scripting, so shared tag logic must be there. See {{lesson:ign-projects}}.
+Libraries are inherited between projects, so a "global" parent project can carry the shared code for all child projects. Tag event scripts differ: they can only call functions defined in the **Gateway Script Project**, the project designated for Gateway-level scripting, so shared tag logic must be there. See {{lesson:ign-projects}}.
 
 ## Logging, not printing
 
@@ -126,10 +126,10 @@ Levels run trace, debug, info, warn, error. The default threshold is info, so de
 Every script runs on a thread that someone else is waiting on.
 
 - **Vision/Designer:** a long call on the GUI thread freezes the screen. Use \`system.util.invokeAsynchronous(fn)\` for the slow part, then \`invokeLater\` to update the UI.
-- **Gateway:** tag change scripts and gateway events run on shared pools. A script that sleeps, waits for a lock or hits a slow web service holds a thread, and other events queue behind it. Never use \`time.sleep\` in a tag change script.
-- **Perspective:** a session's events run on gateway threads for that session. A 10-second query blocks that user's event, and if enough users do it, the pool.
+- **Gateway:** tag change scripts and Gateway events run on shared pools. A script that sleeps, waits for a lock or hits a slow web service holds a thread, and other events queue behind it. Never use \`time.sleep\` in a tag change script.
+- **Perspective:** a session's events run on Gateway threads for that session. A 10-second query blocks that user's event, and if enough users do it, the pool.
 
-Network and database calls are the usual culprits. Set timeouts, and move work that takes seconds into a gateway timer or message handler.
+Network and database calls are the usual culprits. Set timeouts, and move work that takes seconds into a Gateway timer or message handler.
 
 ## Anti-patterns to unlearn
 
@@ -183,11 +183,11 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
   examples: [
     {
       title: "Reading a motor's status in one call",
-      body: `A gateway timer script needs the state of 40 motors. Build the 40 paths with a list comprehension, call \`system.tag.readBlocking(paths)\` once, and zip the paths with the results. Check \`quality.isGood()\` on each, and log, with the path, any that are not. The loop version pays the per-call overhead 40 times, and from a Vision client each call is also a network round trip.`
+      body: `A Gateway timer script needs the state of 40 motors. Build the 40 paths with a list comprehension, call \`system.tag.readBlocking(paths)\` once, and zip the paths with the results. Check \`quality.isGood()\` on each, and log, with the path, any that are not. The loop version pays the per-call overhead 40 times, and from a Vision client each call is also a network round trip.`
     },
     {
       title: "A tag change script that hangs the Gateway",
-      body: `A value changed script on a counter calls a web service with no timeout. The service goes down, each call waits 30 seconds, and the pool of gateway threads fills with waiting scripts. Alarms and other events are delayed. Fix: set a timeout, make the call from a message handler on a gateway timer, and log failures.`
+      body: `A value changed script on a counter calls a web service with no timeout. The service goes down, each call waits 30 seconds, and the pool of Gateway threads fills with waiting scripts. Alarms and other events are delayed. Fix: set a timeout, make the call from a message handler on a Gateway timer, and log failures.`
     }
   ],
 
@@ -221,7 +221,7 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
     "Reading tags one per call in a loop instead of one list per call.",
     "Ignoring quality on reads and the returned codes on writes.",
     "Assuming Python 3 behaviour (f-strings, print as a function with several arguments, str/bytes separation).",
-    "Using time.sleep or slow web or database calls in gateway tag scripts or on the GUI thread.",
+    "Using time.sleep or slow web or database calls in Gateway tag scripts or on the GUI thread.",
     "Leaving the provider off tag paths so scripts behave differently by scope.",
     "Using print for diagnostics in production instead of a named logger.",
     "Calling system.perspective functions from scopes that have no session."
@@ -232,34 +232,34 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
   quiz: [
     {
       q: "A Perspective button's onActionPerformed script runs in which JVM?",
-      options: ["The user's browser", "The Gateway's JVM, in the session's context", "A Vision client JVM", "The Designer's JVM"],
-      answer: 1,
+      options: ["The Gateway's JVM, in the session's context", "The user's browser", "A Vision client JVM", "The Designer's JVM"],
+      answer: 0,
       explain: [
-        "Perspective scripts are Python, which browsers don't run. Only the page's JavaScript runs there.",
         "Correct. Perspective Python runs on the Gateway, so slow scripts affect all users.",
+        "Perspective scripts are Python, which browsers don't run. Only the page's JavaScript runs there.",
         "That is Vision, a separate client technology.",
         "The Designer only runs scripts you launch from its Script Console."
       ]
     },
     {
-      q: "You need the values of 150 tags in a gateway script. Which is best?",
-      options: ["150 readBlocking calls in a loop", "One readBlocking call with a list of 150 paths", "A while loop reading until all are good", "Expression bindings for each"],
-      answer: 1,
+      q: "You need the values of 150 tags in a Gateway script. Which is best?",
+      options: ["150 readBlocking calls in a loop", "A while loop reading until all are good", "Expression bindings for each", "One readBlocking call with a list of 150 paths"],
+      answer: 3,
       explain: [
         "Each call has fixed overhead, so the total time is much worse.",
-        "Correct. One call amortizes the overhead, and results come back in path order.",
         "A busy loop wastes a thread and doesn't speed up the read.",
-        "Bindings belong to components, not to a gateway script."
+        "Bindings belong to components, not to a Gateway script.",
+        "Correct. One call amortizes the overhead, and results come back in path order."
       ]
     },
     {
       q: "Which statement about Ignition's Python is true?",
-      options: ["It is CPython 3 with full pip support", "It is Jython 2.7 and can import Java classes", "It can import NumPy", "It supports f-strings"],
-      answer: 1,
+      options: ["It is CPython 3 with full pip support", "It can import NumPy", "It is Jython 2.7 and can import Java classes", "It supports f-strings"],
+      answer: 2,
       explain: [
         "Ignition does not run CPython.",
-        "Correct. Jython runs Python 2.7 on the JVM and gives direct access to Java.",
         "NumPy has compiled extensions that Jython cannot load.",
+        "Correct. Jython runs Python 2.7 on the JVM and gives direct access to Java.",
         "F-strings arrived in Python 3.6, so they are not available in 2.7."
       ]
     },
@@ -268,7 +268,7 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
       options: ["Any project's library", "In the Gateway Script Project", "In a Vision window", "In the Designer's Script Console"],
       answer: 1,
       explain: [
-        "Tag event scripts run in the Gateway and use the gateway scripting project, not an arbitrary project.",
+        "Tag event scripts run in the Gateway and use the Gateway scripting project, not an arbitrary project.",
         "Correct. Tag event scripts can only call code from the Gateway Script Project.",
         "Windows exist only in Vision clients.",
         "The Script Console is for testing and doesn't persist code."
@@ -276,24 +276,24 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
     },
     {
       q: "Why prefer system.util.getLogger over print in Gateway scripts?",
-      options: ["print doesn't work in Jython", "A logger has names and levels, and shows in the Gateway's log viewer", "Loggers run faster than print", "print is blocked in the Gateway"],
-      answer: 1,
+      options: ["print doesn't work in Jython", "Loggers run faster than print", "A logger has names and levels, and shows in the Gateway's log viewer", "print is blocked in the Gateway"],
+      answer: 2,
       explain: [
         "print works, but its output is hard to find and filter.",
-        "Correct. Named, levelled messages appear on the Gateway's Logs page and can be turned up or down.",
         "Speed isn't the reason.",
+        "Correct. Named, levelled messages appear on the Gateway's Logs page and can be turned up or down.",
         "It is not blocked. It simply lands in wrapper.log."
       ]
     },
     {
       q: "A write via writeBlocking to a tag raised no exception, but the value didn't change. What should you have checked?",
-      options: ["The Python version", "The list of quality codes returned by the write", "The Designer's output console only", "The tag's description"],
-      answer: 1,
+      options: ["The Python version", "The Designer's output console only", "The tag's description", "The list of quality codes returned by the write"],
+      answer: 3,
       explain: [
         "Version isn't the issue here.",
-        "Correct. Failures are reported in the returned quality codes. A bad or read-only tag does not necessarily raise an exception.",
         "The console shows nothing unless you log the result.",
-        "A description has no effect on writes."
+        "A description has no effect on writes.",
+        "Correct. Failures are reported in the returned quality codes. A bad or read-only tag does not necessarily raise an exception."
       ]
     }
   ],

@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-styles",
   title: "Styles, style classes and themes",
   track: "persp",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["persp-containers"],
   tags: ["perspective", "styles", "css", "themes", "style classes"],
@@ -233,57 +233,57 @@ Perspective was designed around web technology, so its styling model is a thin l
   quiz: [
     {
       q: "A component has the class 'hmi/value-alarm' (red text) and an inline style color of black. What color shows?",
-      options: ["Red, because classes win", "Black, because inline styles override classes", "Whichever was set last in time", "The theme color"],
-      answer: 1,
+      options: ["Black, because inline styles override classes", "Red, because classes win", "Whichever was set last in time", "The theme color"],
+      answer: 0,
       explain: [
-        "The cascade is theme, then classes, then inline, with later layers winning.",
         "Correct. Inline style is the most specific layer here.",
+        "The cascade is theme, then classes, then inline, with later layers winning.",
         "Order in time doesn't matter, only the layer.",
         "The theme is the base layer and loses to both."
       ]
     },
     {
       q: "Which requirement can an inline style NOT satisfy?",
-      options: ["A bar fill width driven by a percentage", "A background color chosen by a binding", "A different button color on hover", "A custom font size"],
-      answer: 2,
+      options: ["A bar fill width driven by a percentage", "A background color chosen by a binding", "A custom font size", "A different button color on hover"],
+      answer: 3,
       explain: [
         "Inline style is a good fit for data-driven values.",
         "A binding on an inline property is a normal use.",
-        "Correct. Element states such as :hover need a style class or stylesheet rule.",
-        "Font size is an ordinary style property."
+        "Font size is an ordinary style property.",
+        "Correct. Element states such as :hover need a style class or stylesheet rule."
       ]
     },
     {
       q: "The customer wants a darker alarm red across 800 components. What is the cheapest design to have started with?",
-      options: ["Hex color set on each component", "A script that recolors at runtime", "A CSS variable used by a small set of state classes", "Separate views per color"],
-      answer: 2,
+      options: ["Hex color set on each component", "A CSS variable used by a small set of state classes", "A script that recolors at runtime", "Separate views per color"],
+      answer: 1,
       explain: [
         "That requires visiting all 800 components.",
-        "A script is hidden logic and slower than a declared style.",
         "Correct. One variable edit flows through every class that uses it.",
+        "A script is hidden logic and slower than a declared style.",
         "Views are not the unit of styling."
       ]
     },
     {
       q: "You define a class directly in the advanced stylesheet and it does not appear in the Designer dropdown. What do you do?",
-      options: ["It is broken, recreate it in the class editor", "Type its name (without the psc- prefix) into the component's classes field", "Restart the Gateway", "Prefix it with ia_"],
-      answer: 1,
+      options: ["It is broken, recreate it in the class editor", "Restart the Gateway", "Type its name (without the psc- prefix) into the component's classes field", "Prefix it with ia_"],
+      answer: 2,
       explain: [
         "It is not broken. Stylesheet-only classes just are not listed.",
-        "Correct. Type the name. Perspective adds the psc- prefix on the page.",
         "A restart doesn't change what the dropdown lists.",
+        "Correct. Type the name. Perspective adds the psc- prefix on the page.",
         "ia_ is reserved for Perspective's built-in classes."
       ]
     },
     {
       q: "Which class name best follows the maintenance advice?",
-      options: ["red-bold", "big-red", "value-abnormal", "style7"],
-      answer: 2,
+      options: ["red-bold", "big-red", "style7", "value-abnormal"],
+      answer: 3,
       explain: [
         "That describes appearance, which stops being true if the palette changes.",
         "Also appearance-based.",
-        "Correct. It names the meaning, so the appearance can change without renaming.",
-        "Opaque names tell the next maintainer nothing."
+        "Opaque names tell the next maintainer nothing.",
+        "Correct. It names the meaning, so the appearance can change without renaming."
       ]
     }
   ],

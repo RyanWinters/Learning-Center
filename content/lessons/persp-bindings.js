@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-bindings",
   title: "Bindings and transforms",
   track: "persp",
-  minutes: 30,
+  minutes: 20,
   level: 2,
   prereqs: ["persp-views", "ign-expressions"],
   tags: ["perspective", "bindings", "transforms", "tags", "expressions", "queries", "performance"],
@@ -276,11 +276,11 @@ Perspective bindings follow the idea Vision made familiar, a property fed by a t
   quiz: [
     {
       q: "A label should say 'Running' or 'Stopped' based on a tag with values 1 and 0, with the lowest possible Gateway cost. Which transform?",
-      options: ["Script transform with if/else", "Map transform with two entries", "Expression transform that calls a Python function", "A query binding"],
-      answer: 1,
+      options: ["Map transform with two entries", "Script transform with if/else", "Expression transform that calls a Python function", "A query binding"],
+      answer: 0,
       explain: [
-        "It works but runs Python per update per session.",
         "Correct. A map is a pure lookup and the cheapest way to translate codes.",
+        "It works but runs Python per update per session.",
         "Expressions do not call project Python functions that way, and a lookup does not need it.",
         "A query binding talks to a database, which is unrelated to a tag-to-text lookup."
       ]
@@ -305,15 +305,15 @@ Perspective bindings follow the idea Vision made familiar, a property fed by a t
       q: "A view needs to show the same tile for 40 different motors. How should the Speed label get its tag?",
       options: [
         "40 copies of the view, each with a direct tag binding",
-        "An indirect tag binding with the path built from a view param",
         "A script that writes the tag path into props.text",
+        "An indirect tag binding with the path built from a view param",
         "A property binding to the other view's label"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "That is the maintenance nightmare indirection exists to avoid.",
-        "Correct. One view, a param for the base path, and an indirect binding in the child.",
         "A script would write text, not subscribe to a tag.",
+        "Correct. One view, a param for the base path, and an indirect binding in the child.",
         "Property bindings cannot reach into another view instance."
       ]
     },
@@ -321,30 +321,30 @@ Perspective bindings follow the idea Vision made familiar, a property fed by a t
       q: "Why can a heavy script transform hurt even when it takes only 20 ms?",
       options: [
         "Because it runs in the browser on every phone",
-        "Because it runs on the Gateway for every session and update on a shared pool, and the cost multiplies",
         "Because Python is not allowed in transforms",
-        "Because it changes the tag's quality"
+        "Because it changes the tag's quality",
+        "Because it runs on the Gateway for every session and update on a shared pool, and the cost multiplies"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Bindings are evaluated on the Gateway, not in the browser.",
-        "Correct. Twenty milliseconds times 60 sessions times frequent updates adds up, and blocking calls are worse.",
         "Python is allowed. It is simply the most expensive transform.",
-        "A transform changes the value delivered to the property, not the tag's quality."
+        "A transform changes the value delivered to the property, not the tag's quality.",
+        "Correct. Twenty milliseconds times 60 sessions times frequent updates adds up, and blocking calls are worse."
       ]
     },
     {
       q: "An operator types a setpoint into a field with a bidirectional tag binding and a script transform that rounds the value. What is the risk?",
       options: [
-        "None, bidirectional reverses any transform",
         "Transforms cannot be reversed automatically, so what is written back may not be what was typed",
+        "None, bidirectional reverses any transform",
         "The tag is locked",
         "Bidirectional only works for query bindings"
       ],
-      answer: 1,
+      answer: 0,
       explain: [
-        "The platform cannot invert arbitrary transforms.",
         "Correct. Bidirectional writes the property value as-is, so a computed or transformed value needs a deliberate design, or use an Apply button with an event script.",
+        "The platform cannot invert arbitrary transforms.",
         "Nothing locks the tag, though its security must still permit the write.",
         "Bidirectional is offered for tag and property bindings."
       ]

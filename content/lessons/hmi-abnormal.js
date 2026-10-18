@@ -2,7 +2,7 @@ LC.lesson({
   id: "hmi-abnormal",
   title: "Making abnormal obvious: alarms, states and attention",
   track: "hmi",
-  minutes: 25,
+  minutes: 20,
   level: 3,
   prereqs: ["hmi-color", "ign-alarming"],
   tags: ["hmi", "alarms", "equipment state", "flashing", "quality", "interlocks", "perspective", "isa-18.2", "isa-101"],
@@ -127,7 +127,7 @@ Rules:
 - **Make the bad state unmistakable but not an alarm color.** Show dashes or a hatched field, a dashed outline, muted text, and a word such as "Bad" or "No data". The {{term:stale-data|stale}} cue should be a distinct, recognizable style (the HP-HMI class set uses a dashed outline and muted text).
 - **Optionally show the last good value and its time**, clearly labelled ("last good 14:02: 3.5 m"), in a muted style.
 - **Disable controls** that act on a bad value.
-- **Treat questionable as questionable.** For a 4–20 mA loop, the house NAMUR table says 3.6–3.8 or 20.5–21 mA is indeterminate (uncertain quality), and below 3.6 or above 21 mA is a device or loop failure (bad). Carry that distinction to the display ({{term:ign-quality-code|quality code}}).
+- **Treat questionable as questionable.** For a 4-20 mA loop, the house NAMUR table says 3.6–3.8 or 20.5–21 mA is indeterminate (uncertain quality), and below 3.6 or above 21 mA is a device or loop failure (bad). Carry that distinction to the display ({{term:ign-quality-code|quality code}}).
 - **Detect a frozen value.** A value can be good quality and unchanging because a source stopped. Use a heartbeat or watchdog and show a communication-loss state, as the \`Alm.CommLoss\` member in the motor UDT does.
 
 Ignition helps: Perspective and Vision components show quality overlays when a bound tag's quality is not good, and a binding can opt out of that overlay. Do not opt out unless you replace it with a better cue. In expressions use \`isGood()\` and \`isBad()\`, and never compare to a number such as 192 (see the quality code note in the Ignition 8 reference).
@@ -266,79 +266,79 @@ Early panel annunciators used lit windows that flashed until acknowledged and th
   quiz: [
     {
       q: "A style guide says Critical = red, High = orange, Medium = yellow, Low = cyan, with identical square badges. What is the main weakness?",
-      options: ["Too many colors","Squares are hard to draw","Priority is carried by color alone, so it fails for colour-blind users and in glare","Badges are too small"],
-      answer: 2,
+      options: ["Too many colors","Squares are hard to draw","Badges are too small","Priority is carried by color alone, so it fails for colour-blind users and in glare"],
+      answer: 3,
       explain: [
         "Four colors is fine. The issue is what happens when color is lost.",
         "Drawing difficulty is not the concern.",
-        "Correct. Shape and a number or word are the redundant channels. With identical squares, greyscale loses the priority.",
-        "Size can matter, but the fundamental defect is single-channel coding."
+        "Size can matter, but the fundamental defect is single-channel coding.",
+        "Correct. Shape and a number or word are the redundant channels. With identical squares, greyscale loses the priority."
       ]
     },
     {
       q: "P101 is intentionally stopped between batches. Which presentation fits a quiet HMI?",
-      options: ["A hollow outline with the word 'Stopped', and no alarm indicator","Solid red fill so no one forgets","Flashing yellow","Hide the pump"],
-      answer: 0,
+      options: ["Solid red fill so no one forgets","Flashing yellow","A hollow outline with the word 'Stopped', and no alarm indicator","Hide the pump"],
+      answer: 2,
       explain: [
-        "Correct. State is shown by form and text, and no alarm cue appears because nothing abnormal exists.",
         "Red is reserved for alarms. An expected stop is not one.",
         "Flashing is only for unacknowledged alarms.",
+        "Correct. State is shown by form and text, and no alarm cue appears because nothing abnormal exists.",
         "Hiding equipment removes the operator's overview."
       ]
     },
     {
       q: "When should an alarm indicator flash?",
-      options: ["Whenever the condition is active","Only when the alarm clears","Never, because flashing is distracting","While the alarm is unacknowledged, then go steady after acknowledgment while the condition persists"],
-      answer: 3,
+      options: ["Whenever the condition is active","While the alarm is unacknowledged, then go steady after acknowledgment while the condition persists","Only when the alarm clears","Never, because flashing is distracting"],
+      answer: 1,
       explain: [
         "Flashing for the whole active period fatigues the operator and loses the meaning of acknowledgment.",
+        "Correct. Motion draws the eye until a person has noticed, and acknowledgment stops it.",
         "A cleared-unacknowledged state may justify a different cue, but this is not the general rule.",
-        "Never is too strong. Motion is the strongest peripheral cue and is worth using for the unacknowledged.",
-        "Correct. Motion draws the eye until a person has noticed, and acknowledgment stops it."
+        "Never is too strong. Motion is the strongest peripheral cue and is worth using for the unacknowledged."
       ]
     },
     {
-      q: "LT101's 4–20 mA loop fails and the driver stops updating. The Label still shows 3.5 m in the normal style. What is wrong and what is the fix?",
-      options: ["Nothing, the value is the last known","The screen presents a stale value as live. Use quality in the binding to show dashes or a bad-quality style, optionally the last-good time, and disable dependent controls","Increase the polling rate","Color the value red"],
-      answer: 1,
+      q: "LT101's 4-20 mA loop fails and the driver stops updating. The Label still shows 3.5 m in the normal style. What is wrong and what is the fix?",
+      options: ["The screen presents a stale value as live. Use quality in the binding to show dashes or a bad-quality style, optionally the last-good time, and disable dependent controls","Nothing, the value is the last known","Increase the polling rate","Color the value red"],
+      answer: 0,
       explain: [
-        "That is the core hazard: the operator will act on a fiction.",
         "Correct. A bad-quality state must be visibly distinct and never look live. Quality overlays or explicit expressions with isGood() do this.",
+        "That is the core hazard: the operator will act on a fiction.",
         "The loop has failed, so faster polling returns the same bad data.",
         "Red is an alarm color. A bad-data cue should be different and say what is wrong."
       ]
     },
     {
       q: "The Start button for M101 is disabled and the operator asks you why. What is the best design change?",
-      options: ["Remove the button when disabled","Make the button flash","Show a short permissive list with met/not-met marks and the first unmet condition in words beside the button","Add a popup that says 'Error'"],
-      answer: 2,
+      options: ["Show a short permissive list with met/not-met marks and the first unmet condition in words beside the button","Remove the button when disabled","Make the button flash","Add a popup that says 'Error'"],
+      answer: 0,
       explain: [
+        "Correct. The PLC logic knows the unmet condition. Displaying it saves time in startup and upsets.",
         "Removing the button hides the control and the reason.",
         "Flashing is reserved for unacknowledged alarms.",
-        "Correct. The PLC logic knows the unmet condition. Displaying it saves time in startup and upsets.",
         "A generic error gives the operator no direction."
       ]
     },
     {
       q: "In Perspective, you need the alarm priority for 60 symbols on a unit screen. What is the efficient approach?",
-      options: ["One per-screen query (or the alarm status data) stored in a dict keyed by source path, with symbols reading from it","A script call to system.alarm.queryStatus inside each symbol","Hard-code the priority on each symbol","Skip priority and use one color"],
-      answer: 0,
+      options: ["A script call to system.alarm.queryStatus inside each symbol","Hard-code the priority on each symbol","Skip priority and use one color","One per-screen query (or the alarm status data) stored in a dict keyed by source path, with symbols reading from it"],
+      answer: 3,
       explain: [
-        "Correct. One query per screen refreshed modestly, shared by all symbols, matches the approach in the HP-HMI lesson.",
         "Sixty queries per refresh per session adds needless load.",
         "Hard-coded priorities drift from the alarm configuration.",
-        "Dropping priority removes information the operator needs."
+        "Dropping priority removes information the operator needs.",
+        "Correct. One query per screen refreshed modestly, shared by all symbols, matches the approach in the HP-HMI lesson."
       ]
     },
     {
       q: "A flood of 40 alarms follows a pump trip. Which screen behavior helps most?",
-      options: ["Show all 40 with equal prominence","Flash all 40","Hide acknowledged ones and unacknowledged ones","Mark the first-out, group the consequential alarms beneath it, and show counts by priority"],
-      answer: 3,
+      options: ["Show all 40 with equal prominence","Flash all 40","Mark the first-out, group the consequential alarms beneath it, and show counts by priority","Hide acknowledged ones and unacknowledged ones"],
+      answer: 2,
       explain: [
         "Equal prominence hides the cause among the symptoms.",
         "Flashing 40 items is a strobe and gives no direction.",
-        "Hiding unacknowledged alarms is never acceptable.",
-        "Correct. First-out identifies the cause, grouping reduces noise, and the counts keep the operator oriented."
+        "Correct. First-out identifies the cause, grouping reduces noise, and the counts keep the operator oriented.",
+        "Hiding unacknowledged alarms is never acceptable."
       ]
     }
   ],

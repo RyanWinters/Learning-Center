@@ -275,11 +275,11 @@ The PLC checks these timers on every pass through its program, so it reads them 
   quiz: [
     {
       q: "A TON has PRE = 4000. Its rung is true for 3.9 s, false for 1 s, then true for 3.9 s. When does DN turn on?",
-      options: ["After the second 3.9 s", "Never, because the rung dropped", "After 7.8 s total", "At the moment the rung first goes true"],
-      answer: 1,
+      options: ["Never, because the rung dropped", "After the second 3.9 s", "After 7.8 s total", "At the moment the rung first goes true"],
+      answer: 0,
       explain: [
-        "The accumulator reset when the rung dropped.",
         "Correct. A TON is non-retentive. Each period is shorter than 4 s, so DN never sets.",
+        "The accumulator reset when the rung dropped.",
         "TON does not total separate periods. An RTO would.",
         "DN sets only when ACC reaches PRE."
       ]
@@ -308,46 +308,46 @@ The PLC checks these timers on every pass through its program, so it reads them 
     },
     {
       q: "`XIO(Tick.DN) TON(Tick,1000,0)` is used as a once-per-second pulse. What is a risk?",
-      options: ["It never fires", "A rung in a different task may miss the one-scan pulse", "The timer overflows after 1000 uses", "DN can never be examined"],
-      answer: 1,
+      options: ["It never fires", "The timer overflows after 1000 uses", "DN can never be examined", "A rung in a different task may miss the one-scan pulse"],
+      answer: 3,
       explain: [
         "It does fire, roughly once per second.",
-        "Correct. DN is true for about one scan, so consumers must be in the right place to see it.",
         "There is no use counter.",
-        "DN can be examined like any bit."
+        "DN can be examined like any bit.",
+        "Correct. DN is true for about one scan, so consumers must be in the right place to see it."
       ]
     },
     {
       q: "The preset for a 2 minute delay is entered as:",
-      options: ["2", "120", "12000", "120000"],
-      answer: 3,
+      options: ["2", "120000", "120", "12000"],
+      answer: 1,
       explain: [
         "That is 2 ms.",
+        "Correct. 2 minutes is 120 seconds, and PRE is milliseconds.",
         "That is 120 ms.",
-        "That is 12 s.",
-        "Correct. 2 minutes is 120 seconds, and PRE is milliseconds."
+        "That is 12 s."
       ]
     },
     {
       q: "An RTO rung is still true when its RES rung goes true. Which statement is correct?",
-      options: ["EN is cleared along with everything else", "ACC, DN and TT are cleared, and EN stays 1 because it follows the rung", "Nothing happens until the RTO rung goes false", "The controller faults"],
-      answer: 1,
+      options: ["ACC, DN and TT are cleared, and EN stays 1 because it follows the rung", "EN is cleared along with everything else", "Nothing happens until the RTO rung goes false", "The controller faults"],
+      answer: 0,
       explain: [
-        "EN follows the timer rung, not the RES.",
         "Correct. RES clears ACC, DN and TT. EN is still the state of the RTO rung.",
+        "EN follows the timer rung, not the RES.",
         "RES acts while its own rung is true, whatever the timer rung is doing.",
         "This is legal, and a common way to restart a timer."
       ]
     },
     {
       q: "In the two-timer flasher, why does Flash_On get an XIO of Flash_Off.DN?",
-      options: ["To make it seal in", "To reset Flash_On at the end of the cycle so the pattern repeats", "To invert the lamp", "To delay the lamp by 500 ms"],
-      answer: 1,
+      options: ["To make it seal in", "To invert the lamp", "To delay the lamp by 500 ms", "To reset Flash_On at the end of the cycle so the pattern repeats"],
+      answer: 3,
       explain: [
         "There is no seal-in involved.",
-        "Correct. When Flash_Off finishes it breaks Flash_On's rung, and everything restarts.",
         "The lamp is driven by Flash_On.DN.",
-        "The first timer provides the initial delay."
+        "The first timer provides the initial delay.",
+        "Correct. When Flash_Off finishes it breaks Flash_On's rung, and everything restarts."
       ]
     }
   ],

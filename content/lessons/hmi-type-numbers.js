@@ -44,7 +44,7 @@ Then **right-align numbers** (or align on the decimal point) so units, tens and 
 
 ### Show only meaningful decimals
 
-Every digit you show claims precision. A value like 3.4712 m from a 4–20 mA level transmitter implies you know the level to a tenth of a millimetre. You do not. The sensor, the scaling, the stilling effects of an agitated surface and the operator's task decide how many decimals mean anything.
+Every digit you show claims precision. A value like 3.4712 m from a 4-20 mA level transmitter implies you know the level to a tenth of a millimetre. You do not. The sensor, the scaling, the stilling effects of an agitated surface and the operator's task decide how many decimals mean anything.
 
 - Start from the transmitter and loop accuracy, then from what the operator would do differently. If a 0.05 m change changes no decision, do not show hundredths.
 - Use the same number of decimals for the same kind of value everywhere. Level 3.5 on one screen and 3.50 on another looks like two different instruments.
@@ -113,7 +113,7 @@ Operators think in equipment and actions, not in tag paths. Compare:
 | LVL | Level | Four letters are cheap |
 | TEMP. CTRL. DEV. ALM | Temperature deviation alarm | Say the thing |
 
-Use the plant's own vocabulary, the one on the P&ID and in the operator's mouth. Where equipment is numbered on the floor, show the number: "Mixer M101" or "Pump P101". Keep the hyphenated drawing form (LT-101) where operators read drawings and the unhyphenated form (LT101) only where the system requires it, as defined in the house standard. Never show a historian path, a UDT member path or a gateway name.
+Use the plant's own vocabulary, the one on the P&ID and in the operator's mouth. Where equipment is numbered on the floor, show the number: "Mixer M101" or "Pump P101". Keep the hyphenated drawing form (LT-101) where operators read drawings and the unhyphenated form (LT101) only where the system requires it, as defined in the house standard. Never show a historian path, a UDT member path or a Gateway name.
 
 Abbreviate only when it is universal on site (pH, psi, kg, °C) and the style guide lists it. Write each unit and abbreviation once in the guide and use exactly that form everywhere. Raw tag names are still valuable to maintainers, so put them in a tooltip, a diagnostics popup or a hidden-by-default field rather than on the main view.
 
@@ -253,12 +253,12 @@ The "tabular versus proportional figures" distinction comes from typesetting, wh
   quiz: [
     {
       q: "A column of flow readings shows 9.8, 112.4 and 1,450.0 in a proportional font, left-aligned. Operators keep misjudging which is largest. What is the best fix?",
-      options: ["Make the numbers bold","Color the largest value red","Use tabular figures and right-align (or decimal-align) the values","Switch to ALL-CAPS labels"],
-      answer: 2,
+      options: ["Make the numbers bold","Use tabular figures and right-align (or decimal-align) the values","Color the largest value red","Switch to ALL-CAPS labels"],
+      answer: 1,
       explain: [
         "Bold makes the digits heavier but does not fix the ragged columns that hide magnitude.",
-        "Red is reserved for alarms, and coloring a value because it is large invents a false abnormal signal.",
         "Correct. Same-width digits and right alignment make units, tens and hundreds line up, so magnitude is visible at a glance.",
+        "Red is reserved for alarms, and coloring a value because it is large invents a false abnormal signal.",
         "Label capitalization has nothing to do with how the numbers align."
       ]
     },
@@ -286,33 +286,33 @@ The "tabular versus proportional figures" distinction comes from typesetting, wh
     },
     {
       q: "LT101 spans 0–5.0 m and the loop is good to about 0.1 m. Which display is the best choice for the main view?",
-      options: ["3.4712","3.5","3.47","6,482 (raw counts)"],
-      answer: 1,
+      options: ["3.4712","3.47","3.5","6,482 (raw counts)"],
+      answer: 2,
       explain: [
         "Four decimals imply micron-level knowledge, and the last digits will flicker.",
-        "Correct. One decimal matches the accuracy. The alarm logic still uses the unrounded value.",
         "Two decimals still claim more precision than the loop provides.",
+        "Correct. One decimal matches the accuracy. The alarm logic still uses the unrounded value.",
         "Raw counts mean nothing to an operator and belong on a diagnostics page."
       ]
     },
     {
       q: "An integrator hard-codes font-size and font-weight on each Label across 40 views. A client asks for larger text on the wall display. What should have been done?",
-      options: ["Nothing, edit each label","Use the browser's zoom on the wall display only","Define text roles as style classes using theme size variables, so a wall theme changes all of them at once","Put all labels in a single huge view"],
-      answer: 2,
+      options: ["Nothing, edit each label","Use the browser's zoom on the wall display only","Put all labels in a single huge view","Define text roles as style classes using theme size variables, so a wall theme changes all of them at once"],
+      answer: 3,
       explain: [
         "That is the failure mode: 40 views of edits, and some will be missed.",
         "Browser zoom scales everything, including layout, and can break fitted views. It is a workaround, not a design.",
-        "Correct. Classes plus variables turn a screen-wide change into one theme edit.",
-        "One huge view makes performance and maintenance worse and does not solve the sizing."
+        "One huge view makes performance and maintenance worse and does not solve the sizing.",
+        "Correct. Classes plus variables turn a screen-wide change into one theme edit."
       ]
     },
     {
       q: "A label reads \`Area10_Mix_LT101_PV\`. The operator calls it 'mixer level'. What is the best practice?",
-      options: ["Show 'Mixer level' as the label and keep the tag name in a tooltip or diagnostics view","Keep the tag name because it is exact","Abbreviate it to 'LVL'","Use all capitals so it stands out"],
-      answer: 0,
+      options: ["Keep the tag name because it is exact","Show 'Mixer level' as the label and keep the tag name in a tooltip or diagnostics view","Abbreviate it to 'LVL'","Use all capitals so it stands out"],
+      answer: 1,
       explain: [
-        "Correct. Plain language for the operator, and the tag path is still available to maintainers one hover away.",
         "Exact names serve maintainers, not the operator's diagnosis.",
+        "Correct. Plain language for the operator, and the tag path is still available to maintainers one hover away.",
         "Abbreviations save little space and add translation effort.",
         "Capitals reduce readability and do not fix the vocabulary problem."
       ]

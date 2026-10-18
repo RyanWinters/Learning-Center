@@ -11,7 +11,7 @@ Vanilla JS, classic scripts, no dependencies. It must be usable on a phone, beca
 - `assets/js/sim/io.js`: I/O panel widgets and simple process models
 - `assets/js/views/lab.js`: `LC.views.lab(container, {id})`: lab index, challenge view, sandbox
 - `assets/css/sim.css`: styles, using tokens from `tokens.css` only
-- `content/sim/index.js`: `window.LC_SIM_INDEX = [{ id, title, level, lesson, summary }]` in curriculum order (all 25 ids from CONTENT_GUIDE.md)
+- `content/sim/index.js`: `window.LC_SIM_INDEX = [{ id, title, level, lesson, summary }]` in curriculum order (all 26 ids from CONTENT_GUIDE.md)
 - `content/sim/<id>.js`: `LC.sim({...})` challenge files
 - `tools/sim-test.js`: Node script that loads the engine and every challenge, runs each `solution` against its `tests`, and confirms
   the `starter` fails at least one test (unless `starter === solution` for the tour). Exit 1 on failure.
@@ -38,9 +38,16 @@ with .DN when ACC ≥ PRE and .OV/.UN; DIV by zero sets a minor fault flag on `S
 are allowed (parallel outputs).
 
 ## Tags and types
-Types: BOOL, DINT, REAL, TIMER {PRE, ACC, EN, TT, DN}, COUNTER {PRE, ACC, CU, CD, DN, OV, UN}, arrays of BOOL/DINT/REAL, and UDTs
+Types: BOOL, DINT, REAL, TIMER {PRE, ACC, EN, TT, DN}, COUNTER {PRE, ACC, CU, CD, DN, OV, UN}, arrays of BOOL/DINT/REAL, module I/O types, and UDTs
 defined by a challenge (`udts: { Motor: { Run: "BOOL", Fault: "BOOL", Speed: "REAL", RunTimer: "TIMER" } }`). Tags auto-create as BOOL
-when typed in the sandbox with a prompt to pick the type. The tag table shows name, type, value (live), and description, and members expand.
+when typed in the sandbox with a prompt to pick the type.
+
+**Module I/O tags** use Logix-style names. Declare a tag such as `Local:1:I` with type `MOD_DI16` or `Local:2:O` with `MOD_DO16` and use the
+bits as `Local:1:I.Data.0` to `.15`. `MOD_AI4` gives `Ch0Data` to `Ch3Data` (REAL) and `Ch0Fault` to `Ch3Fault`; `MOD_AO2` gives `Ch0Data` and
+`Ch1Data`. The engine auto-creates a module tag when a program or I/O widget uses one of these paths.
+
+**Tag presets.** A timer or counter takes its `PRE` and `ACC` from the first instruction that uses it (`TON(T1,5000,0)`). `PRE` can be a
+number or a DINT tag, which is read every scan. TON/RTO `ACC` holds at `PRE`, and RES clears ACC/DN/TT but leaves EN to the rung. The tag table shows name, type, value (live), and description, and members expand.
 
 ## Scan model
 Each scan: (1) copy physical inputs into the input image, (2) execute rungs top to bottom, left to right, (3) copy the output image to physical
@@ -94,8 +101,8 @@ time), `expect` (tag → value, numbers with ±0.5% tolerance), and `press` ({ta
 - `#/lab/<id>`: brief (glossary-linked via `LC.glossaryLink` if present), I/O panel, editor, scan controls, tag table (collapsible), Check button,
   Hints button (reveals the next hint, counted), "Show solution" (after 3 hints or a failed check, with confirm), and an explain panel after passing.
   On a pass, call `LC.store.recordSim(id, { passed: true, hintsUsed })`.
-- `#/lab/sandbox`: every instruction, an empty program, a generic I/O panel (8 pushbuttons/toggles bound to `I0`–`I7`, 8 lamps bound to `O0`–`O7`,
-  and 1 slider and 1 value), and freely added tags.
+- `#/lab/sandbox`: every instruction, an empty program, a labelled I/O panel laid out like a Logix chassis (slot 1: 8 pushbuttons/switches on `Local:1:I.Data.0`–`.7`; slot 2: 8 lamps on `Local:2:O.Data.0`–`.7`;
+  slot 3: a level slider on `Local:3:I.Ch0Data`; slot 4: a value display on `Local:4:O.Ch0Data`), and freely added tags.
 - `sim-tour` is an interactive walkthrough of the UI (coach marks or stepped instructions). Passing = completing the steps.
 
 ## Verification (bounded)

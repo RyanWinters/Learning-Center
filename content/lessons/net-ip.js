@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-ip",
   title: "IP addressing and subnetting",
   track: "net",
-  minutes: 30,
+  minutes: 15,
   level: 2,
   prereqs: ["net-ethernet"],
   tags: ["ip", "subnet", "cidr", "mask", "addressing", "dhcp", "arp"],
@@ -113,7 +113,7 @@ Notice that the VLAN number, the third byte for VLANs 10 to 50 and the zone all 
 
 ## Static versus DHCP for field devices
 
-- **Static** addresses are typed into the device. They never change, show up in drawings, and keep working when a server is down. PLCs, drives, HMIs, servers, switches and Ignition gateways should be static (or the equivalent of static, see DHCP reservations).
+- **Static** addresses are typed into the device. They never change, show up in drawings, and keep working when a server is down. PLCs, drives, HMIs, servers, switches and Ignition Gateways should be static (or the equivalent of static, see DHCP reservations).
 - **DHCP** (see {{lesson:net-routing}}) assigns addresses automatically. It is good for laptops, phones and visitors. It is risky for control devices, because a lease that changes breaks every connection pointing at it.
 
 Some controllers also support BOOTP/DHCP for the *first* address and then you must disable it, or the device can pick up a new address after a power cycle. When Logix modules ship, many come with DHCP enabled. Set a static address and turn that off.
@@ -202,12 +202,12 @@ IPv4 was specified in 1981 (RFC 791) with 32-bit addresses and fixed "classes" (
   quiz: [
     {
       q: "How many usable host addresses are in 10.20.10.0/26?",
-      options: ["64", "62", "30", "254"],
-      answer: 1,
+      options: ["64", "30", "62", "254"],
+      answer: 2,
       explain: [
         "64 is the total number of addresses. Two are reserved for the network and broadcast addresses.",
-        "Correct. /26 leaves 6 host bits: 2^6 = 64 addresses, minus network and broadcast = 62.",
         "30 is the usable count for a /27.",
+        "Correct. /26 leaves 6 host bits: 2^6 = 64 addresses, minus network and broadcast = 62.",
         "254 is the usable count for a /24."
       ]
     },
@@ -256,12 +256,12 @@ IPv4 was specified in 1981 (RFC 791) with 32-bit addresses and fixed "classes" (
     },
     {
       q: "Which subnet mask is /22?",
-      options: ["255.255.255.192", "255.255.254.0", "255.255.252.0", "255.255.248.0"],
-      answer: 2,
+      options: ["255.255.252.0", "255.255.255.192", "255.255.254.0", "255.255.248.0"],
+      answer: 0,
       explain: [
+        "Correct. /22 is 22 network bits: 255.255.252.0, giving 1024 addresses in blocks of 4 in the third byte.",
         "That is /26.",
         "That is /23.",
-        "Correct. /22 is 22 network bits: 255.255.252.0, giving 1024 addresses in blocks of 4 in the third byte.",
         "That is /21."
       ]
     },
@@ -269,7 +269,7 @@ IPv4 was specified in 1981 (RFC 791) with 32-bit addresses and fixed "classes" (
       q: "Which devices should usually get a static address (or a fixed DHCP reservation) rather than a dynamic one?",
       options: [
         "Visitor laptops",
-        "PLCs, drives, HMIs and Ignition gateways",
+        "PLCs, drives, HMIs and Ignition Gateways",
         "Guest phones",
         "Technician tablets only"
       ],

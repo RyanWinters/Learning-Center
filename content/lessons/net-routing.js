@@ -2,7 +2,7 @@ LC.lesson({
   id: "net-routing",
   title: "Routing, gateways, NAT, DHCP and DNS",
   track: "net",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["net-ip"],
   tags: ["routing", "gateway", "nat", "dhcp", "dns", "stratix", "layer 3"],
@@ -12,7 +12,7 @@ LC.lesson({
     "Describe what a layer 3 switch adds over a layer 2 switch",
     "Use 1:1 NAT to connect machines that share identical internal IP addresses",
     "Explain DHCP, reservations and option 82 port-based addressing",
-    "Explain why Ignition gateways and their clients should use DNS names, and what breaks when DNS is wrong"
+    "Explain why Ignition Gateways and their clients should use DNS names, and what breaks when DNS is wrong"
   ],
 
   body: `
@@ -222,32 +222,32 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
       q: "A PLC at 10.20.10.40/24 has no default gateway. Which statement is true?",
       options: [
         "It can reach any device on the plant network",
-        "It can reach only devices in 10.20.10.0/24",
         "It cannot reach anything, including its own subnet",
-        "It can reach devices only by DNS name"
+        "It can reach devices only by DNS name",
+        "It can reach only devices in 10.20.10.0/24"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
         "Reaching other subnets needs a gateway.",
-        "Correct. Local addresses resolve by ARP, but anything remote has nowhere to be sent.",
         "Its own subnet works fine without a gateway.",
-        "DNS is not involved. The problem is routing."
+        "DNS is not involved. The problem is routing.",
+        "Correct. Local addresses resolve by ARP, but anything remote has nowhere to be sent."
       ]
     },
     {
       q: "You receive twenty machines that all use 192.168.1.10 for the PLC. What is the most practical way to put them on one plant network without editing their programs?",
       options: [
+        "Use 1:1 NAT at each machine to map the internal address to a unique plant address",
         "Add 20 gateways at 192.168.1.1",
         "Put all of them on one VLAN",
-        "Turn on DHCP in every PLC",
-        "Use 1:1 NAT at each machine to map the internal address to a unique plant address"
+        "Turn on DHCP in every PLC"
       ],
-      answer: 3,
+      answer: 0,
       explain: [
+        "Correct. Each machine keeps its identical internal addressing, and the NAT switch presents a unique address outside.",
         "That makes the duplicate address problem worse.",
         "A single VLAN is one broadcast domain, so you would have 20 devices fighting over one address.",
-        "Many PLC projects hold a static address, and DHCP would not fix the other duplicate devices.",
-        "Correct. Each machine keeps its identical internal addressing, and the NAT switch presents a unique address outside."
+        "Many PLC projects hold a static address, and DHCP would not fix the other duplicate devices."
       ]
     },
     {
@@ -270,30 +270,30 @@ Static routing and RFC 791 IP forwarding date from 1981. DHCP (RFC 2131) replace
       q: "A gateway was moved to a new server and the IP was kept, but clients now get certificate errors. What is the likely cause?",
       options: [
         "The subnet mask changed",
-        "The certificate was issued for a different hostname than the one clients use",
         "DHCP expired",
+        "The certificate was issued for a different hostname than the one clients use",
         "The PLC was NATed"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "A mask change would break connectivity, not trigger certificate warnings.",
-        "Correct. Certificates are issued for names. A mismatch triggers warnings, and OPC UA clients may refuse to connect.",
         "DHCP lease expiry would cause address trouble, not certificate errors.",
+        "Correct. Certificates are issued for names. A mismatch triggers warnings, and OPC UA clients may refuse to connect.",
         "NAT on a PLC does not affect the gateway's web certificate."
       ]
     },
     {
       q: "A laptop on the PLC's own subnet can ping and browse the PLC, but Ignition on another subnet cannot complete a read. A capture at the PLC shows requests in and no replies out. What do you check?",
       options: [
-        "Is the PLC missing a gateway for the return path to Ignition's subnet?",
         "Is Ignition's DNS record correct?",
+        "Is the PLC missing a gateway for the return path to Ignition's subnet?",
         "Is auto-negotiation enabled?",
         "Is the MTU too large?"
       ],
-      answer: 0,
+      answer: 1,
       explain: [
-        "Correct. Requests arrive, so the forward route works. Replies need a route back to another subnet, which means a gateway.",
         "Requests are already arriving at the PLC by IP, so name resolution is not the issue.",
+        "Correct. Requests arrive, so the forward route works. Replies need a route back to another subnet, which means a gateway.",
         "Duplex problems cause errors on the port, not silent reply loss from one subnet.",
         "MTU problems affect large packets, and a basic read is tiny."
       ]

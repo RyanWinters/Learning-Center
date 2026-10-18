@@ -15,7 +15,7 @@ Build the batch as a state machine on a DINT, \`Step\`:
 **Interlocks:**
 
 - The mixer may only turn when \`LidClosed\` is on. Opening the lid during Mix goes to Fault.
-- \`Stop\` (normally closed, e-stop style) sends any step except Idle to Fault.
+- \`Stop\` (normally closed, E-stop style) sends any step except Idle to Fault.
 - Start is ignored with the lid open.
 
 Use **Inlet blocked** to cut the supply and test the charge timeout.

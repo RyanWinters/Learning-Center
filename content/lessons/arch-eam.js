@@ -2,25 +2,25 @@ LC.lesson({
   id: "arch-eam",
   title: "Enterprise Administration Module (EAM)",
   track: "arch",
-  minutes: 25,
+  minutes: 10,
   level: 3,
   prereqs: ["arch-gateway-network", "ign-versioning"],
   tags: ["eam", "fleet-management", "backup", "agent-tasks", "licensing", "upgrades"],
-  summary: "One controller gateway that manages many agent gateways: backups, project pushes, module installs, upgrades and licenses from a single place.",
+  summary: "One controller Gateway that manages many agent Gateways: backups, project pushes, module installs, upgrades and licenses from a single place.",
   objectives: [
     "Describe the controller and agent roles and how they connect",
     "List the main agent tasks and what each one does",
     "Explain why Collect Backup comes first and what it archives",
     "Decide what EAM should and should not be used for in a deployment pipeline",
-    "Argue why it matters once you manage a fleet of 20 or more gateways"
+    "Argue why it matters once you manage a fleet of 20 or more Gateways"
   ],
 
   body: `
 ## The problem EAM solves
 
-One {{term:ignition|Ignition}} gateway is easy to look after. Twenty are not. Each needs a backup, patches, module updates, a license and a way to know whether it is healthy. Doing that by logging into twenty web pages is slow and error prone. The **Enterprise Administration Module** ({{term:eam|EAM}}) turns it into one place: a **controller** gateway that sends **tasks** to **agent** gateways over the {{lesson:arch-gateway-network}}.
+One {{term:ignition|Ignition}} Gateway is easy to look after. Twenty are not. Each needs a backup, patches, module updates, a license and a way to know whether it is healthy. Doing that by logging into twenty web pages is slow and error prone. The **Enterprise Administration Module** ({{term:eam|EAM}}) turns it into one place: a **controller** Gateway that sends **tasks** to **agent** Gateways over the {{lesson:arch-gateway-network}}.
 
-EAM is a module you install and license on the gateways involved. The 8.3 manual lists IA's recommendations for using it as health and diagnostics, licensing, backups and disaster recovery, and upgrades.
+EAM is a module you install and license on the Gateways involved. The 8.3 manual lists IA's recommendations for using it as health and diagnostics, licensing, backups and disaster recovery, and upgrades.
 
 ## Controller and agents
 
@@ -28,12 +28,12 @@ EAM is a module you install and license on the gateways involved. The 8.3 manual
 
 | Role | What it is | Where you work |
 |---|---|---|
-| **Controller** | The gateway that assigns tasks and monitors agents, and holds an archive of their backups and modules | The controller's web interface |
-| **Agent** | Any managed gateway. It runs the tasks the controller sends | Nothing to do locally for normal tasks |
+| **Controller** | The Gateway that assigns tasks and monitors agents, and holds an archive of their backups and modules | The controller's web interface |
+| **Agent** | Any managed Gateway. It runs the tasks the controller sends | Nothing to do locally for normal tasks |
 
-You set a gateway's EAM role (controller or agent) in its EAM settings. Agents connect to the controller through Gateway Network connections, which you approve like any other. In 8.3, tasks, agents and archive are in the controller's Enterprise section under the Network menu (check the menu layout for your version). In 8.1 the same functions sit under Config > Enterprise Administration.
+You set a Gateway's EAM role (controller or agent) in its EAM settings. Agents connect to the controller through Gateway Network connections, which you approve like any other. In 8.3, tasks, agents and archive are in the controller's Enterprise section under the Network menu (check the menu layout for your version). In 8.1 the same functions sit under Config > Enterprise Administration.
 
-Agents can also be installed automatically in large rollouts (the manual has an automated agent installation page, which is handy when you build gateways from containers or scripts).
+Agents can also be installed automatically in large rollouts (the manual has an automated agent installation page, which is handy when you build Gateways from containers or scripts).
 
 > [!note] In 8.1
 > The navigation path differs (Config > Enterprise Administration), and the Agent Recovery task still exists in 8.1. It was removed in 8.3, where you use other agent tasks, such as Restore Backup, to do similar work.
@@ -44,36 +44,36 @@ You create a task, choose which agents it targets, run it now or on a schedule, 
 
 | Task | What it does |
 |---|---|
-| **Collect Backup** | Has the agent make a gateway backup and sends it to the controller. The backup, installed modules and current license are stored in the controller's archive |
+| **Collect Backup** | Has the agent make a Gateway backup and sends it to the controller. The backup, installed modules and current license are stored in the controller's archive |
 | **Restore Backup** | Applies a backup to an agent, chosen from the archive or a file you pick. In 8.3 the restored agent keeps its previous name |
 | **Send Project** / **Send Project Resources** | Pushes a whole project, or selected resources, from the controller to agents. Used for pushing the same screens and scripts to many sites |
 | **Install Modules** | Installs modules on agents from files you provide or from the archive, and the archive only has modules after a Collect Backup |
 | **Remote Upgrade** | Upgrades the agent's Ignition version remotely (the 8.1 to 8.3 path has limits, so read the upgrade guide) |
 | **Restart Agent** | Stops and restarts the Ignition service on the agent |
 
-Licensing is visible on the controller too. The 8.3 License Management page can show and manage leased licenses across the fleet, which means you can see which gateways are licensed, and when, without logging into each.
+Licensing is visible on the controller too. The 8.3 License Management page can show and manage leased licenses across the fleet, which means you can see which Gateways are licensed, and when, without logging into each.
 
 Health monitoring is the passive side. The controller tracks each agent's connection status and recent task results, so a dead link or a failed backup is visible in one table.
 
 > [!warning] Collect Backup is the foundation
-> Restores, module reinstalls and rebuilding an agent all depend on an archived backup. The manual states you need at least one Collect Backup before you can reinstall archived modules, and that the backup includes the license. Collect Backup has time limits for the agent to produce the backup and for the transfer. Check the Collect Backup page of the manual for your version for the current values. Large gateways with big historian configurations need generous limits. Schedule backups first, and test a restore before you need one.
+> Restores, module reinstalls and rebuilding an agent all depend on an archived backup. The manual states you need at least one Collect Backup before you can reinstall archived modules, and that the backup includes the license. Collect Backup has time limits for the agent to produce the backup and for the transfer. Check the Collect Backup page of the manual for your version for the current values. Large Gateways with big historian configurations need generous limits. Schedule backups first, and test a restore before you need one.
 
 ## Typical rollout
 
-Say you run 24 plant gateways, all with the same base project and different tags.
+Say you run 24 plant Gateways, all with the same base project and different tags.
 
 1. Stand up a controller (ideally redundant, see {{lesson:arch-redundancy}}). Check the redundant EAM page of the manual for how scheduled tasks behave during a controller failover.
-2. Create outgoing connections from each plant gateway to the DMZ gateway (\`10.20.250.10\`) and from the corporate EAM controller to the same DMZ gateway, then approve them. The controller reaches the agents through the DMZ gateway by proxy. Neither side dials into the other's zone. See {{lesson:arch-gateway-network}}.
+2. Create outgoing connections from each plant Gateway to the DMZ Gateway (\`10.20.250.10\`) and from the corporate EAM controller to the same DMZ Gateway, then approve them. The controller reaches the agents through the DMZ Gateway by proxy. Neither side dials into the other's zone. See {{lesson:arch-gateway-network}}.
 3. Schedule **Collect Backup** weekly, staggered so 24 backups don't hit the WAN at once.
-4. Develop on a staging gateway. When ready, use **Send Project** to push to a pilot group of 3 plants, then to all.
-5. For Ignition patches, use **Remote Upgrade** in waves, with the staging gateway first.
+4. Develop on a staging Gateway. When ready, use **Send Project** to push to a pilot group of 3 plants, then to all.
+5. For Ignition patches, use **Remote Upgrade** in waves, with the staging Gateway first.
 
 > [!tip] Respect versions
-> Not every resource can go to an older agent. For example, 8.3 gateway and Perspective event scripts cannot be sent to 8.1 agents with Send Project. Keep the fleet on one version where you can.
+> Not every resource can go to an older agent. For example, 8.3 Gateway and Perspective event scripts cannot be sent to 8.1 agents with Send Project. Keep the fleet on one version where you can.
 
 ## What EAM is not
 
-EAM moves gateway-level things. It is not source control, not a tag database and not a continuous integration tool. Many teams pair it with Git for project history (see {{lesson:ign-versioning}}) and use EAM to distribute a known-good version. It does not replace thinking about environments (dev, test, prod) or about tag and UDT standardization across sites. And a controller outage does not stop plants. Agents keep running on their own.
+EAM moves Gateway-level things. It is not source control, not a tag database and not a continuous integration tool. Many teams pair it with Git for project history (see {{lesson:ign-versioning}}) and use EAM to distribute a known-good version. It does not replace thinking about environments (dev, test, prod) or about tag and UDT standardization across sites. And a controller outage does not stop plants. Agents keep running on their own.
 `,
 
   eli5: `
@@ -85,11 +85,11 @@ The district office is the **controller**. The schools are the **agents**. The t
 `,
 
   why: `
-**Why a controller and not scripts?** You can script gateway chores yourself with your own tooling, and many teams do. EAM's advantage is that it already knows about licenses, module archives, scheduling and success tracking, and it uses the same trust model as the rest of the Gateway Network. Its tradeoff is that it ties your operations to Ignition's tooling and a version-sensitive module. Teams that already run Ansible, Docker and Git often use EAM only for backup collection and license visibility.
+**Why a controller and not scripts?** You can script Gateway chores yourself with your own tooling, and many teams do. EAM's advantage is that it already knows about licenses, module archives, scheduling and success tracking, and it uses the same trust model as the rest of the Gateway Network. Its tradeoff is that it ties your operations to Ignition's tooling and a version-sensitive module. Teams that already run Ansible, Docker and Git often use EAM only for backup collection and license visibility.
 
-**Why back up through the controller?** A backup that sits on the same server as the gateway dies with the server. Collect Backup moves a copy off the box and includes modules and the license, which are the two things people forget when rebuilding. Recovery after a hardware failure becomes "build a clean Ignition, restore from the archive."
+**Why back up through the controller?** A backup that sits on the same server as the Gateway dies with the server. Collect Backup moves a copy off the box and includes modules and the license, which are the two things people forget when rebuilding. Recovery after a hardware failure becomes "build a clean Ignition, restore from the archive."
 
-**Why fleet size changes the answer.** At 3 gateways, EAM is optional. At 20 or more, the sum of small manual tasks becomes the main operating cost, and inconsistent versions or missed backups become the main risk. EAM pays for itself in avoided mistakes: the plant that never got the security patch, the backup nobody took, the license that expired.
+**Why fleet size changes the answer.** At 3 Gateways, EAM is optional. At 20 or more, the sum of small manual tasks becomes the main operating cost, and inconsistent versions or missed backups become the main risk. EAM pays for itself in avoided mistakes: the plant that never got the security patch, the backup nobody took, the license that expired.
 
 **Why the controller deserves care.** A controller can restore or overwrite agents, so it is a powerful machine. Treat access to it as privileged, use roles and audit, run it redundantly, and do not expose it to the internet. Compromising the controller is compromising the fleet.
 `,
@@ -97,7 +97,7 @@ The district office is the **controller**. The schools are the **agents**. The t
   examples: [
     {
       title: "Recovering a failed plant server",
-      body: `Plant 9's server dies. You build a fresh machine with the same Ignition version, connect it as an agent, and use Restore Backup with the last archived backup. The restored agent keeps its previous name, the modules come back (they were archived with the backup), and the license restores with it. Check the backup and restore pages of the manual before restoring a backup made on a much older Ignition version onto an 8.3 gateway, as cross-version restores have limits.`
+      body: `Plant 3's server dies. You build a fresh machine with the same Ignition version, connect it as an agent, and use Restore Backup with the last archived backup. The restored agent keeps its previous name, the modules come back (they were archived with the backup), and the license restores with it. Check the backup and restore pages of the manual before restoring a backup made on a much older Ignition version onto an 8.3 Gateway, as cross-version restores have limits.`
     },
     {
       title: "A staged project rollout",
@@ -170,38 +170,38 @@ The district office is the **controller**. The schools are the **agents**. The t
       q: "Which statement about the controller and agents is correct?",
       options: [
         "Agents stop running if the controller goes offline",
-        "The controller assigns tasks and monitors agents, and agents keep running normally if it is down",
         "Agents assign tasks to each other",
-        "The controller must run on the same machine as an agent"
+        "The controller must run on the same machine as an agent",
+        "The controller assigns tasks and monitors agents, and agents keep running normally if it is down"
       ],
-      answer: 1,
+      answer: 3,
       explain: [
-        "Agents are full gateways and keep doing their jobs without the controller. Only management stops.",
-        "Correct. EAM is a management layer, not a runtime dependency.",
+        "Agents are full Gateways and keep doing their jobs without the controller. Only management stops.",
         "Tasks flow from the controller to agents.",
-        "The controller is a separate gateway in the fleet."
+        "The controller is a separate Gateway in the fleet.",
+        "Correct. EAM is a management layer, not a runtime dependency."
       ]
     },
     {
-      q: "You have 24 plant gateways to update with a new screen. What is the safest use of EAM?",
+      q: "You have 24 plant Gateways to update with a new screen. What is the safest use of EAM?",
       options: [
         "Send Project to all 24 immediately",
-        "Send Project Resources to a pilot group, check the results, then send to the rest",
         "Restart all agents first",
+        "Send Project Resources to a pilot group, check the results, then send to the rest",
         "Run Restore Backup on every agent"
       ],
-      answer: 1,
+      answer: 2,
       explain: [
         "A bad change would hit every site at once.",
-        "Correct. A staged rollout limits the blast radius and EAM reports task success per agent.",
         "Restarting does not deliver a screen and causes needless downtime.",
-        "Restoring overwrites gateway configuration, which is far more than a screen update."
+        "Correct. A staged rollout limits the blast radius and EAM reports task success per agent.",
+        "Restoring overwrites Gateway configuration, which is far more than a screen update."
       ]
     },
     {
       q: "Why do experienced integrators care about EAM mostly once the fleet is large?",
       options: [
-        "EAM is free only above 20 gateways",
+        "EAM is free only above 20 Gateways",
         "Manual per-gateway chores multiply, and inconsistency and missed backups become the main risk",
         "Smaller fleets cannot use the Gateway Network",
         "EAM improves tag performance"
@@ -209,8 +209,8 @@ The district office is the **controller**. The schools are the **agents**. The t
       answer: 1,
       explain: [
         "Licensing is not what makes fleet size matter.",
-        "Correct. The savings are avoided mistakes and time, which grow with the number of gateways.",
-        "The Gateway Network works with any number of gateways.",
+        "Correct. The savings are avoided mistakes and time, which grow with the number of Gateways.",
+        "The Gateway Network works with any number of Gateways.",
         "EAM is for administration and does not affect tag performance."
       ]
     },
@@ -225,7 +225,7 @@ The district office is the **controller**. The schools are the **agents**. The t
       answer: 1,
       explain: [
         "EAM's archive holds backups, not a development history with diffs and reviews.",
-        "Correct. Version control tracks changes. EAM moves the result to gateways and collects backups.",
+        "Correct. Version control tracks changes. EAM moves the result to Gateways and collects backups.",
         "EAM does far more than licensing.",
         "The Gateway Network is a transport and does not store projects."
       ]

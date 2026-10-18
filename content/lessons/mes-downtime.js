@@ -2,7 +2,7 @@ LC.lesson({
   id: "mes-downtime",
   title: "Downtime tracking and reason codes",
   track: "mes",
-  minutes: 20,
+  minutes: 15,
   level: 2,
   prereqs: ["mes-oee"],
   tags: ["downtime", "reason-codes", "pareto", "micro-stops", "first-out", "oee"],
@@ -39,7 +39,7 @@ The cleanest signal is a machine state tag, not a guess from raw I/O. A state mo
 A downtime event begins when the state leaves "Running" during planned production time, and ends when it returns. A few practical rules:
 
 - **Debounce the state.** A state that flickers for 200 ms is not an event. Filter in the PLC if you can, in the MES if you cannot.
-- **Use a time source you trust.** Timestamp in the PLC or at the edge, not when the gateway happens to poll. See {{term:polling|polling}}.
+- **Use a time source you trust.** Timestamp in the PLC or at the edge, not when the Gateway happens to poll. See {{term:polling|polling}}.
 - **Record the state, not just running/not running.** Faulted, starved and blocked are different problems. Starved means upstream is late, blocked means downstream is full. Neither is this machine's fault, and OEE reports should be able to say so.
 
 ## Micro-stops
@@ -124,7 +124,7 @@ ORDER BY minutes DESC;
 
 ## Where the PLC should help: first-out fault codes
 
-When a conveyor jams, the PLC often shows ten faults in the next second: the jam, a downstream starved alarm, a low-air warning caused by the e-stop. The operator sees a screen full of red. Only the first one matters. A **first-out** latch captures the first fault that occurred and holds it until reset, so MES can suggest the right reason code.
+When a conveyor jams, the PLC often shows ten faults in the next second: the jam, a downstream starved alarm, a low-air warning caused by the E-stop. The operator sees a screen full of red. Only the first one matters. A **first-out** latch captures the first fault that occurred and holds it until reset, so MES can suggest the right reason code.
 
 \`\`\`st
 // Pseudo-ST: FaultCode is the ID of the fault that just became active (0 if none).
@@ -183,7 +183,7 @@ So you do two things. The bus itself tells you the first warning light that came
 
 **Why the PLC must supply the first-out fault.** Cascade faults make most of the alarm list noise. Without a first-out indicator, MES records a cascade as the cause, or a human guesses. Giving MES one integer that is usually correct is worth more than a thousand alarm tags.
 
-**Why timestamps from the source.** If events are stamped when the gateway polls, a stop that lasted 4 seconds can appear as 0 or 10 depending on poll alignment. At scale that bias moves Availability by points. Use PLC or edge timestamps and sort out clock sync (see {{lesson:net-data}}).
+**Why timestamps from the source.** If events are stamped when the Gateway polls, a stop that lasted 4 seconds can appear as 0 or 10 depending on poll alignment. At scale that bias moves Availability by points. Use PLC or edge timestamps and sort out clock sync (see {{lesson:net-data}}).
 
 **What integrators debate.** Whether to force a reason before the line can restart (some plants do; it frustrates operators and produces junk), how long a stop must be before prompting, and who may edit reasons after the fact. A common compromise is: no lockout, a prompt after a threshold, reasons editable by supervisors within the same day, and a visible "unassigned" bucket on the shift report.
 `,
@@ -231,7 +231,7 @@ Downtime logging began as paper forms and clipboard tallies on the line, and TPM
   pitfalls: [
     "Prompting for a reason on every micro-stop, which trains operators to pick the first code.",
     "A 200-code tree. Compliance drops and the Pareto fragments into small bars.",
-    "Stamping events when the gateway polls instead of at the PLC, so short stops become random.",
+    "Stamping events when the Gateway polls instead of at the PLC, so short stops become random.",
     "Letting 'Other' hold more than a few percent of downtime and never reviewing it.",
     "Renumbering PLC fault codes without updating the MES mapping.",
     "Not cutting events at shift boundaries or around scheduled breaks, so OEE is charged for planned time.",
@@ -276,23 +276,23 @@ Downtime logging began as paper forms and clipboard tallies on the line, and TPM
     },
     {
       q: "A 40-minute changeover spans a 06:00 shift change (starts 05:40). How should MES handle it?",
-      options: ["Assign all 40 minutes to the night shift", "Assign all 40 minutes to the day shift", "Cut the event at 06:00 so each shift gets 20 minutes", "Discard the event"],
-      answer: 2,
+      options: ["Cut the event at 06:00 so each shift gets 20 minutes", "Assign all 40 minutes to the night shift", "Assign all 40 minutes to the day shift", "Discard the event"],
+      answer: 0,
       explain: [
+        "Correct. Each shift should be charged for its own time.",
         "That overstates night shift losses.",
         "That overstates day shift losses.",
-        "Correct. Each shift should be charged for its own time.",
         "Discarding it hides a real loss."
       ]
     },
     {
       q: "The weekly Pareto shows 'Jam - labeler' as 27 percent of minutes and 'Changeover' as 34 percent. What else should you check before deciding what to fix?",
-      options: ["The event counts and the size of the 'Other' and unassigned buckets","The OEE target","The PLC scan time","Nothing, fix the biggest bar"],
-      answer: 0,
+      options: ["The OEE target","The PLC scan time","The event counts and the size of the 'Other' and unassigned buckets","Nothing, fix the biggest bar"],
+      answer: 2,
       explain: [
-        "Correct. Frequency and data quality both change the priority.",
         "The target does not affect which loss is largest.",
         "Scan time is unrelated.",
+        "Correct. Frequency and data quality both change the priority.",
         "Minutes alone hide whether the loss is many short events or a few long ones, which need different fixes."
       ]
     }

@@ -2,7 +2,7 @@ LC.lesson({
   id: "plc-udt",
   title: "UDTs: designing data structures",
   track: "plc",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["plc-tags", "plc-compare-math"],
   tags: ["udt", "data-types", "structure", "logix", "naming", "faceplates"],
@@ -233,57 +233,57 @@ Early Allen-Bradley PLCs (PLC-5, SLC 500) used fixed data files: N7:0, B3:1, F8:
   quiz: [
     {
       q: "Which group should an operator's Start button write to in a Motor UDT?",
-      options: ["Sts.Running", "Cfg.StartDelay", "Cmd.Start", "Alm.FailToStart"],
-      answer: 2,
+      options: ["Sts.Running", "Cfg.StartDelay", "Alm.FailToStart", "Cmd.Start"],
+      answer: 3,
       explain: [
         "Sts members are written only by PLC logic. The HMI writing Running would lie about the motor.",
         "Cfg holds slow-changing settings, not operator actions.",
-        "Correct. Cmd members are requests, and the motor logic decides whether to honor them.",
-        "Alm members are written by the PLC when a fault is detected."
+        "Alm members are written by the PLC when a fault is detected.",
+        "Correct. Cmd members are requests, and the motor logic decides whether to honor them."
       ]
     },
     {
       q: "Why do Cmd, Sts, Cfg and Alm groups matter to an integrator?",
-      options: ["They make the project compile faster", "Logix requires them", "They reduce memory by half", "The group name tells you who may write each member, which makes bugs and permissions easy to reason about"],
-      answer: 3,
+      options: ["The group name tells you who may write each member, which makes bugs and permissions easy to reason about", "They make the project compile faster", "Logix requires them", "They reduce memory by half"],
+      answer: 0,
       explain: [
+        "Correct. Ownership is readable from the member path.",
         "Compile speed is unaffected.",
         "It is a convention, not a Logix rule.",
-        "Grouping does not change memory use much.",
-        "Correct. Ownership is readable from the member path."
+        "Grouping does not change memory use much."
       ]
     },
     {
       q: "A structure has BOOL, REAL, BOOL, REAL, BOOL. What is a good way to improve it?",
-      options: ["Group the BOOLs together so they pack into a shared hidden host member", "Convert the BOOLs to DINTs", "Make every member a REAL", "Nothing: order never matters"],
-      answer: 0,
+      options: ["Convert the BOOLs to DINTs", "Group the BOOLs together so they pack into a shared hidden host member", "Make every member a REAL", "Nothing: order never matters"],
+      answer: 1,
       explain: [
-        "Correct. Consecutive BOOLs share a hidden host member, so scattering them between REALs can add padding.",
         "That wastes more space and loses bit clarity.",
+        "Correct. Consecutive BOOLs share a hidden host member, so scattering them between REALs can add padding.",
         "A REAL for a bit is wasteful and confusing.",
         "Order affects padding and size."
       ]
     },
     {
       q: "You need to add a member to a UDT used by 60 motors on a running plant. What is the best planning approach?",
-      options: ["Add it online whenever it is convenient", "Reserve spare members up front and schedule structural changes for a maintenance window with the offline project as the source", "Create a second UDT with a different name for each new member", "Delete the UDT and recreate it"],
-      answer: 1,
+      options: ["Add it online whenever it is convenient", "Create a second UDT with a different name for each new member", "Reserve spare members up front and schedule structural changes for a maintenance window with the offline project as the source", "Delete the UDT and recreate it"],
+      answer: 2,
       explain: [
         "Structural edits are restricted online and affect every tag of that type.",
-        "Correct. Spares avoid most structural changes, and the rest should be planned.",
         "That fragments the design and defeats reuse.",
+        "Correct. Spares avoid most structural changes, and the rest should be planned.",
         "Deleting a type in use is not possible without removing all its tags."
       ]
     },
     {
       q: "What makes one Perspective faceplate work for any motor?",
-      options: ["Every motor has the same UDT member names, so one tagPath parameter is enough", "Perspective auto-detects member names", "Each motor has its own copy of the faceplate", "The PLC sends the faceplate layout"],
-      answer: 0,
+      options: ["Perspective auto-detects member names", "Each motor has its own copy of the faceplate", "The PLC sends the faceplate layout", "Every motor has the same UDT member names, so one tagPath parameter is enough"],
+      answer: 3,
       explain: [
-        "Correct. The structure is the contract the view relies on.",
         "Perspective binds to paths you define. It does not guess.",
         "Copies defeat the purpose and drift apart.",
-        "The PLC only holds data, not screen layouts."
+        "The PLC only holds data, not screen layouts.",
+        "Correct. The structure is the contract the view relies on."
       ]
     },
     {

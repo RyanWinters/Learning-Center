@@ -2,7 +2,7 @@ LC.lesson({
   id: "persp-navigation",
   title: "Sessions, pages, docks and popups",
   track: "persp",
-  minutes: 25,
+  minutes: 15,
   level: 2,
   prereqs: ["persp-containers"],
   tags: ["perspective", "session", "navigation", "popups", "docks", "pages"],
@@ -242,12 +242,12 @@ Ignition's older Vision client was a Java application that opened windows on the
   quiz: [
     {
       q: "An operator refreshes the browser and their selected area resets, although the plant data is fine. Where was the selection most likely stored?",
-      options: ["In a memory tag", "In session.custom or a view property", "In the page URL", "In the Gateway database"],
-      answer: 1,
+      options: ["In a memory tag", "In the page URL", "In session.custom or a view property", "In the Gateway database"],
+      answer: 2,
       explain: [
         "Tags live on the Gateway independent of any session, so a refresh would not reset them.",
-        "Correct. A refresh creates a brand new session, so session and view state starts from its defaults.",
         "Anything in the URL is rebuilt from the address on refresh, so it would survive.",
+        "Correct. A refresh creates a brand new session, so session and view state starts from its defaults.",
         "Database values are unaffected by the browser."
       ]
     },
@@ -264,45 +264,45 @@ Ignition's older Vision client was a Java application that opened windows on the
     },
     {
       q: "You call system.perspective.navigate with both page and url arguments. What happens?",
-      options: ["It errors", "The url is used", "The page argument takes priority", "Both open, in two tabs"],
-      answer: 2,
+      options: ["It errors", "The url is used", "Both open, in two tabs", "The page argument takes priority"],
+      answer: 3,
       explain: [
         "It does not error. It resolves the conflict by a fixed priority.",
         "url has the lowest priority of the three navigation arguments.",
-        "Correct. The function reference gives page priority, then view, then url. In real code, pass one destination.",
-        "Only the newTab option opens another tab, and only for the one chosen destination."
+        "Only the newTab option opens another tab, and only for the one chosen destination.",
+        "Correct. The function reference gives page priority, then view, then url. In real code, pass one destination."
       ]
     },
     {
       q: "Why build a popup id from the equipment tag path instead of a fixed string?",
-      options: ["Popup ids must contain a slash", "So the same equipment does not open twice and each popup can be closed individually", "It makes the popup modal", "Fixed ids are not allowed"],
-      answer: 1,
+      options: ["So the same equipment does not open twice and each popup can be closed individually", "Popup ids must contain a slash", "It makes the popup modal", "Fixed ids are not allowed"],
+      answer: 0,
       explain: [
-        "There is no such rule.",
         "Correct. A unique, data-derived id lets you target, toggle or close the right popup, and re-opening the same equipment reuses the same id.",
+        "There is no such rule.",
         "Modality is a separate option.",
         "Fixed ids are allowed, but every open would collide with the previous one."
       ]
     },
     {
       q: "What is the main advantage of defining a header as a shared docked view instead of embedding it in every page's primary view?",
-      options: ["It is not subject to security zones", "It is built once and persists across page changes, and edits happen in one place", "Docks run on the client, so they cost no Gateway CPU", "Docks can show more components"],
-      answer: 1,
+      options: ["It is not subject to security zones", "Docks run on the client, so they cost no Gateway CPU", "Docks can show more components", "It is built once and persists across page changes, and edits happen in one place"],
+      answer: 3,
       explain: [
         "Docks follow the same security as other views.",
-        "Correct. It avoids rebuilding it on every navigation and avoids editing many views.",
         "All Perspective views run on the Gateway, docks included.",
-        "A dock is a normal view with the same component limits."
+        "A dock is a normal view with the same component limits.",
+        "Correct. It avoids rebuilding it on every navigation and avoids editing many views."
       ]
     },
     {
       q: "A script on the Gateway needs to open a faceplate popup on a specific operator's screen. What must it supply?",
-      options: ["Only the view path", "The user name", "sessionId and pageId", "The popup's position"],
-      answer: 2,
+      options: ["Only the view path", "sessionId and pageId", "The user name", "The popup's position"],
+      answer: 1,
       explain: [
         "Without session targeting, the call has no idea which screen to use.",
-        "Perspective addresses sessions by id, not by user name.",
         "Correct. Out-of-session calls need both IDs to find the session and the page.",
+        "Perspective addresses sessions by id, not by user name.",
         "Position is optional and unrelated to targeting."
       ]
     }

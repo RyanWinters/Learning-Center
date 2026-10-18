@@ -2,7 +2,7 @@ LC.lesson({
   id: "int-fds",
   title: "Writing a functional design specification",
   track: "int",
-  minutes: 25,
+  minutes: 15,
   level: 3,
   prereqs: ["int-lifecycle"],
   tags: ["FDS", "specification", "control narrative", "alarms", "interlocks", "traceability", "scope"],
@@ -240,13 +240,13 @@ Specification documents for control systems grew out of large process and pharma
     },
     {
       q: "A sequence table lists Fill, Heat, Hold and Drain, each with a normal exit. What is the most important thing missing?",
-      options: ["A color scheme", "Timeouts, abort and fault transitions for the unhappy path", "The PLC scan time", "The vendor's part numbers"],
-      answer: 1,
+      options: ["A color scheme", "The PLC scan time", "The vendor's part numbers", "Timeouts, abort and fault transitions for the unhappy path"],
+      answer: 3,
       explain: [
         "Colors belong to the HMI design and have no bearing on sequence completeness.",
-        "Correct. Real sequences stall, fail and get stopped. The FDS must say what the system does then.",
         "Scan time is an implementation detail.",
-        "Part numbers belong in the bill of materials."
+        "Part numbers belong in the bill of materials.",
+        "Correct. Real sequences stall, fail and get stopped. The FDS must say what the system does then."
       ]
     },
     {
@@ -262,23 +262,23 @@ Specification documents for control systems grew out of large process and pharma
     },
     {
       q: "Midway through the project, the customer asks for behavior that appears nowhere in the signed FDS. How does a good FDS help?",
-      options: ["It lets you refuse any request", "It provides a baseline, so the request is clearly a change with a price and a revision", "It transfers the risk to the programmer", "It removes the need for FAT"],
-      answer: 1,
+      options: ["It lets you refuse any request", "It transfers the risk to the programmer", "It provides a baseline, so the request is clearly a change with a price and a revision", "It removes the need for FAT"],
+      answer: 2,
       explain: [
         "Refusal is not the point. The point is that new work is priced and agreed.",
-        "Correct. Because the baseline is numbered and signed, the extra request is visible as new scope.",
         "The FDS clarifies commitments between integrator and customer. It does not move risk onto an individual.",
+        "Correct. Because the baseline is numbered and signed, the extra request is visible as new scope.",
         "FAT is still needed to prove the system matches the FDS."
       ]
     },
     {
       q: "What is the purpose of a requirement-to-test traceability matrix?",
-      options: ["To make the FDS longer", "To list the project team", "To show that each requirement is tested and each test comes from a requirement", "To replace the P&IDs"],
-      answer: 2,
+      options: ["To make the FDS longer", "To show that each requirement is tested and each test comes from a requirement", "To list the project team", "To replace the P&IDs"],
+      answer: 1,
       explain: [
         "Length is not a goal. Traceability adds a compact table.",
-        "That is a different document.",
         "Correct. It exposes untested requirements and tests with no basis.",
+        "That is a different document.",
         "P&IDs describe process equipment. The matrix describes requirements and tests."
       ]
     }
