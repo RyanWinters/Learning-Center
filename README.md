@@ -49,6 +49,9 @@ It logs to `data/autoupdate.log`. Git must be on the PATH.
 
 To stop it, end both "pythonw.exe" processes in Task Manager.
 
+PRs from Claude's `claude/*` branches merge into `main` on their own once CI passes (`.github/workflows/ci.yml`),
+so a change Claude makes reaches the PC within a few minutes of its checks going green.
+
 ## What's inside
 
 | Path | What it is |
