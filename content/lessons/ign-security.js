@@ -96,7 +96,7 @@ A supervisor on a phone in the parking lot has the role but not the zone, so the
 
 1. **Turn on HTTPS.** A new Gateway's secure port normally starts with a self-signed certificate. Install a certificate your clients trust and redirect HTTP to HTTPS, so passwords and session tokens never cross the plant network in clear text.
 2. **Remove defaults.** Change or delete the initial admin account made at commissioning. Give the Gateway Web Interface its own named engineers.
-3. **Segment the network.** Only the gateway should reach PLC ports. Only engineers should reach port 8088/8043. See {{lesson:net-security}}.
+3. **Segment the network.** Only the gateway should reach PLC ports. Only engineers should reach port 8088/8043, and office users should reach Perspective through the DMZ reverse proxy (\`10.20.250.10\`) rather than the Level 3 Gateway at \`10.20.30.10\`. See {{lesson:net-security}}.
 4. **Enable audit logging.** Create an audit profile (a database table) and assign it to the gateway and to projects. Actions such as tag writes and logins are then recorded with user and time (check the audit log page for exactly which events your version captures). After a restore, verify that audit profiles are enabled, because they can come back disabled.
 5. **Restrict OPC UA and service access.** Use security zones to limit which remote gateways may connect.
 6. **Patch.** Ignition publishes security fixes in new versions. Stay on a supported release.
