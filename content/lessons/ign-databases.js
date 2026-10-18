@@ -29,9 +29,9 @@ Opening a connection is expensive (TCP, TLS, login). So Ignition keeps a {{term:
 Connections can also have a **failover** connection. If the main database is unreachable, the Gateway uses the backup.
 
 \`\`\`text
-jdbc:postgresql://db01.plant.local:5432/mes
-jdbc:sqlserver://sql01:1433;databaseName=Production
-jdbc:mariadb://10.20.30.40:3306/ignition
+jdbc:postgresql://10.20.30.20:5432/mes
+jdbc:sqlserver://10.20.30.20:1433;databaseName=Production
+jdbc:mariadb://10.20.30.20:3306/ignition
 \`\`\`
 
 > [!tip] Use a dedicated database account
@@ -66,7 +66,7 @@ In Perspective, you can bind a table straight to the named query with parameters
 
 ### Why not system.db.runQuery from the client?
 
-\`system.db.runQuery("SELECT ... WHERE line='" + line + "'")\` builds SQL text from strings. If that string is influenced by a user, a text box or a URL parameter, someone can inject SQL. The same applies in \`runPrepQuery\` only if you build the string unsafely, but the habit of concatenating is the risk. With the legacy functions, the SQL itself is written in client scripts, so changing a table name means finding every screen. A named query is defined once, tested once, secured once and cached. The IA documentation itself recommends named queries over the standard statement functions where possible.
+\`system.db.runQuery("SELECT ... WHERE line='" + line + "'")\` builds SQL text from strings. If that string is influenced by a user, a text box or a URL parameter, someone can inject SQL. \`runPrepQuery\` binds values as parameters, so it is safe for values. The danger is any function fed a string you built from user input, and the habit of concatenating is the risk. The \`system.db.runQuery\` family is also on the 8.3 deprecated list. It still runs, and in 8.3 the replacements are \`system.db.execQuery\` (SELECT) and \`system.db.execUpdate\` (INSERT/UPDATE/DELETE) beside the named-query form shown above. With the legacy functions, the SQL itself is written in client scripts, so changing a table name means finding every screen. A named query is defined once, tested once, secured once and cached. The IA documentation itself recommends named queries over the standard statement functions where possible.
 
 > [!warning] Named queries are not magic
 > A Query String parameter inserts text directly into the SQL, with no protection. Use Value parameters for data. For dynamic table or column names use Identifier type, and validate against a fixed list in your script.
@@ -84,7 +84,7 @@ The **SQL Bridge (Transaction Groups)** module moves data between tags and datab
 
 ### Triggers, handshakes and schedule
 
-A group runs on a **schedule** (a tag group or fixed rate) and optionally a **trigger**: an expression or tag condition that must be true for the group to execute. Typical pattern: the PLC sets \`Batch.Complete\`. The group's trigger watches it and inserts one row. After the insert the group can write to a **handshake** tag (acknowledge) so the PLC knows it was recorded and can safely reset its data. That handshake is what prevents lost or duplicate records when two systems exchange data.
+A group runs on a **schedule** (a tag group or fixed rate) and optionally a **trigger**: an expression or tag condition that must be true for the group to execute. Typical pattern: the PLC sets \`Area10_Mixing.BatchComplete\`. The group's trigger watches it and inserts one row. After the insert the group can write to a **handshake** tag (acknowledge) so the PLC knows it was recorded and can safely reset its data. That handshake is what prevents lost or duplicate records when two systems exchange data.
 
 {{diagram:handshake}}
 
@@ -97,12 +97,12 @@ Without a handshake the PLC does not know whether the insert occurred, so it eit
 When Ignition writes history, alarms journal rows or transaction group rows, it uses the {{term:store-and-forward|store and forward}} engine so a database outage or restart does not drop data. Records go first into a **memory buffer**, then to the **database sink**, which retries on failure. The **disk cache** persists records that cannot be delivered yet.
 
 - The memory buffer is fast but volatile. If the Gateway restarts, it is gone, and it cannot quarantine anything.
-- The disk cache holds data waiting to forward and has a maximum record count (default 25,000, and the manual advises against going above 50,000 because it is short-term storage). When full, new records are dropped.
+- The disk cache holds data waiting to forward and has a maximum record count (a configurable record count; check the store and forward page of the manual for your version's default and its advice on raising it, since the cache is short-term storage). The examples in this lesson assume a cache of 25,000 records. When full, new records are dropped.
 - The sink retries a failed batch record by record. A record that keeps failing, for example from a data type mismatch or a missing column, goes to **{{term:quarantine|quarantine}}** instead of blocking everything behind it.
 
 Check the **Store & Forward** status page and the system tags for quarantined and dropped counts. Quarantined data stays on disk until a person looks at it, fixes the cause (a table missing, a column too short) and releases or discards it. A non-zero quarantine count after commissioning is a real problem. Someone should be alerted.
 
-For a database that is down for four hours, the arithmetic is simple: records per second times 14,400 must fit in the cache. At 500 rows/s that is 7.2 million rows, far above the 25,000 default. Plan outage tolerance explicitly and size the cache or reduce the data rate.
+For a database that is down for four hours, the arithmetic is simple: records per second times 14,400 must fit in the cache. At 500 rows/s that is 7.2 million rows, far above a 25,000-record cache. Plan outage tolerance explicitly and size the cache or reduce the data rate.
 
 Transaction groups have a **Bypass Store and Forward** option for inserting groups. Then rows go straight to the database and errors are reported instead of cached. Use it when you must know immediately that a write failed, and accept that outages lose data.
 
@@ -131,17 +131,17 @@ A **transaction group** is a standing order: "Every time the delivery truck arri
 `,
 
   history: `
-SQL Bridge (transaction groups) is one of Ignition's earliest modules, built so plant data could move to a database without a developer. Named queries arrived in Ignition 7.9 to give a safer, central alternative to SQL strings in client scripts. Store and forward grew out of the same need: tag history and transaction data must survive a database restart.
+SQL Bridge (transaction groups) is one of Ignition's earliest modules, built so plant data could move to a database without a developer. Named queries were added to Ignition in the 7.x line (check the manual for the exact release) to give a safer, central alternative to SQL strings in client scripts. Store and forward grew out of the same need: tag history and transaction data must survive a database restart.
 `,
 
   examples: [
     {
       title: "A production counter handshake",
-      body: `PLC bit \`Line1.Done\` goes true with \`Line1.GoodCount = 412\`. A standard transaction group triggers on \`Line1.Done\`, inserts a row into \`production_log\` (line, good_count, ts) and writes 1 to the handshake item \`Line1.Stored\`. The PLC sees \`Stored\`, clears \`Done\` and resets the count. If the insert fails, the handshake is not written and the PLC keeps its data until the database recovers (unless the group uses store and forward, in which case confirm how your design treats the handshake). Test this outage case before go-live.`
+      body: `PLC bit \`Area20_Packaging.Done\` goes true with \`Area20_Packaging.GoodCount = 412\`. A standard transaction group triggers on \`Done\`, inserts a row into \`production_log\` (line, good_count, ts) and writes 1 to the handshake item \`Area20_Packaging.Stored\`. The PLC sees \`Stored\`, clears \`Done\` and resets the count. If the insert fails, the handshake is not written and the PLC keeps its data until the database recovers (unless the group uses store and forward, in which case confirm how your design treats the handshake). Test this outage case before go-live.`
     },
     {
       title: "Sizing a four-hour outage",
-      body: `Historian plus transaction groups produce about 40 rows/s. Four hours is 14,400 s × 40 = 576,000 rows. The default disk cache of 25,000 would drop most of them. Raising to 50,000 still isn't enough. Options: lower the data rate (wider deadbands), give the database high availability, or use a local database as a front buffer.`
+      body: `Historian plus transaction groups produce about 40 rows/s. Four hours is 14,400 s × 40 = 576,000 rows. A disk cache of 25,000 records would drop most of them, and doubling it to 50,000 still isn't enough. Options: lower the data rate (wider deadbands), give the database high availability, or use a local database as a front buffer.`
     }
   ],
 
@@ -230,7 +230,7 @@ SQL Bridge (transaction groups) is one of Ignition's earliest modules, built so 
       ]
     },
     {
-      q: "The database server is down for two hours at 40 rows/s and the S&F disk cache holds 25,000 records. What happens?",
+      q: "The database server is down for two hours at 40 rows/s and the S&F disk cache is configured for 25,000 records. What happens?",
       options: ["Everything is stored since S&F is unlimited", "The cache fills after about 10 minutes and later records are dropped", "Ignition stops the tags", "All data is quarantined"],
       answer: 1,
       explain: [

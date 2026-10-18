@@ -6,12 +6,12 @@ LC.lesson({
   level: 1,
   prereqs: ["int-lifecycle"],
   tags: ["career", "certification", "inductive-university", "isa", "csia", "pe", "portfolio", "home-lab"],
-  summary: "Which credentials exist, what each one proves, what they cost in time, and how to build proof of skill that a hiring manager believes.",
+  summary: "Which credentials exist, what each one proves, and a capstone-style plan for what to build, using the Build Labs, so a hiring manager believes your skill.",
   objectives: [
     "Explain the difference between an Inductive University credential and an Ignition certification",
     "Describe the Core and Gold certification tests and the integrator program tiers",
     "Pick among Rockwell training, ISA CCST and CAP, the PE exam and CSIA for a given goal",
-    "Plan a home lab and a portfolio that demonstrates integrator skills"
+    "Plan the builds (Build Labs, decision log, naming standard, FDS excerpt, commissioning record) that demonstrate integrator skills"
   ],
 
   body: `
@@ -27,10 +27,10 @@ Certifications do two jobs. They give a hiring manager a quick filter, and they 
 
 | Level | Format | What it covers | Notes |
 |---|---|---|---|
-| Core | Online, auto-graded, one attempt per purchase | Ignition fundamentals: architecture, real-time status and control, historical logging, UDTs and templates, alarming | Listed at about 350 USD; must be completed within 30 days of purchase |
-| Gold | Take-home practical, graded by Inductive Automation | Core material plus SQL and Python scripting | Typically 16 to 40 hours of work; submit within 6 months; open book (manual and Inductive University allowed) |
+| Core | Online, auto-graded | Ignition fundamentals: architecture, real-time status and control, historical logging, UDTs and templates, alarming | Check the issuer's site for the current price, attempt rules and time limit |
+| Gold | Take-home practical, graded by Inductive Automation | Core material plus SQL and Python scripting | A long practical that takes many hours; check the issuer's site for the time estimate, submission window and what resources are allowed |
 
-Core is required before Gold. Certifications last three years. Prices and rules shift, so check the current testing page.
+Core is required before Gold. Certifications expire, and prices and rules shift, so check the issuer's site for the current validity period and testing page.
 
 ### Integrator program tiers
 
@@ -50,28 +50,28 @@ Program members get perks that scale with the tier, such as free certification t
 
 ## Allen-Bradley and Rockwell
 
-Rockwell Automation sells instructor-led, virtual and e-learning courses for Studio 5000 Logix Designer. The common sequence is Level 1 (system fundamentals), Level 2 and Level 3 (project development), plus certificate tracks for programmers and maintainers that end with an assessment. Accelerated five-day versions exist. Advanced courses cover topics like controller security and project optimization. Course numbers and prerequisites change, so check the training catalog.
+Rockwell Automation sells instructor-led, virtual and e-learning courses for Studio 5000 Logix Designer. The common sequence is Level 1 (system fundamentals), Level 2 and Level 3 (project development), plus certificate tracks for programmers and maintainers that end with an assessment. Accelerated versions exist. Advanced courses cover topics like controller security and project optimization. Course numbers and prerequisites change, so check the training catalog.
 
 Rockwell training pays off when your target employer is an Allen-Bradley shop. Pair it with real project time. Courses teach the tool, and projects teach you how plants use it. See {{lesson:plc-studio}} and {{lesson:plc-best-practices}}.
 
 ## ISA: CCST and CAP
 
-The International Society of Automation (ISA) offers two certification programs. Both are experience-based with no formal application form, and both can be renewed through professional development points.
+The International Society of Automation (ISA) offers two certification programs. Both combine experience and education requirements with an exam, and both are renewed through continuing professional development. Check ISA's site for the current application steps.
 
 - **CCST (Certified Control Systems Technician)** targets technicians who calibrate, document, troubleshoot and repair instrumentation and control loops. It has three levels (Level 1, Level 2, Level 3) requiring increasing combined experience, education and training. It fits instrument and controls techs who want to prove field skill, and it suits the commissioning work in {{lesson:int-commissioning}}.
-- **CAP (Certified Automation Professional)** targets people who define, design, develop, deploy and support control and information systems. The exam is a long computer-based test (on the order of 175 questions over four hours), and experience requirements run from about five to ten years depending on your degree. It fits system engineers and project leads, and it lines up with the standards in {{lesson:int-standards}}.
+- **CAP (Certified Automation Professional)** targets people who define, design, develop, deploy and support control and information systems. The exam is a long computer-based test, and the experience requirement depends on your degree. Check ISA's site for the current question count, time and experience rules. It fits system engineers and project leads, and it lines up with the standards in {{lesson:int-standards}}.
 
 ISA also sells review courses and associate-level certificates for people earlier in their careers.
 
 ## The PE in Control Systems
 
-A **Professional Engineer** license is a legal credential. Some jobs require a PE to sign and seal drawings (public water and wastewater, some utilities, government work). NCEES administers a PE exam in **Control Systems Engineering**. It is computer-based, closed book with an electronic reference, and the appointment runs about nine and a half hours, with roughly 85 questions. Topics include measurement, control systems, final control elements, signals, transmission and networking, and safety systems.
+A **Professional Engineer** license is a legal credential. Some jobs require a PE to sign and seal drawings (public water and wastewater, some utilities, government work). NCEES administers a PE exam in **Control Systems Engineering**. It is computer-based, closed book with an electronic reference, and it is a long single-day exam (check NCEES for the current length and question count). Topics include measurement, control systems, final control elements, signals, transmission and networking, and safety systems.
 
 The path is: an engineering degree, the Fundamentals of Engineering exam, several years of experience under a licensed PE (state rules vary), then the PE exam. It is the longest route here, and it matters if your market is water, power or public sector. It matters less in food, packaging or discrete manufacturing, where a PE is rarely asked for.
 
 ## CSIA: a company credential
 
-The **Control System Integrators Association** certifies companies, not people. A third-party audit checks the integrator against CSIA Best Practices in areas such as project management, quality, service, financial management and cybersecurity, and certification is renewed every three years. Why it matters to you: if you plan to work for or start an integrator, CSIA certification is a quality signal customers ask for, and the Best Practices manual is a free education in how a well-run integrator operates. See {{term:csia|CSIA}}.
+The **Control System Integrators Association** certifies companies, not people. A third-party audit checks the integrator against CSIA Best Practices in areas such as project management, quality, service, financial management and cybersecurity, and certification is renewed on a cycle (check CSIA for the current term). Why it matters to you: if you plan to work for or start an integrator, CSIA certification is a quality signal customers ask for, and the Best Practices manual is a free education in how a well-run integrator operates. See {{term:csia|CSIA}}.
 
 ## Which credential for which goal?
 
@@ -83,26 +83,39 @@ The **Control System Integrators Association** certifies companies, not people. 
 | Systems engineer or lead | Core, Gold, ISA CAP | PE if the market needs it |
 | Running or founding an integrator | Integrator program, CSIA Best Practices | CSIA certification |
 
+## What to build to be hireable
+
+A hiring manager at an integrator wants evidence of three things: you can build the standard pieces correctly, you can document and defend a design, and you finish. Credentials help with the filter. These builds supply the evidence. Do them in order, because each one uses the one before it. Everything uses the Meridian Foods reference plant, so the names, tags and IP plan match the rest of this course.
+
+| Evidence an employer looks for | Build it here | What you can show |
+|---|---|---|
+| You can stand up the tools and a repeatable environment | {{lesson:build-setup}} | A working Ignition Maker Edition install, a PLC simulator, a database connection and a Git repository |
+| You can model equipment once and reuse it | {{lesson:build-motor-udt}} | A Logix \`UDT_Motor\` and a matching Ignition \`Motor\` UDT (\`M101.Cmd.Start\`, \`M101.Sts.Running\`), following the naming standard in {{lesson:int-naming}} |
+| You can build screens that scale to every motor | {{lesson:build-faceplate}} | One Perspective faceplate driven by a single \`tagPath\` parameter |
+| You understand alarms and history as engineering, not decoration | {{lesson:build-alarms-history}} | Alarms with delay and deadband, history in a database, a short rationalization record ({{lesson:int-alarm-mgmt}}) |
+| You can turn plant data into a business answer | {{lesson:build-oee}} | A line OEE screen with downtime reasons for Plant 1, Line 1 ({{lesson:mes-oee}}) |
+
+Then add the integrator layer on top, which is what separates a hireable candidate from a hobbyist:
+
+1. **A one-page decision log.** Use the format from {{lesson:int-capstone}}: context, decision, alternatives, consequences. Write one for your own lab (why PostgreSQL for history, why one tagPath parameter, why the DMZ pattern).
+2. **A naming standard.** One page, with the drawing-to-code mapping (\`LT-101\` on the drawing, \`LT101\` in the PLC, the Ignition path, the UNS topic) and a regular expression a script can check ({{lesson:int-naming}}).
+3. **A short FDS excerpt.** A control narrative for one pump or tank with numbered requirements, an alarm table and a failure-behavior clause ({{lesson:int-fds}}).
+4. **A commissioning checklist and a sample completed I/O list**, with a loop check for LT-101 using the NE43 limits ({{lesson:int-commissioning}}).
+5. **A written failure.** One page on a bug you found and how you fixed it is worth more than ten screenshots.
+6. **Source in Git.** PLC exports, Ignition project exports and SQL scripts, with customer data, passwords and licenses removed.
+
+If you can walk an interviewer through that package in twenty minutes, you have already done a small version of the whole lifecycle in {{lesson:int-lifecycle}}.
+
 ## Build a home lab
 
-You can learn nearly all of this at home for little money.
+You can learn nearly all of this at home for little money. The Build Labs list the exact steps; this is the shopping list.
 
-- **Ignition Maker Edition.** Inductive Automation offers it free for personal, non-commercial and educational use. It has limits on tags and sessions, restricted module support and community-only support, and it cannot be used for business demos or paid work. Install Ignition, choose Maker Edition during setup and sign in to get the license.
+- **Ignition Maker Edition.** Inductive Automation offers it free for personal, non-commercial and educational use. It has limits on tags and sessions, restricted module support and community-only support, and it cannot be used for business demos or paid work. Check the current Maker Edition page for the limits and the sign-in steps.
 - **A PLC or an emulator.** A used Micro800 or CompactLogix gives real hardware experience. Rockwell's Connected Components Workbench works with Micro800 controllers and includes a simulator. Studio 5000 Logix Emulate is a paid option for Logix. Open-source runtimes also exist, such as OpenPLC. Match what your target employers use.
 - **Docker.** Run Ignition, a SQL database such as PostgreSQL and an MQTT broker such as Mosquitto in containers with a compose file. Inductive University has an elective course on Ignition with Docker. See {{lesson:arch-containers}}.
-- **A tiny network.** A managed switch and a small firewall let you practice VLANs and zones from {{lesson:net-vlan}} and {{lesson:net-security}}.
+- **A tiny network.** A managed switch and a small firewall let you practice VLANs and zones from {{lesson:net-vlan}} and {{lesson:net-security}}, using the house IP plan (control VLAN 10 at \`10.20.10.0/24\`, servers VLAN 30, DMZ VLAN 250).
 
-A good first lab: a simulated tank and pump in a PLC, UDTs mirrored in Ignition, a Perspective screen, alarms with notification, history in PostgreSQL, and a Sparkplug publish to a broker.
-
-## Build a portfolio
-
-A portfolio turns "I know Ignition" into evidence.
-
-1. **Pick three projects** that look like real jobs: a tank-and-pump HMI, an OEE dashboard with downtime reasons, and an MQTT/UNS demo.
-2. **Show your work.** Include screenshots, a short video, an architecture diagram, and a one-page design write-up in the style of a decision log ({{lesson:int-capstone}}).
-3. **Publish sources.** Keep PLC exports, Ignition project exports and SQL scripts in a Git repository. Remove customer data, passwords and licenses.
-4. **Document the standard.** Include a naming standard and a commissioning checklist ({{lesson:int-naming}}). Few candidates do, and interviewers notice.
-5. **Write about failures.** One page on a bug you found and how you fixed it is worth more than ten screenshots.
+A good first lab is the Build Labs path itself: a simulated motor and level transmitter in a PLC, UDTs mirrored in Ignition, a Perspective faceplate, alarms with notification, history in PostgreSQL, and a Sparkplug publish to a broker (group \`Plant1\`, edge node \`Area10_Line1\`, device \`M101\`).
 
 Use only material you own. Never publish a client's screens or code without written permission.
 `,
@@ -134,11 +147,11 @@ ISA created its certification programs to give automation practitioners a recogn
   examples: [
     {
       title: "A 12-week plan to Core",
-      body: `Weeks 1 to 4: work through the Inductive University credential courses in Maker Edition and pass every challenge. Weeks 5 to 8: build the tank-and-pump lab with UDTs, alarms and history. Weeks 9 to 10: review the Core topics (architecture, tags, history, alarming, UDTs). Week 11: take the Core test. Week 12: start Gold prep by building an SQL-backed screen with a script that writes events.`
+      body: `Weeks 1 to 4: work through the Inductive University credential courses in Maker Edition and pass every challenge. Weeks 5 to 8: work through the Build Labs ({{lesson:build-setup}} to {{lesson:build-alarms-history}}) for the UDTs, faceplate, alarms and history. Weeks 9 to 10: review the Core topics (architecture, tags, history, alarming, UDTs). Week 11: take the Core test. Week 12: start Gold prep by building an SQL-backed screen with a script that writes events.`
     },
     {
       title: "One portfolio project, summarized",
-      body: `Project: Bottle line OEE demo. Stack: Ignition Maker Edition, PostgreSQL and a Micro800 simulator. Deliverables: UDT-based tag tree following a written naming standard, a Perspective dashboard, a downtime reason table, a screen recording, a one-page decision log explaining why history is stored in PostgreSQL and not in memory, and a commissioning checklist with a sample completed I/O list.`
+      body: `Project: Meridian Plant 1, Line 1 OEE demo ({{lesson:build-oee}}). Stack: Ignition Maker Edition, PostgreSQL and a PLC simulator. Deliverables: UDT-based tag tree (\`[default]Plant1/Area10/Line1/M101\`) following a written naming standard, a Perspective dashboard, a downtime reason table, a screen recording, a one-page decision log explaining why history is stored in PostgreSQL and not in memory, and a commissioning checklist with a sample completed I/O list.`
     }
   ],
 
@@ -187,7 +200,7 @@ ISA created its certification programs to give automation practitioners a recogn
         "Correct. IU credentials come from courses and challenges for a version, and certifications such as Core and Gold come from tests.",
         "They are separate. Integrator program tiers treat them differently.",
         "IU is free to use, and certification tests are paid.",
-        "Credentials are tied to a version, and certifications are valid for a limited period."
+        "Credentials are tied to a version, and certifications expire and must be renewed."
       ]
     },
     {
@@ -195,8 +208,8 @@ ISA created its certification programs to give automation practitioners a recogn
       options: ["It is a take-home practical that requires Core first and covers SQL and Python scripting", "It is a 30-minute multiple-choice quiz", "It requires no prior certification", "It replaces the Core test"],
       answer: 0,
       explain: [
-        "Correct. Gold is a long practical, open book, and builds on Core.",
-        "That describes neither Core nor Gold. Gold typically takes a day or more.",
+        "Correct. Gold is a long practical that builds on Core.",
+        "That describes neither Core nor Gold. Gold is a long practical, not a short quiz.",
         "Core is a prerequisite.",
         "Gold does not replace Core. It requires it."
       ]
@@ -217,7 +230,7 @@ ISA created its certification programs to give automation practitioners a recogn
       options: ["At least one employee must hold a current Gold certification, and the sales threshold must be met", "They need a PE license", "They need CSIA certification", "They must pay for a new Maker license"],
       answer: 0,
       explain: [
-        "Correct. Gold needs a Gold-certified employee plus sales since joining.",
+        "Correct. Gold needs a Gold-certified employee plus meeting the sales threshold. Check the current tier rules for the details.",
         "A PE is unrelated to program tiers.",
         "CSIA is a separate company audit, not a requirement of the Ignition program.",
         "Maker Edition is free for personal use and has no role in tiers."
