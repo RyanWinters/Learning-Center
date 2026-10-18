@@ -3,7 +3,6 @@
 
     python server.py                 # http://127.0.0.1:8080 (this PC only)
     python server.py --port 9000
-    python server.py --auto-update   # pull new commits on main every 5 minutes
 
 To use it from your phone, keep the default (localhost only) and run
 `tailscale serve --bg 8080` once. Tailscale then gives you an HTTPS URL that only
@@ -25,11 +24,8 @@ import json
 import os
 import posixpath
 import shutil
-import subprocess
-import sys
 import tempfile
 import threading
-import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
 
@@ -136,7 +132,6 @@ class Server(ThreadingHTTPServer):
     # connections at once; on Windows the overflow is refused outright and a script never loads.
     request_queue_size = 128
     daemon_threads = True
-    restart = False
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -210,51 +205,12 @@ class Handler(SimpleHTTPRequestHandler):
             super().log_message(fmt, *args)
 
 
-def git(*args):
-    # CREATE_NO_WINDOW: under pythonw, each git call would otherwise flash a console window.
-    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-    env = dict(os.environ, GIT_TERMINAL_PROMPT="0")  # never wait on a password prompt
-    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=120,
-                          creationflags=flags, env=env)
-
-
-def auto_update(srv, minutes):
-    """Fast-forward to origin/main every few minutes. Content is read from disk on each request,
-    so new lessons show up right away; a change to server.py restarts the server."""
-    while True:
-        time.sleep(minutes * 60)
-        try:
-            if git("fetch", "-q", "origin", "main").returncode:
-                continue  # offline; try again next time
-            old = git("rev-parse", "HEAD").stdout.strip()
-            new = git("rev-parse", "origin/main").stdout.strip()
-            if old == new or git("merge-base", "--is-ancestor", old, new).returncode:
-                continue  # up to date, or local commits we shouldn't touch
-            pulled = git("merge", "--ff-only", "-q", "origin/main")
-            if pulled.returncode:
-                print("Auto-update: couldn't fast-forward:", pulled.stderr.strip(), flush=True)
-                continue
-            print(f"Auto-update: {old[:7]} -> {new[:7]}", flush=True)
-            if "server.py" in git("diff", "--name-only", old, new).stdout.split():
-                print("Auto-update: server.py changed, restarting", flush=True)
-                srv.restart = True
-                srv.shutdown()  # main() starts the new copy once the port is free
-                return
-        except Exception as e:  # never let the updater take the server down
-            print("Auto-update failed:", e, flush=True)
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--host", default="127.0.0.1", help="127.0.0.1 (default) or 0.0.0.0 for the whole LAN")
     ap.add_argument("--port", type=int, default=8080)
-    ap.add_argument("--auto-update", type=float, nargs="?", const=5, metavar="MINUTES",
-                    help="git pull main every MINUTES (default 5) and restart if server.py changed")
     a = ap.parse_args()
     srv = Server((a.host, a.port), Handler)
-    if a.auto_update:
-        threading.Thread(target=auto_update, args=(srv, a.auto_update), daemon=True).start()
-        print(f"Auto-update: checking origin/main every {a.auto_update:g} min")
     print(f"Learning Center on http://localhost:{a.port}  (Ctrl+C to stop)")
     if a.host == "127.0.0.1":
         print(f"Phone access: run `tailscale serve --bg {a.port}` once, then open the URL it prints.")
@@ -262,10 +218,6 @@ def main():
         srv.serve_forever()
     except KeyboardInterrupt:
         pass
-    srv.server_close()
-    if srv.restart:
-        subprocess.Popen([sys.executable, os.path.abspath(__file__), *sys.argv[1:]],
-                         cwd=ROOT, stdout=sys.stdout, stderr=sys.stderr)
 
 
 if __name__ == "__main__":
