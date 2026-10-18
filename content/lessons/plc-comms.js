@@ -23,7 +23,7 @@ A plant is rarely one controller. A filler talks to a capper, a utility skid sen
 | Mechanism | Pattern | Timing | Cost |
 |---|---|---|---|
 | Produced/consumed tags | One controller publishes a tag, others subscribe | Scheduled by RPI, no logic needed | Connections on both sides, fixed rate |
-| MSG instruction | Logic triggers a read or write of a tag in another device | On demand, whenever the rung fires | Uses a connection or unconnected request, queue of 48 |
+| MSG instruction | Logic triggers a read or write of a tag in another device | On demand, whenever the rung fires | Uses a connection or unconnected request; shares the controller's message queue |
 | Remote I/O | Controller owns modules in a remote chassis or block | Scheduled by RPI per module | One connection per module or per adapter |
 
 ## Produced and consumed tags
@@ -43,7 +43,7 @@ Use a UDT for the payload, with a status DINT in the first member. Both ends mus
 
 ### RPI
 
-The {{term:rpi|Requested Packet Interval}} is how often a connection exchanges data. It is set in milliseconds, per connection. A 20 ms RPI means 50 updates per second. Smaller is not better. Fast RPIs load the controller and the network, and the data cannot be used faster than the program scan reads it. Common values are 10 to 20 ms for motion or safety-adjacent signals, 50 to 100 ms for general I/O, and 100 to 500 ms for status shared between lines. On EtherNet/IP, RPI values are delivered over Class 1 implicit messaging, usually multicast for inputs and unicast where configured.
+The {{term:rpi|Requested Packet Interval}} is how often a connection exchanges data. It is set in milliseconds, per connection. A 20 ms RPI means 50 updates per second. Smaller is not better. Fast RPIs load the controller and the network, and the data cannot be used faster than the program scan reads it. As rough starting points (not limits), fast signals get a short RPI, general I/O a moderate one, and status shared between lines a slow one. Take the allowed range and defaults from the module's documentation. On EtherNet/IP, RPI values are delivered over Class 1 implicit messaging, usually multicast for inputs and unicast where configured.
 
 ## The MSG instruction
 
@@ -60,15 +60,31 @@ For Logix to Logix, the message type is **CIP Data Table Read** or **Write**.
 | Path | \`1, 0\` for backplane slot 0 or \`LINE2_PLC\` if in the I/O tree |
 | Connected | Yes (recommended) |
 
-The message control tag has status bits: \`.EN\` (enabled), \`.DN\` (done), \`.ER\` (error) and \`.ERR\` / \`.EXERR\` error codes. A typical rung fires the MSG once per request:
+The message control tag has status bits:
+
+| Bit | Meaning |
+|---|---|
+| \`.EN\` | Enabled. Set when the MSG rung goes true and the message starts. It stays set until the message finishes (\`DN\`) or fails (\`ER\`), even if the rung goes false in the meantime. |
+| \`.DN\` | Done. The message completed successfully. |
+| \`.ER\` | Error. The message failed. \`.ERR\` and \`.EXERR\` hold the error codes. |
+
+\`.DN\` and \`.ER\` clear when the MSG rung next goes true and a new message starts, so they are the result of the *last* request, not a trigger. The handshake is to start one message, wait for \`DN\` or \`ER\`, record the result, then wait before starting the next. A complete polling set is three rungs, in this order:
 
 \`\`\`ladder
-XIC(Poll_Timer.DN) XIO(Msg_Read.EN) XIO(Msg_Read.DN) MSG(Msg_Read)
+XIC(Poll_Enable) TON(Poll_Timer,1000,0)
 \`\`\`
 
-and a second rung resets: when \`Msg_Read.DN\` or \`Msg_Read.ER\` is true, reset the timer and clear the message (an \`OTU\` on \`.EN\` is not needed for most Logix messages; the handshake is to wait for \`DN\` or \`ER\`).
+\`\`\`ladder
+[XIC(Msg_Read.DN) ,XIC(Msg_Read.ER)] ONS(Msg_Done_OS) RES(Poll_Timer)
+\`\`\`
 
-Rockwell advises preferring **read** messages over **write** messages when you can. A read runs in the controller that needs the data, so that controller owns the timing and a communications loss shows up on the side that cares. The message queue holds up to 48 MSG instructions, and a full queue means MSG retries on later scans.
+\`\`\`ladder
+XIC(Poll_Timer.DN) XIO(Msg_Read.EN) MSG(Msg_Read)
+\`\`\`
+
+How it flows: the timer reaches its preset and the MSG rung goes true, starting the message (\`EN\` on, old \`DN\`/\`ER\` cleared). While \`EN\` is on, the \`XIO(Msg_Read.EN)\` contact stops the rung from retriggering. When the message completes, \`EN\` drops and \`DN\` or \`ER\` comes on, and the reset rung (the one-shot makes it act for one scan only, so the timer can restart) clears the timer, which also clears \`Poll_Timer.DN\`. The reset rung sits *before* the MSG rung so that the timer's done bit is cleared in the same scan that \`EN\` drops. In the other order, the MSG rung would see a true timer and a false \`EN\` for one scan and fire a second message. Add your own handling for \`ER\`, for example a retry counter and a comms-lost alarm.
+
+Many integrators prefer **read** messages over **write** messages when they can. A read runs in the controller that needs the data, so that controller owns the timing and a communications loss shows up on the side that cares. The Logix 5000 messaging manual (1756-PM012) covers message types and the controller's message queue. The queue size, and what happens when it is full, depend on the controller, so check that manual for your model before you design many simultaneous messages.
 
 Use produced/consumed for steady, repeating data, such as a status block every 100 ms. Use MSG for infrequent or operator-driven transfers, such as loading a recipe on demand. A MSG that fires every scan is a sign you wanted produced/consumed.
 
@@ -95,9 +111,9 @@ Use MSG from the PLC when the **PLC** needs data from another controller, or whe
 
 ## Worked example: line to line handshake
 
-Line 1 (controller L1, ControlLogix 5580) sends a start-request block to Line 2 (CompactLogix 5380, L2) and reads back its status.
+Line 1 (controller L1, ControlLogix 5580, PLC1 at 10.20.10.10) sends a start-request block to Line 2 (CompactLogix 5380, L2, PLC2 at 10.20.10.11, both on the control VLAN) and reads back its status.
 
-- L1 produces \`L1_To_L2\` (UDT \`Handshake_T\`, 12 bytes) with RPI 50 ms, and L2 consumes it.
+- L1 produces \`L1_To_L2\` (UDT \`UDT_Handshake\`) with RPI 50 ms, and L2 consumes it.
 - L2 produces \`L2_To_L1\` the same way.
 - Each UDT begins with \`Heartbeat\` (DINT incremented every 500 ms). Each controller watches the other's heartbeat. If it has not changed for 2 seconds, it raises "Line 2 comms lost" and stops requesting.
 - A recipe name (STRING[40]) is sent by MSG write only when the operator presses "Load recipe", because it changes rarely.
@@ -120,7 +136,7 @@ The number of conversations you can have at once is limited, like a switchboard 
   why: `
 **Why produced/consumed for steady data?** Because the controller schedules the exchange without any logic. It keeps running while ladder is stopped, it has a defined update rate, and it fails in a visible way when the link drops. A MSG fired every scan is polling in disguise, with a queue and retries.
 
-**Why prefer MSG reads?** The controller that reads is the one that cares whether the data is fresh. If a write MSG fails, the sender has to notice and the receiver has no idea. With a read the receiver sees the error bit and can fall back to a safe value.
+**Why do many integrators prefer MSG reads?** The controller that reads is the one that cares whether the data is fresh. If a write MSG fails, the sender has to notice and the receiver has no idea. With a read the receiver sees the error bit and can fall back to a safe value.
 
 **Why watch the RPI?** Teams set 2 ms RPIs everywhere because faster sounds safer. It uses CPU and bandwidth, and the scan cannot use the data faster than it executes. Pick the slowest rate the process tolerates. The bits that matter for response time, such as a safety interlock, belong in a dedicated fast connection or a safety-rated path.
 
@@ -136,7 +152,7 @@ PLC-5 and SLC controllers used message instructions with file addresses like N7:
   examples: [
     {
       title: "Message path to a controller in the I/O tree",
-      body: `L2 is added to L1's I/O tree as \`L2_PLC\`. The MSG path is \`L2_PLC\` and the source element is \`Recipe_Active\`. If it were not in the tree, you would type the path as \`1, 2, 2, 192.168.1.20, 1, 0\`: backplane port 1, slot 2 (the Ethernet module), Ethernet port 2, the IP address, backplane port 1, controller slot 0.`
+      body: `L2 is added to L1's I/O tree as \`L2_PLC\`. The MSG path is \`L2_PLC\` and the source element is \`Recipe_Active\`. If it were not in the tree, you would type the path as \`1, 2, 2, 10.20.10.11, 1, 0\`: backplane port 1, slot 2 (the Ethernet module), Ethernet port 2, the IP address, backplane port 1, controller slot 0.`
     },
     {
       title: "Reducing connections with rack optimisation",
@@ -200,7 +216,7 @@ PLC-5 and SLC controllers used message instructions with file addresses like N7:
       ]
     },
     {
-      q: "Why does Rockwell advise using read MSGs rather than write MSGs where possible?",
+      q: "Why do many integrators prefer read MSGs to write MSGs where possible?",
       options: ["Reads are faster on the wire", "The controller that needs the data owns the timing and sees errors", "Writes cannot be connected", "Reads do not use connections"],
       answer: 1,
       explain: [
@@ -237,9 +253,9 @@ PLC-5 and SLC controllers used message instructions with file addresses like N7:
       options: ["Have the PLC MSG each value to Ignition", "Use Ignition's Logix driver to read tags directly", "Use one MSG per tag", "Produce each tag to Ignition"],
       answer: 1,
       explain: [
-        "Ignition is not a Logix target for MSG, and it would consume the queue.",
+        "Ignition is not a Logix target for MSG, and the messages would consume the queue.",
         "Correct. The driver opens connections and reads many tags per packet without using MSG.",
-        "That would exceed the 48-instruction queue and waste connections.",
+        "That would flood the controller's message queue and waste connections.",
         "Produced tags are for controllers, not for an HMI driver."
       ]
     }

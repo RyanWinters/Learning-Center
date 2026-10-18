@@ -51,7 +51,7 @@ A plant of any size has many access points (APs), each covering a cell. As the u
 
 Steel, tanks and wet product reflect and absorb radio. A **site survey** with real tablets walking real paths is the only way to be sure. A survey should find:
 
-1. Signal strength at tablet height, aiming for about -67 dBm or better in the work area.
+1. Signal strength at tablet height, comparing against the signal and noise targets in your site survey criteria (or your Wi-Fi vendor's design guide) rather than a single number.
 2. Interference sources: microwave ovens, neighboring plants, Bluetooth, other APs on the same channel.
 3. Dead spots behind machinery, in coolers and inside cabinets.
 4. Capacity: how many clients per AP, and how many tablets, scanners and phones at shift change.
@@ -86,7 +86,7 @@ Things to know:
 - **Dual SIM and signal.** Choose a router with two SIMs for carrier failover, and an external antenna on a mast if the site is in a metal building.
 
 > [!example] Pump station numbers
-> Polling 40 tags once a second over Modbus TCP, at roughly 100 bytes per request and reply pair per group of registers, adds up to many gigabytes a month. The same 40 tags sent by report by exception with a 60 second heartbeat move only when values change, often a hundredth of that traffic. Measure your own site, but expect the gap to be that large.
+> Assume one Modbus TCP poll per second that reads all 40 tags in one group, at roughly 100 bytes for the request and reply pair (a made-up round number; real frames include TCP/IP headers). That is 100 bytes x 86,400 s x 30 days, about 260 MB a month from a single device, and several times that if the tags need several groups. Report by exception with a 60 second heartbeat sends at least one small message a minute (100 bytes x 43,200 minutes is about 4 MB a month) plus a message for each change. On slow-changing values that is a small fraction of the polled traffic. Measure your own site, because the gap depends on how often values change.
 `,
 
   eli5: `

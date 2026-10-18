@@ -58,6 +58,7 @@ On 2-wire RS-485 the pair is **half duplex**: only one device talks at a time, a
 Fast edges travelling down a cable reflect from the far end if the end is not matched to the cable. The reflections corrupt bits. The fix is a {{term:termination-resistor|termination resistor}} across the pair at the **two physical ends** of an RS-485 bus. Twisted-pair data cable is typically about 120 ohms, so a 120 ohm resistor is the usual value. Two rules:
 
 - Terminate the two ends of the bus only, never the middle devices.
+- Use isolated converters and surge protection on any run that leaves the building or sits near VFD or welder grounds.
 - On a short bus at low speed (a few meters at 9600 baud) reflections do not matter and the bus often works with no terminators. That is how people learn the wrong lesson. The same layout fails at 115200 baud or 300 m.
 
 The second problem is the idle state. When every driver is switched off, the pair floats and the receivers see noise, which they may decode as random bytes. **Bias resistors** (also called fail-safe resistors) pull A and B apart slightly when nobody is driving, so the idle bus reads as a clean "1". Bias goes at **one place only**, usually in the master or converter, because multiple bias networks in parallel load the bus. The standard does not fix their values. Many converters have a switch or jumper for terminate and bias, and many modern transceivers have fail-safe built in.
@@ -77,7 +78,7 @@ Both ends must use the same framing, or you will see garbage or nothing.
 The string **9600 8N1** means 9600 baud, 8 data bits, no parity, 1 stop bit. Each character then costs 10 bit times on the wire (1 start + 8 data + 1 stop), so 9600 baud moves about 960 bytes per second at best.
 
 > [!example] What 9600 baud really costs
-> A Modbus RTU request to read 10 holding registers is 8 bytes. The reply is 25 bytes. That is 33 bytes, or 330 bits, which takes about 34 ms at 9600 baud before the device's own thinking time and the required silent gaps. Poll twenty such devices one after another and a full scan takes close to a second. Raising the baud rate to 19200 halves that. This is the main reason slow serial networks "feel" slow.
+> A Modbus RTU request to read 10 holding registers is 8 bytes. The reply is 25 bytes. That is 33 bytes, or 330 bits, which takes about 34 ms at 9600 baud before the device's own thinking time and the required silent gaps. Poll twenty such devices one after another and the bare transfers add up to about 0.7 s, so a full scan takes close to a second once turnaround and silent gaps are added. Raising the baud rate to 19200 halves that. This is the main reason slow serial networks "feel" slow.
 
 Modbus RTU specifies even parity by default and allows none (with 2 stop bits). Manufacturers vary, so match what the device manual says rather than assuming. Parity mismatch is a classic cause of a device that answers some requests and not others.
 
@@ -91,7 +92,7 @@ Modbus RTU specifies even parity by default and allows none (with 2 stop bits). 
 | Works with 3 devices, fails with 12 | Too many terminators, or none; bad bias; a device with a damaged transceiver pulling the bus down |
 | Garbled data | Baud, parity or stop bit mismatch |
 | First byte of each reply missing | Converter slow to flip from transmit to receive |
-| RS-232 cable gets warm or does nothing | TX to TX, or a null modem where a straight cable was needed |
+| RS-232 link does nothing | TX to TX, or a null modem where a straight cable was needed |
 
 **A and B naming is not standard.** Some vendors call the non-inverting line A, others call it B, and plenty of equipment labels it D+ and D-. If a link is dead and everything else matches, swap the two wires. It costs nothing.
 
@@ -140,7 +141,7 @@ RS-232 was published by the Electronic Industries Association in 1960 to connect
     },
     {
       title: "One gateway, six drives",
-      body: `Six VFDs on a single RS-485 pair are addressed 1 to 6. An Ethernet gateway at 10.20.30.40 accepts Modbus TCP on port 502. In Ignition, you add one device at 10.20.30.40 and read each drive by changing the unit ID. Reading drive 3's speed uses the same address as drive 4's but a different unit ID. All six share one serial bus, so polling is still one request at a time.`
+      body: `Six VFDs on a single RS-485 pair are addressed 1 to 6. An Ethernet gateway at 10.20.10.40, in the control VLAN with the drives, accepts Modbus TCP on port 502. In Ignition, you add one device at 10.20.10.40 and read each drive by changing the unit ID. Reading drive 3's speed uses the same address as drive 4's but a different unit ID. All six share one serial bus, so polling is still one request at a time.`
     }
   ],
 

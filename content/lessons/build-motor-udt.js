@@ -159,7 +159,7 @@ LC.lesson({
       "source": "Inductive Automation"
     },
     {
-      "title": "Alarms in UDTs and the Tag Editor",
+      "title": "Alarms in UDTs (7.9 docs, older UI, same idea)",
       "url": "https://www.docs.inductiveautomation.com/docs/7.9/alarming/configuring-alarms/alarms-in-udts",
       "type": "docs",
       "source": "Inductive Automation"

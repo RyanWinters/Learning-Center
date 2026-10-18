@@ -55,7 +55,7 @@ Engine connects to the broker, subscribes to the Sparkplug namespace (topics beg
 \`\`\`text
 [MQTT Engine]Edge Nodes/Plant1/Area10_Line1/M101/Sts/Running
                         ^group ^edge node    ^device ^metric
-```
+\`\`\`
 
 This follows the house mapping: Sparkplug group ID \`Plant1\`, edge node ID \`Area10_Line1\`, device ID \`M101\`, and a metric named \`Sts/Running\` that mirrors the Motor UDT member. On the wire the same data travels on topics such as \`spBv1.0/Plant1/DDATA/Area10_Line1/M101\`. The ISA-95 path stays in plain MQTT/UNS topics, never in a Sparkplug topic.
 

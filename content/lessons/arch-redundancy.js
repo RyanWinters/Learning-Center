@@ -42,7 +42,7 @@ The **Standby Activity Level** setting determines how busy the standby gateway i
 | **Cold** | Connects to OPC servers but does not subscribe to tag values | Slower, since tags must subscribe and initialize at failover | Less load on devices and network |
 | **Warm** | Runs like the active gateway, subscribing and evaluating, except it does not write to devices or log data | Faster | Doubles the polling load on your PLCs and servers |
 
-Ignition's own upgrade guidance for patching a pair recommends warm standby on both.
+Check the redundancy and upgrade guides for your version for IA's current advice on standby level when you patch a pair.
 
 Make sure your PLCs and drivers can serve two clients at once before choosing warm. Some small devices cannot, which is a good reason to choose cold for those.
 
@@ -69,11 +69,13 @@ Live alarm state is shared, using small differences after an initial full transf
 
 Failover time is the sum of detection, takeover and recovery.
 
-1. **Detection.** The backup pings the master on a schedule. When too many pings time out, it declares the master faulted. You tune this with **Ping Rate**, **Ping Timeout** and **Ping Max Missed**. Smaller numbers mean faster detection and more false alarms. The manual warns that settings too tight for your network cause socket timeouts and repeated disconnects. In older 8.1 versions there was a separate Failover Timeout setting (default 10,000 ms) that was removed in 8.1.37.
+1. **Detection.** The backup pings the master on a schedule. When too many pings time out, it declares the master faulted. You tune this with the ping rate, ping timeout and maximum missed pings on the redundancy settings (the 8.3 setting names and defaults are on the redundancy page of the manual; look them up for your version). Smaller numbers mean faster detection and more false alarms. The manual warns that settings too tight for your network cause socket timeouts and repeated disconnects. In older 8.1 versions there was a separate Failover Timeout setting that was removed in 8.1.37.
 2. **Takeover.** The backup becomes active. With warm standby, tag values are already subscribed, so this is quick. Cold must subscribe and initialize first.
-3. **Recovery.** **Recovery Mode** decides what happens when the master returns. In *Automatic*, the master takes back responsibility. In *Manual*, the backup stays active until you choose to switch. Many integrators pick Manual for production so an unstable master cannot cause repeated switches in the middle of a shift.
+3. **Recovery.** The recovery mode setting decides what happens when the master returns. In automatic recovery, the master takes back responsibility. In manual recovery, the backup stays active until you choose to switch (check the setting names in the manual for your version). Many integrators pick Manual for production so an unstable master cannot cause repeated switches in the middle of a shift.
 
 Do not quote a single failover time to a customer. Measure on the real network, with real tag counts, and report a range.
+
+A switch also affects things that run on the gateway. Running SFC charts stop with the gateway and do not simply resume where they were (see {{lesson:arch-sfc}}). EAM scheduled tasks depend on where the controller runs (see {{lesson:arch-eam}}). Perspective sessions on the failed node are lost, and clients reconnect to the active node as new sessions.
 
 ## Clients and history
 
@@ -82,7 +84,7 @@ Do not quote a single failover time to a customer. Measure on the real network, 
 **History.** The **History Mode** on the backup decides how much it records.
 
 - **Full**: the backup writes history to the database like the master.
-- **Partial**: the backup caches history until the master returns, then reconciles, so it can work out the exact downtime.
+- **Partial**: the backup caches history until the master returns, then reconciles (check the History Mode description in the manual for your version).
 
 For the gaps between failover and recovery, check what you need: a continuous trend of key tags through the switch is a good commissioning test. Forum reports and release notes show that corner cases (for example, duplicate tag IDs after role reversal, or tags out of sync after failing back) have been fixed over the 8.1 and 8.3 releases. Keep the pair on a current patch release and read the notes.
 
@@ -115,13 +117,13 @@ What gets passed along is the rules, the map and what's going on right now. What
 `,
 
   history: `
-The ping-based detection is the current model: the old Failover Timeout setting (default 10,000 ms) was removed in 8.1.37. In 8.3 the master owns the configuration, and a resource can carry a separate Backup version for the values that must differ on the standby node. Release notes across 8.1 and 8.3 list a steady series of redundancy fixes, which is a good reason to keep a pair on a current patch release.
+The ping-based detection is the current model: the old Failover Timeout setting was removed in 8.1.37. In 8.3 the master owns the configuration, and a resource can carry a separate Backup version for the values that must differ on the standby node. Release notes across 8.1 and 8.3 list a steady series of redundancy fixes, which is a good reason to keep a pair on a current patch release.
 `,
 
   examples: [
     {
       title: "A backup with its own addresses",
-      body: `Master \`gw-a\` at 10.10.1.11 and backup \`gw-b\` at 10.10.1.12 both connect to PLC 10.10.5.20 and a database at \`db1\`. The database user was created with host \`gw-a\` only. In the failover test, history stops writing on \`gw-b\`. The fix is to create the database user for both hosts. The sync copied the connection settings but not the permission on the database side.`
+      body: `The Plant 1 master \`gw-a\` at 10.20.30.10 and backup \`gw-b\` at 10.20.30.11 both connect to PLC1 at 10.20.10.10 and the SQL server at 10.20.30.20. The database user was created with host \`10.20.30.10\` only. In the failover test, history stops writing on \`gw-b\`. The fix is to create the database user for both hosts. The sync copied the connection settings but not the permission on the database side.`
     },
     {
       title: "Choosing a standby level",

@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## The brief
 
-A packaging plant wants one screen per line that shows OEE for the current shift, the top downtime reasons, and a work order's progress. Operators will enter the reason for each stop. The PLC supplies counts and machine states. This lesson builds the database for that, step by step, using the tables from {{lesson:db-schema}}. The syntax is PostgreSQL; the notes call out MySQL and SQL Server differences.
+Meridian Foods Plant 1 wants one screen per line that shows OEE for the current shift, the top downtime reasons, and a work order's progress. Operators will enter the reason for each stop. The PLC supplies counts and machine states. This lesson builds the database for that, step by step, using the tables from {{lesson:db-schema}}. The syntax is PostgreSQL; the notes call out MySQL and SQL Server differences. Following the course convention, every timestamp is stored in UTC (\`TIMESTAMPTZ\`), and only the shift windows and the screens use plant local time.
 
 ## Step 1: requirements to entities
 
@@ -27,7 +27,7 @@ Underline the nouns in the brief and ask what must be remembered about each.
 | Requirement | Entity | Decision |
 |---|---|---|
 | "per line" | \`line\` | Top of the hierarchy |
-| Stops are tied to equipment | \`machine\` | Belongs to a line, has an ideal rate |
+| Stops are tied to equipment | \`machine\` | Belongs to a line (M101, M102 ...) |
 | "current shift" | \`shift\` | Named time windows (day, swing, night) |
 | "work order progress" | \`work_order\`, \`product\` | A work order makes one product on one line |
 | Counts from the PLC | \`production_run\`, \`production_count\` | A run is one stretch of a work order on a line; counts are readings during it |
@@ -79,15 +79,16 @@ CREATE TABLE production_run (
   work_order_id  INTEGER  NOT NULL REFERENCES work_order(work_order_id),
   line_id        INTEGER  NOT NULL REFERENCES line(line_id),
   shift_id       SMALLINT NOT NULL REFERENCES shift(shift_id),
-  start_time     TIMESTAMP NOT NULL,
-  end_time       TIMESTAMP,
+  ideal_rate_per_min NUMERIC(8,2) NOT NULL CHECK (ideal_rate_per_min > 0),  -- copied from product at run start
+  start_time     TIMESTAMPTZ NOT NULL,
+  end_time       TIMESTAMPTZ,
   CHECK (end_time IS NULL OR end_time > start_time)
 );
 
 CREATE TABLE production_count (
   count_id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   run_id        BIGINT    NOT NULL REFERENCES production_run(run_id),
-  count_time    TIMESTAMP NOT NULL,
+  count_time    TIMESTAMPTZ NOT NULL,
   good_count    INTEGER   NOT NULL CHECK (good_count >= 0),
   reject_count  INTEGER   NOT NULL DEFAULT 0 CHECK (reject_count >= 0)
 );
@@ -96,8 +97,7 @@ CREATE TABLE downtime_reason (
   reason_id    INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   reason_code  VARCHAR(20)  NOT NULL UNIQUE,
   description  VARCHAR(100) NOT NULL,
-  category     VARCHAR(30)  NOT NULL,
-  is_planned   BOOLEAN      NOT NULL DEFAULT FALSE,
+  category     VARCHAR(30)  NOT NULL,      -- 'Planned' marks reasons that do not count against availability
   is_active    BOOLEAN      NOT NULL DEFAULT TRUE
 );
 
@@ -105,11 +105,13 @@ CREATE TABLE downtime_event (
   event_id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   machine_id  INTEGER   NOT NULL REFERENCES machine(machine_id),
   reason_id   INTEGER   NOT NULL REFERENCES downtime_reason(reason_id),
-  start_time  TIMESTAMP NOT NULL,
-  end_time    TIMESTAMP,
+  start_time  TIMESTAMPTZ NOT NULL,
+  end_time    TIMESTAMPTZ,
   CHECK (end_time IS NULL OR end_time > start_time)
 );
 
+-- PostgreSQL does not index foreign key columns automatically, so add the ones you join on.
+CREATE INDEX ix_run_work_order     ON production_run  (work_order_id);
 CREATE INDEX ix_run_line_start     ON production_run  (line_id, start_time);
 CREATE INDEX ix_count_run_time     ON production_count (run_id, count_time);
 CREATE INDEX ix_downtime_mach_time ON downtime_event  (machine_id, start_time);
@@ -117,34 +119,39 @@ CREATE UNIQUE INDEX ux_one_open_event ON downtime_event (machine_id) WHERE end_t
 \`\`\`
 
 > [!note] Dialect differences
-> MySQL: replace \`GENERATED ALWAYS AS IDENTITY\` with \`AUTO_INCREMENT\`; MySQL has no partial indexes, so enforce one open event in the named query instead. SQL Server: use \`IDENTITY(1,1)\`, \`BIT\`, \`DATETIME2\`, and a filtered index \`WHERE end_time IS NULL\`.
+> MySQL: replace \`GENERATED ALWAYS AS IDENTITY\` with \`AUTO_INCREMENT\`; MySQL has no partial indexes, so enforce one open event in the named query instead. SQL Server: use \`IDENTITY(1,1)\`, \`BIT\`, \`DATETIME2\` (holding UTC values, written with \`SYSUTCDATETIME()\`), and a filtered index \`WHERE end_time IS NULL\`.
+
+> [!note] Versioned migrations
+> Keep this DDL as numbered scripts in version control (\`001_create_tables.sql\`, \`002_...\`) and apply them in order, as {{lesson:db-schema}} describes, rather than editing the live database by hand.
 
 ### Why it looks this way
 
 - **Surrogate keys plus UNIQUE codes** (\`line_code\`, \`machine_code\`, \`wo_number\`, \`sku\`) keep joins small and let a name change without rewriting history.
-- **\`ideal_rate_per_min\` lives on \`product\`.** The ideal speed depends on what you are making, not on the machine. Changing it on the product affects only future runs if you copy it to the run at start time (see the pitfalls).
+- **\`ideal_rate_per_min\` lives on \`product\`, and is copied onto \`production_run\` when the run starts.** The ideal speed depends on what you are making, not on the machine. Because the run keeps its own copy, a later edit to the product changes future runs only, and last month's OEE does not move.
 - **\`production_run\` separates "a stretch of making this work order" from the work order itself.** One work order can run across three shifts and be interrupted for a changeover, so it has several runs.
-- **\`production_count\` stores interval deltas** (good and reject since the last reading), not the PLC's running total. Sums are then trivial, and a PLC counter reset can never produce a negative number.
+- **\`production_count\` stores interval deltas** (good and reject since the last reading, and the first interval runs from the run start to the first reading), not the PLC's running total. Sums are then trivial, and a PLC counter reset can never produce a negative number.
 - **\`downtime_event.end_time\` is NULL while the stop is in progress.** The partial unique index guarantees a machine cannot have two open stops.
-- **Planned vs unplanned is a property of the reason** (\`is_planned\`), so lunch breaks leave availability untouched while a jam does not.
+- **Planned vs unplanned is a property of the reason's category** (\`category = 'Planned'\`), so lunch breaks leave availability untouched while a jam does not. There is no separate flag to drift out of step with the category.
 - **Three indexes follow three queries:** runs by line and time, counts by run and time, events by machine and time ({{lesson:db-indexes}}).
 
 ## Step 3: sample data
 
 \`\`\`sql
-INSERT INTO line (line_code, line_name) VALUES ('L1', 'Bottling Line 1');
+SET TIME ZONE 'UTC';   -- literals below are read as UTC; shown as 06:00 to 14:00 to match the shift window
+
+INSERT INTO line (line_code, line_name) VALUES ('Line1', 'Plant1 Area10 Line1');
 INSERT INTO machine (line_id, machine_code, machine_name) VALUES
-  (1, 'L1-FILLER', 'Filler'), (1, 'L1-CAPPER', 'Capper');
+  (1, 'M101', 'Filler'), (1, 'M102', 'Capper');
 INSERT INTO shift VALUES (1, 'Day', '06:00', '14:00');
 INSERT INTO product (sku, description, ideal_rate_per_min) VALUES ('WTR-500', '500 mL water', 100);
 INSERT INTO work_order (wo_number, product_id, planned_qty) VALUES ('WO-10432', 1, 40000);
-INSERT INTO downtime_reason (reason_code, description, category, is_planned) VALUES
-  ('BREAK', 'Scheduled break',   'Planned',    TRUE),
-  ('JAM',   'Product jam',       'Mechanical', FALSE),
-  ('CHG',   'Changeover',        'Changeover', FALSE),
-  ('UNASGN','Unassigned stop',   'Unknown',    FALSE);
-INSERT INTO production_run (work_order_id, line_id, shift_id, start_time, end_time)
-  VALUES (1, 1, 1, '2026-03-02 06:00', '2026-03-02 14:00');
+INSERT INTO downtime_reason (reason_code, description, category) VALUES
+  ('BREAK', 'Scheduled break',   'Planned'),
+  ('JAM',   'Product jam',       'Mechanical'),
+  ('CHG',   'Changeover',        'Changeover'),
+  ('UNASGN','Unassigned stop',   'Unknown');
+INSERT INTO production_run (work_order_id, line_id, shift_id, ideal_rate_per_min, start_time, end_time)
+  VALUES (1, 1, 1, 100, '2026-03-02 06:00', '2026-03-02 14:00');   -- 100 copied from product WTR-500
 INSERT INTO production_count (run_id, count_time, good_count, reject_count) VALUES
   (1, '2026-03-02 08:00', 8100, 170), (1, '2026-03-02 10:00', 8200, 160),
   (1, '2026-03-02 12:00', 8100, 170), (1, '2026-03-02 14:00', 8087, 163);
@@ -169,13 +176,13 @@ WHERE m.line_id = 1
   AND e.start_time >= '2026-03-02' AND e.start_time < '2026-03-09'
   AND e.end_time IS NOT NULL
 GROUP BY r.description
-ORDER BY minutes DESC;
+ORDER BY minutes DESC, r.description;
 \`\`\`
 
 | description | minutes |
 |---|---|
-| Product jam | 30 |
 | Changeover | 30 |
+| Product jam | 30 |
 | Scheduled break | 30 |
 
 ## Step 5: the OEE query
@@ -188,17 +195,15 @@ OEE is availability x performance x quality. Availability is run time over plann
 
 \`\`\`sql
 WITH base AS (
-  SELECT r.run_id, p.ideal_rate_per_min,
+  SELECT r.run_id, r.ideal_rate_per_min,
          EXTRACT(EPOCH FROM (r.end_time - r.start_time)) / 60 AS scheduled_min
   FROM production_run r
-  JOIN work_order w ON w.work_order_id = r.work_order_id
-  JOIN product p    ON p.product_id = w.product_id
   WHERE r.run_id = 1
 ),
 stops AS (
   SELECT r.run_id,
-    SUM(CASE WHEN d.is_planned     THEN EXTRACT(EPOCH FROM (e.end_time - e.start_time)) / 60 ELSE 0 END) AS planned_min,
-    SUM(CASE WHEN NOT d.is_planned THEN EXTRACT(EPOCH FROM (e.end_time - e.start_time)) / 60 ELSE 0 END) AS unplanned_min
+    SUM(CASE WHEN d.category = 'Planned'  THEN EXTRACT(EPOCH FROM (e.end_time - e.start_time)) / 60 ELSE 0 END) AS planned_min,
+    SUM(CASE WHEN d.category <> 'Planned' THEN EXTRACT(EPOCH FROM (e.end_time - e.start_time)) / 60 ELSE 0 END) AS unplanned_min
   FROM production_run r
   JOIN machine m ON m.line_id = r.line_id
   JOIN downtime_event e ON e.machine_id = m.machine_id
@@ -243,10 +248,10 @@ Create two {{term:named-query|named queries}} in the project: \`Downtime/OpenEve
 def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, missedEvents):
     if initialChange:
         return
-    machineId = 1  # in practice, derive from the tag path or a parameter
+    machineId = 1  # M101; in practice, derive from the tag path or a parameter
     if currentValue.value == 0 and previousValue.value == 1:
         system.db.execUpdate("Downtime/OpenEvent",
-            {"machine_id": machineId, "reason_id": 4, "start_time": system.date.now()})  # 4 = Unassigned
+            {"machine_id": machineId, "reason_id": 4, "start_time": system.date.now()})  # 4 = Unassigned; the Date is an instant, so PostgreSQL TIMESTAMPTZ stores it correctly
     elif currentValue.value == 1 and previousValue.value == 0:
         system.db.execUpdate("Downtime/CloseEvent",
             {"machine_id": machineId, "end_time": system.date.now()})
@@ -254,12 +259,14 @@ def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, misse
 
 > [!note] In 8.1
 > Use \`system.db.runNamedQuery\` for both calls. It is deprecated in 8.3 but still works.
+>
+> On SQL Server with \`DATETIME2\`, a Date passed through JDBC is written as the gateway's local clock time unless you convert it. To keep the UTC rule, let the query stamp the time itself (\`SYSUTCDATETIME()\`) or convert on the way in, and test one row against the clock.
 
 The stop opens with the "Unassigned" reason immediately, so no time is lost if the operator is busy. The Perspective screen then runs an \`UPDATE\` named query to set the real \`reason_id\`. Filtering on the Unassigned reason also gives supervisors a report of stops nobody explained.
 
 ### Counts: a transaction group
 
-A {{term:ign-sql-bridge|transaction group}} (SQL Bridge module) moves PLC tag values into table columns on a trigger. A Standard group inserts a row into \`production_count\` when the PLC raises a "interval complete" bit, and the group writes back a handshake to tell the PLC it can clear the interval counters. Items map to columns: \`run_id\` from an expression or a tag set when the run starts, \`good_count\` and \`reject_count\` from the PLC's interval registers, \`count_time\` from the current time. If the database connection is down, the connection's store-and-forward feature caches the writes and replays them, which is why the PLC-side handshake matters: no interval is lost or doubled.
+A {{term:ign-sql-bridge|transaction group}} (SQL Bridge module) moves PLC tag values into table columns on a trigger. A Standard group inserts a row into \`production_count\` when the PLC raises a "interval complete" bit, and the group writes back a handshake to tell the PLC it can clear the interval counters. Items map to columns: \`run_id\` from an expression or a tag set when the run starts, \`good_count\` and \`reject_count\` from the PLC's interval registers, \`count_time\` from the current time. If the database is unreachable, Ignition's store and forward can buffer some writes and replay them later. Check the manual for exactly which features use it in your version and do not assume a transaction group is covered. That is why the PLC-side handshake matters: the group acknowledges only after a successful write, so no interval is lost or doubled.
 
 > [!tip] Named query or transaction group?
 > Use a transaction group for repeating, trigger-based logging of a known set of tags. Use named queries for event-driven or user-driven writes from scripts and screens, where you need to choose the SQL and parameters yourself.
@@ -343,7 +350,7 @@ OEE (Overall Equipment Effectiveness) came out of Seiichi Nakajima's Total Produ
   pitfalls: [
     "Storing the PLC's running total instead of interval deltas, then getting negative counts after a counter reset.",
     "Summing overlapping stops from several machines and reporting more downtime than the shift had minutes.",
-    "Reading the ideal rate from the product at report time, so a later edit silently changes last month's OEE. Copy it to the run at start if you need history to hold still.",
+    "Reading the ideal rate from the product at report time, so a later edit silently changes last month's OEE. That is why this design copies it to the run at start.",
     "Forgetting the open event case, so a screen goes blank or wrong while a stop is in progress.",
     "Letting operators type reasons as free text instead of choosing from downtime_reason.",
     "Building SQL strings in scripts with string concatenation instead of named query parameters."
@@ -376,11 +383,11 @@ OEE (Overall Equipment Effectiveness) came out of Seiichi Nakajima's Total Produ
     },
     {
       q: "A scheduled lunch break is logged as downtime. How should the schema keep it from hurting availability?",
-      options: ["Delete the event before running reports", "Flag the reason as planned and subtract planned stops from scheduled time", "Store it in a different database", "Give it a NULL start_time"],
+      options: ["Delete the event before running reports", "Give the reason the Planned category and subtract planned stops from scheduled time", "Store it in a different database", "Give it a NULL start_time"],
       answer: 1,
       explain: [
         "Deleting data loses the record that the break happened.",
-        "Correct. is_planned on the reason lets one query separate planned from unplanned stops.",
+        "Correct. The Planned category on the reason lets one query separate planned from unplanned stops.",
         "A separate database breaks joins and adds work for no benefit.",
         "start_time is required for the event to be placed on the timeline."
       ]

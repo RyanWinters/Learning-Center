@@ -18,14 +18,14 @@ LC.lesson({
   body: `
 ## Why faults matter
 
-A Logix controller checks its own work every scan. When it hits something it cannot safely continue past, such as an array index out of range or a task that overran its watchdog, it raises a {{term:major-fault|major fault}}. By default that stops the controller (the key switch shows a red OK light) and outputs go to their configured fault state. For a plant, that can mean a line is down until someone connects. Knowing the fault types lets you decide what to catch in code, what to let stop the machine, and how to diagnose quickly.
+A Logix controller checks its own work every scan. When it hits something it cannot safely continue past, such as an array index out of range or a task that overran its watchdog, it raises a {{term:major-fault|major fault}}. By default that stops the controller (the controller's OK status indicator goes red) and outputs go to their configured fault state. For a plant, that can mean a line is down until someone connects. Knowing the fault types lets you decide what to catch in code, what to let stop the machine, and how to diagnose quickly.
 
 ## Major, minor and I/O faults
 
 | Type | Effect | Typical examples | Where you see it |
 |---|---|---|---|
 | Major | Controller faults and stops unless a handler clears it | Watchdog timeout, array subscript too large, jump to a missing label, program fault | Controller properties, Major tab, OK light red |
-| Minor | Controller keeps running; flagged only | Arithmetic overflow, battery low, a GSV/SSV with a bad attribute | \`S:MINOR\` bit, Minor tab |
+| Minor | Controller keeps running; flagged only | Arithmetic overflow, for example (check the Major, Minor and I/O Faults manual for the full list) | \`S:MINOR\` bit, Minor tab |
 | I/O (connection) | The affected module's connection is lost or faulted | Module removed, wrong electronic key, network cable out | Module properties, I/O tree yellow or red icon |
 
 A major fault carries a **type** and a **code**. For example, type 4 (program fault) code 20 is "array subscript too large", and type 6 is a watchdog. Rockwell publishes the full table in its Major, Minor and I/O Faults manual and a fault code spreadsheet. Memorise a few and look up the rest.
@@ -37,7 +37,7 @@ A major fault carries a **type** and a **code**. For example, type 4 (program fa
 
 Logix gives you three hooks.
 
-1. **Program fault routine.** Each program can have one. When a major fault occurs in a routine of that program, the program's fault routine runs first. If it clears the fault, execution continues.
+1. **Program fault routine.** Each program can have one (select it in the program's properties, Configuration tab, where the main and fault routines are chosen). When a major fault occurs in a routine of that program, the program's fault routine runs first. If it clears the fault, execution continues.
 2. **Controller fault handler.** One per controller, in its own special program. It runs if the program fault routine did not clear the fault, or did not exist.
 3. **Power-up handler.** Runs when the controller powers up in Run mode and the project is set to fault on power-up, if one exists. It is where you decide whether to resume or reinitialise.
 
@@ -52,14 +52,15 @@ A fault routine that clears every fault is dangerous. It hides a real problem an
 In a program fault routine you read the fault record, test the type and code, and clear it by writing zeros to the record with SSV. The pattern is:
 
 \`\`\`text
-GSV  Program   <this program>   MajorFaultRecord   -> MajorFaultRecord (a UDT or DINT[11])
-if Type = 4 and Code = 20
-    MOV 0 into the record's Type and Code
-    SSV Program <this program> MajorFaultRecord   <- MajorFaultRecord
+// Pseudo-code. Check the attribute names and record layout in the GSV/SSV manual.
+GSV  class Program, instance THIS, attribute MajorFaultRecord  -> FaultRec
+if FaultRec.Type = 4 and FaultRec.Code = 20
+    MOV 0 into FaultRec.Type and FaultRec.Code
+    SSV  class Program, instance THIS, attribute MajorFaultRecord  <- FaultRec
     log to Fault.LastBadIndex
 \`\`\`
 
-Clearing means the controller returns to executing the next rung, not the instruction that faulted. That makes it vital to protect the data (for example, a bounds check beforehand).
+The faulted instruction is not repeated, so the code after the fault runs with whatever that instruction left behind. Check the fault-handling chapter of the manual for exactly where execution resumes in your version. Either way, protect the data first (for example, a bounds check beforehand).
 
 ## GSV and SSV
 
@@ -67,15 +68,15 @@ Clearing means the controller returns to executing the next rung, not the instru
 
 | Goal | Class | Instance | Attribute | Destination |
 |---|---|---|---|---|
-| Read the clock | \`WallClockTime\` | \`THIS\` | \`LocalDateTime\` | \`DINT[7]\` |
-| Controller fault | \`FaultLog\` | (none) | \`MajorFaultRecord\` | UDT/DINT[11] |
+| Read the clock | \`WallClockTime\` | (blank) | \`LocalDateTime\` | \`DINT[7]\` |
+| Program fault record | \`Program\` | \`THIS\` or the program name | \`MajorFaultRecord\` | UDT/DINT[11] (verify) |
 | Minor fault bits | \`FaultLog\` | (none) | \`MinorFaultBits\` | DINT |
 | Module fault code | \`Module\` | module name | \`FaultCode\` | DINT |
 | Module status | \`Module\` | module name | \`EntryStatus\` | INT/DINT |
 
 Example: read the time to stamp an alarm. \`GSV(WallClockTime, ,LocalDateTime, Clk[0])\` fills an array: year, month, day, hour, minute, second, microsecond. The array element 3 is the hour. An SSV to \`WallClockTime\` \`DateTime\` is how you set the controller clock from a time source, with the usual care about time zones and UTC.
 
-A GSV to a bad attribute logs a minor fault and leaves the destination unchanged, so always give the destination the right size. An SSV changes the running controller. Some SSV changes are not stored in the project file, so upload before you rely on them.
+Give the destination a type and size that match the attribute, as the manual lists. A mismatch gives wrong data or a fault, depending on the instruction and version. An SSV changes the running controller. Some SSV changes are not stored in the project file, so upload before you rely on them.
 
 ## I/O module status
 
@@ -168,7 +169,7 @@ The PLC-5 and SLC 500 had a fixed status file (S:) with bits like S:1/13 for maj
     "A fault routine that clears every major fault, hiding real bugs.",
     "Clearing a fault without protecting the data that caused it, so the next scan faults again.",
     "Alarming on module data instead of the connection status bit.",
-    "A GSV destination tag too small for the attribute, which logs a minor fault and leaves old data.",
+    "A GSV destination tag too small or the wrong type for the attribute.",
     "Setting the controller clock with SSV without deciding on UTC or local time first.",
     "Forgetting that SSV changes may not be in the project file until you upload."
   ],
@@ -214,7 +215,7 @@ The PLC-5 and SLC 500 had a fixed status file (S:) with bits like S:1/13 for maj
       options: ["A single DINT", "A BOOL", "An array of at least seven DINTs", "A STRING"],
       answer: 2,
       explain: [
-        "One DINT is too small, so the instruction would log a minor fault.",
+        "One DINT is too small for seven values.",
         "A BOOL cannot hold the date and time.",
         "Correct. Year, month, day, hour, minute, second and microsecond need seven elements.",
         "The attribute returns numbers, not a string."

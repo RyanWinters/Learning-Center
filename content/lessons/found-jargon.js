@@ -15,7 +15,7 @@ LC.lesson({
   ],
 
   body: `
-Automation talk is dense with acronyms, and people assume you know them. This page is a field guide, not a lesson to memorize. Skim the tables, then come back when a word trips you up. Every term here is also in the glossary, and the app links them as you read other lessons.
+Automation talk is dense with acronyms, and people assume you know them. This page is a field guide, not a lesson to memorize. Skim the tables, then come back when a word trips you up. Most of these terms are also in the glossary, and the app links glossary terms as you read other lessons.
 
 ## Hardware: the physical picture
 
@@ -29,12 +29,12 @@ A control system is a controller, plug-in cards that connect it to the world, an
 | Backplane | The bus inside the chassis that powers the cards and carries data between them and the controller. |
 | I/O card (module) | A plug-in with a fixed number of channels: 16 digital inputs, 8 analog inputs, and so on. |
 | Remote I/O | Cards mounted near the equipment and connected back to the controller over a network cable. |
-| Control panel | The enclosure with the PLC, power supplies, breakers, relays and terminals. Also called a control cabinet. |
+| Control panel | The enclosure with the PLC (programmable logic controller), power supplies, breakers, relays and terminals. Also called a control cabinet. |
 | Junction box (JB) | A field box where individual instrument cables are joined onto one multi-pair cable. |
 | Marshalling cabinet | A patch field between the field cables and the I/O cards, so wiring can be changed without re-pulling cable. |
 | MCC | Motor control center: a lineup of cabinets with the starters and breakers for many motors. |
 | VFD | Variable frequency drive: controls motor speed. Often shortened to "the drive." |
-| PLC | The ruggedized controller that scans inputs, runs logic and writes outputs. |
+| PLC | Programmable logic controller: the ruggedized controller that scans inputs, runs logic and writes outputs. |
 
 > [!example] How they stack up
 > A pump station has a **control panel** with a PLC in a **chassis**. Slot 1 is the controller, slot 2 a 16-point digital input **card**, slot 3 an 8-point analog input card. Field instruments land in a **junction box** at the wet well, and a multi-pair cable runs back to the panel. The pump runs from a **VFD** in the **MCC**, and the PLC talks to the drive over the network instead of through a hardwired analog signal. A second panel across the plant holds **remote I/O** for the screens and sump.
@@ -45,14 +45,14 @@ These are ordered roughly from the machine up to the boardroom, the layers you s
 
 | Term | One-line meaning | Layer |
 |---|---|---|
-| HMI | The operator's screen for a machine or area. | Control / supervisory |
-| SCADA | Software that gathers data from many controllers and lets operators supervise a site or many sites. | Supervisory |
-| DCS | A matched controller, I/O, network and operator-station platform common in process plants, with PID and alarming built in. | Control + supervisory |
+| HMI | Human-machine interface: the operator's screen for a machine or area. | Control / supervisory |
+| SCADA | Supervisory control and data acquisition: software that gathers data from many controllers and lets operators supervise a site or many sites. | Supervisory |
+| DCS | Distributed control system: a matched controller, I/O, network and operator-station platform common in process plants, with PID and alarming built in. | Control + supervisory |
 | Historian | A time-series database for process values; the source for trends. | Supervisory / plant |
-| MES | Software that tracks and records production orders, quality and downtime. | Plant (ISA-95 level 3) |
-| ERP | Business software for orders, inventory, finance and purchasing. | Enterprise (level 4) |
-| OEE | A score: availability x performance x quality. A KPI computed by MES or SCADA, not a product. | Metric |
-| CMMS | Maintenance work-order and parts software. | Plant / enterprise |
+| MES | Manufacturing execution system: software that tracks and records production orders, quality and downtime. | Plant (ISA-95 level 3) |
+| ERP | Enterprise resource planning: business software for orders, inventory, finance and purchasing. | Enterprise (level 4) |
+| OEE | Overall equipment effectiveness: a score: availability x performance x quality. A KPI computed by MES or SCADA, not a product. | Metric |
+| CMMS | Computerized maintenance management system: maintenance work-order and parts software. | Plant / enterprise |
 | OT | Operational technology: the plant-floor side. IT is the business side. | Whole-site term |
 | Ignition | A single platform that can do HMI, SCADA, historian and more. | Supervisory and up |
 | ISA-95 | The standard that names these levels and what passes between them. | Model |
@@ -63,14 +63,14 @@ OEE example: a line was scheduled for 480 minutes and ran 400 (availability 83%)
 
 | Term | What it means |
 |---|---|
-| Tag | A named value with a data type, in the PLC or in SCADA, such as \`Pump1.Run\`. On a P&ID, a tag is also the instrument's ID (FIC-101). |
+| Tag | A named value with a data type, in the PLC or in SCADA, such as \`M101.Sts.Running\`. On a P&ID, a tag is also the instrument's ID (FIC-101). Drawings keep the hyphen; PLC and Ignition names drop it (FIC101). |
 | UDT | User-defined type: a reusable template of members, such as a Motor with Run, Fault and Speed. |
 | AOI | Add-On Instruction: a reusable Logix block with its own parameters and logic, such as a valve controller. |
-| OPC | A family of data-exchange standards. OPC UA is the modern one. |
+| OPC | A family of data-exchange standards (originally OLE for Process Control, now Open Platform Communications). OPC UA (Unified Architecture) is the modern one. |
 | RPI | Requested packet interval: how often, in milliseconds, a Logix controller exchanges data with a module. A card with 20 ms RPI is refreshed 50 times a second. |
 | Setpoint | The target value a controller tries to hold. |
 | Process variable | The measured value being controlled. |
-| PID | The standard feedback-control algorithm (see {{lesson:found-control}}). |
+| PID | Proportional-integral-derivative: the standard feedback-control algorithm (see {{lesson:found-control}}). |
 
 ## Control logic and safety words
 
@@ -103,7 +103,7 @@ OEE example: a line was scheduled for 480 minutes and ran 400 (availability 83%)
 | Brownfield | Work in an existing, running plant. |
 | Greenfield | A new plant, built from scratch. |
 
-Project roles (end user, OEM, system integrator, EPC, RFQ, SOW, change order, CSIA) are covered in {{lesson:found-roles}}.
+Project roles and paperwork (end user, OEM or original equipment manufacturer, system integrator, EPC or engineering-procurement-construction firm, RFQ or request for quotation, SOW or statement of work, change order, CSIA or Control System Integrators Association) are covered in {{lesson:found-roles}}.
 
 ## Translating an overheard conversation
 
@@ -141,7 +141,7 @@ You do not need to memorize them. You need a cheat sheet taped next to your desk
     },
     {
       title: "Counting a card order from jargon",
-      body: `"We have 48 DI, 20 AI, 12 DO and 8 AO." With 16-point digital cards and 8-point analog cards, that is 3 DI cards, 3 AI cards (24 points, covering 20), 1 DO card (16 points) and 1 AO card (8 points, no spare). Eight cards, plus the controller and power supply, fill a 12-slot chassis with room to grow. The AO card has no spare, which is worth flagging.`
+      body: `"We have 48 DI, 20 AI, 12 DO and 8 AO." With 16-point digital cards and 8-point analog cards, the bare minimum is 3 DI cards (exactly 48, no spare), 3 AI cards (24 points, covering 20), 1 DO card (16 points) and 1 AO card (8 points, no spare). That leaves the DI and AO cards with no room to grow, which is worth flagging. At the 15 percent spare rule from {{lesson:found-pid-docs}}, the point counts become 55.2 DI (4 cards), 23 AI (still 3 cards), 13.8 DO (still 1 card) and 9.2 AO (2 cards). Ten cards plus the controller and power supply should fit in a 12-slot chassis, but verify the slot layout for the chassis you choose, since some power supplies take a slot and some do not.`
     }
   ],
 

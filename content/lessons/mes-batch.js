@@ -37,11 +37,11 @@ The {{term:physical-model|physical model}} is a hierarchy of equipment. The uppe
 
 | Level | Meaning | Example |
 |---|---|---|
-| Enterprise | The company | Acme Foods |
-| Site | A location | Dayton plant |
-| Area | A section of the site | Sauce kitchen |
-| {{term:process-cell|Process cell}} | Equipment that makes batches together | Sauce line 1 |
-| {{term:isa88-unit|Unit}} | Equipment that holds one batch at a time | Cook kettle K-101 |
+| Enterprise | The company | Meridian Foods |
+| Site | A location | Plant1 (Chicago) |
+| Area | A section of the site | Area10 (Batching) |
+| {{term:process-cell|Process cell}} | Equipment that makes batches together | Line1 (sauce line) |
+| {{term:isa88-unit|Unit}} | Equipment that holds one batch at a time | Cook kettle TK-101 (TK101 in the PLC) |
 | {{term:equipment-module|Equipment module}} | Devices that do a defined job | Steam jacket control |
 | Control module | Basic device control | Steam valve with its feedback |
 
@@ -54,7 +54,7 @@ The {{term:procedural-model|procedural model}} is the same nesting idea applied 
 | Level | What it is | Example |
 |---|---|---|
 | Procedure | The whole recipe | Make tomato sauce |
-| {{term:unit-procedure|Unit procedure}} | Work done on one unit | Cook in K-101 |
+| {{term:unit-procedure|Unit procedure}} | Work done on one unit | Cook in TK-101 |
 | Operation | A major action inside it | Heat and hold |
 | {{term:equipment-phase|Phase}} | One equipment-level task | Heat to setpoint |
 
@@ -106,19 +106,19 @@ This is the design decision you will argue about on every batch project.
 Phase \`Heat_01\` in the kettle PLC exposes these tags:
 
 \`\`\`text
-K101.Heat.Cmd        1=Start 2=Hold 3=Restart 4=Stop 5=Abort 6=Reset
-K101.Heat.State      0=Idle 1=Running 2=Held 3=Complete 4=Aborted 5=Faulted
-K101.Heat.Par.TargetC      REAL   (input from batch engine)
-K101.Heat.Par.HoldMin      REAL   (input)
-K101.Heat.Rpt.PeakC        REAL   (output to the batch record)
+TK101.Heat.Cmd             1=Start 2=Hold 3=Restart 4=Stop 5=Abort 6=Reset
+TK101.Heat.State           0=Idle 1=Running 2=Held 3=Complete 4=Aborted 5=Faulted
+TK101.Heat.Par.TargetTemp  REAL   deg C (input from batch engine)
+TK101.Heat.Par.HoldTime    REAL   minutes (input)
+TK101.Heat.Rpt.PeakTemp    REAL   deg C (output to the batch record)
 \`\`\`
 
 The engine executes the step "Heat to 82 C, hold 20 min":
 
 1. Check \`State = Idle\` (anything else, wait or raise an error).
-2. Write \`TargetC = 82.0\` and \`HoldMin = 20\`.
+2. Write \`TargetTemp = 82.0\` and \`HoldTime = 20\`.
 3. Write \`Cmd = 1\` (Start). The PLC clears the command and moves to Running.
-4. Watch \`State\`. On 3 (Complete), read \`PeakC\` into the batch record and advance. On 5 (Faulted), stop the recipe and prompt the operator.
+4. Watch \`State\`. On 3 (Complete), read \`PeakTemp\` into the batch record and advance. On 5 (Faulted), stop the recipe and prompt the operator.
 
 {{diagram:handshake}}
 
@@ -222,13 +222,13 @@ ISA-88 grew out of work in the late 1980s to give batch process plants a common 
   <line class="dg-line-thin" x1="115" y1="60" x2="115" y2="205"/>
   <line class="dg-line-thin" x1="525" y1="60" x2="525" y2="205"/>
   <line class="dg-line" x1="115" y1="85" x2="525" y2="85" marker-end="url(#mes-batch-ah)"/>
-  <text class="dg-text-sm dg-mid" x="320" y="79">1. Write parameters (TargetC, HoldMin)</text>
+  <text class="dg-text-sm dg-mid" x="320" y="79">1. Write parameters (TargetTemp, HoldTime)</text>
   <line class="dg-line" x1="115" y1="115" x2="525" y2="115" marker-end="url(#mes-batch-ah)"/>
   <text class="dg-text-sm dg-mid" x="320" y="109">2. Cmd = Start</text>
   <line class="dg-line" x1="525" y1="145" x2="115" y2="145" marker-end="url(#mes-batch-ah)"/>
   <text class="dg-text-sm dg-mid" x="320" y="139">3. State = Running ... Complete</text>
   <line class="dg-line" x1="525" y1="180" x2="115" y2="180" marker-end="url(#mes-batch-ah)"/>
-  <text class="dg-text-sm dg-mid" x="320" y="174">4. Read results (PeakC) into the batch record</text>
+  <text class="dg-text-sm dg-mid" x="320" y="174">4. Read results (PeakTemp) into the batch record</text>
 </svg>`
   },
 
@@ -257,18 +257,18 @@ ISA-88 grew out of work in the late 1980s to give batch process plants a common 
     },
     {
       q: "Where should valve sequencing for a Heat phase and its interlocks live?",
-      options: ["In the batch engine, so it is all in one place", "In the PLC phase logic", "In the batch record database", "In the master recipe as extra steps"],
-      answer: 1,
+      options: ["In the batch engine, so it is all in one place", "In the master recipe as extra steps", "In the batch record database", "In the PLC phase logic"],
+      answer: 3,
       explain: [
         "A server reboot or network drop would leave the process half-controlled.",
-        "Correct. The PLC owns fast control and safety so the phase stays safe if the engine is unavailable.",
+        "Recipes describe order and parameters at phase level. Device sequencing is equipment behavior.",
         "The database stores records. It does not run equipment.",
-        "Recipes describe order and parameters at phase level. Device sequencing is equipment behavior."
+        "Correct. The PLC owns fast control and safety so the phase stays safe if the engine is unavailable."
       ]
     },
     {
       q: "Which of these is a unit in the ISA-88 physical model?",
-      options: ["A kettle that holds one batch at a time", "A single steam valve", "The Dayton plant", "A step in the recipe called Heat"],
+      options: ["A kettle that holds one batch at a time", "A single steam valve", "Plant1 (the whole site)", "A step in the recipe called Heat"],
       answer: 0,
       explain: [
         "Correct. A unit is the vessel-level equipment that processes one batch at a time.",
@@ -290,11 +290,11 @@ ISA-88 grew out of work in the late 1980s to give batch process plants a common 
     },
     {
       q: "The batch engine host reboots in the middle of a 20 minute hold phase. What is the best behavior?",
-      options: ["The PLC aborts the phase immediately", "The PLC phase continues and the engine, once back, reads the phase state and resumes waiting", "The engine restarts the phase from the beginning", "The batch record is discarded"],
-      answer: 1,
+      options: ["The PLC phase continues and the engine, once back, reads the phase state and resumes waiting", "The PLC aborts the phase immediately", "The engine restarts the phase from the beginning", "The batch record is discarded"],
+      answer: 0,
       explain: [
-        "Aborting would waste material for an infrastructure problem.",
         "Correct. A phase that is its own state machine keeps controlling, and the engine recovers by reading state.",
+        "Aborting would waste material for an infrastructure problem.",
         "Restarting would double the hold time and break the record.",
         "Records should be written continuously so a reboot loses nothing already stored."
       ]

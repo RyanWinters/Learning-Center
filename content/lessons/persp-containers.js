@@ -79,15 +79,15 @@ Here the button is a fixed 96 px that never squeezes. The title takes all remain
 
 ### Flex wrap as free responsiveness
 
-A row container with \`wrap: wrap\` and children with \`basis: 320px; grow: 1\` makes a tile grid that fits three tiles on a desktop, two on a tablet and one on a phone, with no breakpoint at all. Browsers do the arithmetic.
+A row container with \`wrap: wrap\` and children with \`basis: 320px; grow: 1\` makes a tile grid that fits as many tiles per line as the width allows, with no breakpoint at all. Browsers do the arithmetic.
 
 ## Column containers
 
-The {{term:column-container|column container}} divides its width into 12 columns and has three breakpoints, small, medium and large, each with a minimum viewport width. Every child stores a separate position per breakpoint: a column span, a row index and a column index. A chart can span 12 columns on small, 6 on medium and 4 on large. Note that the breakpoint is evaluated at runtime from the viewport width. Switching breakpoints in the Designer changes what you are editing, not the container's own size. Use it when different devices need different *widths* for the same set of items.
+The {{term:column-container|column container}} divides its width into 12 columns and has three breakpoints, small, medium and large, each with a minimum width. Every child stores a separate position per breakpoint: a column span, a row index and a column index. A chart can span 12 columns on small, 6 on medium and 4 on large. The active breakpoint is chosen at runtime. Switching breakpoints in the Designer changes what you are editing, not the container's own size. Use it when different devices need different *widths* for the same set of items. Column and breakpoint containers both switch on width, but they may not measure the same width (the container's own box or the browser viewport). Check the container palette pages in the manual for your version, and test by embedding the view in a narrow region before you rely on either.
 
 ## Breakpoint containers
 
-A {{term:breakpoint-container|breakpoint container}} holds more than one set of children and shows one set based on the container's own width. Use it when the layouts differ in substance: a phone shows a stacked summary and a drill-down list, while a desktop shows a trend, a table and a P&ID side by side. Because the hidden set is still defined, give each set the same inputs by binding to view-level custom props or params. If you duplicate bindings across sets, you will fix a bug in one and forget the other.
+A {{term:breakpoint-container|breakpoint container}} holds more than one set of children and shows one set based on a width threshold you configure. Use it when the layouts differ in substance: a phone shows a stacked summary and a drill-down list, while a desktop shows a trend, a table and a P&ID side by side. Because the hidden set is still defined, give each set the same inputs by binding to view-level custom props or params. If you duplicate bindings across sets, you will fix a bug in one and forget the other.
 
 ## Tab and split containers
 
@@ -106,10 +106,46 @@ The reason is change cost. A pixel-placed screen encodes the *result* of a layou
 2. A header flex row: title (grow 1), alarm badge (basis auto, grow 0).
 3. A body flex row with \`wrap: wrap\`. Children are embedded tiles with \`basis: 340px; grow: 1\`.
 4. For anything that needs a truly different phone layout, wrap just that region in a breakpoint container.
-5. Test with the Designer's device preview, then on an actual phone. Touch targets under about 40 px are hard to hit with gloves.
+5. Test with the Designer's device preview, then on an actual phone. Size touch targets to your site's glove and device spec (see {{lesson:persp-mobile}}) instead of a rule of thumb.
 
 > [!warning] Percent is not responsive
 > Percent mode in a coordinate container scales boxes, but text, borders and icons stay a fixed size. On a narrow screen you get a label wider than its box, clipped. A coordinate layout is resolution-dependent even when it looks flexible.
+## If you already build Perspective
+
+You know grow, shrink and basis. These are the failures that show up in a plant with long tag names and mixed screens.
+
+### The flex min-size trap
+
+In CSS, a flex item will not shrink below the size of its content by default. A header row holding \`Title\` (basis auto, shrink 1) and an Acknowledge button (shrink 0) works until a UDT instance name such as \`Area10_Line1_Mixing_Tank_Transfer_Pump_Discharge_Valve\` arrives. The label refuses to shrink below its text width, so the row overflows and pushes the button off screen. Setting \`shrink: 1\` is not enough.
+
+The fix is to let the label give up its minimum: set \`min-width: 0\` and \`overflow: hidden\` with \`text-overflow: ellipsis\` and \`white-space: nowrap\` in a style class applied to the label (style classes take raw CSS), then give the row a tooltip with the full name. Apply the same treatment to every label that shows a name coming from a tag or database. Put it in one class (\`text/truncate\`) in your {{lesson:persp-styles}} set and use it in faceplates, so a long name on one asset cannot break a shared template.
+
+### Nesting depth and layout cost
+
+Each flex container adds a layout pass in the browser. Deep nesting is not a Gateway cost, but it makes the property tree hard to read and leads to wrapper containers that exist only to carry one grow value. Rules that keep trees shallow:
+
+- One direction change per level. A row inside a column inside a row is usually two containers too many.
+- Use \`gap\`-style spacing from the container where your version exposes it, not empty spacer components.
+- A container with one child and no styling is a wrapper to delete.
+
+### Which container for a multi-area plant
+
+| Region | Container | Why |
+|---|---|---|
+| Page shell | Flex column, or dock-based page layout | Header, nav and content adapt, see {{lesson:persp-navigation}} |
+| Unit overview with tiles | Flex row, wrap | Tile count changes per area |
+| P&ID for one unit | Percent coordinate inside a flex body | Pinned graphic, adaptive frame |
+| Two device classes (control room, phone) | Breakpoint container around the differing region only | Different content, shared bindings |
+| Dense list plus detail | Split container | Operator resizes to taste |
+
+### Reduce hidden-branch cost
+
+A breakpoint container defines every child set. Treat the hidden sets as live code. If they hold embedded views, bind each embedded view's path so the hidden one has an empty path, which keeps it from loading. The phone set and desktop set should read from the same view custom props, so you are not paying for two sets of query bindings.
+
+### Test matrix
+
+Test three real widths, not the Designer preview alone: a control-room monitor, a tablet in a holder, and a phone in portrait. Then test the longest real names and a translated label. Layout bugs are almost always content bugs.
+
 `,
 
   eli5: `
@@ -137,7 +173,7 @@ Perspective launched with Ignition 8.0 as a browser-native alternative to Vision
   examples: [
     {
       title: "Tile grid with no breakpoints",
-      body: `A dashboard of 12 motor tiles. Root is a flex container with \`direction: row\`, \`wrap: wrap\`, \`justify: flex-start\`. Each tile has \`basis: 300px\`, \`grow: 1\`, \`shrink: 0\`. At 1920 px that is six per line, on a tablet three, on a phone one. Nothing was positioned by hand and the same JSON serves every device.`
+      body: `A dashboard of 12 motor tiles. Root is a flex container with \`direction: row\`, \`wrap: wrap\`, \`justify: flex-start\`. Each tile has \`basis: 300px\`, \`grow: 1\`, \`shrink: 0\`. At 1920 px that is six per line, on a 768 px tablet two, on a phone one. Nothing was positioned by hand and the same JSON serves every device.`
     },
     {
       title: "P&ID with live values",
@@ -215,7 +251,7 @@ Perspective launched with Ignition 8.0 as a browser-native alternative to Vision
       ]
     },
     {
-      q: "You need a tile grid that shows six tiles per row on a monitor, three on a tablet and one on a phone, using the least configuration. What do you build?",
+      q: "You need a tile grid that shows about six tiles per row on a monitor, fewer on a tablet and one on a phone, using the least configuration. What do you build?",
       options: [
         "Three views, one per device",
         "A flex container with wrap on and tiles at basis 300px grow 1",

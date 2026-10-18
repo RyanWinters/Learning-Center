@@ -24,7 +24,7 @@ Most multi-gateway designs need the same three things to cross a gateway boundar
 
 ## Remote tag providers
 
-A {{term:remote-tag-provider|remote tag provider}} lets a gateway browse and use another gateway's tags as if they were local. You create it in the tag provider configuration by choosing the Gateway Network type, then picking the remote gateway and the provider on it. The local gateway then shows the remote tag tree, and you can bind screens to \`[plantA]Line1/Motor1/Speed\` without knowing where the PLC really is.
+A {{term:remote-tag-provider|remote tag provider}} lets a gateway browse and use another gateway's tags as if they were local. You create it in the tag provider configuration by choosing the Gateway Network type, then picking the remote gateway and the provider on it. The local gateway then shows the remote tag tree, and you can bind screens to \`[Plant1]Plant1/Area10/Line1/M101/Sts/Speed\` (a remote provider named \`Plant1\`) without knowing where the PLC really is.
 
 What to know:
 
@@ -44,14 +44,14 @@ Two different designs often get confused:
 | **Remote tag provider + local history** | On the back-end | Gateway's own database, written by the back-end | Standard, scale-out: data is stored where it is collected |
 | **Remote historian** (8.3) / remote history provider | On the back-end | Another gateway's historian, reached over the Gateway Network | Centralizing history from many sites in one place |
 
-In 8.3 the **Remote Historian** connects to another gateway over the Gateway Network to read from or write to its history provider. If storing is allowed, the sending gateway sets up a {{term:store-and-forward|store-and-forward}} pipeline. Data is buffered locally (memory, then disk) when the destination is unreachable, and forwarded in order when it returns. The remote gateway's Service Security must explicitly permit storage to the named provider, or the writes are refused.
+In 8.3 the **Remote Historian** connects to another gateway over the Gateway Network to read from or write to its history provider. If storing is allowed, the sending gateway sets up a {{term:store-and-forward|store-and-forward}} pipeline. Data is buffered locally by the store-and-forward system when the destination is unreachable, and forwarded when it returns (check the store-and-forward and Remote Historian pages of the manual for your version for how the buffer is sized and drained). The remote gateway's Service Security must explicitly permit storage to the named provider, or the writes are refused.
 
 > [!note] In 8.1
-> The 8.1 manual calls these Remote History Providers, and the Internal Historian has a Remote Sync setting. The 8.3 manual calls them Remote Historian and places the internal historian in the Historian Core module. The ideas are the same but menu names differ, so check the manual for your version.
+> In 8.1 these are Remote History Providers. The 8.3 manual uses Remote Historian and places the internal historian in the Historian Core module. The ideas are the same but menu and setting names differ, so check the manual for your version.
 
 Querying is separate from storing. A client on the hub can query a remote history provider through the Gateway Network, which means the hub shows a chart without owning the data. That is convenient for a few sites. For dozens of sites or heavy analytics, many integrators copy history into a central database instead, so the query load does not fall on the plant gateways.
 
-**Store-and-forward is local to the sender.** A forum discussion makes this point that the buffer lives on the source gateway, not between gateways. If the source gateway itself is rebuilt before it forwards, buffered data on that machine goes with it.
+**Store-and-forward is local to the sender.** A forum discussion ([how store-and-forward works on a remote gateway](https://forum.inductiveautomation.com/t/how-does-store-and-forward-work-in-a-secondary-remote-gateway/104792)) makes the point that the buffer lives on the source gateway, not between gateways. If the source gateway itself is rebuilt before it forwards, buffered data on that machine goes with it.
 
 ## Remote alarm journals and notification
 
@@ -79,12 +79,16 @@ Live alarm status is different from journal data. A status table on the hub that
 
 The local plant keeps running through all of it, because local control and local alarms do not depend on the hub. That is the point of the architecture.
 
-> [!example] Setting up a plant-to-HQ history flow
-> 1. On HQ, make a history provider \`HQ_Hist\` backed by the HQ database.
-> 2. On HQ, set Service Security so \`PLANT-A\` may store to \`HQ_Hist\`.
-> 3. On PLANT-A, add a Remote Historian pointing at HQ's \`HQ_Hist\` with storage allowed.
+> [!example] Setting up a plant-to-HQ history flow through the DMZ
+> The default pattern routes everything through the DMZ gateway (\`10.20.250.10\`). Both the Plant 1 gateway and the corporate gateway dial out to it, as in {{lesson:arch-gateway-network}}.
+> 1. On the DMZ gateway, make a history provider \`DMZ_Hist\` backed by the historian replica database at \`10.20.250.20\`.
+> 2. On the DMZ gateway, set Service Security so the Plant 1 gateway may store to \`DMZ_Hist\`.
+> 3. On Plant 1, add a Remote Historian pointing at the DMZ gateway's \`DMZ_Hist\` with storage allowed.
 > 4. Point the plant tags' history provider at that remote historian. Keep a local history provider too if the plant needs its own trends during outages.
-> 5. Pull the network cable for 10 minutes. Confirm the gap fills when it is back.
+> 5. HQ queries \`DMZ_Hist\` (or a copy of it) through its own connection to the DMZ gateway, and never connects to Plant 1 directly.
+> 6. Pull the network cable for 10 minutes. Confirm the gap fills when it is back.
+>
+> A direct Plant 1 to HQ link would work technically, but it is a documented exception to the zone model, not the default.
 `,
 
   eli5: `
@@ -118,15 +122,15 @@ So the lesson is: ask which of the three has a pile, and make sure the pile rule
     },
     {
       title: "The missing alarm rows",
-      body: `After a 3-hour WAN outage, HQ trends show full history for Plant B but the alarm journal has a hole. The remote alarm journal profile had Use Store and Forward off, so events went straight to HQ and failed. Enable it on the profile, accept that the 3 hours already lost cannot be recovered from HQ, and recover them from the plant's own local journal if one exists.`
+      body: `After a 3-hour WAN outage, HQ trends show full history for Plant 2 but the alarm journal has a hole. The remote alarm journal profile had Use Store and Forward off, so events went straight to HQ and failed. Enable it on the profile, accept that the 3 hours already lost cannot be recovered from HQ, and recover them from the plant's own local journal if one exists.`
     }
   ],
 
   diagrams: {
-    services: `<svg viewBox="0 0 640 280" role="img" aria-label="A plant gateway exposes its tag provider, history and alarm journal over the Gateway Network to a central gateway, which uses them as remote tag provider, remote historian and remote alarm journal">
+    services: `<svg viewBox="0 0 640 280" role="img" aria-label="A plant gateway exposes its tag provider, history and alarm journal over the Gateway Network to another gateway (in the Meridian layout, reached through the DMZ gateway), which uses them as remote tag provider, remote historian and remote alarm journal">
   <defs><marker id="arch-remote-services-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="dg-fill-line" d="M0 0 L10 5 L0 10 z"/></marker></defs>
   <text class="dg-title" x="20" y="26">Plant gateway (owner)</text>
-  <text class="dg-title" x="400" y="26">Central gateway (user)</text>
+  <text class="dg-title" x="400" y="26">Remote gateway (user)</text>
   <rect class="dg-box" x="20" y="40" width="200" height="210" rx="6"/>
   <rect class="dg-box-2" x="36" y="56" width="168" height="44" rx="4"/>
   <text class="dg-text-sm dg-mid" x="120" y="83">Tag provider</text>

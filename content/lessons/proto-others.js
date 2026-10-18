@@ -39,7 +39,7 @@ Unlike {{lesson:proto-modbus}}, DNP3 knows what a data point is. Points are grou
 The key idea is that an outstation keeps an **event buffer**. Each point can be assigned to a class:
 
 - **Class 0**: the static value, "what is it right now." A master reads this occasionally as an **integrity poll**.
-- **Class 1, 2 and 3**: change events, with priority chosen by you. A tripped breaker might be Class 1, a slow-moving tank level Class 3.
+- **Class 1, 2 and 3**: change events. The class number does not set priority by itself; you assign points to classes, and the master chooses how often it polls each class (or relies on unsolicited reports). A tripped breaker might be Class 1, a slow-moving tank level Class 3.
 
 A normal poll cycle is a frequent, small **event poll** (classes 1 to 3) plus an occasional integrity poll (class 0). The master only receives what changed. That is the polling variant of {{lesson:proto-polling-rbe}}.
 
@@ -56,7 +56,14 @@ DNP3 events can be **time-stamped at the source**, with millisecond resolution, 
 
 ### DNP3 in Ignition
 
-Ignition has a DNP3 driver in the OPC UA module, acting as a master that can connect to a DNP3 outstation over TCP. Documentation describes a newer driver and a legacy one, and notes the newer one supports event-based polling and unsolicited messaging. Check the current docs for your Ignition version and for what the driver supports, since this has changed across 8.1 releases.
+In Ignition 8.3, DNP3 is one of the device drivers in the OPC UA module (a newer driver, plus a legacy one). It acts as a master that connects to a DNP3 outstation over TCP, and the newer driver supports event-based polling and unsolicited messaging. Check the 8.3 manual for what each driver supports and for any limits on your device profile.
+
+> [!note] In 8.1
+> The DNP3 driver in the 8.1 OPC UA module differs in layout and options, and its behavior changed across 8.1 releases. Use the 8.1 manual if you run that version.
+
+### DNP3 security
+
+Plain DNP3 has no authentication: anyone who can reach the outstation can send it a control. **DNP3 Secure Authentication (SAv5)** adds challenge-response authentication of critical requests such as controls. It is optional and has to be supported and enabled on both the master and the outstation. For IEC 61850, the **IEC 62351** series defines security for its traffic. Check each device's profile to see which of these it supports and whether it is enabled, and wrap legacy links in network controls (segmentation, firewalls, VPN) either way.
 
 ## IEC 61850: the substation language
 
@@ -239,8 +246,8 @@ DNP3 was developed in the 1990s for electric utility SCADA, and the DNP Users Gr
   resources: [
     { title: "DNP3 Primer (DNP Users Group)", url: "https://www.dnp.org/Portals/0/AboutUs/DNP3%20Primer%20Rev%20A.pdf", type: "standard", source: "DNP Users Group" },
     { title: "Benefits of DNP3", url: "https://www.dnp.org/About/Benefits-of-DNP3", type: "article", source: "DNP Users Group" },
-    { title: "DNP3 driver (Ignition 8.1 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.1/ignition-modules/opc-ua/opc-ua-drivers/dnp3", type: "docs", source: "Inductive Automation" },
     { title: "Legacy DNP3 driver (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/opc-ua/opc-ua-drivers/dnp3/legacy-dnp3-driver", type: "docs", source: "Inductive Automation" },
+    { title: "DNP3 driver (Ignition 8.1 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.1/ignition-modules/opc-ua/opc-ua-drivers/dnp3", type: "docs", source: "Inductive Automation" },
     { title: "The Language of BACnet: objects, properties and services", url: "https://bacnet.org/wp-content/uploads/sites/4/2022/06/The-Language-of-BACnet-1.pdf", type: "standard", source: "BACnet International" }
   ]
 });

@@ -37,6 +37,8 @@ Every Modbus server exposes up to four tables. Device manuals describe them with
 
 Holding registers do most of the real work. Setpoints, run commands and status words almost always live there.
 
+Modbus only knows bits and 16-bit words. The same 16 bits are an INT or a UINT depending on the tag's data type: a temperature of -5 degrees C arrives as 65531 in an unsigned tag. A negative value showing up as 65,000-plus means the tag is UINT and should be INT. Values wider than 16 bits (32-bit integers, floats) span two registers, and the word order is a device setting.
+
 > [!warning] The off-by-one trap
 > On the wire, addresses are **zero-based offsets** inside a table. "40001" in a manual means *holding register table, offset 0*. "40108" means offset 107. Some manuals list offsets directly (0-based), some list register numbers (1-based), and a few mix both. When a value comes back from the register next to the one you expected, this is almost always why.
 
@@ -73,10 +75,10 @@ Modbus only knows bits and 16-bit words. Anything bigger, such as a 32-bit integ
 Ignition ships Modbus drivers as part of its OPC UA module. You add a device on the Gateway, give it an IP address and port (502), and then create OPC tags that point at addresses like these:
 
 - \`HR1\`: holding register 1 (40001), as a 16-bit integer
-- \`HRF101\`: a float built from holding registers 101–102
+- \`HRF101\`: a float built from holding registers 101–102 (type prefixes and suffixes vary, so confirm the exact syntax on the Modbus address mapping page for your Ignition version)
 - \`C5\`, \`DI5\`, \`IR5\`: coil, discrete input and input register 5
 
-The driver defaults to **one-based** addressing, so \`HR1\` means 40001 (wire offset 0). The device settings include a zero-based toggle and word-order options, and **address mapping** lets you define blocks of addresses for devices whose manuals use their own numbering, including octal. The tag's quality tells you about exceptions: a tag with a bad address will show a bad quality instead of a value.
+The driver defaults to **one-based** addressing, so \`HR1\` means 40001 (wire offset 0). The device settings include a zero-based toggle and word-order options, and **address mapping** lets you define blocks of addresses for devices whose manuals use their own numbering, including octal. Many meters and drives also expose a watchdog or heartbeat register. Write an incrementing value to it from Ignition (or read the device's own counter) and alarm if it stops changing; that is a reliable way to feed a communication-loss alarm such as \`Alm.CommLoss\` in the motor UDT. The tag's quality tells you about exceptions: a tag with a bad address will show a bad quality instead of a value.
 
 > [!tip] Commissioning a new Modbus device
 > Before building screens, create three test tags: one register whose value you know (a firmware version or serial number), one float, and one value you can change at the device. If the known value is off by one register, fix the zero-based setting. If the float is garbage, fix word order. Then build the rest.
@@ -105,7 +107,7 @@ RTU and TCP are just two ways of delivering the same note. RTU is like passing i
 `,
 
   history: `
-Modicon released Modbus in 1979 for its 084 and 184 controllers. Modicon is the company Dick Morley's team founded to build the first PLC. Modbus/TCP followed in 1999. In 2004 Schneider Electric, by then Modicon's owner, transferred the rights to the independent Modbus Organization, which publishes the specifications free of charge. The "master/slave" terms were officially replaced with "client/server" in 2020.
+Modicon released Modbus in 1979 for its 084 and 184 controllers. Modicon is the company Dick Morley's team founded to build the first PLC. Modbus/TCP followed in 1999. In 2004 Schneider Electric, by then Modicon's owner, transferred the rights to the independent Modbus Organization, which publishes the specifications free of charge. The Modbus Organization has since moved its specifications from "master/slave" to "client/server" wording (check its current documents for details), and newer manuals use the new terms.
 `,
 
   examples: [

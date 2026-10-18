@@ -114,7 +114,7 @@ Train operators, maintenance staff and the IT or controls team separately. Opera
 Handover delivers the as-built package: final drawings, final FDS, program and project backups, the tag list, passwords and licenses transferred to the customer, test records, spare parts list and the O&M manuals. Then the **warranty** period starts, commonly 12 months, during which the integrator fixes defects at no charge. Define what counts as a defect (it does not work as the FDS says) versus an enhancement (the customer now wants something new, a change order).
 
 > [!example] Worked example: a transfer-pump station
-> Estimate: 120 I/O, 3 pump types, 8 screens, 1 report. PLC 160 h, HMI 120 h, FDS 60 h, testing and FAT 60 h, site 100 h, PM 50 h, total 550 h at 150 per hour is 82,500. Add materials and a 10 percent contingency (8,250). The integrator quotes 90,750 fixed for design and build, with site days billed T&M capped at 15,000 because the existing tank farm wiring is unverified. Milestones: 20 percent at FDS approval, 40 percent at FAT sign-off, 30 percent at SAT, 10 percent at the end of warranty.
+> Estimate: 120 I/O, 3 pump types, 8 screens, 1 report. Design and build hours: PLC 160 h, HMI 120 h, FDS 60 h, testing and FAT 60 h, PM 50 h, total 450 h at 150 per hour is 67,500. Add a 10 percent contingency (6,750) and the fixed price for design, build and FAT is 74,250. Site work (commissioning and SAT) is not in that figure. It is estimated separately at 100 h, 15,000 at the same rate, and billed T&M capped at 15,000 because the existing tank farm wiring is unverified. The most the customer pays for labor is 74,250 + 15,000 = 89,250, and each hour is counted once. Milestones on the fixed part: 20 percent at FDS approval, 40 percent at FAT sign-off, 30 percent at SAT, 10 percent at the end of warranty. Panel hardware and field devices are quoted as materials on top.
 
 ## Change orders
 
@@ -161,7 +161,7 @@ Most treehouse arguments happen because the family and the builder pictured diff
     },
     {
       title: "A FAT test step",
-      body: `Step 14. Action: with Pump P-101 in AUTO, force LT-101 below 20 percent. Expected: P-101 starts within 5 s, alarm LAL-101 annunciates at Priority Medium, HMI shows pump running. Reference: FDS 4.2.3. Result: pass or fail, initials, date. Every step traces to a clause, so a failure has an obvious owner.`
+      body: `Step 14. Action: with Pump P-101 in AUTO, force LT-101 above 80 percent. Expected: P-101 starts within 5 s, alarm LAH-101 annunciates at Priority Medium, HMI shows pump running. Reference: FDS 4.2.3. Result: pass or fail, initials, date. Every step traces to a clause, so a failure has an obvious owner.`
     }
   ],
 

@@ -40,7 +40,7 @@ A **{{term:genealogy|genealogy}}** (or "as-built record") is the set of links co
 
 ## The data model
 
-Four tables carry most of what you need.
+A handful of tables carry most of what you need.
 
 \`\`\`sql
 CREATE TABLE material_lot (
@@ -78,9 +78,25 @@ CREATE TABLE unit (
   made_ts    DATETIME2 NOT NULL,
   status     VARCHAR(12) NOT NULL
 );
+
+-- Packing link: which units went into which carton (comes from the packing line)
+CREATE TABLE carton_unit (
+  carton_id  VARCHAR(40) NOT NULL,
+  serial     VARCHAR(40) NOT NULL,
+  PRIMARY KEY (carton_id, serial)
+);
+
+-- Output lot to customer
+CREATE TABLE shipment (
+  id         BIGINT IDENTITY PRIMARY KEY,
+  lot_id     VARCHAR(40) NOT NULL,
+  customer   VARCHAR(40) NOT NULL,
+  ship_date  DATE NOT NULL,
+  pallets    INT NOT NULL
+);
 \`\`\`
 
-\`lot_consumption\` is the heart of it. Every trace is a walk over that table. Add a shipment table (output lot to customer and date) and an events table for inspections and holds, and you have most of a traceability system. Keep rows **append-only**. If a scan was wrong, add a correction record with a reason instead of overwriting the original.
+\`lot_consumption\` is the heart of it. Every trace is a walk over that table. Add an events table for inspections and holds and you have most of a traceability system. Cartons and shipments are separate links: if finished units are boxed, the carton-to-serial map has to come from the packing line, because nothing upstream knows it. Keep rows **append-only**. If a scan was wrong, add a correction record with a reason instead of overwriting the original.
 
 ## Forward and backward trace
 
@@ -97,6 +113,7 @@ WITH RECURSIVE downstream(lot_id, depth) AS (
   SELECT c.output_lot, d.depth + 1
   FROM lot_consumption c
   JOIN downstream d ON c.input_lot = d.lot_id
+  WHERE d.depth < 50              -- guard against a mis-scan that loops back
 )
 SELECT DISTINCT d.lot_id, d.depth, s.customer, s.ship_date
 FROM downstream d
@@ -104,7 +121,7 @@ LEFT JOIN shipment s ON s.lot_id = d.lot_id
 ORDER BY d.depth;
 \`\`\`
 
-(SQL Server omits the \`RECURSIVE\` keyword; the rest is the same.) Swap the join direction to get the backward trace.
+(SQL Server omits the \`RECURSIVE\` keyword; the rest is the same.) The depth guard matters. One mis-scan that links a lot to its own descendant makes the query loop until the database stops it. Pick a limit above your deepest real chain. Swap the join direction to get the backward trace.
 
 ## A worked recall
 
@@ -115,14 +132,18 @@ On Wednesday the resin supplier reports that lot **R-5521** may be contaminated.
 | Consumed | 300 kg into work order WO-701 (Mon), 450 kg into WO-702 (Tue), 250 kg still in the warehouse |
 | WO-701 output | finished lots FG-701A and FG-701B |
 | WO-702 output | finished lot FG-702A |
-| Shipments | FG-701A to Acme (4 pallets), FG-701B to Beta (2 pallets), FG-702A: 3 pallets shipped to Acme, 5 pallets still in the warehouse |
+| Shipments | FG-701A to Customer A (4 pallets), FG-701B to Customer B (2 pallets), FG-702A: 3 pallets shipped to Customer A, 5 pallets still in the warehouse |
 
 The forward trace takes seconds:
 
 1. **Quarantine** the 250 kg of R-5521 in stock. Set its status to HOLD so a scan at the hopper is rejected.
 2. **Find finished goods** made with it: FG-701A, FG-701B, FG-702A.
-3. **Locate them.** 5 pallets of FG-702A are in the warehouse and can be held. 9 pallets are with customers: 4 and 3 at Acme, 2 at Beta.
-4. **Notify** Acme and Beta with the lot codes, quantities and ship dates.
+3. **Locate them.** 5 pallets of FG-702A are in the warehouse and can be held. 9 pallets are with customers: 4 and 3 at Customer A, 2 at Customer B.
+4. **Notify** Customer A and Customer B with the lot codes, quantities and ship dates.
+
+The first check on any recall is a mass balance: **received = consumed + on hand + scrapped + returned**. Here 1,000 kg received = 300 + 450 consumed + 250 on hand, with nothing scrapped or returned, so it balances. A gap means a missing or wrong scan, and you must resolve it before you tell a customer the affected set is complete.
+
+The diagram also shows R-5530 feeding WO-702. That was a top-up of the hopper from a second resin lot during Tuesday's run. It does not change this recall (R-5530 is not suspect) but it does mean FG-702A has two resin parents, and a recall on R-5530 would reach it too.
 
 Without genealogy the plant would have to treat every product made in the window since the lot arrived as suspect. With it, three finished lots are affected. Now notice how granularity changes the answer. If operators scanned the resin lot only when the pallet was received, and the system assumed "all resin used on any line this week came from R-5521", the recall would cover every line. If the hopper was loaded from R-5521 and R-5530 mixed together, both lots link to every output made from that hopper afterward. Record consumption when the material **enters the process**, with a timestamp, and the recall shrinks to what actually happened.
 
@@ -153,7 +174,7 @@ Most traceability work is driven by customers and law, not by curiosity. At awar
 Your job as an integrator is not to interpret regulations. It is to ask early whether Part 11 or another scheme applies, because it changes the design: append-only records, user identity on every action, no shared logins, reason-for-change on edits, and retention periods that may be years.
 
 > [!note] In Ignition and Sepasoft
-> Sepasoft's Track & Trace module is built on the ISA-95 model and covers lot tracking, lot genealogy, serialization of items and sub-assemblies, and WIP inventory. Details are in {{lesson:mes-sepasoft}}. If you build your own, the tables above are a reasonable core, and {{lesson:ign-databases}} covers how to run them from Ignition.
+> Sepasoft's Track & Trace module is built on the ISA-95 model and covers lot tracking and genealogy. Check the module documentation for how your release handles serialized items, sub-assemblies and WIP inventory. Details are in {{lesson:mes-sepasoft}}. If you build your own, the tables above are a reasonable core, and {{lesson:ign-databases}} covers how to run them from Ignition.
 `,
 
   eli5: `
@@ -185,11 +206,11 @@ Lot traceability began with paper batch records and lot codes stamped on contain
   examples: [
     {
       title: "Backward trace from a complaint",
-      body: `Customer Beta reports a cracked housing on a unit from carton 7450-B. The unit table gives serial 000412 in lot FG-701B on WO-701, made Monday 09:14 on Line 2. \`lot_consumption\` for WO-701 shows resin R-5521 and cap lot C-88. Now check whether other units from the same resin and time window were affected. You are looking at hours, not weeks.`
+      body: `Customer B reports a cracked housing on a unit from carton 7450-B. The \`carton_unit\` table (fed by the packing line) gives serial 000412 in lot FG-701B on WO-701, made Monday 09:14 on Line1. \`lot_consumption\` for WO-701 shows resin R-5521 and cap lot C-88. Now check whether other units from the same resin and time window were affected. You are looking at hours, not weeks.`
     },
     {
       title: "Rejecting a bad scan at the hopper",
-      body: `The operator scans a lot at the Line 2 hopper. MES looks up the lot: status HOLD. The screen shows "Lot R-5521 is on HOLD (supplier notice). Do not use." and the consumption record is not written. The PLC's permissive for "material loaded" is not set, so the line cannot start until a valid lot is scanned.`
+      body: `The operator scans a lot at the Line1 hopper. MES looks up the lot: status HOLD. The screen shows "Lot R-5521 is on HOLD (supplier notice). Do not use." and the consumption record is not written. The PLC's permissive for "material loaded" is not set, so the line cannot start until a valid lot is scanned.`
     }
   ],
 
@@ -219,9 +240,9 @@ Lot traceability began with paper batch records and lot codes stamped on contain
   <rect class="dg-box-accent" x="360" y="140" width="110" height="30" rx="4"/>
   <text class="dg-text-sm dg-mid" x="415" y="160">FG-702A</text>
   <rect class="dg-box" x="530" y="50" width="90" height="30" rx="4"/>
-  <text class="dg-text-sm dg-mid" x="575" y="70">Acme</text>
+  <text class="dg-text-sm dg-mid" x="575" y="70">Customer A</text>
   <rect class="dg-box" x="530" y="96" width="90" height="30" rx="4"/>
-  <text class="dg-text-sm dg-mid" x="575" y="116">Beta</text>
+  <text class="dg-text-sm dg-mid" x="575" y="116">Customer B</text>
   <line class="dg-line" x1="130" y1="54" x2="188" y2="64" marker-end="url(#mes-track-trace-ah)"/>
   <line class="dg-line" x1="130" y1="114" x2="188" y2="76" marker-end="url(#mes-track-trace-ah)"/>
   <line class="dg-line" x1="130" y1="64" x2="188" y2="140" marker-end="url(#mes-track-trace-ah)"/>

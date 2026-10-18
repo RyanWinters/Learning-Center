@@ -30,7 +30,7 @@ If you have built Perspective screens from a tag export, you have been downstrea
 
 ## ISA-5.1 tag names
 
-The {{term:isa-5-1|ISA-5.1}} standard (Instrumentation Symbols and Identification) gives each instrument a tag built from letters and a loop number. The first letter is what is measured or initiated. Later letters say what the device does. Read them left to right.
+The {{term:isa-5-1|ISA-5.1}} standard (from ISA, the International Society of Automation; title: Instrumentation Symbols and Identification) gives each instrument a tag built from letters and a loop number. The first letter is what is measured or initiated. Later letters say what the device does. Read them left to right.
 
 | First letter | Measured variable | Later letter | Function |
 |---|---|---|---|
@@ -53,10 +53,13 @@ Examples you can now decode:
 - **PT-205**: a Pressure Transmitter, loop 205.
 - **LSH-310**: Level Switch, High. A discrete contact that closes or opens at a high level.
 - **LAHH-310**: Level Alarm, High-High, the alarm function that goes with it.
-- **TE-402** and **TT-402**: temperature element (the RTD itself) and the transmitter that converts it to 4-20 mA.
+- **TE-402** and **TT-402**: temperature element (the RTD, or resistance temperature detector, itself) and the transmitter that converts it to 4-20 mA.
 - **XV-501** with **ZSO-501** and **ZSC-501**: an on/off valve, with limit switches reporting open and closed.
 
-The letters name functions, not boxes. One physical transmitter may be tagged PT-205 and also feed a PI-205 indication and a PAH-205 alarm; those extra functions show up as extra bubbles or extra I/O rows. Many sites add area or unit prefixes, such as \`2-FIC-101\` or \`U200-LT-001\`. The tag is the common key across the P&ID, I/O list, PLC, historian and HMI, which is why {{lesson:int-naming}} matters so much.
+The letters name functions, not boxes. One physical transmitter may be tagged PT-205 and also feed a PI-205 indication and a PAH-205 alarm; those extra functions show up as extra bubbles or extra I/O rows. Many sites add area or unit prefixes, such as \`2-FIC-101\` or \`U200-LT-001\`. The tag is the common key across the P&ID, I/O list, PLC, historian and HMI (human-machine interface), which is why {{lesson:int-naming}} matters so much.
+
+> [!note] Drawing tag versus code tag
+> On drawings, loop sheets and I/O lists the tag keeps its hyphen: \`FT-101\`, \`FV-101\`, \`LAHH-101\`. In PLC, Ignition, database and MQTT names the hyphen is dropped, because hyphens are not valid in Logix tag names: \`FT101\`, \`FV101\`, \`LAHH101\`. The base letters and loop number stay identical, so the mapping is mechanical. This course writes drawing tags with the hyphen and code tags without it.
 
 ## Bubbles: where does the function live
 
@@ -71,7 +74,7 @@ Each instrument is drawn as a circle ("bubble") with the tag split across two li
 | Circle with a dashed line | Mounted behind the panel, or an auxiliary location, not operator-accessible |
 | Circle in a square | Shared display and shared control, normally a function inside the DCS |
 | Hexagon | Computer function |
-| Diamond in a square | PLC or other programmable logic function |
+| Diamond in a square | PLC (programmable logic controller) or other programmable logic function (as in the common ISA-5.1 legend; confirm on the project legend) |
 
 Drawing conventions vary between companies and eras, and the no-line case in particular is read differently on older drawings. Always check the legend sheet at the front of the set before trusting a symbol.
 
@@ -94,24 +97,24 @@ The I/O list is built by walking the P&ID, instrument by instrument, and asking 
 
 | Type | Direction | Example | Typical signal |
 |---|---|---|---|
-| AI | Field to controller, analog | FT-101 flow | 4-20 mA (see {{lesson:found-signals}}) |
-| AO | Controller to field, analog | FV-101 position command | 4-20 mA |
-| DI | Field to controller, discrete | LSH-310 high level, pump running | 24 VDC contact |
-| DO | Controller to field, discrete | Pump P-101 start, horn | Relay or 24 VDC |
+| AI (analog input) | Field to controller, analog | FT-101 flow | 4-20 mA (see {{lesson:found-signals}}) |
+| AO (analog output) | Controller to field, analog | FV-101 position command | 4-20 mA |
+| DI (discrete input) | Field to controller, discrete | LSH-310 high level, pump running | 24 VDC contact |
+| DO (discrete output) | Controller to field, discrete | Pump P-101 start, horn | Relay or 24 VDC |
 
 > [!example] One loop and one pump, as rows
 > Loop 101 and pump P-101 produce these rows:
 >
-> | Tag | Description | Type | Signal | Range | Scale |
-> |---|---|---|---|---|---|
-> | FT-101 | Feed flow | AI | 4-20 mA, 2-wire | 0-120 m3/h | 4 mA = 0 |
-> | FV-101 | Feed valve command | AO | 4-20 mA | 0-100% | 4 mA = closed |
-> | ZSC-101 | FV-101 closed | DI | 24 VDC | open = not closed | |
-> | LSH-310 | Tank high level | DI | 24 VDC, fail-safe | NC contact | opens in alarm |
-> | P101-RUN | Pump P-101 run command | DO | Relay | | |
-> | P101-RUNFB | Pump running feedback | DI | 24 VDC | | |
-> | P101-FLT | Pump fault | DI | 24 VDC | | |
-> | P101-REM | Pump in remote | DI | 24 VDC | | |
+> | Drawing tag | PLC tag | Description | Type | Signal | Range | Scale |
+> |---|---|---|---|---|---|---|
+> | FT-101 | FT101 | Feed flow | AI | 4-20 mA, 2-wire | 0-120 m3/h | 4 mA = 0 |
+> | FV-101 | FV101 | Feed valve command | AO | 4-20 mA | 0-100% | 4 mA = closed |
+> | ZSC-101 | ZSC101 | FV-101 closed | DI | 24 VDC | open = not closed | |
+> | LSH-310 | LSH310 | Tank high level | DI | 24 VDC, fail-safe | NC contact | opens in alarm |
+> | P-101 | P101_RunCmd | Pump P-101 run command | DO | Relay | | |
+> | P-101 | P101_RunFb | Pump running feedback | DI | 24 VDC | | |
+> | P-101 | P101_Fault | Pump fault | DI | 24 VDC | | |
+> | P-101 | P101_Remote | Pump in remote | DI | 24 VDC | | |
 >
 > That is 1 AI, 1 AO, 5 DI and 1 DO from one loop and one pump.
 
@@ -119,7 +122,18 @@ Real I/O lists add columns for rack, slot and channel; the PLC tag or address; e
 
 ### Counting cards
 
-Totals drive the hardware bill. If the list gives 64 AI, 24 AO, 180 DI and 90 DO, and the cards are 16-channel analog inputs, 8-channel analog outputs, and 32-channel discrete cards, then you need 4 AI cards, 3 AO cards, 6 DI cards and 3 DO cards, plus spare capacity. Common practice is 15 to 20 percent installed spare channels and slot space for future cards, because adding a rack after panel build costs far more than a few unused terminals.
+Totals drive the hardware bill. If the list gives 64 AI, 24 AO, 180 DI and 90 DO, and the cards are 16-channel analog inputs, 8-channel analog outputs, and 32-channel discrete cards, then the bare minimum is 4 AI cards, 3 AO cards, 6 DI cards and 3 DO cards. That leaves no room to grow, so apply the spare rule first. This lesson uses 15 percent installed spare channels, plus slot space for future cards, because adding a rack after panel build costs far more than a few unused terminals (some sites ask for 20 percent; follow the project specification).
+
+Required channels = points x 1.15, rounded up. Cards = required channels / channels per card, rounded up.
+
+| Type | Points | With 15% spare | Card size | Cards | Spare channels left |
+|---|---|---|---|---|---|
+| AI | 64 | 74 | 16 | 5 | 16 (25%) |
+| AO | 24 | 28 | 8 | 4 | 8 (33%) |
+| DI | 180 | 207 | 32 | 7 | 44 (24%) |
+| DO | 90 | 104 | 32 | 4 | 38 (42%) |
+
+Without spare, 180 DI would fit on 6 cards (192 channels), only 6.7 percent spare. The seventh card is what the rule buys. Rounding up to whole cards always gives at least the target, and often much more.
 
 {{diagram:flow}}
 
@@ -161,7 +175,7 @@ A loop sheet is the page of instructions for one single wire, from the gadget in
   examples: [
     {
       title: "Catching a missing signal in the P&ID review",
-      body: `A P&ID shows a transfer pump P-210 with a dashed line from a control-room hand switch bubble (HS-210) to the pump, but no running feedback bubble. The I/O list has a run command and no running status. In code, the HMI would show "Running" the moment the PLC commands the output, whether the contactor pulled in or not. Raising it in review costs one email and one DI channel. Finding it at SAT, with the pump seized, costs a night shift.`
+      body: `A P&ID shows a transfer pump P-210 with a dashed line from a control-room hand switch bubble (HS-210) to the pump, but no running feedback bubble. The I/O list has a run command and no running status. In code, the HMI would show "Running" the moment the PLC commands the output, whether the contactor pulled in or not. Raising it in review costs one email and one DI channel. Finding it at SAT (site acceptance test), with the pump seized, costs a night shift.`
     },
     {
       title: "Reading an unfamiliar tag in the field",
@@ -254,10 +268,10 @@ A loop sheet is the page of instructions for one single wire, from the gadget in
       options: ["They are on the same pipe", "They share a loop number, so they belong to one loop", "They connect to the same I/O card", "They are all field-mounted"],
       answer: 1,
       explain: [
-        "They may be in different places. The loop number ties the functions, not the piping.",
-        "Correct. A shared number across different first and succeeding letters indicates the transmitter, controller and valve of one loop.",
-        "Card assignment comes from the I/O list. The FIC is a controller function and has no card channel of its own.",
-        "The FIC is probably a DCS or PLC function, drawn with a different bubble."
+        "Wrong. They may sit in different places. The loop number ties the functions together, not the piping.",
+        "Correct. The shared loop number ties FT, FIC and FV to one loop, whatever their letters.",
+        "Wrong. Card assignment comes from the I/O list. The FIC is a controller function and has no card channel of its own.",
+        "Wrong. The FIC is probably a DCS or PLC function, drawn with a different bubble, while the FT and FV are field devices."
       ]
     },
     {

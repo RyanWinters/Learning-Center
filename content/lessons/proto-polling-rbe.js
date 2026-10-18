@@ -22,7 +22,7 @@ LC.lesson({
 
 ## Worked example: 10,000 tags
 
-Assume a remote site with 10,000 tags on a cellular modem. Both designs need a way to count bytes, so use these round numbers, which are realistic once headers and acknowledgments are averaged over batched messages:
+Assume a remote site with 10,000 tags on a cellular modem. Both designs need a way to count bytes, so use these round numbers. They are planning assumptions, not measurements: replace them with values measured on your own link.
 
 - Polled read: about **20 bytes per tag per cycle** (request share, reply, header overhead, batched).
 - RBE update: about **30 bytes per changed tag** (name or alias, value, timestamp, header share). It is larger per tag because each message carries a timestamp and identity.
@@ -37,7 +37,7 @@ Assume a remote site with 10,000 tags on a cellular modem. Both designs need a w
 | Per day | about 17.3 GB | about 518 MB |
 | Per 30 days | about 518 GB | about 15.5 GB |
 
-RBE uses roughly **one thirty-third** of the data. Even if the break-even is closer, with 100% of tags changing, RBE would cost 1.5 times polling here because of the larger message. RBE wins only when most tags are quiet most of the time. Process data usually is, since a tank level, a setpoint or a pump state holds still for minutes.
+RBE uses roughly **one thirty-third** of the data. The break-even is exact: with these sizes RBE is cheaper while fewer than about two-thirds of tags change in a cycle (20 / 30). At 100% of tags changing it costs 1.5 times polling because each update is larger. RBE wins when most tags are quiet most of the time. Process data usually is, since a tank level, a setpoint or a pump state holds still for minutes.
 
 ### The latency side
 
@@ -52,7 +52,9 @@ RBE latency is the time to detect the change at the source (its scan, perhaps 10
 
 If RBE sends on any change, a noisy analog signal that flickers in the last decimal place changes every scan, and you have rebuilt polling with more overhead. A **{{term:deadband|deadband}}** says "don't report unless the value moved by at least this much since the last reported value."
 
-For a pressure of 100.0 PSI with a 0.5 PSI deadband, readings of 100.1, 100.3 and 99.8 are all silent. A reading of 100.6 triggers a report, and 100.6 becomes the new reference. Typical choices are 0.5 to 2% of span for process values. Counters and states use no deadband, since any change matters.
+For a pressure of 100.0 PSI with a 0.5 PSI deadband, readings of 100.1, 100.3 and 99.8 are all silent. A reading of 100.6 triggers a report, and 100.6 becomes the new reference. A common starting point is a small percentage of span for process values, but pick it from the measured noise and the process owner's needs (see the examples below). Counters and states use no deadband, since any change matters.
+
+**Quality and state changes bypass the deadband.** A value that stays at 100.0 while its quality goes Bad is still a report, because the consumer must learn the reading is no longer trustworthy. The same applies to alarm and status changes. If you also compress data in the historian, remember that an edge deadband and historian compression filter the same signal twice, so tune them together (see {{lesson:ign-historian}}).
 
 | Deadband | Effect |
 |---|---|
@@ -66,7 +68,7 @@ Many systems also add a **maximum interval** (a heartbeat, such as one report ev
 
 In polling, a missing reply is obvious: the poll times out and the tag goes bad. In RBE, silence has two meanings, "nothing changed" and "the source is dead," and nothing in the silence tells you which. Defenses, from weakest to strongest:
 
-1. **Heartbeat or maximum interval.** Every value or a status tag is republished at least every N seconds. A consumer that hears nothing for 2 to 3 intervals marks the tag stale.
+1. **Heartbeat or maximum interval.** Every value or a status tag is republished at least every N seconds. A consumer that hears nothing for a few intervals (choose the count to suit your link, for example 2 to 3) marks the tag stale.
 2. **Connection state.** MQTT keep-alive and a {{term:last-will|Last Will}} message announce a vanished client.
 3. **Explicit state messages.** Sparkplug's births and deaths, and DNP3's quality flags such as "communications lost," give each tag a defined state.
 4. **Periodic full refresh.** DNP3's integrity poll or a Sparkplug rebirth resynchronizes the consumer, which repairs any lost event.
@@ -88,7 +90,7 @@ Cellular and satellite links bill by the megabyte, have high and variable latenc
 The pattern most integrators land on: **poll locally, report by exception across the expensive link.** The edge gateway talks Modbus or EtherNet/IP to devices at fixed rates, applies deadbands, and publishes changes upstream with a heartbeat.
 
 > [!note] Ignition's subscription model
-> Ignition tags are not polled by Vision or Perspective. The tag system subscribes to the OPC UA driver with a rate, and the driver polls the device at that rate. The OPC UA subscription itself only sends data that changed, subject to a deadband on analog values. So you have polling on the device side and RBE on the client side of one gateway.
+> Ignition tags are not polled by Vision or Perspective. The tag system subscribes to the OPC UA driver with a rate, and the driver polls the device at that rate. The OPC UA subscription itself reports changes rather than every sample, and a deadband can be applied to analog values depending on the tag settings. Check the Ignition manual for your version for the exact options. So you have polling on the device side and RBE on the client side of one gateway.
 `,
 
   eli5: `

@@ -54,7 +54,7 @@ The switch builds that table by itself:
 2. If the destination MAC is already in the table, the frame is sent out only that port.
 3. If the destination is unknown, the switch **floods** it out every port except the one it came in on.
 4. If the frame is a broadcast, the switch floods it as well.
-5. Entries age out after a few minutes of silence (300 seconds is a common default), so the table adapts when a cable is moved.
+5. Entries age out after a few minutes of silence (the aging time is configurable, so check your switch manual for its default), so the table adapts when a cable is moved.
 
 > [!example] A frame crosses a switch
 > The Ignition gateway (MAC \`AA\`, port 1) pings a PLC (MAC \`BB\`, port 5) for the first time. The ARP request is a broadcast, so the switch floods it. The PLC replies from port 5, so the switch learns "BB is on port 5". From then on, frames between \`AA\` and \`BB\` go only between ports 1 and 5, and the other ports never see them.
@@ -117,7 +117,7 @@ Fiber ports on industrial switches use pluggable **SFP** modules, so one switch 
 
 ## Speed, duplex and auto-negotiation
 
-Ethernet links run at 10, 100, 1000 Mbps (and up). Each end can also run **full duplex** (both directions at once) or half duplex. {{term:auto-negotiation|Auto-negotiation}} lets the two ends advertise what they can do and pick the best match. Gigabit requires auto-negotiation by the standard.
+Ethernet links run at 10, 100, 1000 Mbps (and up). Each end can also run **full duplex** (both directions at once) or half duplex. {{term:auto-negotiation|Auto-negotiation}} lets the two ends advertise what they can do and pick the best match. For gigabit over copper (1000BASE-T) the standard requires auto-negotiation, so you cannot hard-set it the way you can at 100 Mbps. Fiber links (SX/LX) work differently.
 
 ### The duplex mismatch story
 
@@ -135,7 +135,7 @@ Rules that avoid the problem:
 
 ## Putting it together in Ignition-world
 
-When an Ignition gateway cannot reach a device, a layer 2 view helps. Can the gateway's switch port see the device's MAC in its table? Does the port show a link and the expected speed and duplex? Are error counters climbing? Those answers come before IP configuration. Managed industrial switches such as the Stratix family also let you see port status from Studio 5000 or a web page, so you can diagnose a remote cabinet without opening it.
+When an Ignition gateway cannot reach a device, a layer 2 view helps. Can the gateway's switch port see the device's MAC in its table? Does the port show a link and the expected speed and duplex? Are error counters climbing? Those answers come before IP configuration. Many managed industrial switches also let you see port status from a web page, and some Rockwell switches integrate with Studio 5000 (check your model's manual), so you can diagnose a remote cabinet without opening it.
 `,
 
   eli5: `

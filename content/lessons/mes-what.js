@@ -27,9 +27,9 @@ If you build {{term:perspective|Perspective}} screens today, you already touch L
 In the {{term:purdue-model|Purdue model}} (see {{lesson:found-purdue}}), Levels 0 to 2 are sensing, control and supervision. Level 4 is business planning. Level 3 is **manufacturing operations management**. {{term:isa-95|ISA-95}} (also published as IEC 62264) is the standard family that defines the boundary between Levels 3 and 4 and the activities inside Level 3.
 
 - **Part 1** gives models and terminology.
-- **Part 2** defines object models and attributes for the information exchanged.
+- **Part 2** defines object models and attributes for the information exchanged across the Level 3/4 boundary.
 - **Part 3** is the activity model for manufacturing operations management. This is the lesson.
-- **Part 4** covers the object models and attributes used to exchange data between Part 3 activities.
+- **Part 4** defines object models and attributes for the operations-management activities themselves (for example schedules, performance and work records). Part numbering and scope have changed between editions, so check the edition you are working from.
 
 ## The four operations categories
 
@@ -54,7 +54,7 @@ For each category, Part 3 describes a set of generic activities. Think of them a
 |---|---|---|
 | Definition management | What is the product and how do we make it? | Recipe, bill of materials, routing |
 | Resource (capability) management | What do we have available to do it? | Which lines are up, which operators are qualified, how much material |
-| Detailed scheduling | Who does what, and when? | Sequence of work orders on Line 3 |
+| Detailed scheduling | Who does what, and when? | Sequence of work orders on Line1 |
 | Dispatching | Release specific work to a resource | Operator sees the next order on the HMI |
 | Execution management | Run the work in the right order | Steps, interlocks, holds |
 | Data collection | What was measured and counted? | Counts, temperatures, scans, operator entries |
@@ -64,7 +64,7 @@ For each category, Part 3 describes a set of generic activities. Think of them a
 The last box feeds the first: analysis tells you the ideal cycle time you assumed is wrong, so definition management changes the product's standard rate. Most of the other lessons in this track dive into one or two of these boxes: {{lesson:mes-oee}} and {{lesson:mes-downtime}} are data collection and analysis, {{lesson:mes-track-trace}} is tracking, {{lesson:mes-batch}} is execution management for recipe-driven processes.
 
 > [!example] One order through the loop
-> ERP releases work order WO-48213: 10,000 units of SKU 7750, ship Friday. **Definition** supplies the recipe and bill of materials. **Resource management** confirms Line 2 is available and the resin lots are on hand. **Scheduling** puts the order on Line 2 Tuesday. **Dispatching** pushes it to the Line 2 operator screen. **Execution** runs it. **Data collection** records counts, rejects and downtime from the PLC. **Tracking** links finished pallets to the resin lots. **Analysis** reports 9,640 good units and OEE of 71 percent, and that goes back to ERP as actuals.
+> ERP releases work order WO-48213: 10,000 units of SKU 7750, ship Friday. **Definition** supplies the recipe and bill of materials. **Resource management** confirms Line1 is available and the resin lots are on hand. **Scheduling** puts the order on Line1 Tuesday. **Dispatching** pushes it to the Line1 operator screen. **Execution** runs it. **Data collection** records counts, rejects and downtime from the PLC. **Tracking** links finished pallets to the resin lots. **Analysis** reports 9,640 good units and OEE of 71 percent, and that goes back to ERP as actuals.
 
 ## The MESA-11 view
 
@@ -204,7 +204,7 @@ MESA International published its list of eleven MES functions in the 1990s, and 
 
   quiz: [
     {
-      q: "An operator needs to see the next work order for Line 2 on a screen when the previous one completes. Which ISA-95 activity is this?",
+      q: "An operator needs to see the next work order for Line1 on a screen when the previous one completes. Which ISA-95 activity is this?",
       options: ["Definition management", "Dispatching", "Tracking", "Performance analysis"],
       answer: 1,
       explain: [

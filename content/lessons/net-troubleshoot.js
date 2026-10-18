@@ -36,20 +36,20 @@ When something does not connect, the temptation is to try things. A better habit
 \`\`\`text
 C:\\> ipconfig /all
 Ethernet adapter Plant:
-   IPv4 Address. . . . . : 10.10.30.5
+   IPv4 Address. . . . . : 10.20.30.10
    Subnet Mask . . . . . : 255.255.255.0
-   Default Gateway . . . : 10.10.30.1
-   DNS Servers . . . . . : 10.10.30.2
+   Default Gateway . . . : 10.20.30.1
+   DNS Servers . . . . . : 10.20.30.2
 \`\`\`
 
-Check your own address and mask first. A laptop at 192.168.1.50 cannot reach a PLC at 10.10.10.10 without a router, and a 169.254.x.x address means DHCP failed. Computers with two network cards often use the wrong one. Check which adapter is on the plant network.
+Check your own address and mask first. A laptop at 192.168.1.50 cannot reach a PLC at 10.20.10.10 without a router, and a 169.254.x.x address means DHCP failed. Computers with two network cards often use the wrong one. Check which adapter is on the plant network.
 
 ### ping: is anything there?
 
-\`ping 10.10.10.10\` sends ICMP echo requests. A reply means layers 1 to 3 work. No reply does **not** prove the device is down: some devices and firewalls ignore ping. Useful variations:
+\`ping 10.20.10.10\` sends ICMP echo requests. A reply means layers 1 to 3 work. No reply does **not** prove the device is down: some devices and firewalls ignore ping. Useful variations:
 
-- \`ping -t 10.10.10.10\` runs continuously, so you can wiggle a cable and watch.
-- \`ping -l 1472 -f 10.10.10.10\` sends a full-size packet with the "do not fragment" flag, to find MTU problems.
+- \`ping -t 10.20.10.10\` runs continuously, so you can wiggle a cable and watch.
+- \`ping -l 1472 -f 10.20.10.10\` sends a full-size packet with the "do not fragment" flag, to find MTU problems.
 - Read the reply text. "Destination host unreachable" from your own address means no route or ARP failure. "Request timed out" means no answer.
 
 ### arp -a: did layer 2 find it?
@@ -60,7 +60,7 @@ A MAC address that belongs to a different device than expected is the signature 
 
 ### tracert: where does it stop?
 
-\`tracert 10.20.1.10\` lists each router hop. Where it stops showing replies is the hop to investigate. A trace that dies at the first hop means your default gateway is wrong or down. If only the last hop fails, the target or its firewall is the issue.
+\`tracert 10.20.250.20\` lists each router hop. Where it stops showing replies is the hop to investigate. A trace that dies at the first hop means your default gateway is wrong or down. If only the last hop fails, the target or its firewall is the issue.
 
 ### nslookup: name versus address
 
@@ -75,9 +75,9 @@ A MAC address that belongs to a different device than expected is the signature 
 Ping tells you about ICMP. Most industrial failures are about a TCP port. In PowerShell:
 
 \`\`\`text
-PS> Test-NetConnection 10.10.10.10 -Port 44818
+PS> Test-NetConnection 10.20.10.10 -Port 44818
 
-ComputerName     : 10.10.10.10
+ComputerName     : 10.20.10.10
 RemotePort       : 44818
 TcpTestSucceeded : True
 \`\`\`
@@ -106,7 +106,7 @@ Two kinds of filters exist and use different syntax. A **capture filter** limits
 | Modbus TCP | \`tcp port 502\` | \`tcp.port == 502\` or \`modbus\` |
 | EtherNet/IP explicit | \`port 44818\` | \`enip\` or \`tcp.port == 44818\` |
 | CIP content | \`port 44818 or udp port 2222\` | \`cip\` |
-| One device | \`host 10.10.10.10\` | \`ip.addr == 10.10.10.10\` |
+| One device | \`host 10.20.10.10\` | \`ip.addr == 10.20.10.10\` |
 | Slow or broken TCP | not available | \`tcp.analysis.flags\` |
 | ARP only | \`arp\` | \`arp\` |
 
@@ -115,7 +115,7 @@ The Modbus dissector only decodes port 502 by default. If a gateway uses another
 ### What to look for
 
 - **TCP SYN with no reply** (or a reset): the port is blocked or closed.
-- **Modbus exception responses**: filter \`modbus.func_code > 128\` to see error replies.
+- **Modbus exception responses**: error replies set the top bit of the function code, so a filter such as \`modbus.func_code > 128\` finds them. Field names can differ between Wireshark versions, so check the Modbus dissector fields if the filter matches nothing.
 - **Retransmissions and long gaps**: \`tcp.analysis.retransmission\`. They point at packet loss or an overloaded device.
 - **Response time**: right-click a request and apply the time between request and reply as a column. A slow device shows 500 ms where a healthy one shows 5 ms.
 
@@ -128,22 +128,22 @@ On a switch, a PC only sees traffic addressed to it, to broadcast, and to multic
 Capture on a mirrored port for a short time, and never leave a mirror configured. If the destination is a busy port, mirrored traffic can exceed the link and drop packets. For a permanent tap, use a hardware network tap.
 
 > [!warning] Capturing on a live control network
-> Wireshark on a mirror port is passive and safe. Do not plug an unmanaged laptop with DHCP or discovery tools into a control VLAN. Get the switch config right first, and follow your site's rules.
+> Wireshark on a mirror port is passive and safe. On Windows, Wireshark needs Npcap installed for live capture. Do not plug an unmanaged laptop with DHCP or discovery tools into a control VLAN. Also avoid active scanning there. Port scans and address sweeps can exhaust the small number of TCP connection slots on older PLCs and drives and drop real I/O connections. Test only the one port you need (for example with Test-NetConnection), and prefer a passive capture on a mirror. Get the switch config right first, and follow your site's rules.
 
 ## The story: "The HMI can't see the PLC"
 
-An operator reports that the HMI on the packaging line shows comm-fail on every tag. The PLC is a CompactLogix at 10.10.10.10, the HMI at 10.10.10.50, the gateway at 10.10.30.5. Work through it in order:
+An operator reports that the HMI on the packaging line shows comm-fail on every tag. The PLC is PLC1, a CompactLogix at 10.20.10.10 (VLAN 10), the HMI is at 10.20.20.50 (VLAN 20), and the Ignition master is at 10.20.30.10. Work through it in order:
 
-1. **Physical.** The HMI's link light is on, and the PLC's switch port shows green. No change was made at the panel today.
-2. **ipconfig on the HMI.** It shows 10.10.10.50 / 255.255.255.0 and gateway 10.10.10.1. Correct.
-3. **ping 10.10.10.10.** Replies in under 1 ms. Layers 1 to 3 are working between the HMI and the PLC.
-4. **arp -a.** 10.10.10.10 maps to the right Rockwell MAC. No duplicate IP.
-5. **Test-NetConnection 10.10.10.10 -Port 44818.** \`TcpTestSucceeded : True\`. The PLC accepts connections.
+1. **Physical.** The HMI's link light is on, and the PLC's switch port shows green. Read the port itself too: speed and duplex should match what you expect, and the error counters (CRC, late collisions, drops) should not be climbing. A port stuck at 10 Mbps half duplex or a growing CRC count explains intermittent faults (see {{lesson:net-ethernet}}). Here the counters are clean.
+2. **ipconfig on the HMI.** It shows 10.20.20.50 / 255.255.255.0 and gateway 10.20.20.1. Correct.
+3. **ping 10.20.10.10.** Replies in about 1 ms. Layers 1 to 3 are working between the HMI and the PLC, across the router.
+4. **arp -a.** The gateway 10.20.20.1 has an entry with the router's MAC. The PLC itself does not appear, because it is on another subnet and the HMI only ARPs for its gateway. No duplicate entries.
+5. **Test-NetConnection 10.20.10.10 -Port 44818.** \`TcpTestSucceeded : True\`. The PLC accepts connections.
 
 So the HMI reaches the PLC, yet tags show comm-fail. The network is fine and the problem is above it. Check the application layer:
 
-6. **Driver diagnostics.** The HMI's driver is configured for 10.10.10.11 (a typo from last week's edit). The driver is trying to reach an address nobody owns.
-7. **Wireshark** on the HMI, filter \`ip.addr == 10.10.10.11\`: you see only ARP requests with no reply, which is what a nonexistent host looks like on the wire.
+6. **Driver diagnostics.** The HMI's driver is configured for 10.20.10.12 (a typo from last week's edit). The driver is trying to reach an address nobody owns.
+7. **Wireshark** on the HMI, filter \`ip.addr == 10.20.10.12\`: you see TCP SYNs going out with no reply, which is what a nonexistent host looks like on the wire.
 
 The fix is a one-character address change in the driver, confirmed by a filter of \`enip\` showing the session register request and reply. The lesson: ping success only excludes layers 1 to 3. Each test removed a whole category of causes, and the capture proved the cause without guessing.
 
@@ -177,11 +177,11 @@ Ping was written by Mike Muuss in 1983 and named after the sound of sonar. The t
   examples: [
     {
       title: "Ping works, Modbus doesn't",
-      body: `A power meter at 10.10.50.20 replies to ping in 2 ms, but Ignition shows bad quality. \`Test-NetConnection 10.10.50.20 -Port 502\` returns \`TcpTestSucceeded : False\`. The meter has its Modbus TCP server disabled in the front-panel menu, and the setting reverted after a firmware update. Enabling it fixes the tags.`
+      body: `A power meter at 10.20.10.20 replies to ping in 2 ms, but Ignition shows bad quality. \`Test-NetConnection 10.20.10.20 -Port 502\` returns \`TcpTestSucceeded : False\`. The meter has its Modbus TCP server disabled in the front-panel menu, and the setting reverted after a firmware update. Enabling it fixes the tags.`
     },
     {
       title: "Finding a duplicate IP",
-      body: `Ping to a drive at 10.10.10.30 succeeds 3 times out of 4. \`arp -a\` shows the MAC for that IP alternating between 5c:88:16:aa:01:02 and a different vendor's address. A newly installed camera was given the same address. Changing the camera's IP restores stable ping and the drive's connection stops dropping.`
+      body: `Ping to a drive at 10.20.10.130 succeeds 3 times out of 4. \`arp -a\` shows the MAC for that IP alternating between 5c:88:16:aa:01:02 and a different vendor's address. A newly installed camera was given the same address. Changing the camera's IP restores stable ping and the drive's connection stops dropping.`
     }
   ],
 

@@ -61,8 +61,8 @@ A {{term:flex-repeater|flex repeater}} makes N embedded views from a list. Its c
     "elementPosition": { "basis": "300px", "grow": 1, "shrink": 0 },
     "instances": [
       { "tagPath": "[default]Plant1/Area10/Line1/M101" },
-      { "tagPath": "[default]Plant1/Area2/Pump2" },
-      { "tagPath": "[default]Plant1/Area2/Fan1" }
+      { "tagPath": "[default]Plant1/Area10/Line1/M102" },
+      { "tagPath": "[default]Plant1/Area10/Line1/M103" }
     ]
   }
 }
@@ -86,7 +86,7 @@ def transform(self, value, quality, timestamp):
     return [{"tagPath": p} for p in value]
 \`\`\`
 
-When the list changes, the repeater adds or removes instances. Keep the instance objects stable (same keys, same order) so Perspective can reuse instances instead of rebuilding all of them.
+When the list changes, the repeater adds or removes instances. Keep the instance objects stable (same keys, same order) where you can. The advanced section below explains why this matters and what to measure.
 
 ## The view canvas
 
@@ -99,19 +99,19 @@ Here is the move that makes templates scale. Do not pass a tile ten params (\`ru
 \`\`\`text
 Param:   tagPath = [default]Plant1/Area10/Line1/M101
 Bindings (indirect, {1} = {view.params.tagPath}):
-   {1}/Run        -> run state
-   {1}/Speed      -> speed
-   {1}/Fault      -> fault
-   {1}/Config/Name -> title
+   {1}/Sts/Running     -> run state
+   {1}/Sts/Speed       -> speed
+   {1}/Sts/Fault       -> fault
+   {1}/Cfg/Description -> title
 \`\`\`
 
 Why one param? Because the UDT *guarantees* the members exist with those names ({{lesson:ign-udts}}). Adding a member to the UDT makes it available to every instance. And a caller only needs to know the instance path. The cost is that the tile depends on the UDT's shape, so document the type it expects in the view's description.
 
 ## Worked example: a motor tile from a UDT
 
-Assume a \`Motor\` UDT with members \`Run\` (bool), \`Speed\` (float, Hz), \`Fault\` (bool), \`Config/Name\` (string), and instances under \`[default]Plant1/Area2\`.
+Assume the house \`Motor\` UDT definition: folders \`Cmd\`, \`Sts\`, \`Cfg\` and \`Alm\`, with \`Sts/Running\`, \`Sts/Speed\`, \`Sts/Fault\` and \`Cfg/Description\`, and instances under \`[default]Plant1/Area10/Line1\`.
 
-**1. Create the tile view** \`Tiles/MotorTile\`, flex column root. Declare one input param:
+**1. Create the tile view** \`Tiles/MotorTile\`, flex column root. Declare one input param. (The JSON in this lesson shows the shape for orientation. Export a view from your own Gateway to see the exact keys for your version.)
 
 \`\`\`json
 "params": { "tagPath": "" },
@@ -127,7 +127,7 @@ Assume a \`Motor\` UDT with members \`Run\` (bool), \`Speed\` (float, Hz), \`Fau
       "type": "tag",
       "config": {
         "mode": "indirect",
-        "tagPath": "{1}/Config/Name",
+        "tagPath": "{1}/Cfg/Description",
         "references": { "1": "{view.params.tagPath}" }
       }
     }
@@ -135,7 +135,7 @@ Assume a \`Motor\` UDT with members \`Run\` (bool), \`Speed\` (float, Hz), \`Fau
 }
 \`\`\`
 
-For the status badge, bind two view custom props straight to the tags, each with an indirect tag binding (\`custom.run\` to \`{1}/Run\`, \`custom.fault\` to \`{1}/Fault\`, with \`{1}\` = \`{view.params.tagPath}\`). Then add a third custom prop, \`custom.stateCode\`, with an expression binding:
+For the status badge, bind two view custom props straight to the tags, each with an indirect tag binding (\`custom.run\` to \`{1}/Sts/Running\`, \`custom.fault\` to \`{1}/Sts/Fault\`, with \`{1}\` = \`{view.params.tagPath}\`). Then add a third custom prop, \`custom.stateCode\`, with an expression binding:
 
 \`\`\`text
 if({view.custom.fault}, 2, if({view.custom.run}, 1, 0))
@@ -148,7 +148,7 @@ Then map 0, 1, 2 on the badge's style binding to the style classes stopped, runn
 **4. Use it in a repeater** on a plant overview. Bind \`instances\` to a query:
 
 \`\`\`sql
-SELECT '[default]Plant1/Area2/' + name AS tagPath
+SELECT '[default]Plant1/Area10/Line1/' + name AS tagPath
 FROM equipment WHERE area = :area AND type = 'Motor' ORDER BY name
 \`\`\`
 
@@ -162,6 +162,38 @@ FROM equipment WHERE area = :area AND type = 'Motor' ORDER BY name
 - **One binding is cheap, thousands are not.** A tile with 15 bindings times 300 instances is 4,500 live subscriptions per session. Use tag groupings (one structure binding) and shrink the tile.
 - **Input params are the contract.** Changing a param name breaks every embedding. Treat param names as an API.
 - **Output flows up one level.** A grandparent cannot read the grandchild directly. Pass through each layer, or use a session prop or message handler for cross-cutting values.
+## If you already build Perspective
+
+The pattern above is the easy half. These are the parts that decide whether 40 tiles feel instant or sluggish.
+
+### What rebinding an instance costs
+
+When a repeater's \`instances\` value changes, Perspective has to decide what to do with each embedded instance. Do not assume it matches instances by identity. Assume an instance whose params changed re-resolves its bindings, and one whose position in the list changed may be treated as a different instance. The practical rules, to confirm on your version by watching tag subscriptions in the Gateway status pages:
+
+- Keep the list stable. Sort in the query (\`ORDER BY name\`), not in a transform that can reorder between polls.
+- Do not rebuild the list from a polled query unless the content changed. Bind \`instances\` to a view custom prop and write it only when the new list differs (compare in a change script).
+- Never put a volatile field (a live value, a timestamp) in an instance object. It makes every instance look new on every update. Pass identity only and let the child bind its own values.
+
+### In and out param timing
+
+Params are not a function call. The parent writes an input param, the child's bindings re-resolve, and values arrive later. An output param is written by the child after its own bindings settle, so the parent sees an empty or default value first. Do not enable a parent action off an output param without handling the initial default. Prefer a message to the parent or a session prop for events ("tile selected"), and keep output params for state ("isValid").
+
+### onStartup scripts multiply
+
+A view \`onStartup\` script, or a component script that runs at load, runs once per instance. Forty tiles means forty runs at page load, on the Gateway. Move one-time work to the parent, and pass results as a param, or compute once in a UDT expression tag. See {{lesson:persp-bindings}}.
+
+### Large lists need paging
+
+Past a few dozen tiles, the cost is not the repeater itself but the sum of the tile bindings times the session count. Page the list (a \`custom.page\` and a slice in the query), or switch from tiles to a table with one row per asset and open a faceplate on click. A table binds once and renders rows. Choose tiles when each asset needs live graphics, and tables when the operator is scanning for exceptions.
+
+### View canvas versus repeater
+
+Use a repeater for N copies of one view driven by data. Use a view canvas when the set of different views is the state, such as user-arranged panels. The canvas gives up flex layout for explicit positions, so size and position become your problem.
+
+### Contract tests for a tile
+
+Before releasing a tile to a library, run it with: an empty \`tagPath\`, a path that does not exist, a path to a different UDT type, and a very long description. A good tile shows "---" or an explicit "no tag" state in all four, and never throws errors in the Gateway log. A tile that fails this will fail in production on the first typo in a query.
+
 `,
 
   eli5: `
@@ -175,7 +207,7 @@ The trick that makes it work is handing the card only one clue, the machine's ad
   why: `
 **Why one path param instead of many?** A tile that takes \`running\`, \`speed\` and \`fault\` as params pushes all the plumbing to the caller. Every screen that uses the tile has to bind three things per motor, and adding a fourth value means editing every caller. Passing the instance path moves the knowledge into the tile and the UDT, where it belongs. The tradeoff is coupling: the tile now assumes a UDT shape. The counter-argument, which some architects hold, is that tiles taking plain values are easier to test and reuse across non-UDT sources. Both camps use the path pattern for anything that mirrors a UDT.
 
-**Why templates beat copy-paste.** Copied views drift. After a year, "Pump1 screen" and "Pump2 screen" differ in five small ways nobody remembers. A template has a single definition, so a fix or a style change lands everywhere. For a plant with hundreds of assets this is the difference between a 10-view project and a 1,000-view project.
+**Why templates beat copy-paste.** Copied views drift. After a year, "M101 screen" and "M102 screen" differ in five small ways nobody remembers. A template has a single definition, so a fix or a style change lands everywhere. For a plant with hundreds of assets this is the difference between a 10-view project and a 1,000-view project.
 
 **Why watch the instance count.** Each embedded instance is a view with bindings, subscriptions and a rendering cost. The architecture scales by reuse, not by being free. Seasoned integrators set a budget (bindings per tile times tiles per page) and test with the real gateway under real session load, then lazy-load content on tabs and use paging in repeaters for big lists.
 
@@ -189,11 +221,11 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
   examples: [
     {
       title: "Pump station overview from a tag browse",
-      body: `A message handler runs \`system.tag.browse("[default]Plant1/Station3", {"tagType": "UdtInstance"})\` and stores the paths in \`session.custom.pumpPaths\`. A flex repeater's \`instances\` is bound to that list through a transform returning \`[{"pumpPath": p} for p in value]\`. A new pump added to the station's UDT folder appears the next time the handler runs.`
+      body: `A message handler runs \`system.tag.browse("[default]Plant1/Area10/Line1", {"tagType": "UdtInstance"})\` and stores the paths in \`session.custom.motorPaths\`. A flex repeater's \`instances\` is bound to that list through a transform returning \`[{"tagPath": p} for p in value]\`. A new motor added to the line's UDT folder appears the next time the handler runs.`
     },
     {
-      title: "Renaming a param safely",
-      body: `The tile's \`tagPath\` is renamed \`assetPath\`. Every embedding and every repeater instance still passes \`tagPath\`, so every tile goes blank at once. Fix by using Sync Params on each embedder, or update the query's column alias. Treat param names as a published API and change them in one planned pass.`
+      title: "Renaming a param breaks every embedder",
+      body: `The tile's \`tagPath\` is renamed \`assetPath\`. Every embedding and every repeater instance still passes \`tagPath\`, so every tile goes blank at once. The safe sequence: add the new param next to the old one, make the tile use the new one when set and fall back to the old, migrate embedders with Sync Params, then remove the old param. Treat param names as a published API.`
     }
   ],
 
@@ -210,14 +242,14 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
   <text class="dg-text-sm dg-mid" x="265" y="74">props.instances</text>
   <line class="dg-line" x1="136" y1="58" x2="188" y2="58" marker-end="url(#persp-embedding-ah)"/>
   <rect class="dg-box" x="400" y="14" width="224" height="52" rx="6"/>
-  <text class="dg-text-sm" x="412" y="36">Tile 1: tagPath = .../Pump1</text>
-  <text class="dg-text-mono" x="412" y="56">{1}/Speed {1}/Run</text>
+  <text class="dg-text-sm" x="412" y="36">Tile 1: tagPath = .../M101</text>
+  <text class="dg-text-mono" x="412" y="56">{1}/Sts/Speed {1}/Sts/Running</text>
   <rect class="dg-box" x="400" y="76" width="224" height="52" rx="6"/>
-  <text class="dg-text-sm" x="412" y="98">Tile 2: tagPath = .../Pump2</text>
-  <text class="dg-text-mono" x="412" y="118">{1}/Speed {1}/Run</text>
+  <text class="dg-text-sm" x="412" y="98">Tile 2: tagPath = .../M102</text>
+  <text class="dg-text-mono" x="412" y="118">{1}/Sts/Speed {1}/Sts/Running</text>
   <rect class="dg-box" x="400" y="138" width="224" height="52" rx="6"/>
-  <text class="dg-text-sm" x="412" y="160">Tile N: tagPath = .../Fan1</text>
-  <text class="dg-text-mono" x="412" y="180">{1}/Speed {1}/Run</text>
+  <text class="dg-text-sm" x="412" y="160">Tile N: tagPath = .../M10N</text>
+  <text class="dg-text-mono" x="412" y="180">{1}/Sts/Speed {1}/Sts/Running</text>
   <line class="dg-line" x1="340" y1="50" x2="398" y2="40" marker-end="url(#persp-embedding-ah)"/>
   <line class="dg-line" x1="340" y1="60" x2="398" y2="102" marker-end="url(#persp-embedding-ah)"/>
   <line class="dg-line" x1="340" y1="70" x2="398" y2="164" marker-end="url(#persp-embedding-ah)"/>
@@ -231,7 +263,7 @@ Embedded views are Perspective's answer to Vision's templates: one definition, m
     "Renaming a param without updating every embedder and repeater instance list.",
     "Embedding hundreds of heavy tiles on one page and blaming the Gateway.",
     "Expecting a parent binding to read inside the embedded view instead of using an output param.",
-    "Rebuilding the instances list with new keys or ordering on every poll, forcing every instance to rebuild."
+    "Rebuilding the instances list with new keys or ordering on every poll, which can force instances to rebuild. Measure it."
   ],
 
   keyTerms: ["embedded-view", "flex-repeater", "view-canvas", "tag-path-param", "indirect-tag-binding", "view-params", "udt"],

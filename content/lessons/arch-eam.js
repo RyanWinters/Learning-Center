@@ -31,7 +31,7 @@ EAM is a module you install and license on the gateways involved. The 8.3 manual
 | **Controller** | The gateway that assigns tasks and monitors agents, and holds an archive of their backups and modules | The controller's web interface |
 | **Agent** | Any managed gateway. It runs the tasks the controller sends | Nothing to do locally for normal tasks |
 
-You set a gateway's EAM role (controller or agent) in its EAM settings. Agents connect to the controller through Gateway Network connections, which you approve like any other. In 8.3, tasks, agents and archive are in the controller's **Network > Enterprise** section. In 8.1 the same functions sit under Config > Enterprise Administration.
+You set a gateway's EAM role (controller or agent) in its EAM settings. Agents connect to the controller through Gateway Network connections, which you approve like any other. In 8.3, tasks, agents and archive are in the controller's Enterprise section under the Network menu (check the menu layout for your version). In 8.1 the same functions sit under Config > Enterprise Administration.
 
 Agents can also be installed automatically in large rollouts (the manual has an automated agent installation page, which is handy when you build gateways from containers or scripts).
 
@@ -56,14 +56,14 @@ Licensing is visible on the controller too. The 8.3 License Management page can 
 Health monitoring is the passive side. The controller tracks each agent's connection status and recent task results, so a dead link or a failed backup is visible in one table.
 
 > [!warning] Collect Backup is the foundation
-> Restores, module reinstalls and rebuilding an agent all depend on an archived backup. The manual states you need at least one Collect Backup before you can reinstall archived modules, and that the backup includes the license. In 8.3, Collect Backup waits up to 60 minutes for the agent to produce the backup and up to another 60 for the transfer. Large gateways with big historian configurations need that. Schedule backups first, and test a restore before you need one.
+> Restores, module reinstalls and rebuilding an agent all depend on an archived backup. The manual states you need at least one Collect Backup before you can reinstall archived modules, and that the backup includes the license. Collect Backup has time limits for the agent to produce the backup and for the transfer. Check the Collect Backup page of the manual for your version for the current values. Large gateways with big historian configurations need generous limits. Schedule backups first, and test a restore before you need one.
 
 ## Typical rollout
 
 Say you run 24 plant gateways, all with the same base project and different tags.
 
-1. Stand up a controller (ideally redundant, see {{lesson:arch-redundancy}}). Scheduled tasks on a master controller pause during failover and resume when it returns.
-2. Create outgoing connections from each plant to the controller, or the reverse, and approve them.
+1. Stand up a controller (ideally redundant, see {{lesson:arch-redundancy}}). Check the redundant EAM page of the manual for how scheduled tasks behave during a controller failover.
+2. Create outgoing connections from each plant gateway to the DMZ gateway (\`10.20.250.10\`) and from the corporate EAM controller to the same DMZ gateway, then approve them. The controller reaches the agents through the DMZ gateway by proxy. Neither side dials into the other's zone. See {{lesson:arch-gateway-network}}.
 3. Schedule **Collect Backup** weekly, staggered so 24 backups don't hit the WAN at once.
 4. Develop on a staging gateway. When ready, use **Send Project** to push to a pilot group of 3 plants, then to all.
 5. For Ignition patches, use **Remote Upgrade** in waves, with the staging gateway first.
@@ -97,7 +97,7 @@ The district office is the **controller**. The schools are the **agents**. The t
   examples: [
     {
       title: "Recovering a failed plant server",
-      body: `Plant 9's server dies. You build a fresh machine with the same Ignition version, connect it as an agent, and use Restore Backup with the last archived backup. The restored agent keeps its previous name, the modules come back (they were archived with the backup), and the license restores with it. Remember that restoring a backup made before Ignition 8.1 onto an 8.3 gateway is not supported.`
+      body: `Plant 9's server dies. You build a fresh machine with the same Ignition version, connect it as an agent, and use Restore Backup with the last archived backup. The restored agent keeps its previous name, the modules come back (they were archived with the backup), and the license restores with it. Check the backup and restore pages of the manual before restoring a backup made on a much older Ignition version onto an 8.3 gateway, as cross-version restores have limits.`
     },
     {
       title: "A staged project rollout",

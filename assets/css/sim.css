@@ -362,7 +362,7 @@ html.sim-lock { overflow: hidden; }
   .lab-head h1 { grid-column: 1 / -1; grid-row: 2; font-size: var(--text-xl); flex: none; }
   .lab-meta { justify-content: flex-end; flex-wrap: nowrap; } .lab-meta .lvl { display: none; }
   .lab-grid { gap: var(--s-3); }
-  .lab-brief > summary { min-height: 48px; gap: 10px; text-transform: none; letter-spacing: 0; font: 500 var(--text-sm)/1.2 var(--font-body); }
+  .lab .lab-brief > summary { min-height: 48px; gap: 10px; text-transform: none; letter-spacing: 0; font: 500 var(--text-sm)/1.2 var(--font-body); }
   .lab-brief > summary .bl { display: none; }
   .lab-brief > summary .bx { display: block; flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); }
   .lab-brief > summary .bm { display: inline; flex: none; color: var(--accent); font-weight: 700; }
@@ -372,5 +372,7 @@ html.sim-lock { overflow: hidden; }
   .lab-ctrl { padding: var(--s-3); }
   .lab-stages li span:not(.n) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lab-stages li { min-width: 0; padding: 6px; }
-  .sed-bar .seg button { min-height: 44px; }
+  .sed-bar { gap: 6px; } .sed-bar .seg button { min-height: 44px; padding: 0 8px; gap: 4px; font-size: var(--text-xs); } .sed-bar .btn.small { padding: 0 8px; gap: 4px; }
+  .sed-bar .ibtn { width: 44px; }
+  .lab-stages { gap: 4px; } .lab-stages li { letter-spacing: 0; gap: 4px; font-size: 10px; padding: 6px 4px; }
 }

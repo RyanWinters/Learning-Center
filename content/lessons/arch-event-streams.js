@@ -20,7 +20,7 @@ LC.lesson({
 
 Plants generate events: a tag changes, a message arrives, a batch completes. Integration code that reacts to those events used to mean a pile of tag change scripts, each with its own error handling and its own bugs. **Event Streams**, new in Ignition 8.3, make that pipeline a first-class **project resource**. You describe where events come from, how they are cleaned up, and where they go. The gateway handles queueing, batching and failure.
 
-An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full gateway. The Chariot (Cirrus Link) documentation states that event streams are not available on Ignition Edge.
+An event stream is configured in the Designer like any other resource, stored in the project, and versioned with it. It needs a full gateway. The [Event Streams page of the 8.3 manual](https://www.docs.inductiveautomation.com/docs/8.3/ignition-modules/event-streams) lists them as not supported on Ignition Edge (see {{lesson:arch-edge}}).
 
 ## The pipeline
 
@@ -64,9 +64,11 @@ Handlers read event fields with expressions such as \`{event.data.value}\` or \`
 
 The buffer is a staging area between transform and handlers. It exists because sending one network message per event is slow and fragile. Its main settings:
 
-- **Debounce** (default 100 ms): how long to wait for quiet before flushing.
-- **Max wait** (default 1000 ms): the longest an event may sit before being flushed.
-- **Max queue size** (default 0, meaning unlimited).
+- **Debounce**: how long to wait for quiet before flushing.
+- **Max wait**: the longest an event may sit before being flushed.
+- **Max queue size**: how many events the buffer holds before the overflow rule applies.
+
+The buffer page of the 8.3 manual lists the defaults for these settings. Look them up for your version and set them deliberately.
 - **Overflow**: if the queue is capped, whether to drop the oldest or the newest.
 
 > [!warning] Check what "zero" means
@@ -88,17 +90,17 @@ The tradeoff is operational. Pipelines run unattended, so you must decide up fro
 - A consumer tracks an **offset**: how far it has read. After a restart it resumes from the committed offset.
 
 > [!example] Sizing a design
-> Four production lines publish a count every second. You key records by line ID on a 4-partition topic \`plant1.counts\`. Group \`historian-writer\` has two consumers that write to a database, two partitions each. Group \`dashboard\` is a separate consumer that reads the same records for a live view. Add a third consumer to \`historian-writer\` and one sits idle until you add partitions.
+> Four production lines publish a count every second. You key records by line ID on a 4-partition topic \`plant1.counts\`. Group \`historian-writer\` has two consumers that write to a database, two partitions each. Group \`dashboard\` is a separate consumer that reads the same records for a live view. With four partitions, a third consumer in \`historian-writer\` makes the split 2/1/1 and none sits idle. A fifth consumer would sit idle until you add partitions.
 
 Kafka is not a tag historian and not a database. It is the durable pipe in the middle, which suits an enterprise that has many consumers. For a lightweight plant-to-cloud path, {{lesson:proto-mqtt}} with a broker is simpler. Kafka starts to pay off when many teams consume the same stream or when you need replay.
 
 ## A worked stream: line counts to Kafka
 
-Goal: publish a JSON record whenever \`[default]Plant1/Line3/GoodCount\` changes, at most once per second per batch.
+Goal: publish a JSON record whenever \`[default]Plant1/Area20/Line1/GoodCount\` changes, at most once per second per batch.
 
 1. **Source**: Tag Event on the tag, trigger on value change.
 2. **Filter**: drop events where \`quality\` is not good.
-3. **Transform**: return \`{"line": "L3", "good": value, "ts": timestamp}\`.
+3. **Transform**: return \`{"line": "Line1", "good": value, "ts": timestamp}\`.
 4. **Buffer**: debounce 200 ms, max wait 1000 ms, max queue 5000, drop oldest.
 5. **Handler**: Kafka, topic \`plant1.counts\`, key from the line field.
 6. **Error handler**: retry, with alarms on the stream's diagnostics.
@@ -144,7 +146,7 @@ Kafka was created at LinkedIn to move activity data between systems and was open
   examples: [
     {
       title: "Downtime events into a database",
-      body: `A tag event source watches \`Line3/State\`. The filter keeps only transitions into Fault or out of Fault. The transform builds \`{line, state, ts}\`. A database handler inserts into \`downtime_event\` with a column mapping. The buffer batches inserts at 500 ms, so a plant-wide fault storm becomes a few writes instead of hundreds.`
+      body: `A tag event source watches \`Plant1/Area20/Line1/State\`. The filter keeps only transitions into Fault or out of Fault. The transform builds \`{line, state, ts}\`. A database handler inserts into \`downtime_event\` with a column mapping. The buffer batches inserts at 500 ms, so a plant-wide fault storm becomes a few writes instead of hundreds.`
     },
     {
       title: "Partner webhook into a tag",
@@ -235,7 +237,7 @@ Kafka was created at LinkedIn to move activity data between systems and was open
       answer: 1,
       explain: [
         "The issue is the feature, not the Designer.",
-        "Correct. The Chariot 8.3 documentation states event streams are not available on Edge.",
+        "Correct. The Inductive Automation 8.3 Event Streams documentation lists them as not supported on Edge.",
         "There is no such restriction. The module is simply not available.",
         "Event streams are a platform feature and are not tied to Vision."
       ]

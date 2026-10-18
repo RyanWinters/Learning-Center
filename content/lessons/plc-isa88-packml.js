@@ -26,10 +26,10 @@ The physical model is a hierarchy of equipment. ISA-88 uses the upper levels as 
 
 | Level | Example | Lives in |
 |---|---|---|
-| Enterprise | The company | Business systems |
-| Site | The Dayton plant | Business systems |
-| Area | Bulk liquids | MES, SCADA |
-| Process cell | Syrup batching line | Controllers, MES |
+| Enterprise | Meridian Foods | Business systems |
+| Site | Plant 1 (Chicago) | Business systems |
+| Area | Area10 Batching | MES, SCADA |
+| Process cell | Syrup batching line (Line1) | Controllers, MES |
 | Unit | Mix tank T-101 | One controller, one batch at a time |
 | Equipment module | Transfer pump with valves | Controller code |
 | Control module | One valve with limit switches | Controller code |
@@ -53,19 +53,20 @@ A recipe is a procedure that calls phases with parameters (target 400 L, speed 6
 
 PackML comes from the OMAC Packaging Workgroup. {{term:omac|OMAC}} is the users' group of manufacturers that wanted machines from different builders to behave alike. PackML defines **modes** and **states**.
 
-**Modes** say why the machine is running: Production, Maintenance, Manual (and Clean-in-place or Setup in some definitions). A mode selects which states are allowed.
+**Modes** say why the machine is running: Production, Maintenance, Manual. Some implementations add further modes (for example Clean or Setup), so check the version of the standard your machine builder worked to. A mode selects which states are allowed.
 
 **States** are the 17 PackML states. Some are *acting* states, which do work and end by themselves. Others are *waiting* states, which hold until a command arrives.
 
 | Group | States | Type |
 |---|---|---|
 | Start up | Resetting, Starting | acting |
-| Start up | Stopped, Idle | waiting |
+| Start up | Idle | waiting |
 | Production | Execute, Suspending, Unsuspending, Completing | acting |
 | Production | Suspended, Complete | waiting |
 | Hold | Holding, Unholding | acting |
 | Hold | Held | waiting |
 | Stop | Stopping | acting |
+| Stop | Stopped | waiting |
 | Fault | Aborting, Clearing | acting |
 | Fault | Aborted | waiting |
 
@@ -83,7 +84,7 @@ Commands move between them: Reset, Start, Stop, Hold, Unhold, Suspend, Unsuspend
 - **Status** (\`Status\`): \`UnitModeCurrent\`, \`StateCurrent\`, \`StateRequested\`, \`MachSpeed\`.
 - **Admin** (\`Admin\`): \`StopReason\`, \`AlarmHistory\`, \`ProdProcessedCount\` (product counts, good and defective).
 
-A PackML implementation in Logix usually has a single UDT instance per machine, such as \`PackML_Unit\`, whose \`Status.StateCurrent\` is a DINT. The state number is the same on every machine: 1 Clearing, 2 Stopped, 3 Starting, 4 Idle, 5 Suspended, 6 Execute, 7 Stopping, 8 Aborting, 9 Aborted, 10 Holding, 11 Held, 12 Unholding, 13 Suspending, 14 Unsuspending, 15 Resetting, 16 Completing, 17 Complete. Check your template's table against the document you are working to.
+A PackML implementation in Logix usually has a single UDT instance per machine, such as \`UDT_PackML_Unit\`, whose \`Status.StateCurrent\` is a DINT. The state number is the same on every machine: 1 Clearing, 2 Stopped, 3 Starting, 4 Idle, 5 Suspended, 6 Execute, 7 Stopping, 8 Aborting, 9 Aborted, 10 Holding, 11 Held, 12 Unholding, 13 Suspending, 14 Unsuspending, 15 Resetting, 16 Completing, 17 Complete. Check your template's table against the document you are working to.
 
 > [!note] Where to get the tags
 > Rockwell ships PackML templates and sample code for Logix, and the OMAC site publishes an OPC UA companion specification that defines PackTags as an address space. The standard itself is sold through ISA, and OMAC members get a copy.
@@ -95,9 +96,9 @@ A straightforward structure:
 1. One **UDT** per equipment module type holds commands, status, config and alarms.
 2. One **AOI** (or a program) per type contains the logic, including its own small state machine.
 3. The unit-level routine runs the PackML state model and calls the equipment modules with commands such as "Start" or "Hold."
-4. Each module reports back with a status word and a \`Faulted\` flag.
+4. Each module reports back with a status word and a \`Fault\` flag.
 
-A control module becomes an AOI like \`Valve_2Pos\` or \`Motor_VFD\`. An equipment module (for instance \`Xfer_Pump\`) holds those control modules as members and sequences them. The pattern is the same one used in {{lesson:plc-state-machines}}, with the states fixed by the standard.
+A control module becomes an AOI like \`AOI_Valve_2Pos\` or \`AOI_Motor_VFD\`. An equipment module (for instance a transfer skid, \`AOI_Xfer_Skid\`) holds those control modules as members and sequences them. The pattern is the same one used in {{lesson:plc-state-machines}}, with the states fixed by the standard.
 
 ## Worked example: filler line stops
 
@@ -123,17 +124,17 @@ ISA-88 is the way of describing the whole campus from the top down to the pencil
 `,
 
   history: `
-ISA-88 (ANSI/ISA-88.00.01) grew out of the batch control work of the late 1980s and 1990s, adopted internationally as IEC 61512. The OMAC group created PackML in the early 2000s to give packaging machines a common state model, and ISA published it as ISA-TR88.00.02 (revised in 2015 with a minimum set of PackTags and states, and again in 2022).
+ISA-88 (ANSI/ISA-88.00.01) grew out of the batch control work of the late 1980s and 1990s, adopted internationally as IEC 61512. The OMAC group created PackML in the early 2000s to give packaging machines a common state model, and ISA published it as ISA-TR88.00.02 (revised since; see the ISA and OMAC links in the resources for the editions, including ISA-TR88.00.02-2015 and the 2022 revision).
 `,
 
   examples: [
     {
       title: "Placing a pump skid in the physical model",
-      body: `A transfer skid has pump P-201, inlet valve XV-201A, outlet valve XV-201B and a flow meter. The skid is an **equipment module** (\`Xfer_Skid\`). Each valve with its limit switches is a **control module** (\`Valve_2Pos\` AOI). The pump with its starter is another control module. The tank T-101 that receives is a **unit**, and the skid belongs to that unit.`
+      body: `In Area10 at Meridian Foods Plant 1, a transfer skid has pump P-101, inlet valve XV-101A, outlet valve XV-101B and a flow meter. The skid is an **equipment module** (\`AOI_Xfer_Skid\`). Each valve with its limit switches is a **control module** (\`AOI_Valve_2Pos\`). The pump with its starter is another control module. The tank T-101 that receives is a **unit**, and the skid belongs to that unit.`
     },
     {
       title: "Mapping StateCurrent for Ignition",
-      body: `Read \`[Line1]Filler.Status.StateCurrent\` as a DINT. In Perspective use a map to colour the status: 6 Execute green, 11 Held amber, 9 Aborted red, 4 Idle grey. The same view works on every PackML machine, so you build it once as a template.`
+      body: `Read \`[default]Plant1/Area20/Line1/Filler/Status/StateCurrent\` as a DINT. In Perspective use a map to colour the status: 6 Execute green, 11 Held amber, 9 Aborted red, 4 Idle grey. The same view works on every PackML machine, so you build it once as a template.`
     }
   ],
 

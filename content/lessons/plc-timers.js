@@ -39,11 +39,11 @@ Give each timer its own tag. Two timer instructions on the same tag fight over t
 ## TON: on-delay
 
 \`\`\`ladder
-XIC(Motor_Run) TON(Conv2_Delay,5000,0)
+XIC(Conv1_Run) TON(Conv2_Delay,5000,0)
 XIC(Conv2_Delay.DN) OTE(Conv2_Run)
 \`\`\`
 
-TON times while its rung is true. \`.EN\` goes high with the rung, \`.TT\` is high while ACC is below PRE, and when ACC reaches PRE, \`.DN\` goes high and \`.TT\` drops. If the rung goes false at *any* time, the timer resets: ACC to 0, and EN, TT and DN all cleared. A TON is **non-retentive**.
+TON times while its rung is true. \`.EN\` goes high with the rung, \`.TT\` is high while ACC is below PRE, and when ACC reaches PRE, \`.DN\` goes high and \`.TT\` drops. ACC stops accumulating at PRE, and while the rung stays true it sits there with DN high. If the rung goes false at *any* time, the timer resets: ACC to 0, and EN, TT and DN all cleared. A TON is **non-retentive**.
 
 {{diagram:ton}}
 
@@ -83,7 +83,20 @@ RTO is the natural tool for run-hours, "oil change every 500 hours", batch times
 
 ## RES: the reset instruction
 
-RES clears the TIMER (ACC, EN, TT and DN) or a COUNTER when its rung is true. Put it on its own rung, as above. Never put a RES on the same tag in the same rung condition as the TON or RTO and expect clean behavior: the RES runs while the timer is trying to time. For a TON or TOF you rarely need RES because dropping the rung does the job.
+The rule: while its rung is true, RES clears the timer's **ACC, DN and TT**. It does not touch **EN**, because EN always follows the state of the timer instruction's own rung. If the RTO rung is still true when RES executes, ACC is cleared but EN stays 1, and the timer starts accumulating again from 0 as soon as RES goes false. RES also clears a counter's ACC and status bits. Put it on its own rung, as above, and drive it from a deliberate event such as a reset button or a maintenance acknowledgement. For a TON or TOF you rarely need RES because dropping the rung does the job.
+
+## Timers in Structured Text
+
+In Structured Text a timer is called like a function block. You set the preset, drive \`.TimerEnable\` from your condition and call the instruction once per scan. The same belt delay as the ladder example below:
+
+\`\`\`st
+Belt_Delay.PRE := Belt_Preset;            // DINT tag, in ms
+Belt_Delay.TimerEnable := Cycle_Run;
+TON(Belt_Delay);
+Belt_Run := Belt_Delay.DN AND NOT Belt_Fault;
+\`\`\`
+
+\`TON(Belt_Delay);\` must run every scan, or the timer freezes as described earlier. The bits (\`.EN\`, \`.TT\`, \`.DN\`) and the ACC behave exactly as in ladder.
 
 ## Debounce
 
@@ -140,7 +153,7 @@ Cycle_Run turns the blower on immediately (the TOF's DN is true as soon as its r
 
 ## Tips from the floor
 
-- Keep presets in tags (a DINT you can edit from Ignition) rather than hard-coded, and move them into the timer with MOV. A preset you can tune without downloading is worth a lot during commissioning.
+- Keep presets in a DINT tag you can edit from Ignition rather than hard-coded, and use the tag as the preset operand: \`TON(Belt_Delay,Belt_Preset,0)\`. If your version of the editor only accepts an immediate value there, copy the tag into \`Belt_Delay.PRE\` with a MOV or an ST assignment instead. A preset you can tune without downloading is worth a lot during commissioning.
 - Display a timer with \`ACC\` and \`PRE\` on the HMI as a sanity check. Operators trust a countdown.
 - Name timer tags after their purpose (\`Belt_Start_Delay\`), not their number (\`T4\`).
 - To work in seconds, make your own tag in seconds and multiply by 1000 with MUL when loading PRE.`,
@@ -169,7 +182,7 @@ The PLC checks these timers on every pass through its program, so it reads them 
 
   examples: [
     { title: "Why a short blip doesn't trip the alarm", body: `A level switch is wired to a high-level alarm. Splashing makes it flicker for 200 ms at a time. With \`XIC(LSH) TON(LSH_Delay,3000,0)\` and \`XIC(LSH_Delay.DN) OTE(High_Level_Alarm)\`, a splash never reaches 3 seconds, so no alarm. A real high level stays true and trips after 3 seconds.` },
-    { title: "Run-hours with a rollover to a counter", body: `Use \`XIC(Pump_Run) RTO(Pump_Hr,3600000,0)\`, then \`XIC(Pump_Hr.DN) CTU(Pump_Hours,99999,0)\` followed by \`XIC(Pump_Hr.DN) RES(Pump_Hr)\`. Each hour fills the RTO, advances the counter and resets the timer. Because the RES comes after the CTU in the scan, the counter sees DN once per hour.` }
+    { title: "Run-hours with a rollover to a counter", body: `Use three rungs: \`XIC(Pump_Run) RTO(Pump_Hr,3600000,0)\`, then \`XIC(Pump_Hr.DN) ONS(Pump_Hr_OS) CTU(Pump_Hours,99999,0)\`, then \`XIC(Pump_Hr.DN) RES(Pump_Hr)\`. Each hour fills the RTO, the one-shot turns DN into exactly one count, and the RES rung clears the timer. The one-shot is what makes the count safe: even if something delays the RES and DN stays high for several scans, the counter still advances once. This avoids the fragile one-scan-DN pattern from the pitfall above. The RES clears ACC, so any overshoot past PRE is not carried into the next hour.` }
   ],
 
   diagrams: {
@@ -243,7 +256,7 @@ The PLC checks these timers on every pass through its program, so it reads them 
   <text class="dg-text-muted dg-mid" x="395.0" y="222">DN</text>
   <line class="dg-line-thin dg-dash" x1="507.5" y1="44" x2="507.5" y2="206"/>
   <text class="dg-text-muted dg-mid" x="507.5" y="222">RES</text>
-  <text class="dg-text-sm" x="20" y="248">ACC holds at 3 s during the gap, resumes, passes PRE at 8 s and stays until RES.</text>
+  <text class="dg-text-sm" x="20" y="248">ACC holds at 3 s during the gap, resumes, reaches PRE at 8 s and holds there until RES.</text>
 </svg>`
   },
 
@@ -257,7 +270,7 @@ The PLC checks these timers on every pass through its program, so it reads them 
     "Entering PRE as seconds. It is milliseconds."
   ],
 
-  keyTerms: ["ton", "tof", "rto", "timer-structure", "debounce", "res-instruction"],
+  keyTerms: ["ton", "tof", "rto", "timer-structure", "debounce", "res-instruction", "structured-text", "one-shot"],
 
   quiz: [
     {
@@ -313,6 +326,17 @@ The PLC checks these timers on every pass through its program, so it reads them 
         "That is 120 ms.",
         "That is 12 s.",
         "Correct. 2 minutes is 120 seconds, and PRE is milliseconds."
+      ]
+    },
+    {
+      q: "An RTO rung is still true when its RES rung goes true. Which statement is correct?",
+      options: ["EN is cleared along with everything else", "ACC, DN and TT are cleared, and EN stays 1 because it follows the rung", "Nothing happens until the RTO rung goes false", "The controller faults"],
+      answer: 1,
+      explain: [
+        "EN follows the timer rung, not the RES.",
+        "Correct. RES clears ACC, DN and TT. EN is still the state of the RTO rung.",
+        "RES acts while its own rung is true, whatever the timer rung is doing.",
+        "This is legal, and a common way to restart a timer."
       ]
     },
     {

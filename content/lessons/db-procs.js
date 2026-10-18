@@ -29,12 +29,13 @@ This lesson uses the running plant schema: \`line\`, \`machine\`, \`production_r
 A {{term:sql-view|view}} is a named query. It stores no data of its own. Each time someone selects from it, the database runs the underlying query. Use a view to give reporting users one clean "table" instead of a five-table join.
 
 \`\`\`sql
+-- T-SQL (SQL Server). PostgreSQL form of the duration is in the comment below.
 CREATE VIEW v_downtime_report AS
 SELECT  l.line_name,
         m.machine_name,
         d.start_time,
         d.end_time,
-        DATEDIFF(SECOND, d.start_time, d.end_time) AS duration_s,
+        DATEDIFF(SECOND, d.start_time, d.end_time) AS duration_s,   -- PostgreSQL: EXTRACT(EPOCH FROM (d.end_time - d.start_time))
         r.reason_name,
         r.category
 FROM    downtime_event  d
@@ -62,34 +63,48 @@ A {{term:stored-procedure|stored procedure}} is a named, saved block of SQL that
 Here is a procedure that closes the open downtime event on a machine and attaches a reason. Operators tap a button; the logic stays out of the screen.
 
 \`\`\`sql
-CREATE PROCEDURE sp_close_downtime
+CREATE PROCEDURE usp_close_downtime
     @machine_id INT,
     @reason_id  INT,
     @closed_id  INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    BEGIN TRANSACTION;
+    SET XACT_ABORT ON;       -- any run-time error rolls the whole transaction back
+    SET @closed_id = NULL;
 
-    SELECT TOP 1 @closed_id = event_id
-    FROM   downtime_event WITH (UPDLOCK)
-    WHERE  machine_id = @machine_id AND end_time IS NULL
-    ORDER  BY start_time DESC;
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    IF @closed_id IS NULL
-    BEGIN
-        ROLLBACK;
-        RETURN -1;            -- nothing was open
-    END
+        SELECT TOP 1 @closed_id = event_id
+        FROM   downtime_event WITH (UPDLOCK)
+        WHERE  machine_id = @machine_id AND end_time IS NULL
+        ORDER  BY start_time DESC;
 
-    UPDATE downtime_event
-    SET    end_time = SYSUTCDATETIME(), reason_id = @reason_id
-    WHERE  event_id = @closed_id;
+        IF @closed_id IS NULL
+        BEGIN
+            ROLLBACK;
+            RETURN -1;            -- nothing was open
+        END
 
-    COMMIT;
-    RETURN 0;
+        UPDATE downtime_event
+        SET    end_time = SYSUTCDATETIME(), reason_id = @reason_id   -- UTC, like every timestamp in this track
+        WHERE  event_id = @closed_id;
+
+        COMMIT;
+        RETURN 0;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+        THROW;                    -- re-raise so Ignition sees the error
+    END CATCH
 END
 \`\`\`
+
+> [!warning] The open-transaction hazard
+> Without \`SET XACT_ABORT ON\` or the TRY/CATCH, a failing UPDATE (for example a \`@reason_id\` that breaks the foreign key) can leave SQL Server's transaction open with the UPDLOCK still held on that row. The caller sees an error, the connection goes back to the pool, and the next user of that connection inherits a locked, half-finished transaction. Every procedure that opens a transaction needs one of the two guards, and preferably both. This is the same forgotten-BEGIN problem {{lesson:db-sql-modify}} warns about, only harder to see.
+
+The \`end_time\` is written in UTC. For the duration to make sense, the \`start_time\` the Ignition script wrote must be UTC too ({{lesson:db-project}} covers how). Mix a local start with a UTC end and every duration is off by the UTC offset, with no error anywhere.
 
 That is SQL Server's T-SQL dialect. PostgreSQL uses \`CREATE PROCEDURE ... LANGUAGE plpgsql\` (or \`CREATE FUNCTION\`), MySQL uses \`DELIMITER\` blocks, and Oracle uses PL/SQL. The ideas carry over; the syntax does not, so expect to rewrite procedures if you change databases.
 
@@ -104,7 +119,7 @@ Why bother?
 
 A {{term:database-trigger|trigger}} is code the database runs automatically when a row is inserted, updated or deleted. PostgreSQL supports BEFORE, AFTER and INSTEAD OF timing, and row-level or statement-level firing. The [PostgreSQL CREATE TRIGGER reference](https://www.postgresql.org/docs/current/sql-createtrigger.html) lists the options.
 
-A typical use is an audit trail:
+A typical use is an audit trail. This example is T-SQL (SQL Server) syntax; PostgreSQL writes the same idea as a trigger function plus a \`CREATE TRIGGER ... EXECUTE FUNCTION\` statement.
 
 \`\`\`sql
 CREATE TRIGGER trg_downtime_audit
@@ -146,13 +161,13 @@ Whichever you choose, write it down. The worst case is half the rules in a store
 
 ## Calling stored procedures from Ignition
 
-Ignition gives you two common routes.
+Ignition gives you two direct routes, plus a named-query shortcut for simple calls.
 
 **1. Scripting with \`system.db.createSProcCall\`.** You create a call object, register parameters, execute it and read the results.
 
 \`\`\`python
-call = system.db.createSProcCall("sp_close_downtime", "PlantDB")
-call.registerInParam("machine_id", system.db.INTEGER, 14)
+call = system.db.createSProcCall("usp_close_downtime", "PlantDB")
+call.registerInParam("machine_id", system.db.INTEGER, 1)      # 1 = M101 in the machine table
 call.registerInParam("reason_id",  system.db.INTEGER, 7)
 call.registerOutParam("closed_id", system.db.INTEGER)
 call.registerReturnParam(system.db.INTEGER)
@@ -163,30 +178,31 @@ if call.getReturnValue() == 0:
     closed = call.getOutParamValue("closed_id")
     system.perspective.print("Closed event %d" % closed)
 else:
-    system.perspective.print("No open downtime on machine 14")
+    system.perspective.print("No open downtime on M101")
 \`\`\`
 
-Parameters can be registered by position or by name. Input, output, in/out and return values each have their own register call; results come back via \`getResultSet()\`, \`getUpdateCount()\`, \`getReturnValue()\` and \`getOutParamValue()\`. See the [createSProcCall reference](https://www.docs.inductiveautomation.com/docs/8.1/appendix/scripting-functions/system-db/system-db-createSProcCall). \`createSProcCall\` only builds the object. The blocking happens in \`execSProcCall\`, so a slow procedure ties up the thread that ran it ([forum discussion](https://forum.inductiveautomation.com/t/stored-procedure-call-blocking-or-timeout/74316)).
+Parameters can be registered by position or by name. Input, output, in/out and return values each have their own register call; results come back via \`getResultSet()\`, \`getUpdateCount()\`, \`getReturnValue()\` and \`getOutParamValue()\`. See the [8.3 system.db reference](https://www.docs.inductiveautomation.com/docs/8.3/appendix/scripting-functions/system-db) (and the 8.1 [createSProcCall page](https://www.docs.inductiveautomation.com/docs/8.1/appendix/scripting-functions/system-db/system-db-createSProcCall) if you run 8.1) for the exact argument forms in your version. \`createSProcCall\` only builds the object. The blocking happens in \`execSProcCall\`, so a slow procedure ties up the thread that ran it ([forum discussion](https://forum.inductiveautomation.com/t/stored-procedure-call-blocking-or-timeout/74316)).
 
 > [!warning] PostgreSQL
-> Ignition's documentation notes that on PostgreSQL, \`createSProcCall\` works with *functions*. Real PostgreSQL procedures are typically run with \`system.db.runPrepUpdate\` and a \`CALL\` statement. Check your driver and version before you commit to a design.
+> Ignition's documentation notes that on PostgreSQL, \`createSProcCall\` works with *functions*. Real PostgreSQL procedures (\`CREATE PROCEDURE\`) are typically run with a \`CALL\` statement through an update call such as \`system.db.execUpdate\` (\`runPrepUpdate\` in 8.1). Check the manual and your driver version before you commit to a design.
 
 > [!tip] Named queries
-> Many integrators call stored procedures through a named query (for example a scalar query containing \`EXEC sp_name ?\`), because named queries give parameter binding, caching and a clean place to set the database connection. The scripting call object is better when you need output parameters or a return value.
+> Many integrators call stored procedures through a named query (for example a scalar query containing \`EXEC usp_name :param\`), because named queries give parameter binding, caching and a clean place to set the database connection. The scripting call object is better when you need output parameters or a return value.
 
 **2. A Stored Procedure transaction group.** The SQL Bridge module's transaction groups run on a schedule or trigger. A stored procedure group maps group items (usually tags) to the procedure's parameters. Input items send tag values in, and output items write returned values back to tags. The [transaction group documentation](https://docs.inductiveautomation.com/docs/8.3/ignition-modules/sql-bridge-transaction-groups/transaction-group-examples) describes it, and the procedure must already exist in the database. Two gotchas from the docs: Oracle needs index-based rather than named parameters, and PostgreSQL may need \`escapeSyntaxCallMode=callIfNoReturn\` on the JDBC connection string.
 
-This is a good fit for "when the batch-complete bit goes true, call \`sp_record_batch\` with the product code, quantity and end time tags." It needs no scripting and runs under the gateway's trigger logic. If the call fails, the group reports the error on its status, so you still need to watch it.
+This is a good fit for "when the batch-complete bit goes true, call \`usp_record_batch\` with the product code, quantity and end time tags." It needs no scripting and runs under the gateway's trigger logic. If the call fails, the group reports the error on its status, so you still need to watch it.
 
 > [!example] Worked decision
-> The plant wants downtime events closed with a reason. Choices: (a) a Perspective script that runs three queries; (b) \`sp_close_downtime\` called from the button's script. You pick (b). Another system, a Power BI report, already reads \`v_downtime_report\`, and the supervisor's phone app will soon close events too. The rule lives once, in the database. The button stays a three-line script. Ignition still handles user, machine selection and error toasts.
+> The plant wants downtime events closed with a reason. Choices: (a) a Perspective script that runs three queries; (b) \`usp_close_downtime\` called from the button's script. You pick (b). Another system, a Power BI report, already reads \`v_downtime_report\`, and the supervisor's phone app will soon close events too. The rule lives once, in the database. The button stays a three-line script. Ignition still handles user, machine selection and error toasts.
 
 ## Security and maintenance notes
 
 - Grant EXECUTE on procedures, and SELECT on views, to the Ignition account instead of broad table rights. See {{lesson:db-operations}}.
 - Keep procedure and view scripts in a Git repo and apply them through numbered migration files, so a rebuilt database matches production.
 - Never build SQL by concatenating strings inside a procedure from user input. Use parameters, which also avoids SQL injection.
-- Name things consistently (\`v_\` for views, \`sp_\` or \`usp_\` for procedures). Avoid the \`sp_\` prefix on SQL Server if you can, since Microsoft reserves it for system procedures and lookups check the master database first. A prefix like \`usp_\` avoids that.
+- Name things consistently: \`v_\` for views, \`usp_\` for procedures. Avoid the \`sp_\` prefix on SQL Server, since Microsoft uses it for system procedures and the lookup checks the master database first.
+- Grant EXECUTE on write procedures only to the application login that needs them, never to the reporting login ({{lesson:db-operations}} shows the grants).
 `,
 
   eli5: `
@@ -220,7 +236,7 @@ Stored procedures became common in the 1980s and 1990s as client/server database
     },
     {
       title: "Batch record from a PLC bit",
-      body: `A Stored Procedure transaction group triggers on \`[Line2]Batch/Complete\`. Its items map the tags \`ProductCode\`, \`GoodCount\` and \`ScrapCount\` to the parameters of \`sp_record_run\`. The procedure inserts a \`production_run\` row, closes the previous one and returns the new \`run_id\` to an output item. No script exists to maintain, and the DBA can change the procedure without touching the project.`
+      body: `A Stored Procedure transaction group triggers on \`[default]Plant1/Area10/Line1/Batch/Complete\`. Its items map the tags \`ProductCode\`, \`GoodCount\` and \`ScrapCount\` to the parameters of \`usp_record_run\`. The procedure inserts a \`production_run\` row, closes the previous one and returns the new \`run_id\` to an output item. No script exists to maintain, and the DBA can change the procedure without touching the project.`
     }
   ],
 
@@ -231,7 +247,7 @@ Stored procedures became common in the 1980s and 1990s as client/server database
   <text class="dg-title dg-mid" x="105" y="46">Ignition</text>
   <text class="dg-text-sm dg-mid" x="105" y="66">button, named query, group</text>
   <rect class="dg-box" x="250" y="20" width="170" height="60" rx="6"/>
-  <text class="dg-text dg-mid" x="335" y="46">sp_close_downtime</text>
+  <text class="dg-text dg-mid" x="335" y="46">usp_close_downtime</text>
   <text class="dg-text-muted dg-mid" x="335" y="66">stored procedure</text>
   <rect class="dg-box" x="450" y="20" width="170" height="60" rx="6"/>
   <text class="dg-text dg-mid" x="535" y="46">v_downtime_report</text>
@@ -334,7 +350,8 @@ Stored procedures became common in the 1980s and 1990s as client/server database
   ],
 
   resources: [
-    { title: "system.db.createSProcCall", url: "https://www.docs.inductiveautomation.com/docs/8.1/appendix/scripting-functions/system-db/system-db-createSProcCall", type: "docs", source: "Inductive Automation" },
+    { title: "system.db scripting functions (8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/appendix/scripting-functions/system-db", type: "docs", source: "Inductive Automation" },
+    { title: "system.db.createSProcCall (8.1 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.1/appendix/scripting-functions/system-db/system-db-createSProcCall", type: "docs", source: "Inductive Automation" },
     { title: "SQL Stored Procedures in Ignition", url: "https://www.docs.inductiveautomation.com/docs/8.1/platform/sql-in-ignition/writing-sql-queries/sql-stored-procedures", type: "docs", source: "Inductive Automation" },
     { title: "Transaction Group Examples (8.3)", url: "https://docs.inductiveautomation.com/docs/8.3/ignition-modules/sql-bridge-transaction-groups/transaction-group-examples", type: "docs", source: "Inductive Automation" },
     { title: "Types of transaction groups", url: "https://www.docs.inductiveautomation.com/docs/8.1/ignition-modules/sql-bridge-transaction-groups/types-of-groups", type: "docs", source: "Inductive Automation" },
