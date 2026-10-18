@@ -21,7 +21,9 @@
       const m = path.match(r[0]);
       if (m) {
         const p = Object.assign({ name: r[1], path: path }, r[3] || {});
-        r[2].forEach((k, i) => { p[k] = m[i + 1] ? decodeURIComponent(m[i + 1]) : null; });
+        try {
+          r[2].forEach((k, i) => { p[k] = m[i + 1] ? decodeURIComponent(m[i + 1]) : null; });
+        } catch (e) { return { name: 'notfound', path: path }; } // malformed %-escape in the URL
         return p;
       }
     }

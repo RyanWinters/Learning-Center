@@ -85,7 +85,7 @@
     inflight = true; dirty = false;
     clearTimeout(timer); clearTimeout(retryTimer);
     const body = JSON.stringify(doc);
-    return fetchT('/api/progress', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: !!keepalive && body.length < 60000 })
+    return fetchT('/api/progress', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-LC': '1' }, body: body, keepalive: !!keepalive && body.length < 60000 })
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(s => { inflight = false; retry = 0; adopt(s); setSync(dirty ? 'pending' : 'synced'); if (dirty) push(); })
       .catch(() => {
@@ -105,7 +105,7 @@
     init() {
       doc = normalize(readCache());
       takeSnap();
-      return fetchT('/api/progress', {}, 4000)
+      return fetchT('/api/progress', { headers: { 'X-LC': '1' } }, 4000)
         .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(s => {
           const serverAt = (s && s.updatedAt) || 0;
@@ -125,7 +125,7 @@
           if (JSON.stringify(doc[k][id]) !== snap[k][id]) doc[k][id].updatedAt = now;
         });
       });
-      doc.updatedAt = now; doc.resetAt = now;
+      doc.updatedAt = now;
       takeSnap(); writeCache();
       emit('change', {});
       schedule();
@@ -178,6 +178,7 @@
       return push();
     }
   };
+  store._merge = merge; // exposed for tools/test-merge.js
   LC.store = store;
 
   document.addEventListener('visibilitychange', () => {

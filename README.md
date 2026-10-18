@@ -16,16 +16,22 @@ python server.py
 
 Then open http://localhost:8080 on the PC.
 
-Use `--port 9000` to change the port. Progress is saved to `data/progress.json`. That folder is ignored by git. Copy it if you want a backup.
+Use `--port 9000` to change the port. Progress is saved to `data/progress.json`, with the previous version kept in
+`progress.json.bak`. That folder is ignored by git. Copy it if you want a backup.
 
 ## Use it from your phone with Tailscale
 
-1. Install Tailscale on the PC and the phone, and sign both into the same tailnet.
-2. With the server running, open `http://<pc-name>:8080` on the phone. `<pc-name>` is the PC's Tailscale machine name, or its 100.x.y.z address.
-3. Optional: to get an HTTPS address, run `tailscale serve --bg 8080` on the PC and use the `https://<pc-name>.<tailnet>.ts.net` URL it prints.
-   On iPhone, Share → Add to Home Screen turns it into an app icon.
+The server only listens on the PC itself (127.0.0.1). Tailscale publishes it privately to your devices:
 
-If Windows Firewall asks about Python the first time, allow it on **Private** networks. Tailscale traffic counts as private.
+1. Install Tailscale on the PC and the phone, and sign both into the same tailnet.
+2. On the PC, run once: `tailscale serve --bg 8080`. It prints an address like `https://<pc-name>.<tailnet>.ts.net`.
+3. Open that address on the phone. On iPhone, Share → Add to Home Screen turns it into an app icon.
+
+Only devices on your tailnet can reach it, and the connection uses HTTPS. Nothing on your home or plant LAN can see it.
+`tailscale serve` remembers the setting across reboots. To undo it, run `tailscale serve --https=443 off`.
+
+If you really want plain LAN access instead, use `python server.py --host 0.0.0.0`. The progress API has no login, so
+anyone on that network could change your progress.
 
 ## Start it automatically on Windows
 
@@ -66,4 +72,6 @@ Lessons are plain JavaScript objects (see `docs/CONTENT_GUIDE.md`). After editin
 ```
 node tools/validate.js
 node tools/sim-test.js
+node tools/test-merge.js
+python tools/test_server.py
 ```
