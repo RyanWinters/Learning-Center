@@ -163,7 +163,7 @@ For plant reporting, the default is almost always fine. Reach for stricter level
 > [!note] Deadlocks
 > If transaction A holds row 1 and wants row 2, while B holds row 2 and wants row 1, the engine picks one as the victim and rolls it back with a deadlock error. Your code should be ready to retry. Touching tables in the same order everywhere reduces them.
 
-In Ignition, scripts can group several database calls in one transaction with \`system.db.beginTransaction\`, \`commitTransaction\`, \`rollbackTransaction\` and \`closeTransaction\`. A standalone Named Query call is a single statement and commits on its own; check the manual for how Named Queries behave when you pass a transaction handle.
+In Ignition, scripts can group several database calls in one transaction with \`system.db.beginTransaction\`, \`commitTransaction\`, \`rollbackTransaction\` and \`closeTransaction\`. Those are for \`runPrep*\` calls. To group Named Queries, start with \`system.db.beginNamedQueryTransaction\` and pass its id as \`tx\` to \`execQuery\`/\`execUpdate\`; without \`tx\` a Named Query call is not part of a transaction.
 
 ## Parameterized queries and SQL injection
 
@@ -190,7 +190,7 @@ rows = system.db.execQuery("Plant/MachineByName", {"name": name})
 \`\`\`
 
 > [!note] In 8.1
-> The classic call is \`system.db.runPrepQuery("SELECT machine_id FROM machine WHERE machine_name = ?", [name])\`, or \`system.db.runNamedQuery\`. Both still work in 8.3 but the \`runQuery\` and \`runNamedQuery\` families are on the deprecated list, so write new code with \`execQuery\` and \`execUpdate\` (see the 8.3 \`system.db\` page).
+> The classic call is \`system.db.runPrepQuery("SELECT machine_id FROM machine WHERE machine_name = ?", [name])\`, or \`system.db.runNamedQuery\`. \`runPrepQuery\` is current in 8.3, while \`runQuery\` and \`runNamedQuery\` are on the deprecated list, so write new code with \`execQuery\` and \`execUpdate\` (see the 8.3 \`system.db\` page).
 
 The \`:name\` in the saved query, or the \`?\` in the 8.1 call, is the placeholder. \`x' OR '1'='1\` now means "a machine literally named x' OR '1'='1", which matches nothing.
 

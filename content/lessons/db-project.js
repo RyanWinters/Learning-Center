@@ -257,7 +257,7 @@ def valueChanged(tag, tagPath, previousValue, currentValue, initialChange, misse
             {"machine_id": machineId, "end_time": system.date.now()})
 \`\`\`
 
-A tag change script runs in Gateway scope, which has no calling project. Pass the project name explicitly in both calls (check the 8.3 manual for the argument name and position); the short form above shows only the query path and parameters.
+A tag change script runs in Gateway scope, where the Gateway otherwise falls back to an associated project or the Gateway scripting project. Pass \`project=\"Meridian\"\` as a keyword argument in both calls; the short form above shows only the query path and parameters.
 
 > [!note] In 8.1
 > Use \`system.db.runNamedQuery\` for both calls. It is deprecated in 8.3 but still works.

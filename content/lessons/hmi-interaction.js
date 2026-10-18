@@ -131,7 +131,7 @@ Typing a number is where most real damage happens: 1,150 becomes 11,500, a decim
 - Enforce the limits in the PLC too. The HMI limit is courtesy, the PLC limit is protection.
 - Show the result: after Apply, display "Setpoint 1,150 rpm applied 14:02:11" once the status confirms.
 
-In Perspective, the Numeric Entry Field has input-bounds properties in the 8.1 manual, and the 8.3 Form component has number constraints with min and max and messages for out-of-range input. Confirm which component and property names your version uses in the manual. On touch devices, check how the on-screen keyboard behaves, see {{lesson:persp-mobile}}.
+In Perspective, the Numeric Entry Field has an \`inputBounds\` property (minimum, maximum and an invalid style), and the 8.3 Form component\'s number widget has \`constraints.min\` and \`constraints.max\` with \`rangeUnderflow\` and \`rangeOverflow\` messages for out-of-range input. On touch devices, check how the on-screen keyboard behaves, see {{lesson:persp-mobile}}.
 
 ## Tablets and phones
 
@@ -442,7 +442,7 @@ Fitts' law is a model of pointing time from experimental psychology that interfa
     { title: "Response Time Limits (Jakob Nielsen)", url: "https://www.nngroup.com/articles/response-times-3-important-limits/", type: "article", source: "NN/g" },
     { title: "Confirmation Dialogs Can Prevent User Errors", url: "https://www.nngroup.com/articles/confirmation-dialog/", type: "article", source: "NN/g" },
     { title: "Preventing User Errors: Avoiding Conscious Mistakes", url: "https://www.nngroup.com/articles/user-mistakes/", type: "article", source: "NN/g" },
-    { title: "Perspective Numeric Entry Field (Ignition 8.1 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.1/appendix/components/perspective-components/perspective-input-palette/perspective-numeric-entry-field", type: "docs", source: "Inductive Automation" },
+    { title: "Perspective Numeric Entry Field (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/appendix/components/perspective-components/perspective-input-palette/perspective-numeric-entry-field", type: "docs", source: "Inductive Automation" },
     { title: "Perspective Form component (Ignition 8.3 manual)", url: "https://www.docs.inductiveautomation.com/docs/8.3/appendix/components/perspective-components/perspective-input-palette/perspective-form", type: "docs", source: "Inductive Automation" }
   ]
 });

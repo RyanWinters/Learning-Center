@@ -11,7 +11,7 @@ LC.lesson({
     "Explain what a project holds and what lives at Gateway level instead",
     "Use inheritance to share scripts, views and templates across projects",
     "Describe how overriding works and what it costs",
-    "Explain the Gateway scripting project and why event scripts do not inherit",
+    "Explain the Gateway scripting project and why inherited event scripts run in every leaf project",
     "Choose between Vision, Perspective or both for a given job"
   ],
 
@@ -54,9 +54,9 @@ If a child defines a resource with the same path as one in the parent, the child
 > [!tip] Keep the base project dull
 > Put generic building blocks in the base project and no plant-specific content. If a view names a specific tag path, it probably belongs in the app project.
 
-### Scripts and events do not inherit the way screens do
+### Event scripts run in every leaf project
 
-Screens, scripts and templates inherit. **Gateway event scripts** (timers, tag change scripts, message handlers) run only in the project that defines them. Children that inherit the project do not run a copy, so a timer defined in \`Global\` does not run once for each child. The common pattern is to write the real logic as a library function in the base project and call it from a one-line event script in the leaf project.
+Screens, scripts and templates inherit. **Gateway event scripts** (timers, tag change scripts, message handlers) are *runnable* resources: they run in every leaf project that inherits them, so a timer defined in \`Global\` runs once for each child. The manual advises keeping runnable resources in a leaf or standalone project. The common pattern is to write the real logic as a library function in the base project and call it from a one-line event script in the leaf project.
 
 The Gateway also has one **Gateway scripting project** setting. It names the project whose script library is available to scripts that run outside any project, such as tag event scripts on tags and some Gateway-wide scripting. Tag event scripts (see {{lesson:ign-events}}) depend on it. If your shared utilities live in \`Global\` and that is not designated, tag scripts cannot see them. A good habit is to designate the base scripting project early.
 
@@ -69,7 +69,7 @@ Both modules build screens on top of the same Gateway, tags, historian and alarm
 | Runs as | Java Swing desktop client, launched from the Gateway | Web app in a browser, built on React |
 | Install on the operator side | Client launcher or Vision Client Launcher | None. A URL, or a native wrapper |
 | Layout | Pixel-based windows, absolute positioning | Responsive containers (flex, breakpoints, column) |
-| Scripting scope | Client scope and Gateway scope | The scripts you write run in Gateway scope (see the Perspective scripting pages for details) |
+| Scripting scope | Client scope and Gateway scope | The scripts you write run on the Gateway (Perspective Session scope) (see the Perspective scripting pages for details) |
 | Mobile and tablets | Poor | Designed for it |
 | Heavy native integration | Strong (local files, printing, serial) | Limited by the browser |
 | Bindings | Property, expression, tag, SQL, with polling | Same ideas, plus transforms and a session model |
@@ -131,7 +131,7 @@ Vision was Ignition's original client technology, a Java Swing application launc
     },
     {
       title: "Where to put a message handler",
-      body: `You want a message handler named \`printLabel\` that every app can call. Put the real code in \`Global\` as \`labels.print(args)\`. In each leaf project create a one-line handler \`labels.print(payload)\`. The handler must exist in the leaf because Gateway event resources do not run from an inherited parent.`
+      body: `You want a message handler named \`printLabel\` that every app can call. Put the real code in \`Global\` as \`labels.print(args)\`. In each leaf project create a one-line handler \`labels.print(payload)\`. Keep the handler in the leaf, not in \`Global\`, because an inherited Gateway event resource runs in every leaf project.`
     }
   ],
 
@@ -160,7 +160,7 @@ Vision was Ignition's original client technology, a Java Swing application launc
   pitfalls: [
     "Putting plant-specific content in the base project, so it cannot be reused.",
     "Overriding shared scripts and forgetting, so later fixes never arrive.",
-    "Expecting a timer or tag event script in a parent project to run for every child.",
+    "Putting a timer or tag change script in a parent project, then finding it runs once for every child.",
     "Not designating a Gateway scripting project, then wondering why library calls fail from tag scripts.",
     "Making a quick edit to the base project in production with no dev Gateway test.",
     "Rewriting a large working Vision app to Perspective only because Perspective is newer."
@@ -193,11 +193,11 @@ Vision was Ignition's original client technology, a Java Swing application launc
     },
     {
       q: "A timer script is defined in the base project, and ten apps inherit from it. How many times does it run?",
-      options: ["Ten, once per child", "It does not run for inherited children, so put the call in the leaf project", "Once per session", "Zero, timers are not allowed in projects"],
-      answer: 1,
+      options: ["Ten, once per child", "Once, in the base project only", "Once per session", "Zero, timers are not allowed in projects"],
+      answer: 0,
       explain: [
-        "Gateway event resources are not run once per inheriting child.",
-        "Correct. Keep the logic in a base library function and call it from a small event script in the leaf project.",
+        "Correct. Gateway event scripts are runnable resources and run in each leaf project, so keep them in a leaf or standalone project.",
+        "Inherited runnable resources run in every leaf project, not only in the parent.",
         "Sessions are a UI concept, not a timer trigger.",
         "Timers are valid project Gateway events."
       ]

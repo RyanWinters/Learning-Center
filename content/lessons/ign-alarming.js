@@ -47,6 +47,9 @@ Open a tag, go to the Alarms section and add one. The core properties:
 | Below Setpoint | value is below the setpoint |
 | Between Setpoints | value is between a low and high setpoint |
 | Outside Setpoints | value is below the low or above the high |
+| Out of Range | value is outside the tag's Engineering Low/High |
+| Bit State | a chosen bit of an integer tag is on (or off) |
+| When True / When False | a boolean is true / false |
 | Equal / Not Equal to Setpoint | exact match or mismatch; good for state values and enums |
 | Bad Quality | the tag quality is bad (communications lost, bad address) |
 | On Condition | an expression you write evaluates true |
@@ -86,15 +89,15 @@ Shelving tells the system to ignore an alarm for a chosen time, such as 1 hour o
 | | Alarm Status Table | Alarm Journal |
 |---|---|---|
 | Answers | What is in alarm *right now*? | What happened over time? |
-| Storage | Gateway memory (live state) | Database table (written by a journal profile) |
-| Needs a database | No | Yes |
+| Storage | Gateway memory (live state) | Written by a journal profile, usually to a database table |
+| Needs a database | No | Usually (8.3 can also journal internally or to a remote Gateway) |
 | Used for | Operator screens, ack, shelve | Reports, KPIs, audits, root cause |
 
-If you want alarm history, you must configure an **alarm journal profile** pointing at a database connection. Without it, a cleared alarm is gone once it leaves the status table.
+If you want alarm history, you must configure an **alarm journal profile**, normally pointing at a database connection. Without it, a cleared alarm is gone once it leaves the status table.
 
 ## Alarm notification pipelines
 
-A **pipeline**, from the Alarm Notification module, is a flow chart that runs for each active alarm. Blocks can wait, test conditions, send an email or SMS, call a voice message, escalate to someone else if nobody acknowledges within N minutes or write a script. A pipeline stops when its drop-out condition becomes true, by default when the alarm is acknowledged or cleared. The next lessons {{lesson:arch-notification}} and {{lesson:int-alarm-mgmt}} go deeper.
+A **pipeline**, from the Alarm Notification module, is a flow chart that runs for each active alarm. Blocks can wait, test conditions, send an email or SMS, call a voice message, escalate to someone else if nobody acknowledges within N minutes or write a script. A pipeline stops when its drop-out condition becomes true, by default when the alarm is acknowledged, cleared or shelved. The next lessons {{lesson:arch-notification}} and {{lesson:int-alarm-mgmt}} go deeper.
 
 ## Associated data
 
@@ -188,7 +191,7 @@ The ten most frequent alarms in a week are your rationalization list. Column and
     "Setting no active delay on a signal with start-up transients, creating nuisance alarms every start.",
     "Leaving every alarm at Critical priority so priority carries no information.",
     "Using Unused ack mode and then wondering why the notification pipeline never runs.",
-    "Expecting alarm history without configuring a journal profile and database.",
+    "Expecting alarm history without configuring an alarm journal profile.",
     "Using a deadband of 0 on a noisy analog, so the alarm chatters.",
     "Alarming on information that requires no operator action, which builds floods."
   ],
@@ -223,7 +226,7 @@ The ten most frequent alarms in a week are your rationalization list. Column and
       options: ["An alarm journal profile writing to a database", "An alarm status table on a screen", "A tag historian on the alarm tag", "A shelving rule"],
       answer: 0,
       explain: [
-        "Correct. The journal stores events in a database for later queries.",
+        "Correct. The journal stores events, typically in a database, for later queries.",
         "The status table shows current state only.",
         "The Tag Historian stores values, not alarm events.",
         "Shelving hides alarms."

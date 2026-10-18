@@ -33,11 +33,11 @@ The OPC UA module ships with drivers for many device families. Typical ones incl
 | Allen-Bradley Logix | {{term:ethernet-ip|EtherNet/IP}} / {{term:cip|CIP}} | ControlLogix and CompactLogix, symbolic tag names |
 | Allen-Bradley legacy | CIP/PCCC | MicroLogix, SLC, PLC-5 style file addresses |
 | Siemens | S7 | S7-300/400/1200/1500; 8.3 lists a Siemens Enhanced driver as new |
-| Modbus | {{term:modbus-tcp|Modbus TCP}}, RTU over TCP | See {{lesson:proto-modbus}} |
+| Modbus | {{term:modbus-tcp|Modbus TCP}}, RTU over TCP, serial RTU | See {{lesson:proto-modbus}} |
 | DNP3 | {{term:dnp3|DNP3}} | Utilities and remote sites, supports {{term:unsolicited-response|unsolicited responses}} |
 | Others | BACnet, Omron, Mitsubishi and more | Availability varies by version |
 
-A native driver is usually the first choice. There is one fewer server in the chain, no extra license, and the driver lives in the same JVM as your tags. Adding a connection is a Gateway Config task: choose the driver, name the connection, enter the IP, save. Naming matters because the name becomes part of every OPC item path, for example \`[PLC1]LT101\` for the Plant1 Area10 PLC at \`10.20.10.10\`. Pick short, stable names that mean the equipment, not the date.
+A native driver is usually the first choice. There is one fewer server in the chain, usually no extra license (the Siemens Enhanced driver is not on a Platform license), and the driver lives in the same JVM as your tags. Adding a connection is a Gateway Config task: choose the driver, name the connection, enter the IP, save. Naming matters because the name becomes part of every OPC item path, for example \`[PLC1]LT101\` for the Plant1 Area10 PLC at \`10.20.10.10\`. Pick short, stable names that mean the equipment, not the date.
 
 ## Connecting to third-party OPC UA servers
 
@@ -90,8 +90,8 @@ Key points:
 
 - **Optimized for firmware v21 and up.** The driver supports newer controllers best, including 5380 CompactLogix and 5580 ControlLogix. On older firmware it works but with lower performance.
 - **Connection settings.** You enter the IP address and the **communication path** (backplane and slot). For a ControlLogix, the path is typically the slot number of the controller. For a CompactLogix with built-in Ethernet the slot is usually 0. A forum report for 8.3.1 against a 5380 shows a connection stuck in a reconnect-wait state until the slot was set to 0 for the front Ethernet port.
-- **CIP connection size.** Forward Open requests use a connection size, 500 by default according to the Logix driver settings. Larger sizes allow more per packet but need the controller and network to support them.
-- **Max concurrent requests.** This setting controls how many requests Ignition keeps in flight with the PLC. The default is 2 according to the driver settings page. Raising it can reduce Ignition-side latency, and forum advice reports gains up to a point, but it increases load on the controller and too high a value can overwhelm the PLC. See {{lesson:ign-logix-driver}} for a tuning procedure.
+- **CIP connection size.** Forward Open requests use a connection size, 500 by default in common practice (the 8.3 settings page does not list a default). Larger sizes allow more per packet but need the controller and network to support them.
+- **Max concurrent requests.** This setting controls how many requests Ignition keeps in flight with the PLC. The default is commonly 2 (the 8.3 settings page does not list it). Raising it can reduce Ignition-side latency, and forum advice reports gains up to a point, but it increases load on the controller and too high a value can overwhelm the PLC. See {{lesson:ign-logix-driver}} for a tuning procedure.
 
 ### Controller tag design matters
 
