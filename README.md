@@ -48,6 +48,16 @@ anyone on that network could change your progress.
 
 `pythonw` runs it without a console window. To stop it, end "pythonw.exe" in Task Manager.
 
+## Keep it up to date automatically
+
+`python server.py --auto-update` checks GitHub every 5 minutes (`--auto-update 10` for every 10). When `main` has new
+commits it fast-forwards the folder with `git`. New or changed lessons show up on the next page load; if `server.py`
+itself changed, the server restarts on its own. It never touches local commits or uncommitted edits: if it can't
+fast-forward, it logs why and tries again later. The folder has to be a `git clone` and `git` has to be on PATH.
+
+PRs from Claude's `claude/*` branches merge into `main` by themselves once CI passes (`.github/workflows/ci.yml`),
+so a change Claude makes reaches the PC within a few minutes of its checks going green.
+
 ## What's inside
 
 | Path | What it is |

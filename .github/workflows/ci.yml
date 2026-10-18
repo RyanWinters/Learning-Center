@@ -1,0 +1,43 @@
+# Checks every PR. PRs from Claude's branches (claude/*) merge into main on their own once the checks pass.
+# The PC running server.py --auto-update then pulls main and picks the change up.
+name: CI
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: node tools/validate.js
+      - run: node tools/sim-test.js
+      - run: node tools/test-merge.js
+      - run: python tools/test_server.py
+
+  automerge:
+    needs: check
+    # Only branches pushed to this repo (not forks) whose name starts with claude/.
+    if: >-
+      github.event_name == 'pull_request' &&
+      startsWith(github.head_ref, 'claude/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.html_url }}
+    steps:
+      - run: gh pr ready "$PR" || true
+      - run: gh pr merge "$PR" --merge --match-head-commit "${{ github.event.pull_request.head.sha }}"
