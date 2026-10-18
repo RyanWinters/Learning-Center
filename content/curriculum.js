@@ -13,7 +13,8 @@ LC.tracks = [
   { id: "arch", code: "T6", title: "Ignition Architecture & Modules", blurb: "Gateway network, EAM, redundancy, Edge, MQTT, reporting, SFCs, WebDev, Event Streams, containers." },
   { id: "db", code: "T7", title: "Databases", blurb: "SQL from zero, schema design, indexing, time-series storage and historians." },
   { id: "mes", code: "T8", title: "MES, Level 3/4 & Industry 4.0", blurb: "OEE, track & trace, batch, SPC, Sepasoft, ERP integration and the Unified Namespace." },
-  { id: "int", code: "T9", title: "The Integrator's Craft", blurb: "Specs, standards, commissioning, naming, and architecting a multi-site system." }
+  { id: "int", code: "T9", title: "The Integrator's Craft", blurb: "Specs, standards, commissioning, naming, and architecting a multi-site system." },
+  { id: "build", code: "LB", title: "Ignition Build Labs", blurb: "Hands-on builds in the free Ignition Maker Edition: a motor from PLC UDT to faceplate, alarms, history and an OEE screen." }
 ];
 
 /* [id, title, prereqs[], minutes, level(1-4)] */
@@ -27,6 +28,8 @@ LC.lessonIndex = [
   ["found-pid-docs", "Reading P&IDs, loop sheets and I/O lists", ["found-signals"], 20, 2],
   ["found-jargon", "Jargon survival guide", ["found-purdue"], 10, 1],
   ["found-roles", "Who's who: end users, OEMs and system integrators", ["found-history"], 10, 1],
+  ["found-elec-safety", "Electrical safety in the plant", ["found-devices"], 15, 1],
+  ["found-motor-control", "Motor control circuits and output wiring", ["found-devices", "found-signals"], 25, 2],
 
   // T1 Networking
   ["net-data", "Bits, bytes, hex and data types", ["found-signals"], 20, 1],
@@ -39,6 +42,8 @@ LC.lessonIndex = [
   ["net-security", "Firewalls, DMZs and ISA/IEC 62443", ["net-vlan", "found-purdue"], 30, 3],
   ["net-wireless", "Wireless and cellular in the plant", ["net-routing"], 15, 2],
   ["net-troubleshoot", "Troubleshooting toolkit: ping to Wireshark", ["net-routing"], 25, 2],
+  ["net-timesync", "Time synchronization and sequence of events", ["net-routing"], 20, 3],
+  ["net-ot-monitoring", "OT monitoring, asset inventory and data diodes", ["net-security"], 20, 4],
 
   // T2 Protocols
   ["proto-serial", "Serial: RS-232, RS-422 and RS-485", ["net-data"], 20, 1],
@@ -78,8 +83,10 @@ LC.lessonIndex = [
   // T4 Ignition fundamentals
   ["ign-what", "What Ignition is and why it changed SCADA", ["found-purdue"], 15, 1],
   ["ign-architecture", "Gateway, Designer, clients and modules", ["ign-what"], 20, 1],
+  ["ign-licensing", "Licensing, editions and sizing", ["ign-architecture"], 20, 3],
   ["ign-install", "Installing, commissioning and the Gateway web UI (8.3)", ["ign-architecture"], 25, 2],
   ["ign-devices", "Device connections and the OPC UA server", ["ign-install", "proto-opc"], 25, 2],
+  ["ign-logix-driver", "The Logix driver in practice: tuning and bad-quality triage", ["ign-devices", "plc-tags"], 25, 3],
   ["ign-tags", "Tags and tag providers", ["ign-devices"], 25, 2],
   ["ign-udts", "UDTs in Ignition", ["ign-tags"], 30, 2],
   ["ign-expressions", "The expression language", ["ign-tags"], 20, 2],
@@ -157,7 +164,14 @@ LC.lessonIndex = [
   ["int-commissioning", "Commissioning and I/O checkout", ["int-lifecycle", "found-pid-docs"], 20, 3],
   ["int-naming", "Tag naming and system-wide standards", ["plc-udt", "ign-udts"], 25, 3],
   ["int-capstone", "Capstone: architect a multi-site system", ["arch-patterns", "mes-uns", "db-schema", "int-naming"], 45, 4],
-  ["int-career", "Certifications and career path", ["int-lifecycle"], 10, 1]
+  ["int-career", "Certifications and career path", ["int-lifecycle"], 10, 1],
+
+  // Build labs (hands-on, Ignition Maker Edition)
+  ["build-setup", "Lab 0: Set up your home lab", ["ign-install"], 45, 2],
+  ["build-motor-udt", "Lab 1: A motor from PLC UDT to Ignition UDT", ["build-setup", "ign-udts", "plc-udt"], 60, 3],
+  ["build-faceplate", "Lab 2: A motor faceplate from one tagPath", ["build-motor-udt", "persp-embedding"], 60, 3],
+  ["build-alarms-history", "Lab 3: Alarms and history for the motor", ["build-faceplate", "ign-alarming", "ign-historian"], 45, 3],
+  ["build-oee", "Lab 4: A line OEE screen", ["build-alarms-history", "mes-oee", "ign-databases"], 75, 4]
 ];
 
 /* Glossary files load at startup. One file per content batch to avoid edit collisions. */
@@ -191,5 +205,8 @@ window.LC_GLOSSARY_FILES = [
   "content/glossary/c5.js",
   "content/glossary/c6.js",
   "content/glossary/c7.js",
-  "content/glossary/c8.js"
+  "content/glossary/c8.js",
+  "content/glossary/d1.js",
+  "content/glossary/d2.js",
+  "content/glossary/d3.js"
 ];

@@ -148,6 +148,11 @@ for (const f of files) {
     if (x.url && !/^https:\/\//.test(x.url)) err(id, `resource ${i + 1} url must be https`);
     if (x.type && !types.has(x.type)) err(id, `resource ${i + 1} bad type ${x.type}`);
   });
+  if (l.checklist !== undefined) {
+    if (!Array.isArray(l.checklist) || !l.checklist.length || l.checklist.some((c) => typeof c !== "string" || !c.trim()))
+      err(id, "checklist must be a non-empty array of strings");
+  }
+  if (id.startsWith("build-") && !l.checklist) err(id, "build labs need a checklist");
   const src = JSON.stringify(l);
   if (/VERIFY:/.test(src)) warn(id, "contains VERIFY flags");
 }
