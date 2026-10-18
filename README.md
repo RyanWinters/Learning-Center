@@ -1,7 +1,7 @@
 # Learning Center
 
-A self-hosted course for becoming an Ignition and controls integrator. It has 121 lessons across 10 tracks, from field
-devices and 4–20 mA up to MES, the Unified Namespace and multi-site architecture. There's also a ladder-logic simulator with graded
+A self-hosted course for becoming an Ignition and controls integrator. It has 127 lessons across 10 tracks plus 5 hands-on Ignition Build Labs, from field
+devices and 4–20 mA up to MES, the Unified Namespace and multi-site architecture. There's also a ladder-logic simulator with 26 graded
 challenges, a tap-anywhere glossary, quizzes, a review queue, and XP, streaks and badges.
 
 Your progress is stored on the PC that runs the server, so your phone and PC always show the same progress.

@@ -1,5 +1,8 @@
 # Improvement plan (from 8 persona reviews)
 
+**Status: all five phases done.** Per-track changelogs (fixed / rejected / softened): `docs/reviews/fixes-*.md`.
+Second-pass reviews of the remaining lessons: `docs/reviews/pass2-*.md`.
+
 Reviewers (Haiku): veteran integrator, total beginner, electrical engineer, software engineer, the owner (process
 control engineer → integrator), mobile UX designer, senior Allen-Bradley programmer, OT network/security engineer.
 Each read 5–7 lessons plus the relevant screens, sim files or code. Together they covered ~45 of 121 lessons.
