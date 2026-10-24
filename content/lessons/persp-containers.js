@@ -9,7 +9,7 @@ LC.lesson({
   summary: "Every Perspective layout decision is a container choice. Learn what each container does to its children, and why flex-first views survive change.",
   objectives: [
     "Explain how a parent container interprets a child's position object",
-    "Compare coordinate, flex, column, breakpoint, tab, split and drawing containers and pick one for a task",
+    "Compare coordinate, flex, column, breakpoint, tab and split containers and pick one for a task",
     "Set flex direction, grow, shrink, basis, wrap, justify and align to build a layout that adapts",
     "Design one view that works on a phone and a desktop using breakpoints or wrapping flex",
     "Argue why flex-first layouts are cheaper to maintain than pixel-placed ones"
@@ -28,7 +28,6 @@ A Perspective view has a root component, and almost always that root is a contai
 | {{term:breakpoint-container|Breakpoint}} | Swaps whole child sets by container width | Genuinely different phone vs desktop layouts |
 | {{term:tab-container|Tab}} | One pane visible, tabs to switch | Settings pages, multi-section detail views |
 | {{term:split-container|Split}} | Two panes with a draggable divider | Master/detail, tree beside content |
-| Drawing | Vector shapes on a drawing surface | Custom graphics and process symbols |
 
 {{diagram:models}}
 

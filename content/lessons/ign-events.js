@@ -18,7 +18,7 @@ LC.lesson({
   body: `
 ## Why events matter
 
-Screens run only while someone is looking at them. A plant runs all night. Anything that must happen without an operator, like logging a batch when a PLC bit goes high, sending an email when a pump trips or resetting a counter at midnight, has to be triggered on the Gateway. Ignition gives you three families of Gateway-side triggers: **tag events**, **Gateway events** (startup, shutdown, timer, tag change, scheduled, message handlers), and, covered elsewhere, alarm pipelines. This lesson is about the first two and the shared machinery under them.
+Screens run only while someone is looking at them. A plant runs all night. Anything that must happen without an operator, like logging a batch when a PLC bit goes high, sending an email when a pump trips or resetting a counter at midnight, has to be triggered on the Gateway. Ignition gives you three families of Gateway-side triggers: **tag events**, **Gateway events** (startup, shutdown, update, timer, tag change, scheduled, message handlers), and, covered elsewhere, alarm pipelines. This lesson is about the first two and the shared machinery under them.
 
 All of them run Python (Jython) in the Gateway scope you met in {{lesson:ign-scripting}}. That means no \`self\`, no component and no client. You get \`system.*\` functions, the Gateway's resources and nothing else.
 
@@ -92,9 +92,9 @@ A **scheduled script** runs at calendar times, using a cron-style schedule or a 
 
 ## Message handlers
 
-A {{term:gateway-message-handler|message handler}} is a named script that runs when someone sends it a message. The sender calls \`system.util.sendMessage(project, handlerName, payload, scope)\`. The payload is a dictionary. The scope picks where it runs: the Gateway (\`"G"\`), clients, or both. Related calls \`system.util.sendRequest\` and \`sendRequestAsync\` wait for or collect a return value.
+A {{term:gateway-message-handler|message handler}} is a named script that runs when someone sends it a message. The sender calls \`system.util.sendMessage(project, handlerName, payload, scope)\`. The payload is a dictionary. The scope picks where it runs: the Gateway (\`"G"\`), Vision clients (\`"C"\`), Perspective sessions (\`"S"\`) or any combination; leave it out and it goes to all three. Related calls \`system.util.sendRequest\` and \`sendRequestAsync\` wait for or collect a return value.
 
-Messages decouple the **trigger** from the **work**. A tag event script that must do something slow should do nothing but send a message, then return. The handler does the heavy lifting on its own thread. A Perspective button can use the same handler a tag event uses, so the logic lives in one place.
+Messages decouple the **trigger** from the **work**. A tag event script that must do something slow should do nothing but send a message, then return. The handler does the heavy lifting on the message-handler thread pool (or its own thread, if you set it to Dedicated). A Perspective button can use the same handler a tag event uses, so the logic lives in one place.
 
 ## Event queues and why long scripts are dangerous
 
@@ -248,7 +248,7 @@ Early Ignition (7.x) had separate "client event scripts" and "Gateway event scri
         "That blocks a shared tag event worker for eight seconds.",
         "A shared timer would block every other shared timer for the same time.",
         "A client may not be open, and the job must run unattended.",
-        "Correct. The trigger returns immediately and the slow work runs on its own thread."
+        "Correct. The trigger returns immediately and the slow work runs in the message handler."
       ]
     },
     {

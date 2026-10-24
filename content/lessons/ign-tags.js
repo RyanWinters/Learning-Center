@@ -54,7 +54,7 @@ The tag's **Value Source** property sets its type.
 
 A memory tag is the default type. It is also the right place for operator-entered values that no PLC needs to know about. A reference tag is the cheapest way to give one value a second name. A derived tag is a reference tag that also converts: its read expression uses \`{source}\` and its write expression uses \`{value}\`, so an operator who types a Celsius setpoint writes Fahrenheit to the source.
 
-A value written to a memory tag is saved with the tag's configuration, so it normally survives a Gateway restart (check the 8.3 manual's Memory Tags page for your version). That doesn't make memory tags the right home for process setpoints: the PLC can't see them, they live on one Gateway, and a tag import or project restore can overwrite them. Keep setpoints the process depends on in the PLC, or in a database when they need history or approval.
+Whether a value written to a memory tag survives a Gateway restart depends on its **Value Persistence** setting, which by default is inherited from the tag provider: None reverts to the Default Value on restart, Database keeps written values in a local store, and Configuration writes them into the tag configuration (use it sparingly). That doesn't make memory tags the right home for process setpoints: the PLC can't see them, they live on one Gateway, and a tag import or project restore can overwrite them. Keep setpoints the process depends on in the PLC, or in a database when they need history or approval.
 
 ## Tag groups decide what everything costs
 
@@ -64,7 +64,7 @@ Every tag runs in a **tag group** (called a scan class in Ignition 7.9). The gro
 |---|---|---|
 | Direct | One fixed rate | Default for almost everything |
 | Driven | Runs at the base rate, switches to the faster *driven* rate while a condition on the group is true | Fast sampling only during a batch or an alarm |
-| Leased | Runs at the slow base rate until something is looking at the tag (a screen, a history or alarm demand), then switches to the leased rate | Thousands of detail tags that matter only when a screen is open |
+| Leased | Runs at the slow base rate until the tag is shown on an open window or view, then switches to the leased rate | Thousands of detail tags that matter only when a screen is open |
 
 {{diagram:flow}}
 

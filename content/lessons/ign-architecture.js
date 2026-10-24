@@ -28,7 +28,7 @@ A Gateway has three jobs.
 
 1. **Run the engine.** Device connections poll PLCs, tags evaluate, the historian writes to the database, alarm pipelines fire, and Gateway scripts execute.
 2. **Serve projects.** It hands project resources to Designers and clients and executes the server-side half of Perspective sessions.
-3. **Host the admin web UI.** At \`http://host:8088\` you get Status pages (what is happening) and Config pages (what is configured), plus links to download launchers.
+3. **Host the admin web UI.** At \`http://host:8088\` you get sections such as Home, Platform, Connections, Services and Diagnostics (8.1 split them into Status and Config pages), plus links to download launchers.
 
 The Gateway web UI is where you set up database connections, device connections, tag providers, security, alarm settings and modules. Project content like views and scripts is not configured here. You edit it in the Designer.
 
@@ -94,14 +94,14 @@ Gateway-level items are shared by every project on that Gateway. Project-level i
 
 Ignition scripts always run in a scope, and the scope tells you which machine's CPU and memory they use.
 
-- **Gateway scope**: scripts run in the Gateway JVM. Gateway event scripts, tag event scripts, alarm pipeline scripts and Perspective session scripts all run here.
+- **Gateway scope**: scripts run in the Gateway JVM. Gateway event scripts, tag event scripts, alarm pipeline scripts run here, and Perspective scripts run in this JVM too, in the Perspective Session scope.
 - **Designer scope**: scripts run in the Designer while you edit, including the script console and preview mode.
 - **Client scope**: Vision client scripts run in the client JVM on the operator PC.
 
-Perspective is the surprise. Although it feels like a web client, the scripts you write for it (component events, script transforms, session events) execute in the Gateway scope, not in the browser. The browser only receives rendered updates. Confirm the details in the Perspective scripting pages of the manual for your version. That makes \`system.util.getLogger\` output appear in the Gateway logs, and it means \`system.file.*\` functions touch the server's disk, not the operator's.
+Perspective is the surprise. Although it feels like a web client, the scripts you write for it (component events, script transforms, session events) execute on the Gateway (Perspective Session scope), not in the browser. The browser only receives rendered updates. Confirm the details in the Perspective scripting pages of the manual for your version. That makes \`system.util.getLogger\` output appear in the Gateway logs, and it means \`system.file.*\` functions touch the server's disk, not the operator's.
 
 > [!example] Where did that file save?
-> A Perspective button runs \`system.file.writeFile("C:/export.csv", data)\`. You test it in a browser on your laptop and find no file. The script ran in the Gateway scope, so the file is on the server's C: drive. Use \`session.props\` or a download-style component to hand the file to the user instead.
+> A Perspective button runs \`system.file.writeFile("C:/export.csv", data)\`. You test it in a browser on your laptop and find no file. The script ran on the Gateway, so the file is on the server's C: drive. Use \`session.props\` or a download-style component to hand the file to the user instead.
 
 ## Worked trace: one tag value to one screen
 
@@ -165,7 +165,7 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
   },
 
   pitfalls: [
-    "Assuming Perspective scripts run in the browser. They run in the Gateway scope.",
+    "Assuming Perspective scripts run in the browser. They run on the Gateway.",
     "Testing a script only in the Designer script console, where the scope and session context differ.",
     "Forgetting that devices, databases and tag providers are Gateway-level and shared by all projects.",
     "Loading many heavy sessions on an undersized Gateway because 'licensing is unlimited'.",
@@ -182,7 +182,7 @@ Early Ignition versions used FactoryPMI-style Java web-launched clients, which b
       explain: [
         "The browser is only a display. The script does not run there.",
         "A download needs a mechanism designed to send a file to the browser.",
-        "Correct. Perspective scripts run in the Gateway scope, so file functions act on the server.",
+        "Correct. Perspective scripts run on the Gateway, so file functions act on the server.",
         "writeFile writes to a filesystem path, not to SQL."
       ]
     },
