@@ -109,7 +109,8 @@
         '<div class="lactions" id="l-actions">' + actionsBlock() + '</div></header>' +
       prereqStrip(m) +
       (L.objectives && L.objectives.length ? '<section class="objectives"><h2 class="label">You will be able to</h2><ul>' + L.objectives.map(o => '<li>' + LC.md.inline(o) + '</li>').join('') + '</ul></section>' : '') +
-      '<div class="modebar"><div class="seg" role="group" aria-label="Reading mode"><button type="button" class="seg-btn" data-mode="full" aria-pressed="' + (mode === 'full') + '">Full lesson</button><button type="button" class="seg-btn" data-mode="eli5" aria-pressed="' + (mode === 'eli5') + '">' + icon('spark', 15) + 'ELI5</button></div></div>' +
+      '<div class="modebar"><div class="seg" role="group" aria-label="Reading mode"><button type="button" class="seg-btn" data-mode="full" aria-pressed="' + (mode === 'full') + '">Full lesson</button><button type="button" class="seg-btn" data-mode="eli5" aria-pressed="' + (mode === 'eli5') + '">' + icon('spark', 15) + 'ELI5</button></div>' +
+        '<button type="button" class="btn btn-sm ask-claude" data-tutor>' + icon('spark', 16) + 'Ask Claude</button></div>' +
       '<section class="eli5-panel" id="eli5" ' + (mode === 'eli5' ? '' : 'hidden') + '><p class="label">In plain words</p><div class="prose">' + md(L.eli5 || '') + '</div></section>' +
       '<button type="button" class="fold-btn" id="fold" ' + (mode === 'eli5' ? '' : 'hidden') + ' aria-expanded="false">' + icon('down', 18) + 'Read the full lesson</button>' +
       '<div id="bodyWrap" ' + (bodyOpen ? '' : 'hidden') + '>' +
@@ -210,6 +211,7 @@
       const mb = e.target.closest('[data-mode]');
       if (mb) { mode = mb.dataset.mode; bodyOpen = mode === 'full'; apply(); return; }
       if (e.target.closest('#fold')) { bodyOpen = true; apply(); return; }
+      if (e.target.closest('[data-tutor]')) { LC.tutor.open(L, m); return; }
       if (e.target.closest('[data-skip]')) { LC.graph.skip([id]); refresh(); U.toast('<span class="toast-xp">Marked as known</span><span class="toast-sub">No XP. You can undo this here.</span>', 'info'); return; }
       if (e.target.closest('[data-unskip]')) { LC.graph.unskip(id); refresh(); return; }
       if (e.target.closest('[data-markread]')) { readNow(); return; }

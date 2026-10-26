@@ -22,6 +22,15 @@ Use `--port 9000` to change the port. Progress is saved to `data/progress.json`,
 
 The server only serves `index.html`, `assets/` and `content/`. `docs/`, `tools/`, `server.py`, `data/` and dotfiles return 404.
 
+## Ask Claude
+
+Every lesson has an **Ask Claude** button. It opens a tutor chat that walks you through the lesson in small
+chunks, each with an everyday analogy and a quick-check question, and waits for your answer before moving on.
+`server.py` answers by running the [Claude Code](https://claude.com/claude-code) CLI on the same PC
+(`claude -p`, Opus, no tools), so it uses your Claude plan and needs no API key. The CLI must be installed and
+signed in; if `claude` isn't on PATH, set `LC_CLAUDE` to its full path. Each lesson's chat is kept in that
+browser, and **Start over** clears it.
+
 ## Use it from your phone with Tailscale
 
 The server only listens on the PC itself (127.0.0.1). Tailscale publishes it privately to your devices:
@@ -63,7 +72,7 @@ so a change Claude makes reaches the PC within a few minutes of its checks going
 | `content/sim/*.js` | Ladder simulator challenges (`index.js` lists them) |
 | `content/files/` | Downloads linked from lessons: FDS outline, HMI checklist, I/O list template, naming sheet |
 | `autoupdate.pyw` | Runs the server and pulls new commits from `main` every 5 minutes |
-| `server.py` | Static file server plus the progress API (`/api/progress`, which needs an `X-LC: 1` header) |
+| `server.py` | Static file server plus the progress API (`/api/progress`) and the tutor (`/api/tutor`); both need an `X-LC: 1` header |
 | `tools/validate.js` | Checks every lesson, quiz, diagram and glossary reference |
 | `tools/sim-test.js` | Runs every simulator challenge's solution against its tests |
 | `docs/` | The original plan, specs, writer guide, house standard and verified-facts list used to build this. `docs/reviews/` holds the review and audit notes |

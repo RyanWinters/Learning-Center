@@ -691,3 +691,30 @@ a.mono-tag { text-decoration: none; color: var(--muted); } a.mono-tag:hover { co
 .xc-empty { font: 14px var(--font-body); fill: var(--muted); }
 .xc-l { font-size: 12px; }
 @media (max-width: 640px) { .lv-row { grid-template-columns: auto 64px minmax(0, 1fr) auto; } .ready-hero { flex-direction: column; align-items: flex-start; } }
+
+/* Ask Claude tutor */
+.modebar { align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ask-claude { color: var(--accent); border-color: var(--accent); }
+.ask-claude:hover { background: var(--accent-soft); }
+.sheet.tutor { display: flex; flex-direction: column; height: 88vh; overflow: hidden; }
+.tutor-head { display: flex; align-items: center; gap: 6px; }
+.tutor-head .sheet-title { display: flex; align-items: center; gap: 8px; margin: 0 auto 0 0; color: var(--accent); }
+.tutor-sub { margin: 2px 0 10px; }
+.tutor-log { position: relative; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 12px; overscroll-behavior: contain; }
+.tmsg { max-width: 100%; padding: 12px 16px; border-radius: var(--radius-lg); }
+.tmsg-claude { background: var(--surface-2); align-self: flex-start; }
+.tmsg-claude.prose { font-size: 1rem; }
+.tmsg-claude.prose h2, .tmsg-claude.prose h3 { margin-top: 1em; padding-top: 0; border-top: 0; font-size: 1.15rem; }
+.tmsg-claude.prose > :first-child { margin-top: 0; }
+.tmsg-you { background: var(--accent); color: var(--accent-fg); align-self: flex-end; max-width: 85%; }
+.tmsg-err { background: var(--alarm-soft); color: var(--alarm); }
+.tmsg-wait .dots { display: inline-flex; gap: 3px; margin-left: 6px; }
+.tmsg-wait .dots i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: tdot 1.2s infinite ease-in-out; }
+.tmsg-wait .dots i:nth-child(2) { animation-delay: 0.2s; }
+.tmsg-wait .dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tdot { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tmsg-wait .dots i { animation: none; opacity: 0.6; } }
+.tutor-form { display: flex; gap: 8px; align-items: flex-end; padding-top: 10px; border-top: 1px solid var(--line); }
+.tutor-form textarea { flex: 1; min-height: 44px; max-height: 30vh; resize: vertical; padding: 10px 12px; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--fg); font: inherit; }
+.tutor-form textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (min-width: 641px) { .sheet.tutor { width: min(760px, 94vw); height: 86vh; } }
