@@ -27,7 +27,7 @@ Ignition scripting is **Jython 2.7**: the Python 2.7 language implemented on the
 - Python 3 is not available. Plan for 2.7 behaviour: integer division, \`dict.has_key\`, \`xrange\`.
 
 > [!note] In 8.1
-> 8.1 and 8.3 both run Jython 2.7. The scripting model in this lesson applies to both. The legacy functions \`system.tag.read\`, \`readAll\`, \`write\` and \`writeAll\` were replaced by the *Blocking* versions in the 8.0 line. If you see old code using them, migrate.
+> 8.1 and 8.3 both run Jython 2.7. The scripting model in this lesson applies to both. The legacy functions \`system.tag.read\` and \`readAll\` were replaced by \`readBlocking\`, and \`write\` and \`writeAll\` by \`writeAsync\` (\`writeBlocking\` replaced \`writeSynchronous\`), in Ignition 8. If you see old code using them, migrate.
 
 ## The scopes: where does this code run?
 
@@ -38,8 +38,8 @@ A **scope** is the process and thread context in which a script executes. It dec
 | Scope | Runs in | Typical places | Library notes |
 |---|---|---|---|
 | Gateway | The Gateway JVM, shared by everyone | Tag event scripts, Gateway timer and message events, alarm pipelines, WebDev, startup/shutdown | Has \`system.tag\`, \`system.db\`, \`system.util\`, \`system.net\`. No client GUI functions |
-| Perspective session | The Gateway JVM, on behalf of one browser session | Component events, view and session events, binding transforms and script transforms | Adds \`system.perspective\`. Runs on Gateway threads, so there are no popups through \`system.gui\` |
-| Vision client | The client's own JVM on the operator's PC | Vision component events, client scripts | Adds \`system.gui\`, \`system.nav\`, \`system.printing\`. Calls to tags and databases travel to the Gateway over the network |
+| Perspective session | The Gateway JVM, on behalf of one browser session | Component events, view and session events, binding transforms and script transforms | Adds \`system.perspective\`. Runs on Gateway threads, so there are no popups through \`system.vision\` |
+| Vision client | The client's own JVM on the operator's PC | Vision component events, client scripts | Adds \`system.vision\` (windows, popups, navigation; \`system.gui\` and \`system.nav\` in 8.1, deprecated in 8.3). Calls to tags and databases travel to the Gateway over the network |
 | Designer | The Designer's JVM | The Script Console, project tooling | Close to client scope. Great for tests. Not representative of production timing |
 
 Perspective is easy to misread: despite living "in the browser", its Python runs on the Gateway. A Perspective button script that reads 50 tags makes no network hops from a client, but it shares the Gateway with everyone else, so slow code hurts every user.
@@ -77,15 +77,15 @@ for r in rows:
     print r["name"]
 \`\`\`
 
-Always bind values through \`?\` placeholders (the prepared forms \`runPrepQuery\` and \`runPrepUpdate\` shown here). String-building SQL invites injection and quoting bugs. The \`system.db.run*\` family is on the 8.3 deprecated list but still works, so check the 8.3 manual for the \`exec*\` equivalent before writing new code. For anything reused, call a **named query** with \`system.db.execQuery\` (SELECT) or \`system.db.execUpdate\` (INSERT/UPDATE/DELETE). In 8.1 the single call was \`system.db.runNamedQuery\`, deprecated in 8.3 but still working. See {{lesson:ign-databases}}.
+Always bind values through \`?\` placeholders (the prepared forms \`runPrepQuery\` and \`runPrepUpdate\` shown here). String-building SQL invites injection and quoting bugs. The prepared forms are current in 8.3. The non-prepared \`runQuery\`, \`runUpdateQuery\` and \`runScalarQuery\` are on the 8.3 deprecated list (they still run), replaced by the prepared forms or \`exec*\`. For anything reused, call a **named query** with \`system.db.execQuery\` (SELECT) or \`system.db.execUpdate\` (INSERT/UPDATE/DELETE). In 8.1 the single call was \`system.db.runNamedQuery\`, deprecated in 8.3 but still working. See {{lesson:ign-databases}}.
 
 ### system.util
 
-\`getLogger\` (below), \`sendMessage\` and \`sendRequest\` (message handlers across scopes), \`invokeAsynchronous\` and \`invokeLater\` (threading), \`getGlobals\`, \`jsonEncode\`/\`jsonDecode\`, and \`getProjectName\`.
+\`getLogger\` (below), \`sendMessage\` and \`sendRequest\` (message handlers across scopes), \`invokeAsynchronous\` (threading; its Vision partner \`invokeLater\` is \`system.vision.invokeLater\` in 8.3), \`getGlobals\`, \`jsonEncode\`/\`jsonDecode\`, and \`getProjectName\`.
 
 ### system.perspective
 
-Perspective-only helpers: \`navigate\`, \`openPopup\`/\`closePopup\`, \`sendMessage\`, \`getSessionInfo\`, \`print\`, \`download\`, \`refreshBinding\`. They need a session, so they fail in a Gateway timer script that has no session.
+Perspective-only helpers: \`navigate\`, \`openPopup\`/\`closePopup\`, \`sendMessage\`, \`getSessionInfo\`, \`print\`, \`download\` (\`refreshBinding\` is a component method, \`self.refreshBinding(...)\`). They act on a session, so from a Gateway timer script most of them work only if you pass \`sessionId\` and \`pageId\`.
 
 ## Where code lives: the project script library
 
@@ -104,7 +104,7 @@ if shared.motors.startMotor(self.view.params.tagPath):   # [default]Plant1/Area1
     system.util.getLogger("shared.motors").info("Start sent")
 \`\`\`
 
-Libraries are inherited between projects, so a "global" parent project can carry the shared code for all child projects. Tag event scripts differ: they can only call functions defined in the **Gateway Script Project**, the project designated for Gateway-level scripting, so shared tag logic must be there. See {{lesson:ign-projects}}.
+Libraries are inherited between projects, so a "global" parent project can carry the shared code for all child projects. Tag event scripts differ: they can only call functions defined in the **Gateway Scripting Project**, the project designated for Gateway-level scripting, so shared tag logic must be there. See {{lesson:ign-projects}}.
 
 ## Logging, not printing
 
@@ -119,13 +119,13 @@ if log.isDebugEnabled():
     log.debug("State dump: %s" % expensive_dump())
 \`\`\`
 
-Levels run trace, debug, info, warn, error. The default threshold is info, so debug lines are dropped until you raise the level on the Gateway's Logs page (the change lasts until restart). Loggers appear on the Gateway's Diagnostics logs page and in \`wrapper.log\`.
+Levels run trace, debug, info, warn, error. The default threshold is info, so debug lines are dropped until you raise the level on the Gateway's Logs page (the change lasts until restart). Gateway and Perspective loggers appear on the Gateway's Diagnostics > Logs page; Vision client loggers go to the client's console.
 
 ## Threads and blocking
 
 Every script runs on a thread that someone else is waiting on.
 
-- **Vision/Designer:** a long call on the GUI thread freezes the screen. Use \`system.util.invokeAsynchronous(fn)\` for the slow part, then \`invokeLater\` to update the UI.
+- **Vision/Designer:** a long call on the GUI thread freezes the screen. Use \`system.util.invokeAsynchronous(fn)\` for the slow part, then \`system.vision.invokeLater\` (\`system.util.invokeLater\` in 8.1) to update the UI.
 - **Gateway:** tag change scripts and Gateway events run on shared pools. A script that sleeps, waits for a lock or hits a slow web service holds a thread, and other events queue behind it. Never use \`time.sleep\` in a tag change script.
 - **Perspective:** a session's events run on Gateway threads for that session. A 10-second query blocks that user's event, and if enough users do it, the pool.
 
@@ -206,7 +206,7 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
   <text class="dg-text-sm" x="42" y="214">Tags, databases, project library</text>
   <rect class="dg-box" x="420" y="30" width="204" height="82" rx="6"/>
   <text class="dg-text-sm" x="432" y="54">Vision client JVM</text>
-  <text class="dg-text-muted" x="432" y="74">client scope, system.gui</text>
+  <text class="dg-text-muted" x="432" y="74">client scope, system.vision</text>
   <text class="dg-text-muted" x="432" y="92">own threads, GUI freezes</text>
   <rect class="dg-box" x="420" y="146" width="204" height="82" rx="6"/>
   <text class="dg-text-sm" x="432" y="170">Designer JVM</text>
@@ -224,7 +224,7 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
     "Using time.sleep or slow web or database calls in Gateway tag scripts or on the GUI thread.",
     "Leaving the provider off tag paths so scripts behave differently by scope.",
     "Using print for diagnostics in production instead of a named logger.",
-    "Calling system.perspective functions from scopes that have no session."
+    "Calling system.perspective functions from Gateway scope without a sessionId and pageId."
   ],
 
   keyTerms: ["ign-jython", "ign-scripting-scope", "ign-readblocking", "ign-project-library", "ign-script-logger", "ign-qualified-value", "gateway-scripting-project"],
@@ -265,11 +265,11 @@ And if you tell the cook "stand still for ten minutes while you wait for the del
     },
     {
       q: "A tag value-changed script needs to call a shared function. Where must the function be defined?",
-      options: ["Any project's library", "In the Gateway Script Project", "In a Vision window", "In the Designer's Script Console"],
+      options: ["Any project's library", "In the Gateway Scripting Project", "In a Vision window", "In the Designer's Script Console"],
       answer: 1,
       explain: [
         "Tag event scripts run in the Gateway and use the Gateway scripting project, not an arbitrary project.",
-        "Correct. Tag event scripts can only call code from the Gateway Script Project.",
+        "Correct. Tag event scripts can only call code from the Gateway Scripting Project.",
         "Windows exist only in Vision clients.",
         "The Script Console is for testing and doesn't persist code."
       ]

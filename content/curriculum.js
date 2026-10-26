@@ -15,6 +15,7 @@ LC.tracks = [
   { id: "mes", code: "T8", title: "MES, Level 3/4 & Industry 4.0", blurb: "OEE, track & trace, batch, SPC, Sepasoft, ERP integration and the Unified Namespace." },
   { id: "int", code: "T9", title: "The Integrator's Craft", blurb: "Specs, standards, commissioning, naming, and architecting a multi-site system." },
   { id: "hmi", code: "HD", title: "HMI & Screen Design", blurb: "How operators see and decide, and how to lay out, color, label and test screens so the right thing is obvious at a glance." },
+  { id: "dev", code: "DO", title: "DevOps for Integrators", blurb: "Linux, Bash, Git, Docker, CI and Python outside Ignition, plus IEC Structured Text: the theory behind containerized, version-controlled systems." },
   { id: "build", code: "LB", title: "Ignition Build Labs", blurb: "Hands-on builds in the free Ignition Maker Edition: a motor from PLC UDT to faceplate, alarms, history and an OEE screen." }
 ];
 
@@ -178,6 +179,18 @@ LC.lessonIndex = [
   ["hmi-process", "Designing with operators: task analysis, style guides and testing", ["hmi-interaction", "persp-hphmi"], 20, 3],
   ["hmi-redesign", "Workshop: redesigning a bad screen", ["hmi-process", "hmi-dataviz", "hmi-abnormal"], 20, 4],
 
+  // DevOps for Integrators
+  ["dev-linux", "Linux essentials for integrators", ["net-data"], 25, 2],
+  ["dev-linux-services", "Linux services and troubleshooting", ["dev-linux", "net-troubleshoot"], 25, 2],
+  ["dev-bash", "Bash scripting for integrators", ["dev-linux"], 25, 2],
+  ["dev-git", "How Git works", ["dev-bash", "ign-versioning"], 25, 2],
+  ["dev-git-team", "Team Git workflow", ["dev-git"], 25, 3],
+  ["dev-docker", "Docker fundamentals", ["dev-linux-services"], 25, 2],
+  ["dev-compose", "Docker Compose and configuration", ["dev-docker"], 25, 3],
+  ["dev-ci", "CI/CD with GitHub Actions", ["dev-git-team", "dev-compose"], 25, 3],
+  ["dev-python", "Python for integrators outside Ignition", ["dev-bash", "proto-modbus", "ign-scripting"], 30, 3],
+  ["dev-iec-st", "IEC 61131-3 and Structured Text for Logix people", ["plc-other-vendors", "proto-modbus"], 30, 3],
+
   // Build labs (hands-on, Ignition Maker Edition)
   ["build-setup", "Lab 0: Set up your home lab", ["ign-install"], 45, 2],
   ["build-motor-udt", "Lab 1: A motor from PLC UDT to Ignition UDT", ["build-setup", "ign-udts", "plc-udt"], 60, 3],
@@ -234,5 +247,6 @@ window.LC_GLOSSARY_FILES = [
   "content/glossary/e11.js",
   "content/glossary/f1.js",
   "content/glossary/f2.js",
-  "content/glossary/f3.js"
+  "content/glossary/f3.js",
+  "content/glossary/g1.js"
 ];

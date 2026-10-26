@@ -26,10 +26,10 @@ Ignition 8.3 separates authentication into two strategies on the Gateway.
 
 | Strategy | Used by | Where users live |
 |---|---|---|
-| Classic | Designer, Vision clients | **User sources** |
-| Identity Provider | Perspective sessions | **Identity providers (IdPs)** |
+| Classic | Designer and Vision clients set to Classic | **User sources** |
+| Identity Provider | Perspective sessions, and optionally the Designer, Vision and the Gateway web interface | **Identity providers (IdPs)** |
 
-The Designer always logs in through the Classic strategy, even if your whole system is Perspective. So you need a user source for engineers and an IdP for operators. They can point at the same directory, but they are configured separately.
+The Designer uses whichever strategy the Gateway's **Designer Authentication Strategy** setting selects: Classic (a user source) or Identity Provider. With Classic you need a user source for engineers and an IdP for operators. They can point at the same directory, but they are configured separately.
 
 > [!note] In 8.1
 > Perspective also used user sources, selected per project. 8.3 moves Perspective to identity providers, and IdPs are not carried over by simply importing an 8.1 export, so plan to recreate them during an upgrade. Service security settings (who may call a Gateway service) also moved into security zone configuration. Confirm both points in the 8.1 to 8.3 upgrade guide for your build.
@@ -179,13 +179,13 @@ Early Ignition versions used simple user sources with roles, which carried throu
 
   quiz: [
     {
-      q: "In Ignition 8.3, an engineer opens the Designer and an operator opens a Perspective session. Where is each authenticated?",
+      q: "In Ignition 8.3, with the Designer Authentication Strategy set to Classic, an engineer opens the Designer and an operator opens a Perspective session. Where is each authenticated?",
       options: ["Designer through a user source (Classic), Perspective through an identity provider", "Both through the same user source", "Both through identity providers", "Designer needs no login on the Gateway machine"],
       answer: 0,
       explain: [
-        "Correct. 8.3 uses the Classic strategy (user sources) for Designer and Vision, and the Identity Provider strategy for Perspective.",
+        "Correct. With Classic selected, the Designer authenticates against a user source, and Perspective always uses the Identity Provider strategy.",
         "That was close to the 8.1 model for Perspective. In 8.3 they are configured separately.",
-        "The Designer uses the Classic strategy, which relies on user sources.",
+        "Here the Designer is set to Classic, which relies on user sources.",
         "The Designer always authenticates against the Gateway."
       ]
     },

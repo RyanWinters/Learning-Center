@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: node tools/validate.js
+      - run: node tools/sim-test.js
+      - run: node tools/test-merge.js
+      - run: python tools/test_server.py
+
+  # PRs from Claude's branches (claude/*) in this repo merge into main once the checks pass.
+  # autoupdate.pyw on the PC then pulls main within a few minutes.
+  automerge:
+    needs: check
+    if: >-
+      github.event_name == 'pull_request' &&
+      startsWith(github.head_ref, 'claude/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.html_url }}
+    steps:
+      - run: gh pr ready "$PR" || true
+      - run: gh pr merge "$PR" --merge --match-head-commit "${{ github.event.pull_request.head.sha }}"

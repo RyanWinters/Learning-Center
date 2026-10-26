@@ -91,7 +91,7 @@ A {{term:popup-view|popup}} floats over the current page. You can open it from a
 
 \`\`\`python
 system.perspective.openPopup(
-    id="motor-" + self.view.params.tag,   # unique per instance
+    id="motor-" + self.view.params.tagPath,   # unique per instance
     view="Faceplates/Motor",
     params={"tagPath": self.view.params.tagPath},
     title="M101",

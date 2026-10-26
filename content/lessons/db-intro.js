@@ -47,7 +47,7 @@ Store each fact once and refer to it by key. If Line 1 is renamed, you change on
 
 ## The engines you will meet
 
-Ignition connects to databases through {{term:jdbc|JDBC}} drivers. Its documentation lists MariaDB, MySQL, Microsoft SQL Server, PostgreSQL and SQLite as tested databases, with bundled drivers for the first four and a built-in one for SQLite. Other engines work if you install the vendor's JDBC driver, though some features may not.
+Ignition connects to databases through {{term:jdbc|JDBC}} drivers. Its documentation lists MariaDB, MySQL, Microsoft SQL Server, PostgreSQL, Oracle, IBM DB2, Firebird and SQLite as tested; drivers for the first four come with Ignition, SQLite's is built in, and Oracle, DB2 and Firebird need the vendor driver installed. Other engines work if you install the vendor's JDBC driver, though some features may not.
 
 | Engine | Strengths | Watch for |
 |---|---|---|
@@ -354,7 +354,7 @@ The relational model was proposed by E. F. Codd at IBM in 1970. SQL grew out of 
     },
     {
       q: "Which statement about the engines Ignition connects to is accurate?",
-      options: ["Only SQL Server is supported", "PostgreSQL requires the Tag Historian module to be removed", "NoSQL stores such as MongoDB are the default", "MariaDB, MySQL, SQL Server, PostgreSQL and SQLite are listed as tested, and others work through a vendor JDBC driver"],
+      options: ["Only SQL Server is supported", "PostgreSQL requires the Tag Historian module to be removed", "NoSQL stores such as MongoDB are the default", "MariaDB, MySQL, SQL Server, PostgreSQL and SQLite are among the databases listed as tested, and others work through a vendor JDBC driver"],
       answer: 3,
       explain: [
         "Several engines are supported, not just one.",

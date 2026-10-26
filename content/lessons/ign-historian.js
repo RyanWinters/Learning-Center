@@ -103,19 +103,19 @@ Query modes decide the shape of the answer. You request a time range, a **return
 | Average, Minimum, Maximum | Statistics per interval; time-weighted average counts how long each value held |
 | LastValue, Sum, Count | Closing value, total, or number of samples |
 | MinMax | Both extremes (for spike-preserving trends) |
-| PercentGood, DurationGood | Data quality over the window |
+| PctGood, PctBad | Share of the window with good or bad quality |
 
 \`\`\`python
 end = system.date.now()
 start = system.date.addHours(end, -24)
 ds = system.historian.queryAggregatedPoints(
     paths=["[default]Plant1/Area10/Line1/LT101"],
-    startDate=start, endDate=end,
+    startTime=start, endTime=end,
     returnSize=24, aggregates=["Average"])
 \`\`\`
 
 > [!note] In 8.1
-> The same query was \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=24, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Parameter names differ in the new functions, so check the 8.3 manual for the exact signature, including the keyword names used in the example above, before porting. For raw, uncompressed values use \`system.historian.queryRawPoints\`.
+> The same query was \`system.tag.queryTagHistory(paths, startDate, endDate, returnSize=24, aggregationMode="Average", returnFormat="Wide")\`. It is deprecated in 8.3 but still runs. Parameter names differ in the new functions, so check the 8.3 manual before porting (8.3 uses \`startTime\`/\`endTime\`, not \`startDate\`/\`endDate\`). For raw, uncompressed values use \`system.historian.queryRawPoints\`.
 
 Twenty-four hourly averages come back, no matter how many raw rows are underneath. Remember that an average hides spikes. Use MinMax or a max aggregate when the extremes matter, such as an over-temperature alarm review.
 

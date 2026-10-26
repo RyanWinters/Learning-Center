@@ -30,7 +30,7 @@ The relationship stays live. Edit the definition (add a member, change an alarm 
 
 If every instance had the same OPC path, they would all read the same PLC tag. **Parameters** fix that. A parameter is a named value on the definition that each instance sets for itself. You use it by wrapping its name in braces anywhere a property accepts text, most importantly the OPC item path.
 
-Ignition provides one parameter for free, \`{InstanceName}\`, the name of the instance. Anything else is a custom parameter you declare on the definition's root, such as \`PLC\` (the device connection name) or \`PlcTag\`.
+Ignition predefines a few parameters. The one you will use most is \`{InstanceName}\`, the name of the instance (others include \`{TagName}\`, \`{PathToTag}\`, \`{ParentInstanceName}\` and \`{RootInstanceName}\`). Anything else is a custom parameter you declare on the definition's root, such as \`PLC\` (the device connection name) or \`PlcTag\`.
 
 \`\`\`text
 ns=1;s=[{PLC}]{PlcTag}.Sts.Running
@@ -40,7 +40,7 @@ For the instance \`M101\` with \`PLC = PLC1\` and \`PlcTag = M101\`, that resolv
 
 Parameters are not limited to paths. They are available to expressions, alarm names and scripts on the same definition, and they can drive "is this a VFD or a starter?" decisions. Keep them few. Every parameter is something an engineer must fill in correctly 400 times.
 
-> [!tip] Parameters are strings
+> [!tip] Parameters land as text
 > Everything substitutes as text. Declare the data type on the parameter (string, integer, boolean and so on), but remember that what lands in the OPC path is text. Spaces or stray characters in a parameter value are a classic source of Bad_NotFound.
 
 ## Nesting, inheritance and overrides

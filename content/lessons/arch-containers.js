@@ -38,8 +38,8 @@ On a normal install, a new Gateway opens a commissioning wizard in the browser. 
 | \`GATEWAY_ADMIN_USERNAME\` | Name of the first admin user |
 | \`GATEWAY_ADMIN_PASSWORD\` | Its password. Plain text or a salted hash per the docs |
 | \`IGNITION_EDITION\` | \`standard\`, \`edge\` or \`maker\` |
-| \`IGNITION_LICENSE_KEY\` | License key for activation |
-| \`GATEWAY_MODULES_ENABLED\` | Comma-separated list of built-in modules to keep |
+| \`IGNITION_LICENSE_KEY\` | 8-character license key for leased activation (e.g. Maker Edition) |
+| \`GATEWAY_MODULES_ENABLED\` | Comma-separated list of module identifiers (built-in or third-party) to keep enabled |
 
 Any variable can be supplied as a file by adding \`_FILE\`, such as \`GATEWAY_ADMIN_PASSWORD_FILE\`. That suits Docker secrets and Kubernetes secrets, which mount values as files. Never put production passwords in a compose file you commit to git.
 
