@@ -13,9 +13,14 @@ API
     GET  /api/progress   -> the saved progress JSON ({} if none yet)
     PUT  /api/progress   -> body is the client's progress JSON; the server merges it
                             with what it has and returns the merged result.
-Both need the header `X-LC: 1`, and PUT needs `Content-Type: application/json`.
+    POST /api/tutor      -> body {"lesson": {"title", "text"}, "messages": [{"role", "content"}]};
+                            returns {"reply": "..."} from the Ask Claude tutor.
+All need the header `X-LC: 1`, and PUT/POST need `Content-Type: application/json`.
 A web page on another site can't send those without a CORS preflight, which this
 server never approves, so other sites can't read or overwrite your progress.
+
+The tutor runs the Claude Code CLI (`claude -p`) installed on this PC, so it uses your
+Claude plan and needs no API key. Set LC_CLAUDE to the CLI's full path if it isn't on PATH.
 
 No third-party packages. Python 3.8+.
 """
@@ -24,6 +29,7 @@ import json
 import os
 import posixpath
 import shutil
+import subprocess
 import tempfile
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -38,6 +44,34 @@ MAPS = ("lessons", "sims", "cards", "badges")
 PUBLIC_FILES = {"/", "/index.html"}
 PUBLIC_DIRS = ("/assets/", "/content/")
 lock = threading.Lock()
+
+TUTOR_MAX_LESSON = 200 * 1024  # characters
+TUTOR_MAX_TURNS = 80
+TUTOR_TIMEOUT = 240  # seconds per reply
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # pythonw: don't flash a console
+TUTOR_PROMPT = """You are the Ask Claude tutor inside Learning Center, Ryan's self-study app for industrial \
+automation (PLCs, SCADA, Ignition, networks, field devices). The lesson he has open is below. Lessons are \
+dense; your job is to walk him through this one so it actually sticks.
+
+How to teach:
+- Split the lesson into about 5 to 8 small chunks that follow its sections. Teach one chunk per message.
+- Each chunk: a short plain-language explanation, then one everyday analogy, then only the details that \
+matter in practice. Skip low-value table rows and trivia; he can read those in the lesson.
+- End every chunk with exactly one quick-check question that makes him apply the idea (a small scenario, \
+a number to work out, a "what happens if"), not one he can answer by copying a sentence. Then stop and \
+wait for his answer. Never answer your own question.
+- If he's right, say so in a line, add one useful nuance if there is one, and move to the next chunk.
+- If he's wrong or unsure, don't just give the answer. Show the mechanism or the math step by step, \
+then ask a similar check question before moving on.
+- Link back to earlier chunks when a new idea builds on them.
+- After the last chunk, finish with a short troubleshooting scenario that ties the chunks together, \
+and ask what he'd check first. After that, sum up in three bullets and suggest he try the lesson quiz.
+- If he asks a side question, answer it briefly, then return to where you were.
+
+Style: talk to him like a patient senior tech. Short paragraphs, plain words, define a term the first \
+time you use it. Markdown is fine (bold, lists, small tables, `code`). Keep each message under about \
+250 words. Stick to what the lesson says; if you add something from outside it, say so. Your first \
+message: one sentence on what the lesson covers and how many chunks you'll take, then chunk 1."""
 
 
 def read_progress():
@@ -127,6 +161,74 @@ def public_path(raw):
     return None
 
 
+def tutor_transcript(messages):
+    """Turn the chat so far into the CLI's single prompt (the CLI has no way to pass prior turns)."""
+    if not messages:
+        return "Start the walkthrough."
+    lines = ["The conversation so far, oldest first:", ""]
+    for m in messages:
+        lines += ["%s: %s" % ("Tutor" if m["role"] == "assistant" else "Ryan", m["content"]), ""]
+    lines.append("Write the tutor's next message only. Do not repeat earlier messages or prefix it with \"Tutor:\".")
+    return "\n".join(lines)
+
+
+def tutor_request(doc):
+    """Validate a tutor request body. Returns (lesson_title, lesson_text, messages) or raises ValueError."""
+    if not isinstance(doc, dict):
+        raise ValueError("Body must be a JSON object.")
+    lesson = doc.get("lesson")
+    if not isinstance(lesson, dict) or not isinstance(lesson.get("text"), str) or not lesson["text"].strip():
+        raise ValueError("lesson.text is required.")
+    if len(lesson["text"]) > TUTOR_MAX_LESSON:
+        raise ValueError("Lesson text is too long.")
+    title = lesson.get("title") if isinstance(lesson.get("title"), str) else ""
+    msgs = doc.get("messages", [])
+    if not isinstance(msgs, list) or len(msgs) > TUTOR_MAX_TURNS:
+        raise ValueError("messages must be a list of at most %d turns." % TUTOR_MAX_TURNS)
+    for m in msgs:
+        if not isinstance(m, dict) or m.get("role") not in ("user", "assistant") or not isinstance(m.get("content"), str):
+            raise ValueError("Each message needs a role (user or assistant) and text content.")
+    return title[:200], lesson["text"], msgs
+
+
+def claude_cli():
+    """Path to the Claude Code CLI, or None. Checks LC_CLAUDE, PATH, then the usual install spots."""
+    found = os.environ.get("LC_CLAUDE") or shutil.which("claude")
+    if found:
+        return found
+    home = os.path.expanduser("~")
+    for p in (os.path.join(home, ".local", "bin", "claude.exe"), os.path.join(home, ".local", "bin", "claude"),
+              os.path.join(os.environ.get("APPDATA", ""), "npm", "claude.cmd")):
+        if os.path.isfile(p):
+            return p
+    return None
+
+
+def ask_tutor(title, text, messages):
+    """One tutor reply from `claude -p`: no tools, no saved session, run in an empty folder."""
+    exe = claude_cli()
+    if not exe:
+        raise RuntimeError("Couldn't find the Claude Code CLI. Install it, or set LC_CLAUDE to its full path.")
+    system = TUTOR_PROMPT + "\n\n<lesson title=\"" + title.replace('"', "'") + "\">\n" + text + "\n</lesson>"
+    with tempfile.TemporaryDirectory(prefix="lc-tutor-") as work:
+        sp = os.path.join(work, "system.md")
+        with open(sp, "w", encoding="utf-8") as f:
+            f.write(system)
+        cmd = [exe, "-p", "--system-prompt-file", sp, "--model", "opus", "--effort", "medium",
+               "--tools", "", "--strict-mcp-config", "--no-session-persistence", "--output-format", "text"]
+        try:
+            r = subprocess.run(cmd, input=tutor_transcript(messages), capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", cwd=work, timeout=TUTOR_TIMEOUT,
+                               creationflags=NO_WINDOW)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("Claude took longer than %d seconds. Try again." % TUTOR_TIMEOUT)
+    reply = (r.stdout or "").strip()
+    if r.returncode or not reply:
+        detail = (r.stderr or r.stdout or "no output").strip().splitlines()
+        raise RuntimeError("The Claude CLI failed: %s" % (detail[-1] if detail else "no output")[:300])
+    return reply
+
+
 class Server(ThreadingHTTPServer):
     # The default listen queue is 5. A phone's first load (through `tailscale serve`) opens dozens of
     # connections at once; on Windows the overflow is refused outright and a script never loads.
@@ -157,6 +259,24 @@ class Handler(SimpleHTTPRequestHandler):
     def is_api(self):
         return urlsplit(self.path).path == "/api/progress"
 
+    def read_json(self):
+        """The request's JSON body, or None after sending an error response."""
+        if not self.from_app() or not (self.headers.get("Content-Type") or "").startswith("application/json"):
+            self.send_json(403, {"error": "Send JSON with the X-LC header."})
+            return None
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = 0
+        if length <= 0 or length > MAX_BODY:
+            self.send_json(400, {"error": "Body must be 1 byte to 5 MB of JSON."})
+            return None
+        try:
+            return json.loads(self.rfile.read(length).decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            self.send_json(400, {"error": "Body is not valid UTF-8 JSON."})
+            return None
+
     def from_app(self):
         return self.headers.get("X-LC") == "1"
 
@@ -178,18 +298,9 @@ class Handler(SimpleHTTPRequestHandler):
     def do_PUT(self):
         if not self.is_api():
             return self.send_error(404)
-        if not self.from_app() or not (self.headers.get("Content-Type") or "").startswith("application/json"):
-            return self.send_json(403, {"error": "Send JSON with the X-LC header."})
-        try:
-            length = int(self.headers.get("Content-Length") or 0)
-        except ValueError:
-            length = 0
-        if length <= 0 or length > MAX_BODY:
-            return self.send_json(400, {"error": "Body must be 1 byte to 5 MB of JSON."})
-        try:
-            client = json.loads(self.rfile.read(length).decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            return self.send_json(400, {"error": "Body is not valid UTF-8 JSON."})
+        client = self.read_json()
+        if client is None:
+            return
         if not isinstance(client, dict):
             return self.send_json(400, {"error": "Progress must be a JSON object."})
         try:
@@ -199,6 +310,21 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception as e:  # never drop the connection without an answer
             return self.send_json(500, {"error": "Could not merge progress: %s" % e})
         return self.send_json(200, merged)
+
+    def do_POST(self):
+        if urlsplit(self.path).path != "/api/tutor":
+            return self.send_error(404)
+        doc = self.read_json()
+        if doc is None:
+            return
+        try:
+            title, text, messages = tutor_request(doc)
+        except ValueError as e:
+            return self.send_json(400, {"error": str(e)})
+        try:
+            return self.send_json(200, {"reply": ask_tutor(title, text, messages)})
+        except Exception as e:  # CLI missing, signed out, timed out: tell the app why
+            return self.send_json(502, {"error": str(e)})
 
     def log_message(self, fmt, *args):
         if args and "/api/" in str(args[0]):

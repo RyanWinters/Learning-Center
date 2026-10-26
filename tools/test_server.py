@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Tests for server.py merge rules and the served-file allowlist.  Usage: python tools/test_server.py"""
 import os
+import stat
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -52,6 +54,38 @@ class Allowlist(unittest.TestCase):
                   "/assets/../data/progress.json", "/assets/%2e%2e/data/progress.json", "/server.py",
                   "/docs/PLAN.md", "/tools/validate.js", "/content/.hidden", "/.gitignore"]:
             self.assertIsNone(server.public_path(p), p)
+
+
+class Tutor(unittest.TestCase):
+    def test_request_validation(self):
+        ok = {"lesson": {"title": "T", "text": "body"}, "messages": [{"role": "user", "content": "hi"}]}
+        self.assertEqual(server.tutor_request(ok)[2][0]["content"], "hi")
+        for bad in [[], {"lesson": {"text": " "}}, {"lesson": {"text": "x"}, "messages": [{"role": "system", "content": "x"}]},
+                    {"lesson": {"text": "x" * (server.TUTOR_MAX_LESSON + 1)}}, {"lesson": {"text": "x"}, "messages": "no"}]:
+            with self.assertRaises(ValueError):
+                server.tutor_request(bad)
+
+    def test_transcript(self):
+        self.assertEqual(server.tutor_transcript([]), "Start the walkthrough.")
+        t = server.tutor_transcript([{"role": "assistant", "content": "Q1?"}, {"role": "user", "content": "5 s"}])
+        self.assertIn("Tutor: Q1?", t)
+        self.assertIn("Ryan: 5 s", t)
+
+    @unittest.skipIf(os.name == "nt", "fake CLI is a shell script")
+    def test_runs_cli_without_tools(self):
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, "claude")
+            with open(fake, "w") as f:  # echo the args and stdin back so the test can check them
+                f.write('#!/bin/sh\necho "$@"\ncat\n')
+            os.chmod(fake, os.stat(fake).st_mode | stat.S_IEXEC)
+            os.environ["LC_CLAUDE"] = fake
+            try:
+                out = server.ask_tutor("T", "body", [{"role": "user", "content": "hello"}])
+            finally:
+                del os.environ["LC_CLAUDE"]
+        self.assertIn("--tools  --strict-mcp-config", out)
+        self.assertIn("--no-session-persistence", out)
+        self.assertIn("Ryan: hello", out)
 
 
 if __name__ == "__main__":
