@@ -110,7 +110,22 @@
     return { html: '<' + tag + '>' + h + '</' + tag + '>', next: i };
   }
 
-  function splitRow(l) { return l.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, '|')); }
+  // Split a table row on unescaped pipes, ignoring pipes inside {{term:id|text}} markup and `code`.
+  function splitRow(l) {
+    const src = l.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '');
+    const cells = []; let cur = '', depth = 0, code = false;
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i];
+      if (c === '\\' && src[i + 1] === '|') { cur += '|'; i++; continue; }
+      if (c === '`') code = !code;
+      else if (!code && c === '{' && src[i + 1] === '{') { depth++; cur += '{{'; i++; continue; }
+      else if (!code && depth && c === '}' && src[i + 1] === '}') { depth--; cur += '}}'; i++; continue; }
+      else if (c === '|' && !depth && !code) { cells.push(cur.trim()); cur = ''; continue; }
+      cur += c;
+    }
+    cells.push(cur.trim());
+    return cells;
+  }
 
   function blocks(lines, ctx) {
     let out = '', i = 0, m;
